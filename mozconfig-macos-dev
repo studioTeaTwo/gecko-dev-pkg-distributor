@@ -1,4 +1,4 @@
-. $topsrcdir/browser/config/mozconfigs/base-browser
+. $topsrcdir/browser/config/mozconfigs/tor-browser
 
 # This mozconfig file is not used in official builds.
 # It is only intended to be used when doing incremental macOS builds
@@ -19,3 +19,9 @@ ac_add_options --disable-update-agent
 
 # Let's make sure no preference is enabling either Adobe's or Google's CDM.
 ac_add_options --disable-eme
+
+ac_add_options --with-relative-data-dir=../TorBrowser-Data/Browser
+
+#copied from the diff between mozconfig-linux-x86_64 and mozconfig-linux-x86_64-dev
+export MOZ_APP_REMOTINGNAME="Tor Browser Dev"
+ac_add_options --with-branding=browser/branding/tb-nightly
