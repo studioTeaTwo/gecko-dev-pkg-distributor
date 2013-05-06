@@ -1,4 +1,4 @@
-. $topsrcdir/browser/config/mozconfigs/base-browser-android
+. $topsrcdir/browser/config/mozconfigs/tor-browser-android
 
 mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-arm-linux-androideabi
 ac_add_options --target=arm-linux-androideabi
