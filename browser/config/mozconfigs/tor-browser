@@ -1,0 +1,18 @@
+. $topsrcdir/browser/config/mozconfigs/base-browser
+
+# If building outside tor-browser-build, you might want to customize this value.
+# On Linux, it influences the WM_CLASS value, which is shown on GNOME's ALT-TAB,
+# for example.
+# We customize it in tor-browser-build because we include the channel name, just
+# like Firefox does.
+# export MOZ_APP_REMOTINGNAME="Tor Browser"
+
+ac_add_options --with-relative-data-dir=TorBrowser/Data/Browser
+# This is not needed with the relative data directory, but it is when you
+# disable it, otherwise it is "Mozilla" (on Windows and macOS) or ".mozilla" on
+# Unix systems.
+# It is used, for example, for GetProductDirectory.
+# ac_add_options --with-user-appdir=TorProject
+# ac_add_options --with-user-appdir=.torproject
+
+ac_add_options --with-distribution-id=org.torproject

@@ -1,4 +1,4 @@
-. $topsrcdir/browser/config/mozconfigs/base-browser
+. $topsrcdir/browser/config/mozconfigs/tor-browser
 
 ac_add_options --enable-strip
 
@@ -11,5 +11,4 @@ ac_add_options --disable-update-agent
 # Let's make sure no preference is enabling either Adobe's or Google's CDM.
 ac_add_options --disable-eme
 
-# For base-browser we do not enable portable mode on macOS.
-ac_add_options --without-relative-data-dir
+ac_add_options --with-relative-data-dir=../TorBrowser-Data/Browser
