@@ -1,4 +1,4 @@
-. $topsrcdir/browser/config/mozconfigs/base-browser
+. $topsrcdir/browser/config/mozconfigs/tor-browser
 
 ac_add_options --target=i686-w64-mingw32
 ac_add_options --with-toolchain-prefix=i686-w64-mingw32-

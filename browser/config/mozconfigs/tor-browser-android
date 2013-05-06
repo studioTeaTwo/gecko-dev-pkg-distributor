@@ -1,0 +1,3 @@
+. $topsrcdir/browser/config/mozconfigs/base-browser-android
+
+mk_add_options MOZ_APP_DISPLAYNAME="Tor Browser"
