@@ -558,6 +558,9 @@ function makeURLAbsolute(aBase, aUrl) {
 }
 
 function getHelpLinkURL(aHelpTopic) {
+  if (aHelpTopic === "firefox-help" || aHelpTopic === "firefox-osxkey") {
+    return "about:manual";
+  }
   var url = Services.urlFormatter.formatURLPref("app.support.baseURL");
   return url + aHelpTopic;
 }
