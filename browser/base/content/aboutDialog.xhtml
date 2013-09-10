@@ -15,7 +15,7 @@
         data-l10n-id="aboutDialog-title"
 #endif
         role="dialog"
-        aria-describedby="version distribution distributionId communityDesc contributeDesc trademark"
+        aria-describedby="version distribution distributionId projectDesc helpDesc trademark"
         >
 #ifdef XP_MACOSX
 #include macWindow.inc.xhtml
@@ -33,10 +33,15 @@
       rel="stylesheet"
       href="chrome://branding/content/aboutDialog.css"
     />
+    <html:link
+      rel="stylesheet"
+      href="chrome://browser/content/aboutDialogTor.css"
+    />
 
     <html:link rel="localization" href="branding/brand.ftl"/>
     <html:link rel="localization" href="browser/aboutDialog.ftl"/>
     <html:link rel="localization" href="toolkit/global/base-browser.ftl"/>
+    <html:link rel="localization" href="toolkit/global/tor-browser.ftl"/>
   </linkset>
 
   <html:div id="aboutDialogContainer">
@@ -134,22 +139,24 @@
               <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-exp-creditsLink"/>
             </description>
           </vbox>
-          <description class="text-blurb" id="communityDesc" data-l10n-id="community-2">
-            <label is="text-link" href="https://www.mozilla.org/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="community-mozillaLink"/>
-            <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-creditsLink"/>
+          <!-- Keep communityDesc and contributeDesc to avoid JS errors trying to hide them -->
+          <description class="text-blurb" id="communityDesc" hidden="true"></description>
+          <description class="text-blurb" id="contributeDesc" hidden="true"></description>
+          <description class="text-blurb" id="projectDesc" data-l10n-id="about-dialog-tor-project">
+            <label is="text-link" href="https://www.torproject.org/" data-l10n-name="project-link"></label>
           </description>
-          <description class="text-blurb" id="contributeDesc" data-l10n-id="helpus">
-            <label is="text-link" href="https://foundation.mozilla.org/?form=firefox-about" data-l10n-name="helpus-donateLink"/>
-            <label is="text-link" href="https://www.mozilla.org/contribute/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="helpus-getInvolvedLink"/>
+          <description class="text-blurb" id="helpDesc" data-l10n-id="about-dialog-help-out">
+            <label is="text-link" href="https://donate.torproject.org/" data-l10n-name="donate-link"></label>
+            <label is="text-link" href="https://community.torproject.org/" data-l10n-name="community-link"></label>
           </description>
         </vbox>
       </vbox>
     </hbox>
     <vbox id="bottomBox">
-      <hbox pack="center">
-        <label is="text-link" class="bottom-link" useoriginprincipal="true" href="about:license" data-l10n-id="bottomLinks-license"/>
-        <label is="text-link" class="bottom-link" useoriginprincipal="true" href="about:rights" data-l10n-id="bottomLinks-rights"/>
-        <label is="text-link" class="bottom-link" href="https://www.mozilla.org/privacy/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-id="bottomLinks-privacy"/>
+      <hbox id="newBottom" pack="center" position="1">
+        <label is="text-link" class="bottom-link" href="https://support.torproject.org/" data-l10n-id="about-dialog-questions-link"></label>
+        <label is="text-link" class="bottom-link" href="https://community.torproject.org/relay/" data-l10n-id="about-dialog-grow-tor-network-link"></label>
+        <label is="text-link" class="bottom-link" useoriginprincipal="true" href="about:license" data-l10n-id="about-dialog-browser-license-link"></label>
       </hbox>
       <description id="trademark" data-l10n-id="trademarkInfo"></description>
     </vbox>

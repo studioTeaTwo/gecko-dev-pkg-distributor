@@ -209,7 +209,15 @@
 }
 
 #identity-popup[connection=chrome] .identity-popup-security-connection {
-  list-style-image: url(chrome://branding/content/icon48.png);
+  /* This is rendered at 16px. In upstream mozilla this was icon48.png, which
+   * for tb-alpha and tb-nightly will include a small "alpha" and "moon" symbol,
+   * respectively. This do not render well at 16px, so we swap to icon32.png,
+   * which does not include these symbols.
+   * This also keeps the icon consistent with the favicon used for some internal
+   * pages (icon32.png) and the site identity button icon (icon16.png or
+   * icon32.png).
+   * See tor-browser#42088 */
+  list-style-image: url(chrome://branding/content/icon32.png);
 }
 
 #identity-popup[connection=file] .identity-popup-security-connection {
