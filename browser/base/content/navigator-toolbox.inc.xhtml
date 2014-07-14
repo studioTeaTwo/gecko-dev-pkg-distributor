@@ -594,6 +594,10 @@
     <toolbarbutton id="new-identity-button" class="toolbarbutton-1 chromeclass-toolbar-additional"
                    data-l10n-id="toolbar-new-identity"/>
 
+    <toolbarbutton id="new-circuit-button" class="toolbarbutton-1 chromeclass-toolbar-additional"
+                   data-l10n-id="toolbar-new-tor-circuit"
+                   oncommand="TorDomainIsolator.newCircuitForBrowser(gBrowser.selectedBrowser);"/>
+
     <toolbarbutton id="fullscreen-button" class="toolbarbutton-1 chromeclass-toolbar-additional"
                    observes="View:FullScreen"
                    type="checkbox"
