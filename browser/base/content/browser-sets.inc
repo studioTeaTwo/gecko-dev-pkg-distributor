@@ -392,4 +392,5 @@
          internal="true"/>
 #endif
     <key id="new-identity-key" modifiers="accel shift" key="U" oncommand="NewIdentityButton.onCommand(event)"/>
+    <key id="new-circuit-key" modifiers="accel shift" key="L" oncommand="TorDomainIsolator.newCircuitForBrowser(gBrowser.selectedBrowser)"/>
   </keyset>

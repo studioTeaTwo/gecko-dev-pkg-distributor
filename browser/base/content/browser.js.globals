@@ -272,5 +272,6 @@
   "gFindBarPromise",
   "BrowserSearch",
   "SecurityLevelButton",
-  "NewIdentityButton"
+  "NewIdentityButton",
+  "TorDomainIsolator"
 ]
