@@ -273,5 +273,6 @@
   "BrowserSearch",
   "SecurityLevelButton",
   "NewIdentityButton",
-  "TorUIUtils"
+  "TorUIUtils",
+  "TorDomainIsolator"
 ]

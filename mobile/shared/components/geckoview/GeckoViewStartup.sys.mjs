@@ -12,6 +12,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
   PdfJs: "resource://pdf.js/PdfJs.sys.mjs",
   RFPHelper: "resource://gre/modules/RFPHelper.sys.mjs",
+  TorDomainIsolator: "resource://gre/modules/TorDomainIsolator.sys.mjs",
 });
 
 const { debug, warn } = GeckoViewUtils.initLogging("Startup");
@@ -260,6 +261,8 @@ export class GeckoViewStartup {
         ]);
 
         this.#migratePreferences();
+
+        lazy.TorDomainIsolator.init();
 
         Services.obs.addObserver(this, "browser-idle-startup-tasks-finished");
         Services.obs.addObserver(this, "handlersvc-store-initialized");
