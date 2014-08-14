@@ -71,6 +71,7 @@ if [ ! -f "precomplete" ]; then
 fi
 
 list_files files
+list_symlinks symlinks symlink_targets
 
 popd
 
@@ -118,6 +119,15 @@ for ((i=0; $i<$num_files; i=$i+1)); do
   copy_perm "$targetdir/$f" "$workdir/$f"
 
   targetfiles="$targetfiles \"$f\""
+done
+
+notice ""
+notice "Adding symlink add instructions to update manifests"
+num_symlinks=${#symlinks[*]}
+for ((i=0; $i<$num_symlinks; i=$i+1)); do
+  link="${symlinks[$i]}"
+  target="${symlink_targets[$i]}"
+  make_addsymlink_instruction "$link" "$target" "$updatemanifestv3"
 done
 
 # Append remove instructions for any dead files.

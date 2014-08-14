@@ -137,6 +137,15 @@ make_add_if_instruction() {
   echo "add-if \"$f\" \"$f\"" >> "$filev3"
 }
 
+make_addsymlink_instruction() {
+  link="$1"
+  target="$2"
+  filev3="$3"
+
+  verbose_notice "        addsymlink: $link -> $target"
+  echo "addsymlink \"$link\" \"$target\"" >> "$filev3"
+}
+
 make_patch_instruction() {
   f="$1"
   filev3="$2"
@@ -235,4 +244,20 @@ list_dirs() {
     (( count++ ))
   done < "${temp_dirlist}"
   rm "${temp_dirlist}"
+}
+
+# List all symbolic links in the current directory, stripping leading "./"
+list_symlinks() {
+  count=0
+
+  find . -type l \
+    | sed 's/\.\/\(.*\)/\1/' \
+    | sort -r > "temp-symlinklist"
+  while read symlink; do
+    target=$(readlink "$symlink")
+    eval "${1}[$count]=\"$symlink\""
+    eval "${2}[$count]=\"$target\""
+    (( count++ ))
+  done < "temp-symlinklist"
+  rm "temp-symlinklist"
 }
