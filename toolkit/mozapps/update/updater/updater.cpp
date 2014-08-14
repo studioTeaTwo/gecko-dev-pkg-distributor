@@ -16,7 +16,7 @@
  *  updatev3.manifest
  *  -----------------
  *  method   = "add" | "add-if" | "add-if-not" | "patch" | "patch-if" |
- *             "remove" | "rmdir" | "rmrfdir" | type
+ *             "remove" | "rmdir" | "rmrfdir" | "addsymlink" | type
  *
  *  'add-if-not' adds a file if it doesn't exist.
  *
@@ -513,7 +513,8 @@ static const NS_tchar* get_relative_path(const NS_tchar* fullpath) {
  *         Whether the path is a directory path. Defaults to false.
  * @return valid filesystem path or nullptr if the path checks fail.
  */
-static NS_tchar* get_valid_path(NS_tchar** line, bool isdir = false) {
+static NS_tchar* get_valid_path(NS_tchar** line, bool isdir = false,
+                                bool islinktarget = false) {
   NS_tchar* path = mstrtok(kQuote, line);
   if (!path) {
     LOG(("get_valid_path: unable to determine path: " LOG_S, *line));
@@ -549,10 +550,12 @@ static NS_tchar* get_valid_path(NS_tchar** line, bool isdir = false) {
     path[NS_tstrlen(path) - 1] = NS_T('\0');
   }
 
-  // Don't allow relative paths that resolve to a parent directory.
-  if (NS_tstrstr(path, NS_T("..")) != nullptr) {
-    LOG(("get_valid_path: paths must not contain '..': " LOG_S, path));
-    return nullptr;
+  if (!islinktarget) {
+    // Don't allow relative paths that resolve to a parent directory.
+    if (NS_tstrstr(path, NS_T("..")) != nullptr) {
+      LOG(("get_valid_path: paths must not contain '..': " LOG_S, path));
+      return nullptr;
+    }
   }
 
   return path;
@@ -592,7 +595,7 @@ static void ensure_write_permissions(const NS_tchar* path) {
   (void)_wchmod(path, _S_IREAD | _S_IWRITE);
 #else
   struct stat fs;
-  if (!stat(path, &fs) && !(fs.st_mode & S_IWUSR)) {
+  if (!lstat(path, &fs) && !S_ISLNK(fs.st_mode) && !(fs.st_mode & S_IWUSR)) {
     (void)chmod(path, fs.st_mode | S_IWUSR);
   }
 #endif
@@ -779,11 +782,9 @@ static int ensure_copy(const NS_tchar* path, const NS_tchar* dest) {
     return READ_ERROR;
   }
 
-#  ifdef XP_UNIX
   if (S_ISLNK(ss.st_mode)) {
     return ensure_copy_symlink(path, dest);
   }
-#  endif
 
   AutoFile infile(ensure_open(path, NS_T("rb"), ss.st_mode));
   if (!infile) {
@@ -870,11 +871,13 @@ static int ensure_copy_recursive(const NS_tchar* path, const NS_tchar* dest,
     return READ_ERROR;
   }
 
-#ifdef XP_UNIX
+#ifndef XP_WIN
   if (S_ISLNK(sInfo.st_mode)) {
     return ensure_copy_symlink(path, dest);
   }
+#endif
 
+#ifdef XP_UNIX
   // Ignore Unix domain sockets. See #20691.
   if (S_ISSOCK(sInfo.st_mode)) {
     return 0;
@@ -937,7 +940,7 @@ static int rename_file(const NS_tchar* spath, const NS_tchar* dpath,
   }
 
   struct NS_tstat_t spathInfo;
-  rv = NS_tstat(spath, &spathInfo);
+  rv = NS_tlstat(spath, &spathInfo);  // Get info about file or symlink.
   if (rv) {
     LOG(("rename_file: failed to read file status info: " LOG_S ", "
          "err: %d",
@@ -945,7 +948,12 @@ static int rename_file(const NS_tchar* spath, const NS_tchar* dpath,
     return READ_ERROR;
   }
 
-  if (!S_ISREG(spathInfo.st_mode)) {
+#ifdef XP_WIN
+  if (!S_ISREG(spathInfo.st_mode))
+#else
+  if (!S_ISREG(spathInfo.st_mode) && !S_ISLNK(spathInfo.st_mode))
+#endif
+  {
     if (allowDirs && !S_ISDIR(spathInfo.st_mode)) {
       LOG(("rename_file: path present, but not a file: " LOG_S ", err: %d",
            spath, errno));
@@ -954,7 +962,12 @@ static int rename_file(const NS_tchar* spath, const NS_tchar* dpath,
     LOG(("rename_file: proceeding to rename the directory"));
   }
 
-  if (!NS_taccess(dpath, F_OK)) {
+#ifdef XP_WIN
+  if (!NS_taccess(dpath, F_OK))
+#else
+  if (!S_ISLNK(spathInfo.st_mode) && !NS_taccess(dpath, F_OK))
+#endif
+  {
     if (ensure_remove(dpath)) {
       LOG(
           ("rename_file: destination file exists and could not be "
@@ -1073,7 +1086,19 @@ static int backup_restore(const NS_tchar* path, const NS_tchar* relPath) {
   NS_tsnprintf(relBackup, sizeof(relBackup) / sizeof(relBackup[0]),
                NS_T("%s") BACKUP_EXT, relPath);
 
-  if (NS_taccess(backup, F_OK)) {
+  bool isLink = false;
+#ifndef XP_WIN
+  struct stat linkInfo;
+  int rv = lstat(backup, &linkInfo);
+  if (rv) {
+    LOG(("backup_restore: cannot get info for backup file: " LOG_S ", err: %d",
+         relBackup, errno));
+    return OK;
+  }
+  isLink = S_ISLNK(linkInfo.st_mode);
+#endif
+
+  if (!isLink && NS_taccess(backup, F_OK)) {
     LOG(("backup_restore: backup file doesn't exist: " LOG_S, relBackup));
     return OK;
   }
@@ -1091,8 +1116,18 @@ static int backup_discard(const NS_tchar* path, const NS_tchar* relPath) {
   NS_tsnprintf(relBackup, sizeof(relBackup) / sizeof(relBackup[0]),
                NS_T("%s") BACKUP_EXT, relPath);
 
+  bool isLink = false;
+#ifndef XP_WIN
+  struct stat linkInfo;
+  int rv2 = lstat(backup, &linkInfo);
+  if (rv2) {
+    return OK;  // File does not exist; nothing to do.
+  }
+  isLink = S_ISLNK(linkInfo.st_mode);
+#endif
+
   // Nothing to discard
-  if (NS_taccess(backup, F_OK)) {
+  if (!isLink && NS_taccess(backup, F_OK)) {
     return OK;
   }
 
@@ -1180,7 +1215,7 @@ class Action {
 
 class RemoveFile : public Action {
  public:
-  RemoveFile() : mSkip(0) {}
+  RemoveFile() : mSkip(0), mIsLink(0) {}
 
   int Parse(NS_tchar* line) override;
   int Prepare() override;
@@ -1191,6 +1226,7 @@ class RemoveFile : public Action {
   mozilla::UniquePtr<NS_tchar[]> mFile;
   mozilla::UniquePtr<NS_tchar[]> mRelPath;
   int mSkip;
+  int mIsLink;
 };
 
 int RemoveFile::Parse(NS_tchar* line) {
@@ -1213,28 +1249,39 @@ int RemoveFile::Parse(NS_tchar* line) {
 }
 
 int RemoveFile::Prepare() {
-  // Skip the file if it already doesn't exist.
-  int rv = NS_taccess(mFile.get(), F_OK);
-  if (rv) {
-    mSkip = 1;
-    mProgressCost = 0;
-    return OK;
+  int rv;
+#ifndef XP_WIN
+  struct stat linkInfo;
+  rv = lstat(mFile.get(), &linkInfo);
+  mIsLink = ((0 == rv) && S_ISLNK(linkInfo.st_mode));
+#endif
+
+  if (!mIsLink) {
+    // Skip the file if it already doesn't exist.
+    rv = NS_taccess(mFile.get(), F_OK);
+    if (rv) {
+      mSkip = 1;
+      mProgressCost = 0;
+      return OK;
+    }
   }
 
   LOG(("PREPARE REMOVEFILE " LOG_S, mRelPath.get()));
 
-  // Make sure that we're actually a file...
-  struct NS_tstat_t fileInfo;
-  rv = NS_tstat(mFile.get(), &fileInfo);
-  if (rv) {
-    LOG(("failed to read file status info: " LOG_S ", err: %d", mFile.get(),
-         errno));
-    return READ_ERROR;
-  }
+  if (!mIsLink) {
+    // Make sure that we're actually a file...
+    struct NS_tstat_t fileInfo;
+    rv = NS_tstat(mFile.get(), &fileInfo);
+    if (rv) {
+      LOG(("failed to read file status info: " LOG_S ", err: %d", mFile.get(),
+           errno));
+      return READ_ERROR;
+    }
 
-  if (!S_ISREG(fileInfo.st_mode)) {
-    LOG(("path present, but not a file: " LOG_S, mFile.get()));
-    return DELETE_ERROR_EXPECTED_FILE;
+    if (!S_ISREG(fileInfo.st_mode)) {
+      LOG(("path present, but not a file: " LOG_S, mFile.get()));
+      return DELETE_ERROR_EXPECTED_FILE;
+    }
   }
 
   NS_tchar* slash = (NS_tchar*)NS_tstrrchr(mFile.get(), NS_T('/'));
@@ -1985,6 +2032,92 @@ void PatchIfFile::Finish(int status) {
 
   PatchFile::Finish(status);
 }
+
+#ifndef XP_WIN
+class AddSymlink : public Action {
+ public:
+  AddSymlink() : mAdded(false) {}
+
+  virtual int Parse(NS_tchar* line);
+  virtual int Prepare();
+  virtual int Execute();
+  virtual void Finish(int status);
+
+ private:
+  mozilla::UniquePtr<NS_tchar[]> mLinkPath;
+  mozilla::UniquePtr<NS_tchar[]> mRelPath;
+  mozilla::UniquePtr<NS_tchar[]> mTarget;
+  bool mAdded;
+};
+
+int AddSymlink::Parse(NS_tchar* line) {
+  // format "<linkname>" "target"
+
+  NS_tchar* validPath = get_valid_path(&line);
+  if (!validPath) return PARSE_ERROR;
+
+  mRelPath = mozilla::MakeUnique<NS_tchar[]>(MAXPATHLEN);
+  NS_tstrcpy(mRelPath.get(), validPath);
+  mLinkPath.reset(get_full_path(validPath));
+  if (!mLinkPath) {
+    return PARSE_ERROR;
+  }
+
+  // consume whitespace between args
+  NS_tchar* q = mstrtok(kQuote, &line);
+  if (!q) return PARSE_ERROR;
+
+  validPath = get_valid_path(&line, false, true);
+  if (!validPath) return PARSE_ERROR;
+
+  mTarget = mozilla::MakeUnique<NS_tchar[]>(MAXPATHLEN);
+  NS_tstrcpy(mTarget.get(), validPath);
+
+  return OK;
+}
+
+int AddSymlink::Prepare() {
+  LOG(("PREPARE ADDSYMLINK " LOG_S " -> " LOG_S, mRelPath.get(),
+       mTarget.get()));
+
+  return OK;
+}
+
+int AddSymlink::Execute() {
+  LOG(("EXECUTE ADDSYMLINK " LOG_S " -> " LOG_S, mRelPath.get(),
+       mTarget.get()));
+
+  // First make sure that we can actually get rid of any existing file or link.
+  struct stat linkInfo;
+  int rv = lstat(mLinkPath.get(), &linkInfo);
+  if ((0 == rv) && !S_ISLNK(linkInfo.st_mode)) {
+    rv = NS_taccess(mLinkPath.get(), F_OK);
+  }
+  if (rv == 0) {
+    rv = backup_create(mLinkPath.get());
+    if (rv) return rv;
+  } else {
+    rv = ensure_parent_dir(mLinkPath.get());
+    if (rv) return rv;
+  }
+
+  // Create the link.
+  rv = symlink(mTarget.get(), mLinkPath.get());
+  if (!rv) {
+    mAdded = true;
+  }
+
+  return rv;
+}
+
+void AddSymlink::Finish(int status) {
+  LOG(("FINISH ADDSYMLINK " LOG_S " -> " LOG_S, mRelPath.get(), mTarget.get()));
+  // When there is an update failure and a link has been added it is removed
+  // here since there might not be a backup to replace it.
+  if (status && mAdded) NS_tremove(mLinkPath.get());
+  backup_finish(mLinkPath.get(), mRelPath.get(), status);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -4975,6 +5108,10 @@ int DoUpdate() {
       action = new AddIfNotFile();
     } else if (NS_tstrcmp(token, NS_T("patch-if")) == 0) {  // Patch if exists
       action = new PatchIfFile();
+#ifndef XP_WIN
+    } else if (NS_tstrcmp(token, NS_T("addsymlink")) == 0) {
+      action = new AddSymlink();
+#endif
     } else {
       LOG(("DoUpdate: unknown token: " LOG_S, token));
       free(buf);

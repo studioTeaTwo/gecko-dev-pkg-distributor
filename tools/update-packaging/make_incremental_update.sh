@@ -148,6 +148,7 @@ fi
 
 list_files oldfiles
 list_dirs olddirs
+list_symlinks oldsymlinks oldsymlink_targets
 
 popd
 
@@ -165,6 +166,7 @@ fi
 
 list_dirs newdirs
 list_files newfiles
+list_symlinks newsymlinks newsymlink_targets
 
 popd
 
@@ -291,6 +293,23 @@ for ((i=0; $i<$num_oldfiles; i=$i+1)); do
     remove_array[$num_removes]=$f
     (( num_removes++ ))
   fi
+done
+
+# Remove and re-add symlinks
+notice ""
+notice "Adding symlink remove/add instructions to update manifests"
+num_oldsymlinks=${#oldsymlinks[*]}
+for ((i=0; $i<$num_oldsymlinks; i=$i+1)); do
+  link="${oldsymlinks[$i]}"
+  verbose_notice "        remove: $link"
+  echo "remove \"$link\"" >> "$updatemanifestv3"
+done
+
+num_newsymlinks=${#newsymlinks[*]}
+for ((i=0; $i<$num_newsymlinks; i=$i+1)); do
+  link="${newsymlinks[$i]}"
+  target="${newsymlink_targets[$i]}"
+  make_addsymlink_instruction "$link" "$target" "$updatemanifestv3"
 done
 
 # Newly added files
