@@ -2599,6 +2599,91 @@ nsresult LaunchChild(bool aBlankCommandLine, bool aTryExec) {
   return NS_ERROR_LAUNCHED_CHILD_PROCESS;
 }
 
+static nsresult GetOverrideStringBundleForLocale(nsIStringBundleService* aSBS,
+                                                 const char* aTorbuttonURI,
+                                                 const char* aLocale,
+                                                 nsIStringBundle** aResult) {
+  NS_ENSURE_ARG(aSBS);
+  NS_ENSURE_ARG(aTorbuttonURI);
+  NS_ENSURE_ARG(aLocale);
+  NS_ENSURE_ARG(aResult);
+
+  const char* kFormatStr =
+      "jar:%s!/chrome/torbutton/locale/%s/torbutton.properties";
+  nsPrintfCString strBundleURL(kFormatStr, aTorbuttonURI, aLocale);
+  nsresult rv = aSBS->CreateBundle(strBundleURL.get(), aResult);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  // To ensure that we have a valid string bundle, try to retrieve a string
+  // that we know exists.
+  nsAutoString val;
+  rv = (*aResult)->GetStringFromName("profileProblemTitle", val);
+  if (!NS_SUCCEEDED(rv)) *aResult = nullptr;  // No good.  Discard it.
+
+  return rv;
+}
+
+static void GetOverrideStringBundle(nsIStringBundleService* aSBS,
+                                    nsIStringBundle** aResult) {
+  if (!aSBS || !aResult) return;
+
+  *aResult = nullptr;
+
+  // Build Torbutton file URI string by starting from GREDir.
+  RefPtr<nsXREDirProvider> dirProvider = nsXREDirProvider::GetSingleton();
+  if (!dirProvider) return;
+
+  nsCOMPtr<nsIFile> greDir = dirProvider->GetGREDir();
+  if (!greDir) return;
+
+  // Create file URI, extract as string, and append omni.ja relative path.
+  nsCOMPtr<nsIURI> uri;
+  nsAutoCString uriString;
+  if (NS_FAILED(NS_NewFileURI(getter_AddRefs(uri), greDir)) ||
+      NS_FAILED(uri->GetSpec(uriString))) {
+    return;
+  }
+
+  uriString.Append("omni.ja");
+
+  nsAutoCString userAgentLocale;
+  if (!NS_SUCCEEDED(
+          Preferences::GetCString("intl.locale.requested", userAgentLocale))) {
+    return;
+  }
+
+  nsresult rv = GetOverrideStringBundleForLocale(
+      aSBS, uriString.get(), userAgentLocale.get(), aResult);
+  if (NS_FAILED(rv)) {
+    // Try again using base locale, e.g., "en" vs. "en-US".
+    int16_t offset = userAgentLocale.FindChar('-', 1);
+    if (offset > 0) {
+      nsAutoCString shortLocale(Substring(userAgentLocale, 0, offset));
+      rv = GetOverrideStringBundleForLocale(aSBS, uriString.get(),
+                                            shortLocale.get(), aResult);
+    }
+  }
+}
+
+static nsresult GetFormattedString(nsIStringBundle* aOverrideBundle,
+                                   nsIStringBundle* aMainBundle,
+                                   const char* aName,
+                                   const nsTArray<nsString>& aParams,
+                                   nsAString& aResult) {
+  NS_ENSURE_ARG(aName);
+
+  nsresult rv = NS_ERROR_FAILURE;
+  if (aOverrideBundle) {
+    rv = aOverrideBundle->FormatStringFromName(aName, aParams, aResult);
+  }
+
+  // If string was not found in override bundle, use main (browser) bundle.
+  if (NS_FAILED(rv) && aMainBundle)
+    rv = aMainBundle->FormatStringFromName(aName, aParams, aResult);
+
+  return rv;
+}
+
 static const char kProfileProperties[] =
     "chrome://mozapps/locale/profile/profileSelection.properties";
 
@@ -2672,7 +2757,7 @@ static nsresult ProfileMissingDialog(nsINativeAppSupport* aNative) {
     sbs->CreateBundle(kProfileProperties, getter_AddRefs(sb));
     NS_ENSURE_TRUE_LOG(sbs, NS_ERROR_FAILURE);
 
-    NS_ConvertUTF8toUTF16 appName(gAppData->name);
+    NS_ConvertUTF8toUTF16 appName(MOZ_APP_DISPLAYNAME);
     AutoTArray<nsString, 2> params = {appName, appName};
 
     // profileMissing
@@ -2697,11 +2782,12 @@ static nsresult ProfileMissingDialog(nsINativeAppSupport* aNative) {
 
 // If aUnlocker is NULL, it is also OK for the following arguments to be NULL:
 //   aProfileDir, aProfileLocalDir, aResult.
-static ReturnAbortOnError ProfileLockedDialog(nsIFile* aProfileDir,
-                                              nsIFile* aProfileLocalDir,
-                                              nsIProfileUnlocker* aUnlocker,
-                                              nsINativeAppSupport* aNative,
-                                              nsIProfileLock** aResult) {
+static ReturnAbortOnError ProfileErrorDialog(nsIFile* aProfileDir,
+                                             nsIFile* aProfileLocalDir,
+                                             ProfileStatus aStatus,
+                                             nsIProfileUnlocker* aUnlocker,
+                                             nsINativeAppSupport* aNative,
+                                             nsIProfileLock** aResult) {
   nsresult rv;
 
   if (aProfileDir) {
@@ -2739,24 +2825,39 @@ static ReturnAbortOnError ProfileLockedDialog(nsIFile* aProfileDir,
     sbs->CreateBundle(kProfileProperties, getter_AddRefs(sb));
     NS_ENSURE_TRUE_LOG(sbs, NS_ERROR_FAILURE);
 
-    NS_ConvertUTF8toUTF16 appName(gAppData->name);
+    nsCOMPtr<nsIStringBundle> overrideSB;
+    GetOverrideStringBundle(sbs, getter_AddRefs(overrideSB));
+
+    NS_ConvertUTF8toUTF16 appName(MOZ_APP_DISPLAYNAME);
     AutoTArray<nsString, 3> params = {appName, appName, appName};
 
     nsAutoString killMessage;
 #ifndef XP_MACOSX
-    rv = sb->FormatStringFromName(
-        aUnlocker ? "restartMessageUnlocker" : "restartMessageNoUnlocker2",
-        params, killMessage);
+    static const char kRestartUnlocker[] = "restartMessageUnlocker";
+    static const char kRestartNoUnlocker[] = "restartMessageNoUnlocker2";
+    static const char kReadOnly[] = "profileReadOnly";
 #else
-    rv = sb->FormatStringFromName(
-        aUnlocker ? "restartMessageUnlockerMac" : "restartMessageNoUnlockerMac",
-        params, killMessage);
+    static const char kRestartUnlocker[] = "restartMessageUnlockerMac";
+    static const char kRestartNoUnlocker[] = "restartMessageNoUnlockerMac";
+    static const char kReadOnly[] = "profileReadOnlyMac";
 #endif
+    static const char kAccessDenied[] = "profileAccessDenied";
+
+    const char* errorKey = aUnlocker ? kRestartUnlocker : kRestartNoUnlocker;
+    if (PROFILE_STATUS_READ_ONLY == aStatus)
+      errorKey = kReadOnly;
+    else if (PROFILE_STATUS_ACCESS_DENIED == aStatus)
+      errorKey = kAccessDenied;
+    rv = GetFormattedString(overrideSB, sb, errorKey, params, killMessage);
     NS_ENSURE_SUCCESS(rv, NS_ERROR_FAILURE);
 
+    const char* titleKey = ((PROFILE_STATUS_READ_ONLY == aStatus) ||
+                            (PROFILE_STATUS_ACCESS_DENIED == aStatus))
+                               ? "profileProblemTitle"
+                               : "restartTitle";
     params.SetLength(1);
     nsAutoString killTitle;
-    rv = sb->FormatStringFromName("restartTitle", params, killTitle);
+    rv = sb->FormatStringFromName(titleKey, params, killTitle);
     NS_ENSURE_SUCCESS(rv, NS_ERROR_FAILURE);
 
 #ifdef MOZ_BACKGROUNDTASKS
@@ -2927,6 +3028,24 @@ static ReturnAbortOnError ShowProfileManager(
   return LaunchChild(false, true);
 }
 
+#ifdef XP_MACOSX
+static ProfileStatus CheckTorBrowserDataWriteAccess() {
+  // Check whether we can write to the directory that will contain
+  // TorBrowser-Data.
+  RefPtr<nsXREDirProvider> singleton = nsXREDirProvider::GetSingleton();
+  if (!singleton) {
+    return PROFILE_STATUS_OTHER_ERROR;
+  }
+  nsCOMPtr<nsIFile> tbDataDir;
+  nsresult rv = singleton->GetTorBrowserUserDataDir(getter_AddRefs(tbDataDir));
+  NS_ENSURE_SUCCESS(rv, PROFILE_STATUS_OTHER_ERROR);
+  nsCOMPtr<nsIFile> tbDataDirParent;
+  rv = tbDataDir->GetParent(getter_AddRefs(tbDataDirParent));
+  NS_ENSURE_SUCCESS(rv, PROFILE_STATUS_OTHER_ERROR);
+  return nsToolkitProfileService::CheckProfileWriteAccess(tbDataDirParent);
+}
+#endif
+
 static bool gDoMigration = false;
 static bool gDoProfileReset = false;
 static nsCOMPtr<nsIToolkitProfile> gResetOldProfile;
@@ -2934,6 +3053,13 @@ static nsCOMPtr<nsIToolkitProfile> gResetOldProfile;
 static nsresult LockProfile(nsINativeAppSupport* aNative, nsIFile* aRootDir,
                             nsIFile* aLocalDir, nsIToolkitProfile* aProfile,
                             nsIProfileLock** aResult) {
+  ProfileStatus status =
+      (aProfile ? nsToolkitProfileService::CheckProfileWriteAccess(aProfile)
+                : nsToolkitProfileService::CheckProfileWriteAccess(aRootDir));
+  if (PROFILE_STATUS_OK != status)
+    return ProfileErrorDialog(aRootDir, aLocalDir, status, nullptr, aNative,
+                              aResult);
+
   // If you close Firefox and very quickly reopen it, the old Firefox may
   // still be closing down. Rather than immediately showing the
   // "Firefox is running but is not responding" message, we spend a few
@@ -2960,7 +3086,8 @@ static nsresult LockProfile(nsINativeAppSupport* aNative, nsIFile* aRootDir,
   } while (TimeStamp::Now() - start <
            TimeDuration::FromSeconds(kLockRetrySeconds));
 
-  return ProfileLockedDialog(aRootDir, aLocalDir, unlocker, aNative, aResult);
+  return ProfileErrorDialog(aRootDir, aLocalDir, PROFILE_STATUS_IS_LOCKED,
+                            unlocker, aNative, aResult);
 }
 
 // Pick a profile. We need to end up with a profile root dir, local dir and
@@ -2975,7 +3102,8 @@ static nsresult LockProfile(nsINativeAppSupport* aNative, nsIFile* aRootDir,
 static nsresult SelectProfile(nsToolkitProfileService* aProfileSvc,
                               nsINativeAppSupport* aNative, nsIFile** aRootDir,
                               nsIFile** aLocalDir, nsIToolkitProfile** aProfile,
-                              bool* aWasDefaultSelection) {
+                              bool* aWasDefaultSelection,
+                              nsIProfileLock** aResult) {
   StartupTimeline::Record(StartupTimeline::SELECT_PROFILE);
 
   nsresult rv;
@@ -3013,9 +3141,14 @@ static nsresult SelectProfile(nsToolkitProfileService* aProfileSvc,
 
   // Ask the profile manager to select the profile directories to use.
   bool didCreate = false;
-  rv = aProfileSvc->SelectStartupProfile(&gArgc, gArgv, gDoProfileReset,
-                                         aRootDir, aLocalDir, aProfile,
-                                         &didCreate, aWasDefaultSelection);
+  ProfileStatus profileStatus = PROFILE_STATUS_OK;
+  rv = aProfileSvc->SelectStartupProfile(
+      &gArgc, gArgv, gDoProfileReset, aRootDir, aLocalDir, aProfile, &didCreate,
+      aWasDefaultSelection, profileStatus);
+  if (PROFILE_STATUS_OK != profileStatus) {
+    return ProfileErrorDialog(*aRootDir, *aLocalDir, profileStatus, nullptr,
+                              aNative, aResult);
+  }
 
   if (rv == NS_ERROR_SHOW_PROFILE_MANAGER) {
     return ShowProfileManager(aProfileSvc, aNative);
@@ -4929,6 +5062,19 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
 
   mProfileSvc = NS_GetToolkitProfileService();
   if (!mProfileSvc) {
+#ifdef XP_MACOSX
+    // NS_NewToolkitProfileService() returns a generic NS_ERROR_FAILURE error
+    // if creation of the TorBrowser-Data directory fails due to access denied
+    // or because of a read-only disk volume. Do an extra check here to detect
+    // these errors so we can display an informative error message.
+    ProfileStatus status = CheckTorBrowserDataWriteAccess();
+    if ((PROFILE_STATUS_ACCESS_DENIED == status) ||
+        (PROFILE_STATUS_READ_ONLY == status)) {
+      ProfileErrorDialog(nullptr, nullptr, status, nullptr, mNativeApp,
+                         nullptr);
+      return 1;
+    }
+#endif
     // We failed to choose or create profile - notify user and quit
     ProfileMissingDialog(mNativeApp);
     return 1;
@@ -4938,7 +5084,7 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   nsCOMPtr<nsIToolkitProfile> profile;
   rv = SelectProfile(mProfileSvc, mNativeApp, getter_AddRefs(mProfD),
                      getter_AddRefs(mProfLD), getter_AddRefs(profile),
-                     &wasDefaultSelection);
+                     &wasDefaultSelection, getter_AddRefs(mProfileLock));
   if (rv == NS_ERROR_LAUNCHED_CHILD_PROCESS || rv == NS_ERROR_ABORT) {
     *aExitFlag = true;
     return 0;
