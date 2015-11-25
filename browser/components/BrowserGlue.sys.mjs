@@ -994,6 +994,21 @@ let JSWINDOWACTORS = {
   },
 };
 
+if (AppConstants.BASE_BROWSER_UPDATE) {
+  JSWINDOWACTORS.AboutTBUpdate = {
+    parent: {
+      esModuleURI: "resource:///actors/AboutTBUpdateParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///actors/AboutTBUpdateChild.sys.mjs",
+      events: {
+        DOMWindowCreated: { capture: true },
+      },
+    },
+    matches: ["about:tbupdate"],
+  };
+}
+
 ChromeUtils.defineLazyGetter(
   lazy,
   "WeaveService",

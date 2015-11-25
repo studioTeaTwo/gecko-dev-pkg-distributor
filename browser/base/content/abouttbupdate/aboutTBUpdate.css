@@ -1,0 +1,70 @@
+/*
+ * Copyright (c) 2019, The Tor Project, Inc.
+ * See LICENSE for licensing information.
+ *
+ * vim: set sw=2 sts=2 ts=8 et syntax=css:
+ */
+
+:root {
+  --abouttor-text-color: white;
+  --abouttor-bg-toron-color: #420C5D;
+}
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  color: var(--abouttor-text-color);
+  background-color: var(--abouttor-bg-toron-color);
+  margin-block: 40px;
+  margin-inline: 50px;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 40px 50px;
+}
+
+body > *:not([hidden]) {
+  display: contents;
+}
+
+.label-column {
+  grid-column: 1;
+}
+
+.content {
+  grid-column: 2;
+}
+
+.content.en-US-content {
+  font-family: monospace;
+  line-height: 1.4;
+}
+
+.label-column, .content {
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+a {
+  color: inherit;
+}
+
+.no-line-break {
+  white-space: nowrap;
+}
+
+ul {
+  padding-inline: 1em 0;
+}
+
+h3, h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+h3.build-system-heading {
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin-block-start: 3em;
+}

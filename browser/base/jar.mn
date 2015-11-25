@@ -33,6 +33,11 @@ browser.jar:
         content/browser/aboutTabCrashed.css           (content/aboutTabCrashed.css)
         content/browser/aboutTabCrashed.js            (content/aboutTabCrashed.js)
         content/browser/aboutTabCrashed.xhtml         (content/aboutTabCrashed.xhtml)
+#ifdef BASE_BROWSER_UPDATE
+        content/browser/abouttbupdate/aboutTBUpdate.xhtml    (content/abouttbupdate/aboutTBUpdate.xhtml)
+        content/browser/abouttbupdate/aboutTBUpdate.js       (content/abouttbupdate/aboutTBUpdate.js)
+        content/browser/abouttbupdate/aboutTBUpdate.css      (content/abouttbupdate/aboutTBUpdate.css)
+#endif
         content/browser/blanktab.html                 (content/blanktab.html)
         content/browser/browser.css                   (content/browser.css)
         content/browser/browser.js                    (content/browser.js)
