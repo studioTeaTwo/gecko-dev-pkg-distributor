@@ -764,6 +764,10 @@ if (Services.prefs.getBoolPref("browser.profiles.enabled")) {
   gInitialPages.push("about:profilemanager");
 }
 
+if (AppConstants.BASE_BROWSER_UPDATE) {
+  gInitialPages.push("about:tbupdate");
+}
+
 function isInitialPage(url) {
   if (!(url instanceof Ci.nsIURI)) {
     try {

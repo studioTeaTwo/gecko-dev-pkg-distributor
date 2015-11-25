@@ -223,6 +223,9 @@ export let RemotePageAccessManager = {
       RPMAddMessageListener: ["*"],
       RPMRemoveMessageListener: ["*"],
     },
+    "about:tbupdate": {
+      RPMSendQuery: ["FetchUpdateData"],
+    },
     "about:torconnect": {
       RPMAddMessageListener: [
         "torconnect:state-change",
