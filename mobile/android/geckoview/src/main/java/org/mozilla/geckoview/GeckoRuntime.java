@@ -178,7 +178,11 @@ public final class GeckoRuntime implements Parcelable {
       GeckoAppShell.resumeLocation();
       // Monitor network status and send change notifications to Gecko
       // while active.
-      GeckoNetworkManager.getInstance().start(GeckoAppShell.getApplicationContext());
+      if (!BuildConfig.TOR_BROWSER) {
+        GeckoNetworkManager.getInstance().start(GeckoAppShell.getApplicationContext());
+      } else {
+        Log.d(LOGTAG, "Tor Browser: skip GeckoNetworkManager startup");
+      }
 
       // Set settings that may have changed between last app opening
       GeckoAppShell.setIs24HourFormat(
@@ -192,7 +196,9 @@ public final class GeckoRuntime implements Parcelable {
       // Pause listening for locations when in background
       GeckoAppShell.pauseLocation();
       // Stop monitoring network status while inactive.
-      GeckoNetworkManager.getInstance().stop();
+      if (!BuildConfig.TOR_BROWSER) {
+        GeckoNetworkManager.getInstance().stop();
+      }
       GeckoThread.onPause();
     }
   }
