@@ -41,7 +41,7 @@ class SecurityState extends Component {
 
     const {
       securityState,
-      urlDetails: { isLocal },
+      urlDetails: { host, isLocal },
     } = item;
     const iconClassList = ["requests-security-state-icon"];
 
@@ -50,7 +50,11 @@ class SecurityState extends Component {
 
     // Locally delivered files such as http://localhost and file:// paths
     // are considered to have been delivered securely.
-    if (isLocal) {
+    if (
+      isLocal ||
+      (host?.endsWith(".onion") &&
+        Services.prefs.getBoolPref("dom.securecontext.allowlist_onions", false))
+    ) {
       realSecurityState = "secure";
     }
 

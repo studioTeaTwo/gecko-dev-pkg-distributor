@@ -283,6 +283,7 @@ CategorizeCertificateError(PRErrorCode certificateError) {
     case mozilla::pkix::MOZILLA_PKIX_ERROR_NOT_YET_VALID_ISSUER_CERTIFICATE:
     case mozilla::pkix::MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT:
     case mozilla::pkix::MOZILLA_PKIX_ERROR_V1_CERT_USED_AS_CA:
+    case mozilla::pkix::MOZILLA_PKIX_ERROR_ONION_WITH_SELF_SIGNED_CERT:
       return Some(
           nsITransportSecurityInfo::OverridableErrorCategory::ERROR_TRUST);
 
@@ -635,6 +636,78 @@ Result AuthCertificate(
   return rv;
 }
 
+/**
+ * Check if the self-signed onion certificate error can be overridden by another
+ * error.
+ *
+ * Basically, this function restore part of the old functionalities of
+ * DetermineCertOverrideErrors, before it was changed in Bug 1781104.
+ */
+static PRErrorCode OverrideOnionSelfSignedError(
+    const nsCOMPtr<nsIX509Cert>& aCert, const nsACString& aHostName,
+    mozilla::pkix::Time aNow, PRErrorCode aCertVerificationError) {
+  nsTArray<uint8_t> certDER;
+  if (NS_FAILED(aCert->GetRawDER(certDER))) {
+    return SEC_ERROR_LIBRARY_FAILURE;
+  }
+  mozilla::pkix::Input certInput;
+  if (certInput.Init(certDER.Elements(), certDER.Length()) != Success) {
+    return SEC_ERROR_BAD_DER;
+  }
+
+  // First, check the hostname.
+  {
+    Input hostnameInput;
+    Result result = hostnameInput.Init(
+        BitwiseCast<const uint8_t*, const char*>(aHostName.BeginReading()),
+        aHostName.Length());
+    if (result != Success) {
+      return SEC_ERROR_INVALID_ARGS;
+    }
+    result = CheckCertHostname(certInput, hostnameInput);
+    if (result == Result::ERROR_BAD_DER ||
+        result == Result::ERROR_BAD_CERT_DOMAIN) {
+      aCertVerificationError = SSL_ERROR_BAD_CERT_DOMAIN;
+    } else if (IsFatalError(result)) {
+      // This should be then mapped to a fatal error by
+      // CategorizeCertificateError.
+      return MapResultToPRErrorCode(result);
+    }
+  }
+
+  // Then, check if the certificate has expired.
+  {
+    mozilla::pkix::BackCert backCert(
+        certInput, mozilla::pkix::EndEntityOrCA::MustBeEndEntity, nullptr);
+    Result rv = backCert.Init();
+    if (rv != Success) {
+      PR_SetError(MapResultToPRErrorCode(rv), 0);
+      return SECFailure;
+    }
+    mozilla::pkix::Time notBefore(mozilla::pkix::Time::uninitialized);
+    mozilla::pkix::Time notAfter(mozilla::pkix::Time::uninitialized);
+    // If the validity can't be parsed, ParseValidity will return
+    // Result::ERROR_INVALID_DER_TIME.
+    rv = mozilla::pkix::ParseValidity(backCert.GetValidity(), &notBefore,
+                                      &notAfter);
+    if (rv != Success) {
+      return MapResultToPRErrorCode(rv);
+    }
+    // If `now` is outside of the certificate's validity period,
+    // CheckValidity will return Result::ERROR_NOT_YET_VALID_CERTIFICATE or
+    // Result::ERROR_EXPIRED_CERTIFICATE, as appropriate, and Success
+    // otherwise.
+    rv = mozilla::pkix::CheckValidity(aNow, notBefore, notAfter);
+    if (rv != Success) {
+      return MapResultToPRErrorCode(rv);
+    }
+  }
+
+  // If we arrive here, the cert is okay, just self-signed, so return the
+  // original error.
+  return aCertVerificationError;
+}
+
 PRErrorCode AuthCertificateParseResults(
     uint64_t aPtrForLog, const nsACString& aHostName, int32_t aPort,
     const OriginAttributes& aOriginAttributes,
@@ -645,6 +718,12 @@ PRErrorCode AuthCertificateParseResults(
         aOverridableErrorCategory) {
   uint32_t probeValue = MapCertErrorToProbeValue(aCertVerificationError);
   Telemetry::Accumulate(Telemetry::SSL_CERT_VERIFICATION_ERRORS, probeValue);
+
+  if (aCertVerificationError ==
+      mozilla::pkix::MOZILLA_PKIX_ERROR_ONION_WITH_SELF_SIGNED_CERT) {
+    aCertVerificationError = OverrideOnionSelfSignedError(
+        aCert, aHostName, aTime, aCertVerificationError);
+  }
 
   Maybe<nsITransportSecurityInfo::OverridableErrorCategory>
       maybeOverridableErrorCategory =
