@@ -691,8 +691,8 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     return NS_OK;
   }
 
-  // Check the parent scheme. If it is not an HTTPS page then mixed content
-  // restrictions do not apply.
+  // Check the parent scheme. If it is not an HTTPS or .onion page then mixed
+  // content restrictions do not apply.
   nsCOMPtr<nsIURI> innerRequestingLocation =
       NS_GetInnermostURI(requestingLocation);
   if (!innerRequestingLocation) {
@@ -707,6 +707,17 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
 
   bool parentIsHttps = innerRequestingLocation->SchemeIs("https");
   if (!parentIsHttps) {
+    bool parentIsOnion = IsPotentiallyTrustworthyOnion(innerRequestingLocation);
+    if (!parentIsOnion) {
+      *aDecision = ACCEPT;
+      return NS_OK;
+    }
+  }
+
+  bool isHttpScheme = innerContentLocation->SchemeIs("http");
+  // .onion URLs are encrypted and authenticated. Don't treat them as mixed
+  // content if potentially trustworthy (i.e. whitelisted).
+  if (isHttpScheme && IsPotentiallyTrustworthyOnion(innerContentLocation)) {
     *aDecision = ACCEPT;
     MOZ_LOG(sMCBLog, LogLevel::Verbose,
             ("  -> decision: Request will be allowed because the requesting "
@@ -733,7 +744,6 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     return NS_OK;
   }
 
-  bool isHttpScheme = innerContentLocation->SchemeIs("http");
   if (isHttpScheme && IsPotentiallyTrustworthyOrigin(innerContentLocation)) {
     *aDecision = ACCEPT;
     return NS_OK;

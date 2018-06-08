@@ -53,6 +53,15 @@ var security = {
       (Ci.nsIWebProgressListener.STATE_LOADED_MIXED_ACTIVE_CONTENT |
         Ci.nsIWebProgressListener.STATE_LOADED_MIXED_DISPLAY_CONTENT);
     var isEV = ui.state & Ci.nsIWebProgressListener.STATE_IDENTITY_EV_TOPLEVEL;
+    let uriInformation = new URL(gDocInfo.documentURIObject.spec);
+    // If the Onion site could not be loaded, the view-source will be also be
+    // about:neterror.
+    if (uriInformation.protocol == "view-source:") {
+      uriInformation = new URL(uriInformation.pathname);
+    }
+    const isOnion =
+      ["http:", "https:"].includes(uriInformation.protocol) &&
+      uriInformation.hostname.endsWith(".onion");
 
     let retval = {
       cAName: "",
@@ -62,6 +71,7 @@ var security = {
       isBroken,
       isMixed,
       isEV,
+      isOnion,
       cert: null,
       certificateTransparency: null,
     };
@@ -99,6 +109,7 @@ var security = {
       isBroken,
       isMixed,
       isEV,
+      isOnion,
       cert,
       certChain: certChainArray,
       certificateTransparency: undefined,
@@ -340,13 +351,35 @@ async function securityOnLoad(uri, windowInfo) {
     }
     msg2 = pkiBundle.getString("pageInfo_Privacy_None2");
   } else if (info.encryptionStrength > 0) {
-    hdr = pkiBundle.getFormattedString(
-      "pageInfo_EncryptionWithBitsAndProtocol",
-      [info.encryptionAlgorithm, info.encryptionStrength + "", info.version]
-    );
+    if (!info.isOnion) {
+      hdr = pkiBundle.getFormattedString(
+        "pageInfo_EncryptionWithBitsAndProtocol",
+        [info.encryptionAlgorithm, info.encryptionStrength + "", info.version]
+      );
+    } else {
+      try {
+        hdr = await document.l10n.formatValue(
+          "page-info-onion-site-encryption-with-bits",
+          {
+            "encryption-type": info.encryptionAlgorithm,
+            "encryption-strength": info.encryptionStrength,
+            "encryption-version": info.version,
+          }
+        );
+      } catch (err) {
+        hdr =
+          "Connection Encrypted (Onion Service, " +
+          info.encryptionAlgorithm +
+          ", " +
+          info.encryptionStrength +
+          " bit keys, " +
+          info.version +
+          ")";
+      }
+    }
     msg1 = pkiBundle.getString("pageInfo_Privacy_Encrypted1");
     msg2 = pkiBundle.getString("pageInfo_Privacy_Encrypted2");
-  } else {
+  } else if (!info.isOnion) {
     hdr = pkiBundle.getString("pageInfo_NoEncryption");
     if (windowInfo.hostName != null) {
       msg1 = pkiBundle.getFormattedString("pageInfo_Privacy_None1", [
@@ -356,6 +389,13 @@ async function securityOnLoad(uri, windowInfo) {
       msg1 = pkiBundle.getString("pageInfo_Privacy_None4");
     }
     msg2 = pkiBundle.getString("pageInfo_Privacy_None2");
+  } else {
+    hdr = await document.l10n.formatValue(
+      "page-info-onion-site-encryption-plain"
+    );
+
+    msg1 = pkiBundle.getString("pageInfo_Privacy_Encrypted1");
+    msg2 = pkiBundle.getString("pageInfo_Privacy_Encrypted2");
   }
   setText("security-technical-shortform", hdr);
   setText("security-technical-longform1", msg1);

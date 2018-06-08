@@ -3161,6 +3161,11 @@ class nsContentUtils {
   static bool HttpsStateIsModern(Document* aDocument);
 
   /**
+   * Returns true of the document's URI is a .onion
+   */
+  static bool DocumentHasOnionURI(Document* aDocument);
+
+  /**
    * Returns true if the channel is for top-level window and is over secure
    * context.
    * https://github.com/whatwg/html/issues/4930 tracks the spec side of this.

@@ -1778,13 +1778,15 @@ nsresult WebSocketImpl::Init(JSContext* aCx, bool aIsSecure,
   // Don't allow https:// to open ws://
   // Check that we aren't a server side websocket or set to be upgraded to wss
   // or allowing ws from https or a local websocket
-  if (!mIsServerSide && !mSecure &&
+  if (!mIsServerSide && !mSecure && aIsSecure &&
       !Preferences::GetBool("network.websocket.allowInsecureFromHTTPS",
                             false) &&
       !nsMixedContentBlocker::IsPotentiallyTrustworthyLoopbackHost(
           mAsciiHost)) {
-    // If aIsSecure is true then disallow loading ws
-    if (aIsSecure) {
+    nsCOMPtr<nsIURI> uri;
+    nsresult rv = NS_NewURI(getter_AddRefs(uri), mURI);
+    NS_ENSURE_SUCCESS(rv, rv);
+    if (!nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(uri)) {
       return NS_ERROR_DOM_SECURITY_ERR;
     }
 
