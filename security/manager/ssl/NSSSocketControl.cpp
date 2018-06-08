@@ -414,7 +414,11 @@ void NSSSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
              "Invalid state transition to AfterCertVerification");
 
   if (mFd) {
-    SECStatus rv = SSL_AuthCertificateComplete(mFd, errorCode);
+    PRErrorCode passCode = errorCode;
+    if (errorCode == MOZILLA_PKIX_ERROR_ONION_WITH_SELF_SIGNED_CERT) {
+      passCode = 0;
+    }
+    SECStatus rv = SSL_AuthCertificateComplete(mFd, passCode);
     // Only replace errorCode if there was originally no error.
     // SSL_AuthCertificateComplete will return SECFailure with the error code
     // set to PR_WOULD_BLOCK_ERROR if there is a pending event to select a
@@ -429,7 +433,8 @@ void NSSSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
     }
   }
 
-  if (errorCode) {
+  if (errorCode &&
+      errorCode != MOZILLA_PKIX_ERROR_ONION_WITH_SELF_SIGNED_CERT) {
     mFailedVerification = true;
     SetCanceled(errorCode);
   }

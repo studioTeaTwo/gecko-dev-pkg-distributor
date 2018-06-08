@@ -188,6 +188,8 @@ static const unsigned int FATAL_ERROR_FLAG = 0x800;
                    SEC_ERROR_LIBRARY_FAILURE)                                  \
   MOZILLA_PKIX_MAP(FATAL_ERROR_NO_MEMORY, FATAL_ERROR_FLAG | 4,                \
                    SEC_ERROR_NO_MEMORY)                                        \
+  MOZILLA_PKIX_MAP(ERROR_ONION_WITH_SELF_SIGNED_CERT, 155,                     \
+                   MOZILLA_PKIX_ERROR_ONION_WITH_SELF_SIGNED_CERT)             \
   /* nothing here */
 
 enum class Result {
