@@ -9,6 +9,7 @@
 #include "mozilla/Logging.h"
 #include "mozilla/Unused.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/nsMixedContentBlocker.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsDocShell.h"
@@ -82,6 +83,17 @@ void nsSecureBrowserUI::RecomputeSecurityFlags() {
           MOZ_LOG(gSecureBrowserUILog, LogLevel::Debug, ("  is EV"));
           mState |= nsIWebProgressListener::STATE_IDENTITY_EV_TOPLEVEL;
         }
+      }
+    }
+
+    // any protocol routed over tor is secure
+    if (!(mState & nsIWebProgressListener::STATE_IS_SECURE)) {
+      nsCOMPtr<nsIURI> innerDocURI = NS_GetInnermostURI(win->GetDocumentURI());
+      if (innerDocURI &&
+          nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(innerDocURI)) {
+        MOZ_LOG(gSecureBrowserUILog, LogLevel::Debug, ("  is onion"));
+        mState = (mState & ~nsIWebProgressListener::STATE_IS_INSECURE) |
+                 nsIWebProgressListener::STATE_IS_SECURE;
       }
     }
   }

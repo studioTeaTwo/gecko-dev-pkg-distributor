@@ -186,6 +186,29 @@
   list-style-image: url(chrome://global/skin/icons/security-broken.svg);
 }
 
+#identity-box[pageproxystate="valid"].onionUnknownIdentity #identity-icon,
+#identity-box[pageproxystate="valid"].onionVerifiedDomain #identity-icon,
+#identity-box[pageproxystate="valid"].onionMixedActiveBlocked #identity-icon {
+  list-style-image: url(chrome://global/skin/icons/onion-site.svg);
+  visibility: visible;
+}
+
+#identity-box[pageproxystate="valid"].onionMixedDisplayContent #identity-icon,
+#identity-box[pageproxystate="valid"].onionMixedDisplayContentLoadedActiveBlocked #identity-icon,
+#identity-box[pageproxystate="valid"].onionCertUserOverridden #identity-icon {
+  list-style-image: url(chrome://global/skin/icons/onion-warning.svg);
+  visibility: visible;
+  /* onion-warning includes another context-stroke color. Here we want it to
+   * match the context-fill color, which should be currentColor. */
+  -moz-context-properties: fill, fill-opacity, stroke;
+  stroke: currentColor;
+}
+
+#identity-box[pageproxystate="valid"].onionMixedActiveContent #identity-icon {
+  list-style-image: url(chrome://global/skin/icons/onion-slash.svg);
+  visibility: visible;
+}
+
 #permissions-granted-icon {
   list-style-image: url(chrome://browser/skin/permissions.svg);
 }

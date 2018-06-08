@@ -21,6 +21,7 @@
 #include "mozilla/dom/WindowContext.h"
 #include "mozilla/dom/WindowGlobalChild.h"
 #include "mozilla/dom/WindowGlobalParent.h"
+#include "mozilla/dom/nsMixedContentBlocker.h"
 
 #include "nsGlobalWindowInner.h"
 #include "nsNetUtil.h"
@@ -145,7 +146,9 @@ WindowGlobalInit WindowGlobalActor::WindowInitializer(
   // Init Mixed Content Fields
   nsCOMPtr<nsIURI> innerDocURI = NS_GetInnermostURI(doc->GetDocumentURI());
   fields.Get<Indexes::IDX_IsSecure>() =
-      innerDocURI && innerDocURI->SchemeIs("https");
+      innerDocURI &&
+      (innerDocURI->SchemeIs("https") ||
+       nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(innerDocURI));
 
   nsCOMPtr<nsITransportSecurityInfo> securityInfo;
   if (nsCOMPtr<nsIChannel> channel = doc->GetChannel()) {
