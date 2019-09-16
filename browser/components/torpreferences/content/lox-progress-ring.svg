@@ -1,0 +1,13 @@
+<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <filter id="ring-blur" x="0" y="0" width="44" height="44" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.5 0"/>
+    <feGaussianBlur stdDeviation="2"/>
+    <feBlend mode="normal" in="SourceGraphic"/>
+  </filter>
+</defs>
+<path d="M 40,22 C 40,31.9411 31.9411,40 22,40 12.05887,40 4,31.9411 4,22 4,12.0589 12.05887,4 22,4 31.9411,4 40,12.0589 40,22 Z M 6.25,22 c 0,8.6985 7.05152,15.75 15.75,15.75 8.6985,0 15.75,-7.0515 15.75,-15.75 C 37.75,13.3015 30.6985,6.25 22,6.25 13.30152,6.25 6.25,13.3015 6.25,22 Z" fill="context-stroke"/>
+<g filter="url(#ring-blur)">
+  <path d="m 22,5.125 c 0,-0.62132 0.5042,-1.12866 1.1243,-1.08986 3.0298,0.18958 5.963,1.14263 8.5256,2.77013 0.5245,0.3331 0.6342,1.03991 0.269,1.54257 C 31.5537,8.8505 30.852,8.95814 30.3246,8.62974 28.1505,7.27609 25.6786,6.47291 23.1241,6.29015 22.5044,6.24582 22,5.74632 22,5.125 Z" fill="context-fill"/>
+</g>
+</svg>

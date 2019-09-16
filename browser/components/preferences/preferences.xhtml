@@ -48,6 +48,7 @@
   />
 
   <link rel="stylesheet" href="chrome://browser/content/securitylevel/securityLevelPreferences.css" />
+  <link rel="stylesheet" href="chrome://browser/content/torpreferences/torPreferences.css" />
 
   <link rel="localization" href="branding/brand.ftl"/>
   <link rel="localization" href="browser/browser.ftl"/>
@@ -91,6 +92,7 @@
   <script src="chrome://browser/content/preferences/findInPage.js"/>
   <script src="chrome://browser/content/migration/migration-wizard.mjs" type="module"></script>
   <script type="module" src="chrome://browser/content/backup/backup-settings.mjs"></script>
+  <script src="chrome://browser/content/torpreferences/bridgemoji/BridgeEmoji.js"/>
 </head>
 
 <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -203,6 +205,8 @@
                       value="paneTranslations"
                       helpTopic="prefs-translations"/>
 
+#include ../torpreferences/content/connectionCategory.inc.xhtml
+
       </richlistbox>
 
       <spacer flex="1"/>
@@ -254,6 +258,7 @@
 #include sync.inc.xhtml
 #include experimental.inc.xhtml
 #include moreFromMozilla.inc.xhtml
+#include ../torpreferences/content/connectionPane.xhtml
         </vbox>
       </vbox>
     </vbox>

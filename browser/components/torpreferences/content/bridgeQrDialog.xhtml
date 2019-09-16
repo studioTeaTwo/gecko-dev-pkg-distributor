@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="bridge-qr-dialog-title"
+>
+  <dialog id="bridgeQr-dialog" buttons="accept">
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/bridgeQrDialog.js" />
+
+    <html:div id="bridgeQr">
+      <html:div id="bridgeQr-target"></html:div>
+      <html:div id="bridgeQr-icon"></html:div>
+    </html:div>
+  </dialog>
+</window>
