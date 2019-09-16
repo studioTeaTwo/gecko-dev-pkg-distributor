@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="tor-log-dialog-title"
+>
+  <dialog id="torPreferences-torLog-dialog" buttons="accept,extra1">
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/torLogDialog.js" />
+
+    <!-- We use a <table> element rather than a <ol>. A table structure allows
+       - screen reader users to navigate within one column so they can avoid the
+       - readback of the timestamp on every row. See tor-browser#43328.
+       - NOTE: We add the explicit role="table". Whilst this should not be
+       - neccessary, nor is it recommended, some screen readers (Orca 46) do not
+       - read out the default table role if the CSS `display` is not `table`.
+       - NOTE: Even though this table is updated with live information, we do
+       - not want to make this an aria-live area or use a "log updated"
+       - notification because the log messages are potentially busy.
+       - Moreover, the live updates is a convience so that the log doesn't need
+       - to be manually refreshed, rather than important information.
+       - NOTE: We add a tabindex=0 to make this element focusable with or
+       - without the overflow. This also makes the table the the initial focus
+       - of the dialog.
+       - NOTE: We add lang="en" and dir="ltr" to the <tbody> since the content
+       - of the log is in English. We do not add this to the <table> element
+       - since its aria-label is localised and we want the scrollbar to match
+       - the locale direction.
+       - NOTE: We avoid any whitespace between the <table> and <tbody> to ensure
+       - it does not contribute to the text content when the top of the table is
+       - manually copied. -->
+    <html:table
+      id="tor-log-table"
+      role="table"
+      data-l10n-id="tor-log-dialog-table"
+      tabindex="0"
+      ><html:tbody id="tor-log-body" lang="en" dir="ltr"></html:tbody
+    ></html:table>
+  </dialog>
+</window>

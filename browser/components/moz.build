@@ -70,6 +70,7 @@ DIRS += [
     "uitour",
     "urlbar",
     "torcircuit",
+    "torpreferences",
 ]
 
 DIRS += ["build"]
