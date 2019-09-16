@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+>
+  <dialog
+    id="user-provide-bridge-dialog"
+    buttons="accept,cancel"
+    class="show-entry-page"
+  >
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/bridgemoji/BridgeEmoji.js" />
+    <script src="chrome://browser/content/torpreferences/provideBridgeDialog.js" />
+
+    <html:div id="user-provide-bridge-entry-page">
+      <description id="user-provide-bridge-description">
+        <html:span
+          data-l10n-id="user-provide-bridge-dialog-description"
+        ></html:span>
+        <label
+          is="text-link"
+          class="learnMore text-link"
+          href="about:manual#bridges"
+          useoriginprincipal="true"
+          data-l10n-id="user-provide-bridge-dialog-learn-more"
+        />
+      </description>
+      <html:label
+        id="user-provide-bridge-textarea-label"
+        for="user-provide-bridge-textarea"
+      ></html:label>
+      <html:textarea
+        id="user-provide-bridge-textarea"
+        multiline="true"
+        rows="3"
+        aria-describedby="user-provide-bridge-description"
+        aria-errormessage="user-provide-bridge-error-message"
+      />
+      <html:div id="user-provide-bridge-message-area">
+        <html:span
+          id="user-provide-bridge-error-message"
+          role="alert"
+          aria-live="assertive"
+        ></html:span>
+        <img
+          id="user-provide-bridge-loading-icon"
+          class="tor-loading-icon"
+          alt=""
+        />
+        <html:span
+          id="user-provide-bridge-connecting"
+          role="alert"
+          data-l10n-id="user-provide-bridge-dialog-connecting"
+        ></html:span>
+      </html:div>
+    </html:div>
+    <html:div id="user-provide-bridge-result-page">
+      <description id="user-provide-result-description" />
+      <!-- NOTE: Unlike #tor-bridge-grid-display, this element is not
+         - interactive, and not a tab-stop. So we use the "table" role rather
+         - than "grid".
+         - NOTE: Using a <html:table> would not allow us the same structural
+         - freedom, so we use a generic div and add the semantics manually. -->
+      <html:div
+        id="user-provide-bridge-grid-display"
+        class="tor-bridges-grid"
+        role="table"
+        tabindex="0"
+        aria-labelledby="user-provide-result-description"
+      ></html:div>
+      <html:template id="user-provide-bridge-row-template">
+        <html:div class="tor-bridges-grid-row" role="row">
+          <html:span
+            class="tor-bridges-type-cell tor-bridges-grid-cell"
+            role="cell"
+          ></html:span>
+          <html:span class="tor-bridges-emojis-block" role="none"></html:span>
+          <html:span class="tor-bridges-grid-end-block" role="none">
+            <html:span
+              class="tor-bridges-address-cell tor-bridges-grid-cell"
+              role="cell"
+            >
+              <html:span class="tor-bridges-address-cell-text"></html:span>
+            </html:span>
+          </html:span>
+        </html:div>
+      </html:template>
+    </html:div>
+  </dialog>
+</window>
