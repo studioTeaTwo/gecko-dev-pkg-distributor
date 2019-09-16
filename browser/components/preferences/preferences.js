@@ -15,6 +15,7 @@
 /* import-globals-from findInPage.js */
 /* import-globals-from /browser/base/content/utilityOverlay.js */
 /* import-globals-from /toolkit/content/preferencesBindings.js */
+/* import-globals-from ../torpreferences/content/connectionPane.js */
 
 "use strict";
 
@@ -231,6 +232,14 @@ function init_all() {
     register_module("paneSync", gSyncPane);
   }
   register_module("paneSearchResults", gSearchResultsPane);
+  if (gConnectionPane.enabled) {
+    document.getElementById("category-connection").hidden = false;
+    register_module("paneConnection", gConnectionPane);
+  } else {
+    // Remove the pane from the DOM so it doesn't get incorrectly included in search results.
+    document.getElementById("template-paneConnection").remove();
+  }
+
   gSearchResultsPane.init();
   gMainPane.preInit();
 

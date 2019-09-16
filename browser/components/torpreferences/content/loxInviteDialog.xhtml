@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="lox-invite-dialog-title"
+>
+  <!-- Context menu, aria-hidden whilst not shown so it does not appear in the
+     - document content. -->
+  <menupopup id="lox-invite-dialog-item-menu" aria-hidden="true">
+    <menuitem
+      id="lox-invite-dialog-copy-menu-item"
+      data-l10n-id="lox-invite-dialog-menu-item-copy-invite"
+    />
+  </menupopup>
+  <dialog id="lox-invite-dialog" buttons="accept">
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+      <html:link
+        rel="localization"
+        href="locales-preview/tor-browser-no-translate.ftl"
+      />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/loxInviteDialog.js" />
+
+    <description data-l10n-id="lox-invite-dialog-description"></description>
+    <html:div id="lox-invite-dialog-generate-area">
+      <html:span id="lox-invite-dialog-remaining"></html:span>
+      <html:button
+        id="lox-invite-dialog-generate-button"
+        data-l10n-id="lox-invite-dialog-request-button"
+      ></html:button>
+      <html:div id="lox-invite-dialog-message-area">
+        <html:span
+          id="lox-invite-dialog-error-message"
+          role="alert"
+        ></html:span>
+        <img
+          id="lox-invite-dialog-loading-icon"
+          class="tor-loading-icon"
+          alt=""
+        />
+        <html:span
+          id="lox-invite-dialog-connecting"
+          role="alert"
+          data-l10n-id="lox-invite-dialog-connecting"
+        ></html:span>
+      </html:div>
+    </html:div>
+    <html:div
+      id="lox-invite-dialog-list-label"
+      data-l10n-id="lox-invite-dialog-invites-label"
+    ></html:div>
+    <richlistbox
+      id="lox-invite-dialog-list"
+      aria-labelledby="lox-invite-dialog-list-label"
+    ></richlistbox>
+  </dialog>
+</window>
