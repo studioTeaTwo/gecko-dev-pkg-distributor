@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="request-bridge-dialog-title"
+>
+  <dialog id="torPreferences-requestBridge-dialog" buttons="accept,cancel">
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/requestBridgeDialog.js" />
+
+    <html:h3
+      id="torPreferences-requestBridge-header"
+      data-l10n-id="request-bridge-dialog-top-solve"
+    ></html:h3>
+    <!-- init to transparent 400x125 png -->
+    <image id="torPreferences-requestBridge-captchaImage" flex="1" />
+    <hbox id="torPreferences-requestBridge-inputHbox">
+      <html:input
+        id="torPreferences-requestBridge-captchaTextbox"
+        type="text"
+        data-l10n-id="request-bridge-dialog-captcha-input"
+      />
+      <button
+        id="torPreferences-requestBridge-refreshCaptchaButton"
+        image="chrome://global/skin/icons/reload.svg"
+      />
+    </hbox>
+    <hbox id="torPreferences-requestBridge-incorrectCaptchaHbox" align="center">
+      <image id="torPreferences-requestBridge-errorIcon" />
+      <label data-l10n-id="request-bridge-dialog-captcha-failed" flex="1" />
+    </hbox>
+  </dialog>
+</window>

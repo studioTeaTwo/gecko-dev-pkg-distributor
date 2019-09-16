@@ -1,0 +1,538 @@
+<!-- Tor panel -->
+
+<script
+  type="application/javascript"
+  src="chrome://browser/content/torpreferences/connectionPane.js"
+/>
+<html:template id="template-paneConnection">
+  <vbox
+    id="torPreferencesCategory"
+    class="subcategory"
+    data-category="paneConnection"
+    hidden="true"
+  >
+    <html:h1 data-l10n-id="tor-connection-settings-heading"></html:h1>
+    <description class="description-deemphasized" flex="1">
+      <html:span data-l10n-id="tor-connection-overview"></html:span>
+      <label
+        class="learnMore text-link"
+        is="text-link"
+        href="about:manual#about"
+        useoriginprincipal="true"
+        data-l10n-id="tor-connection-browser-learn-more-link"
+      />
+    </description>
+    <!-- Keep within #torPreferencesCategory so this won't appear in search
+       - results. -->
+    <html:div
+      id="network-status-internet-area"
+      class="network-status-area"
+      role="group"
+      aria-labelledby="network-status-internet-area-label"
+    >
+      <html:img alt="" class="network-status-icon" />
+      <!-- Use an aria-live area to announce "Internet: Online" or
+         - "Internet: Offline". We only expect this to change when triggered by
+         - the user clicking the "Test" button, so shouldn't occur unexpectedly.
+         -->
+      <html:div
+        class="network-status-live-area"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <html:span
+          id="network-status-internet-area-label"
+          class="network-status-label"
+          data-l10n-id="tor-connection-internet-status-label"
+        ></html:span>
+        <img alt="" class="network-status-loading-icon tor-loading-icon" />
+        <html:span class="network-status-result"></html:span>
+      </html:div>
+      <html:button
+        id="network-status-internet-test-button"
+        data-l10n-id="tor-connection-internet-status-test-button"
+      ></html:button>
+    </html:div>
+    <html:div
+      id="network-status-tor-area"
+      class="network-status-area"
+      role="group"
+      aria-labelledby="network-status-tor-area-label"
+    >
+      <html:img alt="" class="network-status-icon" />
+      <!-- NOTE: Unlike #network-status-internet-area, we do not wrap the label
+         - and status ("Tor network: Not connected", etc) in an aria-live area.
+         - This is not likely to change whilst this page has focus.
+         - Moreover, the status is already present in the torconnect status bar
+         - in the window tab bar. -->
+      <html:span
+        id="network-status-tor-area-label"
+        class="network-status-label"
+        data-l10n-id="tor-connection-network-status-label"
+      ></html:span>
+      <html:span class="network-status-result"></html:span>
+      <html:button
+        id="network-status-tor-connect-button"
+        data-l10n-id="tor-connection-network-status-connect-button"
+      ></html:button>
+    </html:div>
+  </vbox>
+
+  <!-- Quickstart -->
+  <groupbox data-category="paneConnection" hidden="true">
+    <label>
+      <html:h2 data-l10n-id="tor-connection-quickstart-heading"></html:h2>
+    </label>
+    <description
+      class="description-deemphasized"
+      flex="1"
+      data-l10n-id="tor-connection-quickstart-description"
+    />
+    <checkbox
+      id="torPreferences-quickstart-toggle"
+      data-l10n-id="tor-connection-quickstart-checkbox"
+    />
+  </groupbox>
+
+  <!-- Bridges -->
+  <hbox class="subcategory" data-category="paneConnection" hidden="true">
+    <html:h1
+      id="torPreferences-bridges-header"
+      class="tor-focusable-heading"
+      tabindex="-1"
+      data-l10n-id="tor-bridges-heading"
+    ></html:h1>
+  </hbox>
+  <groupbox
+    id="torPreferences-bridges-group"
+    data-category="paneConnection"
+    hidden="true"
+  >
+    <description class="description-deemphasized" flex="1">
+      <html:span data-l10n-id="tor-bridges-overview"></html:span>
+      <label
+        class="learnMore text-link"
+        is="text-link"
+        href="about:manual#bridges"
+        useoriginprincipal="true"
+        data-l10n-id="tor-bridges-learn-more-link"
+      />
+    </description>
+    <hbox
+      align="center"
+      id="torPreferences-bridges-locationGroup"
+      hidden="true"
+    >
+      <label
+        id="torPreferences-bridges-locationLabel"
+        control="torPreferences-bridges-location"
+      />
+      <spacer flex="1" />
+      <menulist id="torPreferences-bridges-location">
+        <menupopup id="torPreferences-bridges-locationEntries" />
+      </menulist>
+      <button
+        id="torPreferences-bridges-buttonChooseBridgeForMe"
+        class="primary tor-button"
+      />
+    </hbox>
+    <html:moz-toggle
+      id="tor-bridges-enabled-toggle"
+      label-align-after=""
+      data-l10n-id="tor-bridges-use-bridges"
+      data-l10n-attrs="label"
+    />
+    <!-- Add an aria-live area where we can post notifications to screen
+       - reader users about changes to their list of bridges. This is to give
+       - these users some feedback for when the remove a bridge or change
+       - their bridges in other ways. I.e. whenever tor-bridges-grid-display
+       - changes its rows.
+       -
+       - If we change the text in #tor-bridges-update-area-text, a screen
+       - reader should speak out the text to the user, even when this area
+       - does not have focus.
+       -
+       - In fact, we don't really want the user to navigate to this element
+       - directly. But currently using an aria-live region in the DOM is the
+       - only way to effectively pass a notification to a screen reader user.
+       - Since it must be somewhere in the DOM, we logically place it just
+       - before the grid, where it is hopefully least confusing to stumble
+       - across.
+       -
+       - TODO: Instead of aria-live in the DOM, use the proposed ariaNotify
+       - API if it gets accepted into firefox and works with screen readers.
+       - See https://github.com/WICG/proposals/issues/112
+       -->
+    <!-- NOTE: This area is hidden by default, and is only shown temporarily
+       - when a notification is added. -->
+    <html:div id="tor-bridges-update-area" hidden="hidden">
+      <!-- NOTE: This first span's text content will *not* be read out as part
+         - of the notification because it does not have an aria-live
+         - attribute. Instead it is just here to give context to the following
+         - text in #tor-bridges-update-area-text if the user navigates to
+         - #tor-bridges-update-area manually whilst it is not hidden.
+         - I.e. it is just here to make it less confusing if a screen reader
+         - user stumbles across this.
+         -->
+      <html:span data-l10n-id="tor-bridges-update-area-intro"></html:span>
+      <!-- Whitespace between spans. -->
+      <!-- This second span is the area to place notification text in. -->
+      <html:span
+        id="tor-bridges-update-area-text"
+        aria-live="polite"
+      ></html:span>
+    </html:div>
+    <html:div id="tor-bridges-none">
+      <html:img id="tor-bridges-none-icon" alt="" />
+      <html:div data-l10n-id="tor-bridges-none-added"></html:div>
+    </html:div>
+    <html:div id="tor-bridges-current">
+      <html:div id="tor-bridges-current-header-bar">
+        <html:h2
+          id="tor-bridges-current-heading"
+          class="tor-focusable-heading"
+          tabindex="-1"
+          data-l10n-id="tor-bridges-your-bridges"
+        ></html:h2>
+        <html:span
+          id="tor-bridges-user-label"
+          class="tor-bridges-source-label"
+          data-l10n-id="tor-bridges-source-user"
+        ></html:span>
+        <html:span
+          id="tor-bridges-built-in-label"
+          class="tor-bridges-source-label"
+          data-l10n-id="tor-bridges-source-built-in"
+        ></html:span>
+        <html:span
+          id="tor-bridges-requested-label"
+          class="tor-bridges-source-label"
+          data-l10n-id="tor-bridges-source-requested"
+        ></html:span>
+        <html:span id="tor-bridges-lox-label" class="tor-bridges-source-label">
+          <html:img id="tor-bridges-lox-label-icon" alt="" />
+          <html:span data-l10n-id="tor-bridges-source-lox"></html:span>
+        </html:span>
+        <html:button
+          id="tor-bridges-all-options-button"
+          class="tor-bridges-options-button"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="tor-bridges-all-options-menu"
+          data-l10n-id="tor-bridges-options-button"
+        ></html:button>
+        <html:panel-list id="tor-bridges-all-options-menu">
+          <html:panel-item
+            id="tor-bridges-options-qr-all-menu-item"
+            data-l10n-attrs="accesskey"
+            data-l10n-id="tor-bridges-menu-item-qr-all-bridge-addresses"
+          ></html:panel-item>
+          <html:panel-item
+            id="tor-bridges-options-copy-all-menu-item"
+            data-l10n-attrs="accesskey"
+            data-l10n-id="tor-bridges-menu-item-copy-all-bridge-addresses"
+          ></html:panel-item>
+          <html:panel-item
+            id="tor-bridges-options-edit-all-menu-item"
+            data-l10n-attrs="accesskey"
+            data-l10n-id="tor-bridges-menu-item-edit-all-bridges"
+          ></html:panel-item>
+          <html:panel-item
+            id="tor-bridges-options-remove-all-menu-item"
+            data-l10n-attrs="accesskey"
+            data-l10n-id="tor-bridges-menu-item-remove-all-bridges"
+          ></html:panel-item>
+        </html:panel-list>
+      </html:div>
+      <html:div id="tor-bridges-built-in-display">
+        <html:div id="tor-bridges-built-in-type-name"></html:div>
+        <html:div
+          id="tor-bridges-built-in-connected"
+          class="bridge-status-badge"
+        >
+          <html:div class="bridge-status-icon"></html:div>
+          <html:span
+            data-l10n-id="tor-bridges-built-in-status-connected"
+          ></html:span>
+        </html:div>
+        <html:div id="tor-bridges-built-in-description"></html:div>
+      </html:div>
+      <html:div
+        id="tor-bridges-grid-display"
+        class="tor-bridges-grid"
+        role="grid"
+        aria-labelledby="tor-bridges-current-heading"
+      ></html:div>
+      <html:template id="tor-bridges-grid-row-template">
+        <html:div class="tor-bridges-grid-row" role="row">
+          <!-- TODO: lox status cell for new bridges? -->
+          <html:span
+            class="tor-bridges-type-cell tor-bridges-grid-cell"
+            role="gridcell"
+          ></html:span>
+          <html:span class="tor-bridges-emojis-block" role="none"></html:span>
+          <html:span class="tor-bridges-grid-end-block" role="none">
+            <html:span
+              class="tor-bridges-address-cell tor-bridges-grid-cell"
+              role="gridcell"
+            >
+              <html:span class="tor-bridges-address-cell-text"></html:span>
+            </html:span>
+            <html:span
+              class="tor-bridges-status-cell tor-bridges-grid-cell"
+              role="gridcell"
+            >
+              <html:div class="bridge-status-badge">
+                <html:div class="bridge-status-icon"></html:div>
+                <html:span class="tor-bridges-status-cell-text"></html:span>
+              </html:div>
+            </html:span>
+            <html:span
+              class="tor-bridges-options-cell tor-bridges-grid-cell"
+              role="gridcell"
+            >
+              <html:button
+                class="tor-bridges-options-cell-button tor-bridges-options-button tor-bridges-grid-focus"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                data-l10n-id="tor-bridges-individual-bridge-options-button"
+              ></html:button>
+              <html:panel-list class="tor-bridges-individual-options-menu">
+                <html:panel-item
+                  class="tor-bridges-options-qr-one-menu-item"
+                  data-l10n-attrs="accesskey"
+                  data-l10n-id="tor-bridges-menu-item-qr-address"
+                ></html:panel-item>
+                <html:panel-item
+                  class="tor-bridges-options-copy-one-menu-item"
+                  data-l10n-attrs="accesskey"
+                  data-l10n-id="tor-bridges-menu-item-copy-address"
+                ></html:panel-item>
+                <html:panel-item
+                  class="tor-bridges-options-remove-one-menu-item"
+                  data-l10n-attrs="accesskey"
+                  data-l10n-id="tor-bridges-menu-item-remove-bridge"
+                ></html:panel-item>
+              </html:panel-list>
+            </html:span>
+          </html:span>
+        </html:div>
+      </html:template>
+      <html:div id="tor-bridges-share" class="tor-bridges-details-box">
+        <html:h3
+          id="tor-bridges-share-heading"
+          data-l10n-id="tor-bridges-share-heading"
+        ></html:h3>
+        <html:span
+          id="tor-bridges-share-description"
+          data-l10n-id="tor-bridges-share-description"
+        ></html:span>
+        <html:button
+          id="tor-bridges-copy-addresses-button"
+          data-l10n-id="tor-bridges-copy-addresses-button"
+        ></html:button>
+        <html:button
+          id="tor-bridges-qr-addresses-button"
+          data-l10n-id="tor-bridges-qr-addresses-button"
+        ></html:button>
+      </html:div>
+      <html:div id="tor-bridges-lox-status">
+        <html:div data-l10n-id="tor-bridges-lox-description"></html:div>
+        <html:div
+          id="tor-bridges-lox-details"
+          class="tor-bridges-details-box tor-bridges-lox-box"
+        >
+          <html:img alt="" class="tor-bridges-lox-image-inner" />
+          <html:img alt="" class="tor-bridges-lox-image-outer" />
+          <html:h3
+            id="tor-bridges-lox-next-unlock-counter"
+            class="tor-bridges-lox-intro tor-focusable-heading"
+            tabindex="-1"
+          ></html:h3>
+          <html:ul class="tor-bridges-lox-list">
+            <html:li
+              id="tor-bridges-lox-next-unlock-gain-bridges"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-bridge"
+              data-l10n-id="tor-bridges-lox-unlock-two-bridges"
+            ></html:li>
+            <html:li
+              id="tor-bridges-lox-next-unlock-first-invites"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-invite"
+              data-l10n-id="tor-bridges-lox-unlock-first-invites"
+            ></html:li>
+            <html:li
+              id="tor-bridges-lox-next-unlock-more-invites"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-invite"
+              data-l10n-id="tor-bridges-lox-unlock-more-invites"
+            ></html:li>
+          </html:ul>
+          <html:div id="tor-bridges-lox-remaining-invites"></html:div>
+          <html:button
+            id="tor-bridges-lox-show-invites-button"
+            class="tor-bridges-lox-button"
+            data-l10n-id="tor-bridges-lox-show-invites-button"
+          ></html:button>
+        </html:div>
+        <html:div
+          id="tor-bridges-lox-unlock-alert"
+          role="alert"
+          class="tor-bridges-details-box tor-bridges-lox-box"
+        >
+          <html:img alt="" class="tor-bridges-lox-image-inner" />
+          <html:img alt="" class="tor-bridges-lox-image-outer" />
+          <html:div
+            id="tor-bridge-unlock-alert-title"
+            class="tor-bridges-lox-intro"
+          ></html:div>
+          <html:ul class="tor-bridges-lox-list">
+            <html:li
+              id="tor-bridges-lox-unlock-alert-gain-bridges"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-bridge"
+              data-l10n-id="tor-bridges-lox-gained-two-bridges"
+            ></html:li>
+            <html:li
+              id="tor-bridges-lox-unlock-alert-new-bridges"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-bridge"
+              data-l10n-id="tor-bridges-lox-new-bridges"
+            ></html:li>
+            <html:li
+              id="tor-bridges-lox-unlock-alert-invites"
+              class="tor-bridges-lox-list-item tor-bridges-lox-list-item-invite"
+            ></html:li>
+          </html:ul>
+          <html:button
+            id="tor-bridges-lox-unlock-alert-button"
+            class="tor-bridges-lox-button"
+            data-l10n-id="tor-bridges-lox-got-it-button"
+          ></html:button>
+        </html:div>
+      </html:div>
+    </html:div>
+    <html:h2 id="tor-bridges-change-heading"></html:h2>
+    <hbox align="center">
+      <description
+        flex="1"
+        data-l10n-id="tor-bridges-select-built-in-description"
+      />
+      <html:button
+        id="tor-bridges-open-built-in-dialog-button"
+        class="accessory-button"
+        data-l10n-id="tor-bridges-select-built-in-button"
+      ></html:button>
+    </hbox>
+    <hbox align="center">
+      <description id="tor-bridges-user-provide-description" flex="1" />
+      <html:button
+        id="tor-bridges-open-user-provide-dialog-button"
+        class="accessory-button"
+      ></html:button>
+    </hbox>
+    <html:h3
+      id="tor-bridges-provider-heading"
+      data-l10n-id="tor-bridges-find-more-heading"
+    ></html:h3>
+    <description
+      data-l10n-id="tor-bridges-find-more-description"
+      class="description-deemphasized"
+    />
+    <html:div id="tor-bridges-provider-area">
+      <html:ul id="tor-bridges-provider-list">
+        <html:li class="tor-bridges-provider-item">
+          <html:img
+            id="tor-bridges-provider-icon-telegram"
+            class="tor-bridges-provider-icon"
+            alt=""
+          />
+          <html:div
+            class="tor-bridges-provider-name"
+            data-l10n-id="tor-bridges-provider-telegram-name"
+          ></html:div>
+          <html:div
+            id="tor-bridges-provider-instruction-telegram"
+            class="tor-bridges-provider-instruction"
+          >
+            <html:a data-l10n-name="user"></html:a>
+          </html:div>
+        </html:li>
+        <html:li class="tor-bridges-provider-item">
+          <html:img
+            id="tor-bridges-provider-icon-web"
+            class="tor-bridges-provider-icon"
+            alt=""
+          />
+          <html:div
+            class="tor-bridges-provider-name"
+            data-l10n-id="tor-bridges-provider-web-name"
+          ></html:div>
+          <html:div
+            class="tor-bridges-provider-instruction"
+            data-l10n-id="tor-bridges-provider-web-instruction"
+            data-l10n-args='{ "url": "bridges.torproject.org" }'
+          >
+            <html:a
+              href="https://bridges.torproject.org"
+              data-l10n-name="url"
+            ></html:a>
+          </html:div>
+        </html:li>
+        <html:li class="tor-bridges-provider-item">
+          <html:img
+            id="tor-bridges-provider-icon-email"
+            class="tor-bridges-provider-icon"
+            alt=""
+          />
+          <html:div
+            class="tor-bridges-provider-name"
+            data-l10n-id="tor-bridges-provider-email-name"
+          ></html:div>
+          <html:div
+            class="tor-bridges-provider-instruction"
+            data-l10n-id="tor-bridges-provider-email-instruction"
+            data-l10n-args='{ "address": "bridges@torproject.org" }'
+          ></html:div>
+        </html:li>
+      </html:ul>
+      <html:div id="tor-bridges-request-box">
+        <html:img
+          alt=""
+          src="chrome://browser/content/torpreferences/bridge-bot.svg"
+        ></html:img>
+        <html:div
+          id="tor-bridges-request-description"
+          data-l10n-id="tor-bridges-request-from-browser"
+        ></html:div>
+        <html:button
+          id="tor-bridges-open-request-dialog-button"
+          data-l10n-id="tor-bridges-request-button"
+        ></html:button>
+      </html:div>
+    </html:div>
+  </groupbox>
+
+  <!-- Advanced -->
+  <hbox class="subcategory" data-category="paneConnection" hidden="true">
+    <html:h1 data-l10n-id="tor-advanced-settings-heading"></html:h1>
+  </hbox>
+  <groupbox
+    id="torPreferences-advanced-group"
+    data-category="paneConnection"
+    hidden="true"
+  >
+    <hbox align="center">
+      <label data-l10n-id="tor-advanced-settings-description" flex="1" />
+      <html:button
+        id="torPreferences-advanced-button"
+        class="accessory-button"
+        data-l10n-id="tor-advanced-settings-button"
+      ></html:button>
+    </hbox>
+    <hbox align="center" data-subcategory="viewlogs">
+      <label data-l10n-id="tor-view-log-description" flex="1" />
+      <html:button
+        id="torPreferences-buttonTorLogs"
+        class="accessory-button"
+        data-l10n-id="tor-view-log-button"
+      ></html:button>
+    </hbox>
+  </groupbox>
+</html:template>

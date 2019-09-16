@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<window
+  type="child"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="tor-advanced-dialog-title"
+>
+  <dialog id="torPreferences-connection-dialog" buttons="accept,cancel">
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/skin/preferences/preferences.css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/torpreferences/torPreferences.css"
+      />
+
+      <html:link rel="localization" href="branding/brand.ftl" />
+      <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/torpreferences/connectionSettingsDialog.js" />
+
+    <html:h3
+      id="torPreferences-connection-header"
+      data-l10n-id="tor-advanced-dialog-introduction"
+    ></html:h3>
+    <!-- Local Proxy -->
+    <checkbox
+      id="torPreferences-connection-toggleProxy"
+      data-l10n-id="tor-advanced-dialog-proxy-checkbox"
+    />
+    <box id="torPreferences-connection-grid">
+      <hbox class="indent" align="center">
+        <label
+          id="torPreferences-localProxy-type"
+          data-l10n-id="tor-advanced-dialog-proxy-type-selector-label"
+        />
+      </hbox>
+      <hbox align="center">
+        <spacer flex="1" />
+        <menulist
+          id="torPreferences-localProxy-builtinList"
+          class="torMarginFix"
+        >
+          <menupopup />
+        </menulist>
+      </hbox>
+      <hbox class="indent" align="center">
+        <label
+          id="torPreferences-localProxy-address"
+          data-l10n-id="tor-advanced-dialog-proxy-address-input-label"
+        />
+      </hbox>
+      <hbox align="center">
+        <html:input
+          id="torPreferences-localProxy-textboxAddress"
+          type="text"
+          class="torMarginFix"
+          data-l10n-id="tor-advanced-dialog-proxy-address-input"
+        />
+        <label
+          id="torPreferences-localProxy-port"
+          data-l10n-id="tor-advanced-dialog-proxy-port-input-label"
+        />
+        <!-- proxy-port-input class style pulled from preferences.css and used in the vanilla proxy setup menu -->
+        <html:input
+          id="torPreferences-localProxy-textboxPort"
+          class="proxy-port-input torMarginFix"
+          hidespinbuttons="true"
+          type="number"
+          min="0"
+          max="65535"
+          maxlength="5"
+        />
+      </hbox>
+      <hbox class="indent" align="center">
+        <label
+          id="torPreferences-localProxy-username"
+          data-l10n-id="tor-advanced-dialog-proxy-username-input-label"
+        />
+      </hbox>
+      <hbox align="center">
+        <html:input
+          id="torPreferences-localProxy-textboxUsername"
+          type="text"
+          class="torMarginFix"
+          data-l10n-id="tor-advanced-dialog-proxy-username-input"
+        />
+        <label
+          id="torPreferences-localProxy-password"
+          data-l10n-id="tor-advanced-dialog-proxy-password-input-label"
+        />
+        <html:input
+          id="torPreferences-localProxy-textboxPassword"
+          class="torMarginFix"
+          type="password"
+          data-l10n-id="tor-advanced-dialog-proxy-password-input"
+        />
+      </hbox>
+    </box>
+    <!-- Firewall -->
+    <checkbox
+      id="torPreferences-connection-toggleFirewall"
+      data-l10n-id="tor-advanced-dialog-firewall-checkbox"
+    />
+    <box id="torPreferences-connection-firewall">
+      <hbox class="indent" align="center">
+        <label
+          id="torPreferences-connection-allowedPorts"
+          data-l10n-id="tor-advanced-dialog-firewall-ports-input-label"
+        />
+      </hbox>
+      <hbox id="torPreferences-connection-hboxAllowedPorts" align="center">
+        <html:input
+          id="torPreferences-connection-textboxAllowedPorts"
+          type="text"
+          class="torMarginFix"
+          value="80,443"
+          data-l10n-id="tor-advanced-dialog-firewall-ports-input"
+        />
+      </hbox>
+    </box>
+  </dialog>
+</window>
