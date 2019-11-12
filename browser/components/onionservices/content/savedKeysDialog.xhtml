@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!-- Copyright (c) 2020, The Tor Project, Inc. -->
+
+<window
+  id="onionservices-savedkeys-dialog"
+  windowtype="OnionServices:SavedKeys"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  data-l10n-id="onion-site-saved-keys-dialog-title"
+>
+  <linkset>
+    <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+    <html:link
+      rel="stylesheet"
+      href="chrome://browser/skin/preferences/preferences.css"
+    />
+    <html:link
+      rel="stylesheet"
+      href="chrome://browser/content/onionservices/authPreferences.css"
+    />
+
+    <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
+  </linkset>
+
+  <script src="chrome://browser/content/onionservices/savedKeysDialog.js" />
+
+  <vbox id="onionservices-savedkeys" class="contentPane" flex="1">
+    <label
+      id="onionservices-savedkeys-intro"
+      control="onionservices-savedkeys-tree"
+      data-l10n-id="onion-site-saved-keys-dialog-intro"
+    />
+    <separator class="thin" />
+    <tree id="onionservices-savedkeys-tree" flex="1" hidecolumnpicker="true">
+      <treecols>
+        <treecol
+          id="onionservices-savedkeys-siteCol"
+          flex="1"
+          persist="width"
+          data-l10n-id="onion-site-saved-keys-dialog-table-header-site"
+        />
+        <splitter class="tree-splitter" />
+        <treecol
+          id="onionservices-savedkeys-keyCol"
+          flex="1"
+          persist="width"
+          data-l10n-id="onion-site-saved-keys-dialog-table-header-key"
+        />
+      </treecols>
+      <treechildren />
+    </tree>
+    <hbox id="onionservices-savedkeys-errorContainer" align="center">
+      <image id="onionservices-savedkeys-errorIcon" />
+      <description id="onionservices-savedkeys-errorMessage" flex="1" />
+    </hbox>
+    <separator class="thin" />
+    <hbox id="onionservices-savedkeys-buttons">
+      <html:button
+        id="onionservices-savedkeys-remove"
+        disabled="true"
+        data-l10n-id="onion-site-saved-keys-dialog-remove-button"
+      ></html:button>
+      <html:button
+        id="onionservices-savedkeys-removeall"
+        data-l10n-id="onion-site-saved-keys-dialog-remove-all-button"
+      ></html:button>
+    </hbox>
+  </vbox>
+</window>

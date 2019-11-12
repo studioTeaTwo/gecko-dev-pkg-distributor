@@ -61,6 +61,12 @@ XPCOMUtils.defineLazyServiceGetter(
   "nsIParentalControlsService"
 );
 
+XPCOMUtils.defineLazyScriptGetter(
+  this,
+  ["OnionServicesAuthPreferences"],
+  "chrome://browser/content/onionservices/authPreferences.js"
+);
+
 // TODO: module import via ChromeUtils.defineModuleGetter
 XPCOMUtils.defineLazyScriptGetter(
   this,
@@ -985,6 +991,7 @@ var gPrivacyPane = {
     this.networkCookieBehaviorReadPrefs();
     this._initTrackingProtectionExtensionControl();
     this._initThirdPartyCertsToggle();
+    OnionServicesAuthPreferences.init();
     this._initSecurityLevel();
 
     Services.telemetry.setEventRecordingEnabled("privacy.ui.fpp", true);

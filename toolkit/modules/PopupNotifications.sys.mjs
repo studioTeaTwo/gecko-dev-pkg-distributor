@@ -439,6 +439,8 @@ PopupNotifications.prototype = {
    *            will be dismissed instead of removed after running the callback.
    *          - [optional] disabled (boolean): If this is true, the button
    *            will be disabled.
+   *          - [optional] leaveOpen (boolean): If this is true, the notification
+   *            will not be removed after running the callback.
    *        If null, the notification will have a default "OK" action button
    *        that can be used to dismiss the popup and secondaryActions will be ignored.
    * @param secondaryActions
@@ -1985,6 +1987,10 @@ PopupNotifications.prototype = {
 
       if (action.dismiss) {
         this._dismiss();
+        return;
+      }
+
+      if (action.leaveOpen) {
         return;
       }
     }

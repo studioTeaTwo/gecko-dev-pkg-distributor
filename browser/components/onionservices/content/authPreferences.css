@@ -1,0 +1,25 @@
+/* Copyright (c) 2020, The Tor Project, Inc. */
+
+#onionservices-savedkeys-dialog {
+  min-width: 45em;
+}
+
+#onionservices-savedkeys-tree treechildren::-moz-tree-cell-text {
+  font-size: 80%;
+}
+
+#onionservices-savedkeys-errorContainer {
+  margin-block-start: 4px;
+  min-height: 3em;
+}
+
+#onionservices-savedkeys-errorContainer:not(.show-error) {
+  visibility: hidden;
+}
+
+#onionservices-savedkeys-errorIcon {
+  margin-inline-end: 4px;
+  list-style-image: url("chrome://global/skin/icons/warning.svg");
+  -moz-context-properties: fill;
+  fill: var(--in-content-warning-icon-color);
+}
