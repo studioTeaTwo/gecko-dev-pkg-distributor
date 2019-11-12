@@ -138,3 +138,4 @@ pref("browser.tordomainisolator.loglevel", "Warn");
 pref("browser.torcircuitpanel.loglevel", "Log");
 pref("browser.tor_android.log_level", "Info");
 pref("browser.dragdropfilter.log_level", "Warn");
+pref("browser.onionAuthPrompt.loglevel", "Warn");

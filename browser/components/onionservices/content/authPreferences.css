@@ -1,0 +1,37 @@
+/* Copyright (c) 2020, The Tor Project, Inc. */
+
+#onionservices-savedkeys-dialog {
+  min-width: 45em;
+}
+
+#onionservices-savedkeys-tree treechildren::-moz-tree-cell-text {
+  font-size: 80%;
+}
+
+#onionservices-savedkeys-errorContainer {
+  margin-block-start: 4px;
+  min-height: 3em;
+}
+
+#onionservices-savedkeys-errorContainer:not(.show-error) {
+  visibility: hidden;
+}
+
+#onionservices-savedkeys-errorIcon {
+  margin-inline-end: 4px;
+  list-style-image: url("chrome://global/skin/icons/warning.svg");
+  -moz-context-properties: fill;
+  fill: var(--in-content-warning-icon-color);
+}
+
+/* Make a button appear disabled, whilst still allowing it to keep keyboard
+ * focus.
+ * Duplicate of rule in torPreferences.css.
+ * TODO: Replace with moz-button when it handles this for us. See
+ * tor-browser#43275. */
+button.spoof-button-disabled {
+  /* Borrow the :disabled rule from common-shared.css */
+  opacity: 0.4;
+  /* Also ensure it does not get hover or active styling. */
+  pointer-events: none;
+}

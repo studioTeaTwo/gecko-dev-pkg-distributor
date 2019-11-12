@@ -1,0 +1,41 @@
+# Copyright (c) 2020, The Tor Project, Inc.
+
+<popupnotification id="tor-clientauth-notification" hidden="true">
+  <popupnotificationcontent orient="vertical">
+    <description id="tor-clientauth-notification-desc" />
+    <label
+      class="text-link popup-notification-learnmore-link"
+      is="text-link"
+      href="about:manual#onion-services_onion-service-authentication"
+      useoriginprincipal="true"
+      data-l10n-id="onion-site-authentication-prompt-learn-more"
+    />
+    <html:div>
+      <!-- NOTE: Orca 46.2 will not say "invalid" for "type=password". See
+         - https://gitlab.gnome.org/GNOME/orca/-/issues/550
+         - Moreover, it will ignore the aria-errormessage relation when we are
+         - not in a document context. See related bugzilla bug 1820765. -->
+      <html:input
+        id="tor-clientauth-notification-key"
+        type="password"
+        data-l10n-id="onion-site-authentication-prompt-key-input"
+        aria-errormessage="tor-clientauth-warning"
+      />
+      <html:div
+        id="tor-clientauth-warning"
+        role="alert"
+        aria-labelledby="tor-clientauth-warning-text"
+      >
+        <!-- NOTE: Orca 46.2 treats this notification as non-document context.
+           - As such it seems to only read out the alert content if it contains
+           - a <xul:label>, <html:label> or if it has an accessible name.
+           - We use aria-labelledby here. -->
+        <html:span id="tor-clientauth-warning-text"></html:span>
+      </html:div>
+      <checkbox
+        id="tor-clientauth-persistkey-checkbox"
+        data-l10n-id="onion-site-authentication-prompt-remember-checkbox"
+      />
+    </html:div>
+  </popupnotificationcontent>
+</popupnotification>

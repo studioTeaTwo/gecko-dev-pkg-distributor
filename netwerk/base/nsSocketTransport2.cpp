@@ -218,6 +218,12 @@ nsresult ErrorAccordingToNSPR(PRErrorCode errorCode) {
     default:
       if (psm::IsNSSErrorCode(errorCode)) {
         rv = psm::GetXPCOMFromNSSError(errorCode);
+      } else {
+        // If we received a Tor extended error code via SOCKS, pass it through.
+        nsresult res = nsresult(errorCode);
+        if (NS_ERROR_GET_MODULE(res) == NS_ERROR_MODULE_TOR) {
+          rv = res;
+        }
       }
       break;
 

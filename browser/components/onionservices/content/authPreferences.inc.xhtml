@@ -1,0 +1,34 @@
+# Copyright (c) 2020, The Tor Project, Inc.
+
+<groupbox id="torOnionServiceKeys" orient="vertical"
+          data-category="panePrivacy" hidden="true">
+  <label><html:h2
+    data-l10n-id="onion-site-authentication-preferences-heading"
+  ></html:h2></label>
+  <hbox>
+    <description
+      class="description-deemphasized description-with-side-element"
+      flex="1"
+    >
+      <html:span
+        id="torOnionServiceKeys-overview"
+        data-l10n-id="onion-site-authentication-preferences-overview"
+      ></html:span>
+      <label
+        id="torOnionServiceKeys-learnMore"
+        class="learnMore text-link"
+        is="text-link"
+        href="about:manual#onion-services_onion-service-authentication"
+        useoriginprincipal="true"
+        data-l10n-id="onion-site-authentication-preferences-learn-more"
+      />
+    </description>
+    <vbox align="end">
+      <html:button
+        id="torOnionServiceKeys-savedKeys"
+        class="accessory-button"
+        data-l10n-id="onion-site-authentication-preferences-saved-keys-button"
+      ></html:button>
+    </vbox>
+  </hbox>
+</groupbox>

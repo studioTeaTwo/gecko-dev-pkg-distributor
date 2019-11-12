@@ -8,6 +8,13 @@ body {
   --warning-color: #ffa436;
 }
 
+/**
+ * Blank page whilst we show the prompt.
+ */
+body.onionAuthPrompt {
+  display: none !important;
+}
+
 @media (prefers-color-scheme: dark)  {
   body {
     --warning-color: #ffbd4f;
@@ -37,6 +44,13 @@ body.captiveportal .title {
 body.certerror .title {
   background-image: url("chrome://global/skin/icons/warning.svg");
   fill: var(--warning-color);
+}
+
+body.onion-error .title {
+  background-image: url("chrome://global/skin/icons/onion-warning.svg");
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: var(--warning-color);
 }
 
 body.blocked .title {

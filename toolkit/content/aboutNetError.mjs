@@ -290,6 +290,92 @@ function recordTRREventTelemetry(
   }
 }
 
+/**
+ * Initialize the onion error page.
+ *
+ * @return {boolean} Whether the page was initialized as an onion error page.
+ */
+function initOnionError() {
+  const docTitle = document.querySelector("title");
+
+  if (getCSSClass() === "onionAuthPrompt") {
+    // Only showing the authorization prompt. The page will be blank.
+    document.l10n.setAttributes(docTitle, "onion-neterror-authorization-title");
+    return true;
+  }
+
+  const onionErrors = {
+    // Tor SOCKS error 0xF0:
+    "onionServices.descNotFound": {
+      headerId: "onion-neterror-not-found-header",
+      descriptionId: "onion-neterror-not-found-description",
+    },
+    // Tor SOCKS error 0xF1:
+    "onionServices.descInvalid": {
+      headerId: "onion-neterror-unreachable-header",
+      descriptionId: "onion-neterror-unreachable-description",
+    },
+    // Tor SOCKS error 0xF2:
+    "onionServices.introFailed": {
+      headerId: "onion-neterror-disconnected-header",
+      descriptionId: "onion-neterror-disconnected-description",
+    },
+    // Tor SOCKS error 0xF3:
+    "onionServices.rendezvousFailed": {
+      headerId: "onion-neterror-connection-failed-header",
+      descriptionId: "onion-neterror-connection-failed-description",
+    },
+    // Tor SOCKS error 0xF4:
+    "onionServices.clientAuthMissing": {
+      headerId: "onion-neterror-missing-authentication-header",
+      descriptionId: "onion-neterror-missing-authentication-description",
+    },
+    // Tor SOCKS error 0xF5:
+    "onionServices.clientAuthIncorrect": {
+      headerId: "onion-neterror-incorrect-authentication-header",
+      descriptionId: "onion-neterror-incorrect-authetication-description",
+    },
+    // Tor SOCKS error 0xF6:
+    "onionServices.badAddress": {
+      headerId: "onion-neterror-invalid-address-header",
+      descriptionId: "onion-neterror-invalid-address-description",
+    },
+    // Tor SOCKS error 0xF7:
+    "onionServices.introTimedOut": {
+      headerId: "onion-neterror-timed-out-header",
+      descriptionId: "onion-neterror-timed-out-description",
+    },
+  };
+
+  if (!Object.hasOwn(onionErrors, gErrorCode)) {
+    return false;
+  }
+
+  document.body.classList.add("onion-error");
+
+  document.l10n.setAttributes(docTitle, "onion-neterror-page-title");
+  document.l10n.setAttributes(
+    document.querySelector(".title-text"),
+    onionErrors[gErrorCode].headerId
+  );
+  document.l10n.setAttributes(
+    document.getElementById("errorShortDesc"),
+    onionErrors[gErrorCode].descriptionId
+  );
+
+  const tryAgain = document.getElementById("netErrorButtonContainer");
+  tryAgain.hidden = false;
+
+  const learnMore = document.getElementById("learnMoreContainer");
+  learnMore.hidden = false;
+  const learnMoreLink = document.getElementById("learnMoreLink");
+  learnMoreLink.href = "about:manual#onion-services";
+
+  setFocus("#netErrorButtonContainer > .try-again");
+
+  return true;
+}
+
 async function initPage() {
   // We show an offline support page in case of a system-wide error,
   // when a user cannot connect to the internet and access the SUMO website.
@@ -358,6 +444,10 @@ async function initPage() {
   }
 
   document.body.classList.add("neterror");
+
+  if (initOnionError()) {
+    return;
+  }
 
   let longDesc = document.getElementById("errorLongDesc");
   const tryAgain = document.getElementById("netErrorButtonContainer");
