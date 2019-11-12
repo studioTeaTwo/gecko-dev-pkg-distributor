@@ -564,6 +564,15 @@ parent:
      */
     async RequestPointerLock() returns (nsCString error);
 
+    /**
+     * This function is used to notify the parent that it should display a
+     * onion services client authentication prompt.
+     *
+     * @param aOnionHost The hostname of the .onion that needs authentication.
+     * @param aTopic The reason for the prompt.
+     */
+    async ShowOnionServicesAuthPrompt(nsCString aOnionHost, nsCString aTopic);
+
 both:
     /**
      * informs that a pointer lock has released.

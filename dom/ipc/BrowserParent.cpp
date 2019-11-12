@@ -4032,6 +4032,27 @@ mozilla::ipc::IPCResult BrowserParent::RecvShowCanvasPermissionPrompt(
   return IPC_OK();
 }
 
+mozilla::ipc::IPCResult BrowserParent::RecvShowOnionServicesAuthPrompt(
+    const nsCString& aOnionName, const nsCString& aTopic) {
+  nsCOMPtr<nsIBrowser> browser =
+      mFrameElement ? mFrameElement->AsBrowser() : nullptr;
+  if (!browser) {
+    // If the tab is being closed, the browser may not be available.
+    // In this case we can ignore the request.
+    return IPC_OK();
+  }
+  nsCOMPtr<nsIObserverService> os = services::GetObserverService();
+  if (!os) {
+    return IPC_FAIL_NO_REASON(this);
+  }
+  nsresult rv = os->NotifyObservers(browser, aTopic.get(),
+                                    NS_ConvertUTF8toUTF16(aOnionName).get());
+  if (NS_FAILED(rv)) {
+    return IPC_FAIL_NO_REASON(this);
+  }
+  return IPC_OK();
+}
+
 mozilla::ipc::IPCResult BrowserParent::RecvVisitURI(
     nsIURI* aURI, nsIURI* aLastVisitedURI, const uint32_t& aFlags,
     const uint64_t& aBrowserId) {

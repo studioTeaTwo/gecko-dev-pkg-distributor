@@ -110,6 +110,8 @@
   list-style-image: url(chrome://browser/skin/notification-icons/persistent-storage.svg);
 }
 
+.popup-notification-icon[popupid="tor-clientauth"],
+.tor-clientauth-icon,
 #password-notification-icon {
   list-style-image: url(chrome://browser/skin/login.svg);
 
