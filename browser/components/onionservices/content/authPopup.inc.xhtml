@@ -1,0 +1,26 @@
+# Copyright (c) 2020, The Tor Project, Inc.
+
+<popupnotification id="tor-clientauth-notification" hidden="true">
+  <popupnotificationcontent orient="vertical">
+    <description id="tor-clientauth-notification-desc" />
+    <label
+      class="text-link popup-notification-learnmore-link"
+      is="text-link"
+      href="about:manual#onion-services_onion-service-authentication"
+      useoriginprincipal="true"
+      data-l10n-id="onion-site-authentication-prompt-learn-more"
+    />
+    <html:div>
+      <html:input
+        id="tor-clientauth-notification-key"
+        type="password"
+        data-l10n-id="onion-site-authentication-prompt-key-input"
+      />
+      <html:div id="tor-clientauth-warning"></html:div>
+      <checkbox
+        id="tor-clientauth-persistkey-checkbox"
+        data-l10n-id="onion-site-authentication-prompt-remember-checkbox"
+      />
+    </html:div>
+  </popupnotificationcontent>
+</popupnotification>
