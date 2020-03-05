@@ -841,6 +841,7 @@ STATIC_ATOMS = [
     Atom("oninputsourceschange", "oninputsourceschange"),
     Atom("oninstall", "oninstall"),
     Atom("oninvalid", "oninvalid"),
+    Atom("headerOnionLocation", "onion-location"),
     Atom("onkeydown", "onkeydown"),
     Atom("onkeypress", "onkeypress"),
     Atom("onkeyup", "onkeyup"),
