@@ -2924,6 +2924,7 @@ void Document::ResetToURI(nsIURI* aURI, nsILoadGroup* aLoadGroup,
   // mDocumentURI.
   mDocumentBaseURI = nullptr;
   mChromeXHRDocBaseURI = nullptr;
+  mOnionLocationURI = nullptr;
 
   if (aLoadGroup) {
     nsCOMPtr<nsIInterfaceRequestor> callbacks;
@@ -6784,6 +6785,57 @@ void Document::GetHeaderData(nsAtom* aHeaderField, nsAString& aData) const {
   }
 }
 
+static bool IsValidOnionLocation(nsIURI* aDocumentURI,
+                                 nsIURI* aOnionLocationURI) {
+  if (!aDocumentURI || !aOnionLocationURI) {
+    return false;
+  }
+
+  // Current URI
+  nsAutoCString host;
+  if (!aDocumentURI->SchemeIs("https")) {
+    return false;
+  }
+  NS_ENSURE_SUCCESS(aDocumentURI->GetAsciiHost(host), false);
+  if (StringEndsWith(host, ".onion"_ns)) {
+    // Already in the .onion site
+    return false;
+  }
+
+  // Target URI
+  if (!aOnionLocationURI->SchemeIs("http") &&
+      !aOnionLocationURI->SchemeIs("https")) {
+    return false;
+  }
+  nsCOMPtr<nsIEffectiveTLDService> eTLDService =
+      do_GetService(NS_EFFECTIVETLDSERVICE_CONTRACTID);
+  if (!eTLDService) {
+    NS_ENSURE_SUCCESS(aOnionLocationURI->GetAsciiHost(host), false);
+    // This should not happen, but in the unlikely case, still check if it is a
+    // .onion and in case allow it.
+    return StringEndsWith(host, ".onion"_ns);
+  }
+  NS_ENSURE_SUCCESS(eTLDService->GetBaseDomain(aOnionLocationURI, 0, host),
+                    false);
+  if (!StringEndsWith(host, ".onion"_ns)) {
+    return false;
+  }
+
+  // Ignore v2
+  if (host.Length() == 22) {
+    const char* cur = host.BeginWriting();
+    // We have already checked that it ends by ".onion"
+    const char* end = host.EndWriting() - 6;
+    bool base32 = true;
+    for (; cur < end && base32; ++cur) {
+      base32 = isalpha(*cur) || ('2' <= *cur && *cur <= '7');
+    }
+    return !base32;
+  }
+
+  return true;
+}
+
 void Document::SetHeaderData(nsAtom* aHeaderField, const nsAString& aData) {
   if (!aHeaderField) {
     NS_ERROR("null headerField");
@@ -6873,6 +6925,14 @@ void Document::SetHeaderData(nsAtom* aHeaderField, const nsAString& aData) {
 
   if (aHeaderField == nsGkAtoms::handheldFriendly) {
     mViewportType = Unknown;
+  }
+
+  if (aHeaderField == nsGkAtoms::headerOnionLocation && !aData.IsEmpty()) {
+    nsCOMPtr<nsIURI> onionURI;
+    if (NS_SUCCEEDED(NS_NewURI(getter_AddRefs(onionURI), aData)) &&
+        IsValidOnionLocation(Document::GetDocumentURI(), onionURI)) {
+      mOnionLocationURI = onionURI;
+    }
   }
 }
 
@@ -11068,7 +11128,7 @@ void Document::RetrieveRelevantHeaders(nsIChannel* aChannel) {
     static const char* const headers[] = {
         "default-style", "content-style-type", "content-language",
         "content-disposition", "refresh", "x-dns-prefetch-control",
-        "x-frame-options", "origin-trial",
+        "x-frame-options", "origin-trial", "onion-location",
         // add more http headers if you need
         // XXXbz don't add content-location support without reading bug
         // 238654 and its dependencies/dups first.
