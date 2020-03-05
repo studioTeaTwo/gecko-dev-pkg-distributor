@@ -5,3 +5,4 @@ browser.jar:
     content/browser/onionservices/onionservices.css                (content/onionservices.css)
     content/browser/onionservices/savedKeysDialog.js               (content/savedKeysDialog.js)
     content/browser/onionservices/savedKeysDialog.xhtml            (content/savedKeysDialog.xhtml)
+    skin/classic/browser/onionlocation.css                         (content/onionlocation.css)
