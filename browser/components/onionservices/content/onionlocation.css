@@ -1,0 +1,7 @@
+/* Copyright (c) 2020, The Tor Project, Inc. */
+
+#onion-location-button {
+  list-style-image: url(chrome://global/skin/icons/onion-site.svg);
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
