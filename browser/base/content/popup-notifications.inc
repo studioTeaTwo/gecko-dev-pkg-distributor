@@ -8,6 +8,15 @@
            noautofocus="true"
            role="alert"/>
 
+    <!-- Shown when visiting first web page with an onion-available header.
+       - This allows us to add some extra content to the popup.
+       - See tor-browser#21952 and tor-browser#41341 -->
+    <popupnotification id="onion-location-notification" hidden="true">
+      <popupnotificationcontent orient="vertical">
+        <description id="onion-location-body-text"/>
+      </popupnotificationcontent>
+    </popupnotification>
+
     <popupnotification id="webRTC-shareDevices-notification" hidden="true"
                        descriptionid="webRTC-shareDevices-notification-description">
       <popupnotificationcontent id="webRTC-selectCamera" orient="vertical">

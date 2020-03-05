@@ -1,0 +1,22 @@
+/* Copyright (c) 2020, The Tor Project, Inc. */
+
+#onion-location-button {
+  list-style-image: url(chrome://global/skin/icons/onion-site.svg);
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+#tor-connect-urlbar-button:not([hidden]) ~ #onion-location-box {
+  /* Hide this button whilst the "Connect" button is shown. tor-browser#43406.
+   * This should only make a difference when the tor process dies mid-session.
+   * NOTE: We do not attempt to re-assign focus since the user should already
+   * have had their attention disrupted when the tor process dies mid-session.
+   * NOTE: If we hide this whilst the onion location popup is shown, the popup
+   * will instead become anchored to the site identity (padlock) button instead,
+   * but will return to the #onion-location-box once the "Connect" button is
+   * hidden again. In principle we could explicitly call
+   * PopupNotifications.anchorVisibilityChange() but mozilla code already has
+   * plenty of entry points to update the anchor position for us.
+   * Moreover, this scenario is expected to be a very rare. */
+  display: none;
+}
