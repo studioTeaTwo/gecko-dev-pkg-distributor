@@ -77,49 +77,8 @@ class PrivateBrowsingDescriptionViewHolder(
  */
 @Composable
 fun PrivateBrowsingDescription(
-    onLearnMoreClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Column(
-        modifier = Modifier.padding(horizontal = 4.dp),
-    ) {
-        Text(
-            text = stringResource(
-                R.string.private_browsing_placeholder_description_2,
-                stringResource(R.string.app_name),
-            ),
-            modifier = Modifier.padding(top = 4.dp),
-            color = FirefoxTheme.colors.textPrimary,
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-        )
-
-        // The text is wrapped in a box to increase the tap area.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClickLabel = stringResource(R.string.a11y_action_label_read_article),
-                    onClick = onLearnMoreClick,
-                ),
-        ) {
-            Text(
-                text = stringResource(R.string.private_browsing_common_myths),
-                modifier = Modifier.padding(top = 10.dp),
-                style = TextStyle(
-                    color = FirefoxTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                    textDecoration = TextDecoration.Underline,
-                    textDirection = TextDirection.Content,
-                ),
-            )
-        }
-    }
-}
+    @Suppress("UNUSED_PARAMETER") onLearnMoreClick: () -> Unit,
+) {}
 
 @Composable
 @Preview

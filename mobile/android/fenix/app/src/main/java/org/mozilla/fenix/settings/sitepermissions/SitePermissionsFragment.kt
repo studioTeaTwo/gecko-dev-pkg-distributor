@@ -58,6 +58,7 @@ class SitePermissionsFragment : PreferenceFragmentCompat() {
             // Autoplay inaudible should be set in the same menu as autoplay audible, so it does
             // not need to be bound
             .filter { it != PhoneFeature.AUTOPLAY_INAUDIBLE }
+            .filter { it != PhoneFeature.LOCATION }
             .forEach(::initPhoneFeature)
     }
 
