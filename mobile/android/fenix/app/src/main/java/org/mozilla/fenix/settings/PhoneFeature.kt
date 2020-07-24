@@ -52,7 +52,7 @@ enum class PhoneFeature(val androidPermissionsList: Array<String>) : Parcelable 
                 AUTOPLAY_AUDIBLE ->
                     when (settings?.getAutoplayUserSetting() ?: AUTOPLAY_BLOCK_ALL) {
                         AUTOPLAY_ALLOW_ALL -> R.string.preference_option_autoplay_allowed2
-                        AUTOPLAY_ALLOW_ON_WIFI -> R.string.preference_option_autoplay_allowed_wifi_only2
+                        // AUTOPLAY_ALLOW_ON_WIFI -> R.string.preference_option_autoplay_allowed_wifi_only2
                         AUTOPLAY_BLOCK_AUDIBLE -> R.string.preference_option_autoplay_block_audio2
                         AUTOPLAY_BLOCK_ALL -> R.string.preference_option_autoplay_blocked3
                         else -> R.string.preference_option_autoplay_blocked3
@@ -124,6 +124,7 @@ enum class PhoneFeature(val androidPermissionsList: Array<String>) : Parcelable 
         return when (this) {
             AUTOPLAY_AUDIBLE -> SitePermissionsRules.Action.BLOCKED
             AUTOPLAY_INAUDIBLE -> SitePermissionsRules.Action.ALLOWED
+            LOCATION -> SitePermissionsRules.Action.BLOCKED
             else -> SitePermissionsRules.Action.ASK_TO_ALLOW
         }
     }

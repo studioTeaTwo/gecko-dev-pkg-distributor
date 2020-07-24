@@ -9,7 +9,7 @@ apply plugin: 'kotlin-android'
 
 android {
     androidResources {
-        ignoreAssetsPattern '!amazon*:!azerdict*:!baidu*:!bing*:!ceneje*:!coccoc*:!daum*:!ebay*:!ecosia*:!faclair*:!google*:!gulesider*:!leo*:!mapy*:!mercadolibre*:!odpiralni*:!pazaruvaj*:!prisjakt*:!qwant*:!rakuten*:!salidzinilv*:!seznam*:!vatera*:!wikipedia-*:!wiktionary*:!yahoo*:!yandex*'
+        ignoreAssetsPattern '!<dir>extensions:!search_telemetry_v2.json:!amazon*:!azerdict*:!baidu*:!bing*:!ceneje*:!coccoc*:!daum*:!ebay*:!ecosia*:!faclair*:!google*:!gulesider*:!leo*:!mapy*:!mercadolibre*:!odpiralni*:!pazaruvaj*:!prisjakt*:!qwant*:!rakuten*:!salidzinilv*:!seznam*:!vatera*:!wikipedia-*:!wiktionary*:!yahoo*:!yandex*'
     }
 
     defaultConfig {
