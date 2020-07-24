@@ -205,7 +205,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             OpenSpecificTabIntentProcessor(this),
             OpenPasswordManagerIntentProcessor(),
             OpenRecentlyClosedIntentProcessor(),
-            ReEngagementIntentProcessor(this, settings()),
+            //ReEngagementIntentProcessor(this, settings()),
         )
     }
 

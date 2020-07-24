@@ -32,7 +32,8 @@ object FenixVersions {
     const val junit = "5.10.2"
     const val mockk = "1.13.11"
 
-    const val google_ads_id_version = "16.0.0"
+//  Disable features and functionality
+//    const val google_ads_id_version = "16.0.0"
 
     // keep in sync with the versions used in AS.
     const val protobuf = "3.21.10"
@@ -58,7 +59,8 @@ object FenixDependencies {
     const val protobuf_javalite = "com.google.protobuf:protobuf-javalite:${FenixVersions.protobuf}"
     const val protobuf_compiler = "com.google.protobuf:protoc:${FenixVersions.protobuf}"
 
-    const val adjust = "com.adjust.sdk:adjust-android:${FenixVersions.adjust}"
+// Disable features and functionality
+//    const val adjust = "com.adjust.sdk:adjust-android:${FenixVersions.adjust}"
     const val installreferrer = "com.android.installreferrer:installreferrer:${FenixVersions.installreferrer}"
 
     const val mockk = "io.mockk:mockk:${FenixVersions.mockk}"
@@ -83,7 +85,8 @@ object FenixDependencies {
     // Test services is unused
     // --- END AndroidX test dependencies --- //
 
-    const val google_ads_id = "com.google.android.gms:play-services-ads-identifier:${FenixVersions.google_ads_id_version}"
+// Disable features and functionality
+//    const val google_ads_id = "com.google.android.gms:play-services-ads-identifier:${FenixVersions.google_ads_id_version}"
 
     const val junitApi = "org.junit.jupiter:junit-jupiter-api:${FenixVersions.junit}"
     const val junitParams = "org.junit.jupiter:junit-jupiter-params:${FenixVersions.junit}"

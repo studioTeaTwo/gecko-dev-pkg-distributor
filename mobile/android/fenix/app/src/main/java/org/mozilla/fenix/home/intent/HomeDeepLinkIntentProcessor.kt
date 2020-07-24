@@ -93,6 +93,15 @@ class HomeDeepLinkIntentProcessor(
                     logger.info("Not opening deep link: $url")
                     return
                 }
+                if (BuildConfig.DEEP_LINK_SCHEME.startsWith("torbrowser")) {
+                    // tor-browser#42578
+                    // TODO:
+                    // Maybe just warn users about linkability but
+                    // give them the choice to open anyway, once
+                    // the other deep link related issues are fixed.
+                    logger.info("Tor Browser rejects open intent deep link: $deepLink")
+                    return
+                }
 
                 activity.openToBrowserAndLoad(
                     url,

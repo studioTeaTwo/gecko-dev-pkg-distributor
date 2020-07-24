@@ -180,7 +180,7 @@ class SettingsTest {
             cookieBannerHandlingDetectOnlyMode = true,
             cookieBannerHandlingGlobalRules = true,
             cookieBannerHandlingGlobalRulesSubFrames = true,
-            emailTrackerBlockingPrivateBrowsing = true,
+            emailTrackerBlockingPrivateBrowsing = false,
         )
 
         assertFalse(defaultSettings.domStorageEnabled)

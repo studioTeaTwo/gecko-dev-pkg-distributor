@@ -410,7 +410,7 @@ class AddonsManagerAdapter(
         }
 
         // Add recommended section and addons if available
-        if (recommendedAddons.isNotEmpty()) {
+        if (false) { // recommendedAddons.isNotEmpty() tor-browser#40502: Do not recommend addons on Tor Browser
             itemsWithSections.add(Section(R.string.mozac_feature_addons_recommended_section, true))
             val filteredRecommendedAddons = recommendedAddons.filter {
                 it.id !in excludedAddonIDs
