@@ -1,0 +1,8 @@
+#filter substitution
+
+torbutton.jar:
+% resource torbutton %
+% category l10n-registry torbutton resource://torbutton/locale/{locale}/
+
+% locale torbutton en-US %locale/en-US/
+  locale/en-US/ (chrome/locale/en-US/*)

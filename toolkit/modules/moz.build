@@ -208,6 +208,7 @@ EXTRA_JS_MODULES += [
     "Sqlite.sys.mjs",
     "SubDialog.sys.mjs",
     "Timer.sys.mjs",
+    "TorStrings.sys.mjs",
     "Troubleshoot.sys.mjs",
     "UpdateUtils.sys.mjs",
     "WebChannel.sys.mjs",
