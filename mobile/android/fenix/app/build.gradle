@@ -92,6 +92,8 @@ android {
         ]
 
         buildConfigField "String[]", "SUPPORTED_LOCALE_ARRAY", getSupportedLocales()
+
+        buildConfigField "boolean", "DATA_COLLECTION_DISABLED", "true"
     }
 
     def releaseTemplate = {
@@ -296,6 +298,8 @@ android.applicationVariants.configureEach { variant ->
 // -------------------------------------------------------------------------------------------------
 
     def isDebug = variant.buildType.resValues['bool/IS_DEBUG']?.value ?: false
+    def isDataCollectionDisabled = variant.buildType.buildConfigFields['DATA_COLLECTION_DISABLED']?.value ?: true
+    def isDebugOrDCD = isDebug || isDataCollectionDisabled
     def useReleaseVersioning = variant.buildType.buildConfigFields['USE_RELEASE_VERSIONING']?.value ?: false
 
     println("----------------------------------------------")
@@ -303,7 +307,7 @@ android.applicationVariants.configureEach { variant ->
     println("Application ID:    " + [variant.applicationId, variant.buildType.applicationIdSuffix].findAll().join())
     println("Build type:        " + variant.buildType.name)
     println("Flavor:            " + variant.flavorName)
-    println("Telemetry enabled: " + !isDebug)
+    println("Telemetry enabled: " + !isDebugOrDCD)
 
     if (useReleaseVersioning) {
         // The Google Play Store does not allow multiple APKs for the same app that all have the
@@ -345,7 +349,7 @@ android.applicationVariants.configureEach { variant ->
 // -------------------------------------------------------------------------------------------------
 
     buildConfigField 'String', 'SENTRY_TOKEN', 'null'
-    if (!isDebug) {
+    if (!isDebugOrDCD) {
         buildConfigField 'boolean', 'CRASH_REPORTING', 'true'
         // Reading sentry token from local file (if it exists). In a release task on taskcluster it will be available.
         try {
@@ -356,7 +360,7 @@ android.applicationVariants.configureEach { variant ->
         buildConfigField 'boolean', 'CRASH_REPORTING', 'false'
     }
 
-    if (!isDebug) {
+    if (!isDebugOrDCD) {
         buildConfigField 'boolean', 'TELEMETRY', 'true'
     } else {
         buildConfigField 'boolean', 'TELEMETRY', 'false'
@@ -377,7 +381,7 @@ android.applicationVariants.configureEach { variant ->
 
     print("Adjust token: ")
 
-    if (!isDebug) {
+    if (!isDebugOrDCD) {
         try {
             def token = new File("${rootDir}/.adjust_token").text.trim()
             buildConfigField 'String', 'ADJUST_TOKEN', '"' + token + '"'
@@ -687,10 +691,7 @@ dependencies {
     implementation FenixDependencies.protobuf_javalite
     implementation ComponentsDependencies.google_material
 
-    implementation FenixDependencies.adjust
     implementation FenixDependencies.installreferrer // Required by Adjust
-
-    implementation FenixDependencies.google_ads_id // Required for the Google Advertising ID
 
     // Required for in-app reviews
     implementation ComponentsDependencies.play_review

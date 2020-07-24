@@ -8,11 +8,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
-import com.adjust.sdk.Adjust
-import com.adjust.sdk.AdjustConfig
-import com.adjust.sdk.AdjustEvent
-import com.adjust.sdk.Constants.ADJUST_PREINSTALL_SYSTEM_PROPERTY_PATH
-import com.adjust.sdk.LogLevel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,84 +27,16 @@ class AdjustMetricsService(
     override val type = MetricServiceType.Marketing
 
     override fun start() {
-        if ((BuildConfig.ADJUST_TOKEN.isNullOrBlank())) {
-            Log.i(LOGTAG, "No adjust token defined")
-
-            if (Config.channel.isReleased) {
-                throw IllegalStateException("No adjust token defined for release build")
-            }
-
-            return
-        }
-
-        System.setProperty(ADJUST_PREINSTALL_SYSTEM_PROPERTY_PATH, "/preload/etc/adjust.preinstall")
-
-        val config = AdjustConfig(
-            application,
-            BuildConfig.ADJUST_TOKEN,
-            AdjustConfig.ENVIRONMENT_PRODUCTION,
-            true,
-        )
-        config.setPreinstallTrackingEnabled(true)
-
-        val installationPing = FirstSessionPing(application)
-
-        FirstSession.adjustAttributionTimespan.start()
-        val timerId = FirstSession.adjustAttributionTime.start()
-        config.setOnAttributionChangedListener {
-            if (!installationPing.wasAlreadyTriggered()) {
-                FirstSession.adjustAttributionTimespan.stop()
-            }
-
-            FirstSession.adjustAttributionTime.stopAndAccumulate(timerId)
-            if (!it.network.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustNetwork =
-                    it.network
-            }
-            if (!it.adgroup.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustAdGroup =
-                    it.adgroup
-            }
-            if (!it.creative.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustCreative =
-                    it.creative
-            }
-            if (!it.campaign.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustCampaignId =
-                    it.campaign
-            }
-
-            installationPing.checkAndSend()
-        }
-
-        config.setLogLevel(LogLevel.SUPRESS)
-        Adjust.onCreate(config)
-        Adjust.setEnabled(true)
-        application.registerActivityLifecycleCallbacks(AdjustLifecycleCallbacks())
+        /* noop */
     }
 
     override fun stop() {
-        FirstSession.adjustAttributionTimespan.cancel()
-        Adjust.setEnabled(false)
-        Adjust.gdprForgetMe(application.applicationContext)
+        /* noop */
     }
 
     @Suppress("TooGenericExceptionCaught")
     override fun track(event: Event) {
-        CoroutineScope(dispatcher).launch {
-            try {
-                if (event is Event.GrowthData) {
-                    if (storage.shouldTrack(event)) {
-                        Adjust.trackEvent(AdjustEvent(event.tokenName))
-                        storage.updateSentState(event)
-                    } else {
-                        storage.updatePersistentState(event)
-                    }
-                }
-            } catch (e: Exception) {
-                crashReporter.submitCaughtException(e)
-            }
-        }
+        /* noop */
     }
 
     override fun shouldTrack(event: Event): Boolean =
@@ -121,11 +48,11 @@ class AdjustMetricsService(
 
     private class AdjustLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
         override fun onActivityResumed(activity: Activity) {
-            Adjust.onResume()
+            /* noop */
         }
 
         override fun onActivityPaused(activity: Activity) {
-            Adjust.onPause()
+            /* noop */
         }
 
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) { /* noop */ }

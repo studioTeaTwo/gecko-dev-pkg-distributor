@@ -6,65 +6,23 @@ package org.mozilla.fenix.components.metrics
 
 import android.content.Context
 import android.util.Base64
-import com.google.android.gms.ads.identifier.AdvertisingIdClient
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException
-import com.google.android.gms.common.GooglePlayServicesRepairableException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.unmockkStatic
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.io.IOException
 
 class MetricsUtilsTest {
 
     private val context: Context = mockk(relaxed = true)
 
     @Test
-    fun `getAdvertisingID() returns null if the API throws`() {
-        mockkStatic("com.google.android.gms.ads.identifier.AdvertisingIdClient")
-
-        val exceptions = listOf(
-            GooglePlayServicesNotAvailableException(1),
-            GooglePlayServicesRepairableException(0, "", mockk()),
-            IllegalStateException(),
-            IOException(),
-        )
-
-        exceptions.forEach {
-            every {
-                AdvertisingIdClient.getAdvertisingIdInfo(any())
-            } throws it
-
-            assertNull(MetricsUtils.getAdvertisingID(context))
-        }
-
-        unmockkStatic("com.google.android.gms.ads.identifier.AdvertisingIdClient")
-    }
-
-    @Test
     fun `getAdvertisingID() returns null if the API returns null info`() {
-        mockkStatic(AdvertisingIdClient::class)
-        every { AdvertisingIdClient.getAdvertisingIdInfo(any()) } returns null
-
         assertNull(MetricsUtils.getAdvertisingID(context))
-    }
-
-    @Test
-    fun `getAdvertisingID() returns a valid string if the API returns a valid ID`() {
-        val testId = "test-value-id"
-
-        mockkStatic(AdvertisingIdClient::class)
-        every {
-            AdvertisingIdClient.getAdvertisingIdInfo(any())
-        } returns AdvertisingIdClient.Info(testId, false)
-
-        assertEquals(testId, MetricsUtils.getAdvertisingID(context))
     }
 
     @Test

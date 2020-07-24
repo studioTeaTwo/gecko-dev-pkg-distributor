@@ -78,7 +78,7 @@ class AddonManager(
      * the [addonsProvider] or querying web extension state from the engine / store.
      */
     @Throws(AddonManagerException::class)
-    @Suppress("TooGenericExceptionCaught")
+    @Suppress("TooGenericExceptionCaught", "UNUSED_PARAMETER")
     suspend fun getAddons(waitForPendingActions: Boolean = true, allowCache: Boolean = true): List<Addon> {
         try {
             // Make sure extension support is initialized, i.e. the state of all installed extensions is known.
@@ -92,6 +92,7 @@ class AddonManager(
             // Get all the featured add-ons not installed from provider.
             // NB: We're keeping translations only for the default locale.
             var featuredAddons = emptyList<Addon>()
+            /* tor-browser#40502: Do not recommend addons on Tor Browser
             try {
                 val userLanguage = Locale.getDefault().language
                 val locales = listOf(userLanguage)
@@ -103,6 +104,7 @@ class AddonManager(
                 // Do not throw when we fail to fetch the featured add-ons since there can be installed add-ons.
                 logger.warn("Failed to get the featured add-ons", throwable)
             }
+            */
 
             // Build a list of installed extensions that are not built-in extensions.
             val installedAddons = installedExtensions
