@@ -1,0 +1,18 @@
+<!-- Copyright (c) 2022, The Tor Project, Inc.
+   - This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!ENTITY aboutTBUpdate.changelogTitle "Tor Browser Changelog">
+<!ENTITY aboutTBUpdate.version "Version">
+<!ENTITY aboutTBUpdate.releaseDate "Release Date">
+<!ENTITY aboutTBUpdate.releaseNotes "Release Notes">
+<!-- LOCALIZATION NOTE: the following entities are used to create the link to
+  -  obtain more information about the latest update.
+  -  The markup on the page looks like this:
+  -  &aboutTBUpdate.linkPrefix;<a href="...">&aboutTBUpdate.linkLabel;</a>&aboutTBUpdate.linkSuffix;
+  -  So, linkPrefix is what precedes the link, linkLabel is the link itself,
+  -  and linkSuffix is a text after the link. -->
+<!ENTITY aboutTBUpdate.linkPrefix "For the most up-to-date information about this release, ">
+<!ENTITY aboutTBUpdate.linkLabel  "visit our website">
+<!ENTITY aboutTBUpdate.linkSuffix ".">
