@@ -119,6 +119,7 @@ class SitePermissionsManagePhoneFeatureFragment : Fragment() {
                     saveActionInSettings(AUTOPLAY_ALLOW_ON_WIFI)
                 }
                 restoreState(AUTOPLAY_ALLOW_ON_WIFI)
+                visibility = View.GONE
             } else {
                 text = getString(R.string.preference_option_phone_feature_blocked)
                 setOnClickListener {

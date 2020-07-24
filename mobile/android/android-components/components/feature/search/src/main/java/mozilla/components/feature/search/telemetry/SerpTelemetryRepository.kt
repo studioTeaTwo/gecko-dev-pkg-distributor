@@ -8,7 +8,7 @@ import mozilla.appservices.remotesettings.RemoteSettingsResponse
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.ktx.android.org.json.asSequence
 import mozilla.components.support.ktx.android.org.json.toList
-import mozilla.components.support.remotesettings.RemoteSettingsClient
+//import mozilla.components.support.remotesettings.RemoteSettingsClient
 import mozilla.components.support.remotesettings.RemoteSettingsResult
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONArray
@@ -23,22 +23,22 @@ internal const val REMOTE_ENDPOINT_BUCKET_NAME = "main"
  * Parse SERP Telemetry json from remote config.
  */
 class SerpTelemetryRepository(
-    rootStorageDirectory: File,
+//    rootStorageDirectory: File,
     private val readJson: () -> JSONObject,
-    collectionName: String,
-    serverUrl: String = REMOTE_PROD_ENDPOINT_URL,
-    bucketName: String = REMOTE_ENDPOINT_BUCKET_NAME,
+//    collectionName: String,
+//    serverUrl: String = REMOTE_PROD_ENDPOINT_URL,
+//    bucketName: String = REMOTE_ENDPOINT_BUCKET_NAME,
 ) {
     val logger = Logger("SerpTelemetryRepository")
     private var providerList: List<SearchProviderModel> = emptyList()
 
-    @VisibleForTesting
-    internal var remoteSettingsClient = RemoteSettingsClient(
-        serverUrl = serverUrl,
-        bucketName = bucketName,
-        collectionName = collectionName,
-        storageRootDirectory = rootStorageDirectory,
-    )
+//    @VisibleForTesting
+//    internal var remoteSettingsClient = RemoteSettingsClient(
+//        serverUrl = serverUrl,
+//        bucketName = bucketName,
+//        collectionName = collectionName,
+//        storageRootDirectory = rootStorageDirectory,
+//    )
 
     /**
      * Provides list of search providers from cache or dump and fetches from remotes server .
@@ -65,7 +65,7 @@ class SerpTelemetryRepository(
         val remoteResponse = fetchRemoteResponse()
         if (remoteResponse.lastModified > cacheLastModified) {
             providerList = parseRemoteResponse(remoteResponse)
-            writeToCache(remoteResponse)
+            //writeToCache(remoteResponse)
         }
     }
 
@@ -73,8 +73,9 @@ class SerpTelemetryRepository(
      * Writes data to local cache.
      */
     @VisibleForTesting
-    internal suspend fun writeToCache(records: RemoteSettingsResponse): RemoteSettingsResult {
-        return remoteSettingsClient.write(records)
+    internal suspend fun writeToCache(/*records: RemoteSettingsResponse*/): RemoteSettingsResult {
+        return RemoteSettingsResult.NetworkFailure(Exception("Bug-43113: no remote fetching"))
+//        return remoteSettingsClient.write(records)
     }
 
     /**
@@ -104,12 +105,12 @@ class SerpTelemetryRepository(
      */
     @VisibleForTesting
     internal suspend fun fetchRemoteResponse(): RemoteSettingsResponse {
-        val result = remoteSettingsClient.fetch()
-        return if (result is RemoteSettingsResult.Success) {
-            result.response
-        } else {
-            RemoteSettingsResponse(emptyList(), 0u)
-        }
+//        val result = remoteSettingsClient.fetch()
+//        return if (result is RemoteSettingsResult.Success) {
+//            result.response
+//        } else {
+        return RemoteSettingsResponse(emptyList(), 0u)
+//        }
     }
 
     /**
@@ -117,16 +118,16 @@ class SerpTelemetryRepository(
      */
     @VisibleForTesting
     internal suspend fun loadProvidersFromCache(): Pair<ULong, List<SearchProviderModel>> {
-        val result = remoteSettingsClient.read()
-        return if (result is RemoteSettingsResult.Success) {
-            val response = result.response.records.mapNotNull {
-                it.fields.toSearchProviderModel()
-            }
-            val lastModified = result.response.lastModified
-            Pair(lastModified, response)
-        } else {
-            Pair(0u, emptyList())
-        }
+//        val result = remoteSettingsClient.read()
+//        return if (result is RemoteSettingsResult.Success) {
+//            val response = result.response.records.mapNotNull {
+//                it.fields.toSearchProviderModel()
+//            }
+//            val lastModified = result.response.lastModified
+//            Pair(lastModified, response)
+//        } else {
+        return Pair(0u, emptyList())
+//        }
     }
 }
 

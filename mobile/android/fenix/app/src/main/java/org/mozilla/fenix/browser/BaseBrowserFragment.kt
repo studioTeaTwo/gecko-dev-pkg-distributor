@@ -67,8 +67,8 @@ import mozilla.components.concept.base.crash.Breadcrumb
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.concept.storage.LoginEntry
-import mozilla.components.feature.accounts.FxaCapability
-import mozilla.components.feature.accounts.FxaWebChannelFeature
+// import mozilla.components.feature.accounts.FxaCapability
+// import mozilla.components.feature.accounts.FxaWebChannelFeature
 import mozilla.components.feature.app.links.AppLinksFeature
 import mozilla.components.feature.contextmenu.ContextMenuCandidate
 import mozilla.components.feature.contextmenu.ContextMenuFeature
@@ -254,7 +254,7 @@ abstract class BaseBrowserFragment :
     private val sitePermissionsFeature = ViewBoundFeatureWrapper<SitePermissionsFeature>()
     private val fullScreenFeature = ViewBoundFeatureWrapper<FullScreenFeature>()
     private val swipeRefreshFeature = ViewBoundFeatureWrapper<SwipeRefreshFeature>()
-    private val webchannelIntegration = ViewBoundFeatureWrapper<FxaWebChannelFeature>()
+//  private val webchannelIntegration = ViewBoundFeatureWrapper<FxaWebChannelFeature>()
     private val sitePermissionWifiIntegration =
         ViewBoundFeatureWrapper<SitePermissionsWifiIntegration>()
     private val secureWindowFeature = ViewBoundFeatureWrapper<SecureWindowFeature>()
@@ -1022,6 +1022,7 @@ abstract class BaseBrowserFragment :
             )
         }
 
+/*
         webchannelIntegration.set(
             feature = FxaWebChannelFeature(
                 customTabSessionId,
@@ -1034,6 +1035,7 @@ abstract class BaseBrowserFragment :
             owner = this,
             view = view,
         )
+*/
 
         initializeEngineView(
             topToolbarHeight = context.settings().getTopToolbarHeight(

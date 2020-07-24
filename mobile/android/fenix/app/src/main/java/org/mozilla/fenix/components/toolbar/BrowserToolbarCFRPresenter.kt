@@ -223,8 +223,8 @@ class BrowserToolbarCFRPresenter(
             ToolbarCFR.COOKIE_BANNERS
         }
 
-        shoppingExperienceFeature.isEnabled &&
-            settings.shouldShowReviewQualityCheckCFR -> whichShoppingCFR()
+//        shoppingExperienceFeature.isEnabled &&
+//            settings.shouldShowReviewQualityCheckCFR -> whichShoppingCFR()
 
         else -> ToolbarCFR.NONE
     }
