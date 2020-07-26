@@ -4,6 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
+        android:defaultValue="false"
         android:key="@string/pref_key_add_private_browsing_shortcut"
         android:title="@string/preferences_add_private_browsing_shortcut" />
     <SwitchPreference

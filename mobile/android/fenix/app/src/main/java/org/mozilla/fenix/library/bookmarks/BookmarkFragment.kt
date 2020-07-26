@@ -187,6 +187,10 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
                 } else {
                     inflater.inflate(R.menu.bookmarks_select_multi, menu)
 
+                    menu.findItem(R.id.open_bookmarks_in_new_tabs_multi_select)?.apply {
+                        isVisible = !requireContext().settings().shouldDisableNormalMode
+                    }
+
                     menu.findItem(R.id.delete_bookmarks_multi_select).title =
                         SpannableString(getString(R.string.bookmark_menu_delete_button)).apply {
                             setTextColor(requireContext(), R.attr.textCritical)
