@@ -101,6 +101,7 @@
         <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preferences_private_browsing_options" />
 
         <androidx.preference.Preference

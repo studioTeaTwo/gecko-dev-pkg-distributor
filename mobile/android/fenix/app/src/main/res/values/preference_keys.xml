@@ -36,6 +36,7 @@
     <string name="pref_key_delete_permissions_now" translatable="false">pref_key_delete_permissions_now</string>
     <string name="pref_key_delete_downloads_now" translatable="false">pref_key_delete_downloads_now</string>
     <string name="pref_key_delete_browsing_data_on_quit_categories" translatable="false">pref_key_delete_browsing_data_on_quit_categories</string>
+    <string name="pref_key_disable_normal_mode" translatable="false">pref_key_disable_normal_mode</string>
     <string name="pref_key_last_known_mode_private" translatable="false">pref_key_last_known_mode_private</string>
     <string name="pref_key_addons" translatable="false">pref_key_addons</string>
     <string name="pref_key_install_local_addon" translatable="false">pref_key_install_local_addon</string>

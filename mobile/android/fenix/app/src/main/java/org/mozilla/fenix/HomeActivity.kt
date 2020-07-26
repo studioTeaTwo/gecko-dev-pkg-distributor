@@ -939,11 +939,16 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     internal fun getModeFromIntentOrLastKnown(intent: Intent?): BrowsingMode {
         intent?.toSafeIntent()?.let {
             if (it.hasExtra(PRIVATE_BROWSING_MODE)) {
-                val startPrivateMode = it.getBooleanExtra(PRIVATE_BROWSING_MODE, false)
+                val startPrivateMode = settings().shouldDisableNormalMode ||
+                    it.getBooleanExtra(PRIVATE_BROWSING_MODE, settings().openLinksInAPrivateTab)
                 return BrowsingMode.fromBoolean(isPrivate = startPrivateMode)
             }
         }
-        return settings().lastKnownMode
+        return when {
+            settings().shouldDisableNormalMode -> BrowsingMode.Private
+            settings().openLinksInAPrivateTab -> BrowsingMode.Private
+            else -> settings().lastKnownMode
+        }
     }
 
     /**
