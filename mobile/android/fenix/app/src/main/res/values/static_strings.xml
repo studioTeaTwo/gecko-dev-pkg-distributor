@@ -4,8 +4,8 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <resources>
     <!-- Name of the application -->
-    <string name="app_name" translatable="false">Firefox Fenix</string>
-    <string name="firefox" translatable="false">Firefox</string>
+    <string name="app_name" translatable="false">Tor Browser Dev</string>
+    <string name="firefox" translatable="false">Tor Browser</string>
 
     <!-- Preference for developers -->
     <string name="preference_leakcanary" translatable="false">LeakCanary</string>

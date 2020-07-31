@@ -119,7 +119,7 @@ class AboutFragment : Fragment(), AboutPageListener {
             ""
         }
 
-        val content = getString(R.string.about_content, appName)
+        val content = getString(R.string.tor_about_content, appName)
         val buildDate = BuildConfig.BUILD_DATE
 
         binding.aboutText.text = aboutText
