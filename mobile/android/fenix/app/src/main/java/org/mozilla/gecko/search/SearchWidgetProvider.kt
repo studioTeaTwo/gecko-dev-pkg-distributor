@@ -171,14 +171,14 @@ class SearchWidgetProvider : AppWidgetProvider() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             setImageViewResource(
                 R.id.button_search_widget_new_tab_icon,
-                R.drawable.ic_launcher_foreground,
+                R.mipmap.ic_launcher,
             )
         } else {
             setImageViewBitmap(
                 R.id.button_search_widget_new_tab_icon,
                 AppCompatResources.getDrawable(
                     context,
-                    R.drawable.ic_launcher_foreground,
+                    R.mipmap.ic_launcher
                 )?.toBitmap(),
             )
         }

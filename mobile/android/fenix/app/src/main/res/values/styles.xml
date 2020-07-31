@@ -8,7 +8,7 @@
 
     <style name="SplashScreenThemeBase" parent="Theme.SplashScreen">
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
-        <item name="windowSplashScreenBackground">@color/fx_mobile_layer_color_1</item>
+        <item name="windowSplashScreenBackground">@color/backgroundGradientDark</item>
         <item name="postSplashScreenTheme">@style/NormalTheme</item>
     </style>
 
@@ -411,6 +411,12 @@
         <item name="android:textColor">?attr/textPrimary</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
+    </style>
+
+    <style name="Header24TextStyle" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">?textPrimary</item>
+        <item name="android:textSize">24sp</item>
+        <item name="fontFamily">@font/metropolis_semibold</item>
     </style>
 
     <style name="Header20TextStyle" parent="TextAppearance.MaterialComponents.Body1" tools:ignore="UnusedResources">
