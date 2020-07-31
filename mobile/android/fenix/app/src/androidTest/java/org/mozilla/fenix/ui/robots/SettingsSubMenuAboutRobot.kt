@@ -76,10 +76,10 @@ class SettingsSubMenuAboutRobot {
     }
 
     fun verifyProductCompany() {
-        Log.i(TAG, "verifyProductCompany: Trying to verify that the about section contains the company that produced the app info: ${"$appName is produced by Mozilla."}")
+        Log.i(TAG, "verifyProductCompany: Trying to verify that the about section contains the company that produced the app info: ${"$appName is produced by the Tor Project, a U.S.-based 501(c)(3) nonprofit."}")
         onView(withId(R.id.about_content))
-            .check(matches(withText(containsString("$appName is produced by Mozilla."))))
-        Log.i(TAG, "verifyProductCompany: Verified that the about section contains the company that produced the app info: \"$appName is produced by Mozilla.\"")
+            .check(matches(withText(containsString("$appName is produced by the Tor Project, a U.S.-based 501(c)(3) nonprofit."))))
+        Log.i(TAG, "verifyProductCompany: Verified that the about section contains the company that produced the app info: \"$appName is produced by the Tor Project, a U.S.-based 501(c)(3) nonprofit.\"")
     }
 
     fun verifyCurrentTimestamp() {
