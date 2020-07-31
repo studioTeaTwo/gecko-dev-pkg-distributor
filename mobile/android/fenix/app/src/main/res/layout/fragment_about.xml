@@ -19,18 +19,32 @@
 
         <ImageView
             android:id="@+id/wordmark"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/about_header_fenix_logo_height"
-            android:layout_marginStart="@dimen/about_header_icon_margin_start_end"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:layout_marginTop="@dimen/about_header_icon_margin_top"
-            android:layout_marginEnd="@dimen/about_header_icon_margin_start_end"
+            android:layout_marginEnd="130dp"
             android:contentDescription="@string/app_name"
             android:importantForAccessibility="no"
-            app:srcCompat="?fenixLogo"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@mipmap/ic_launcher"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/app_name"
+            style="@style/Header24TextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/about_header_icon_margin_top"
+            android:gravity="center_vertical"
+            android:width="130dp"
+            android:height="70dp"
+            android:lines="2"
+            android:text="@string/app_name"
+            android:textSize="20sp"
+            android:lineSpacingMultiplier="1.2"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.75" />
+            app:layout_constraintStart_toEndOf="@id/wordmark" />
 
         <TextView
             android:id="@+id/about_content"
@@ -45,7 +59,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/wordmark"
             app:layout_constraintWidth_percent="0.8"
-            tools:text="@string/about_content" />
+            tools:text="@string/tor_about_content" />
 
         <TextView
             android:id="@+id/about_text"

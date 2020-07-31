@@ -444,7 +444,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             }
         }
 
-        if (FxNimbus.features.splashScreen.value().enabled) {
+        if (false) { // FxNimbus.features.splashScreen.value().enabled
             val splashScreen = installSplashScreen()
             var maxDurationReached = false
             val delay = FxNimbus.features.splashScreen.value().maximumDurationMs.toLong()
