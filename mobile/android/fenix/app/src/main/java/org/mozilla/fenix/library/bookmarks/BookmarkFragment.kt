@@ -136,17 +136,9 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        val accountManager = requireComponents.backgroundServices.accountManager
         consumeFrom(bookmarkStore) {
             bookmarkView.update(it)
-
-            // Only display the sign-in prompt if we're inside of the virtual "Desktop Bookmarks" node.
-            // Don't want to pester user too much with it, and if there are lots of bookmarks present,
-            // it'll just get visually lost. Inside of the "Desktop Bookmarks" node, it'll nicely stand-out,
-            // since there are always only three other items in there. It's also the right place contextually.
-            bookmarkView.binding.bookmarkFoldersSignIn.isVisible =
-                it.tree?.guid == BookmarkRoot.Root.id && accountManager.authenticatedAccount() == null
+            bookmarkView.binding.bookmarkFoldersSignIn.isVisible = false
         }
     }
 

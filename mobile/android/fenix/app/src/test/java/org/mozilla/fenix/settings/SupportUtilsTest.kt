@@ -55,6 +55,18 @@ class SupportUtilsTest {
         )
     }
 
+    @Test
+    fun getTorPageUrl() {
+        assertEquals(
+            "https://tb-manual.torproject.org/mobile-tor",
+            SupportUtils.getTorHelpPageUrl()
+        )
+        assertEquals(
+            "https://www.torproject.org/releases/",
+            SupportUtils.getTorReleasePageUrl()
+        )
+    }
+
     private fun mockContext(versionName: String): Context {
         val context: Context = mockk()
         val packageManager: PackageManager = mockk()

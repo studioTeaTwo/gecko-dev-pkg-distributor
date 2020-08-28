@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.Locale
 
+@Suppress("TooManyFunctions")
 object SupportUtils {
     const val RATE_APP_URL = "market://details?id=" + BuildConfig.APPLICATION_ID
     const val POCKET_TRENDING_URL = "https://getpocket.com/fenix-top-articles"
@@ -39,6 +40,8 @@ object SupportUtils {
     const val GOOGLE_XX_URL = "https://www.google.com/webhp?client=firefox-b-m&channel=ts"
     const val WHATS_NEW_URL = "https://www.mozilla.org/firefox/android/notes"
     const val DONATE_URL = "https://donate.torproject.org/"
+    const val TB_MANUAL_URL = "https://tb-manual.torproject.org/mobile-tor"
+    const val TOR_RELEASES = "https://www.torproject.org/releases/"
 
     // This is locale-less on purpose so that the content negotiation happens on the AMO side because the current
     // user language might not be supported by AMO and/or the language might not be exactly what AMO is expecting
@@ -103,10 +106,22 @@ object SupportUtils {
         return "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
     }
 
+    fun getTorHelpPageUrl(): String {
+        return TB_MANUAL_URL
+    }
+
+    fun getTorReleasePageUrl(): String {
+        return TOR_RELEASES
+    }
+
     fun getMozillaPageUrl(page: MozillaPage, locale: Locale = Locale.getDefault()): String {
         val path = page.path
         val langTag = getLanguageTag(locale)
         return "https://www.mozilla.org/$langTag/$path"
+    }
+
+    fun getWhatsNewUrl(@Suppress("UNUSED_PARAMETER") context: Context): String {
+        return getTorReleasePageUrl()
     }
 
     fun createCustomTabIntent(context: Context, url: String): Intent = CustomTabsIntent.Builder()

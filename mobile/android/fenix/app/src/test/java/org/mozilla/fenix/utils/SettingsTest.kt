@@ -55,13 +55,13 @@ class SettingsTest {
     fun launchLinksInPrivateTab() {
         // When just created
         // Then
-        assertFalse(settings.openLinksInAPrivateTab)
+        assertTrue(settings.openLinksInAPrivateTab)
 
         // When
-        settings.openLinksInAPrivateTab = true
+        settings.openLinksInAPrivateTab = false
 
         // Then
-        assertTrue(settings.openLinksInAPrivateTab)
+        assertFalse(settings.openLinksInAPrivateTab)
     }
 
     @Test

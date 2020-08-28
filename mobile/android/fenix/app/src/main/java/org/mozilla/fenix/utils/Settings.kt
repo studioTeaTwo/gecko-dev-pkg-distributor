@@ -293,7 +293,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var openLinksInAPrivateTab by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_open_links_in_a_private_tab),
-        default = false,
+        default = true,
     )
 
     var allowScreenshotsInPrivateMode by booleanPreference(
@@ -305,7 +305,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         appContext.getString(R.string.pref_key_return_to_browser),
         false,
     )
-    
+
     var spoofEnglish by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_spoof_english),
         default = false
@@ -868,11 +868,16 @@ class Settings(private val appContext: Context) : PreferencesHolder {
             return touchExplorationIsEnabled || switchServiceIsEnabled
         }
 
-    var lastKnownMode: BrowsingMode = BrowsingMode.Normal
+    val shouldDisableNormalMode by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_disable_normal_mode),
+        true
+    )
+
+    var lastKnownMode: BrowsingMode = BrowsingMode.Private
         get() {
             val lastKnownModeWasPrivate = preferences.getBoolean(
                 appContext.getPreferenceKey(R.string.pref_key_last_known_mode_private),
-                false,
+                shouldDisableNormalMode,
             )
 
             return if (lastKnownModeWasPrivate) {
@@ -1312,7 +1317,8 @@ class Settings(private val appContext: Context) : PreferencesHolder {
                 numTimesPrivateModeOpened.value >= CFR_COUNT_CONDITION_FOCUS_NOT_INSTALLED
             }
 
-            if (showCondition && !showedPrivateModeContextualFeatureRecommender) {
+            if (!shouldDisableNormalMode && showCondition &&
+                !showedPrivateModeContextualFeatureRecommender) {
                 return true
             }
 

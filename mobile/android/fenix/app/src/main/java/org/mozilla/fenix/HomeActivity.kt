@@ -5,6 +5,7 @@
 package org.mozilla.fenix
 
 import android.app.assist.AssistContent
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
@@ -56,6 +57,8 @@ import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.EngineView
 import mozilla.components.concept.storage.HistoryMetadataKey
+import mozilla.components.feature.app.links.RedirectDialogFragment
+import mozilla.components.feature.app.links.SimpleRedirectDialogFragment
 import mozilla.components.feature.contextmenu.DefaultSelectionActionDelegate
 import mozilla.components.feature.media.ext.findActiveMediaTab
 import mozilla.components.feature.privatemode.notification.PrivateNotificationFeature
@@ -75,6 +78,7 @@ import mozilla.components.support.utils.BootUtils
 import mozilla.components.support.utils.BrowsersCache
 import mozilla.components.support.utils.ManufacturerCodes
 import mozilla.components.support.utils.SafeIntent
+import mozilla.components.support.utils.TorUtils
 import mozilla.components.support.utils.toSafeIntent
 import mozilla.components.support.webextensions.WebExtensionPopupObserver
 import mozilla.telemetry.glean.private.NoExtras
@@ -222,10 +226,13 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     private val startupPathProvider = StartupPathProvider()
     private lateinit var startupTypeTelemetry: StartupTypeTelemetry
 
+    private var dialog: RedirectDialogFragment? = null
+
     @Suppress("ComplexMethod")
     final override fun onCreate(savedInstanceState: Bundle?) {
         // DO NOT MOVE ANYTHING ABOVE THIS getProfilerTime CALL.
         val startTimeProfiler = components.core.engine.profiler?.getProfilerTime()
+        components.core.engine.profiler?.addMarker("Activity.onCreate", "HomeActivity")
 
         // Setup nimbus-cli tooling. This is a NOOP when launching normally.
         components.nimbus.sdk.initializeTooling(applicationContext, intent)
@@ -655,6 +662,26 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         super.recreate()
     }
 
+    // Copied from mozac AppLinksFeature.kt
+    internal fun getOrCreateDialog(): RedirectDialogFragment {
+        val existingDialog = dialog
+        if (existingDialog != null) {
+            return existingDialog
+        }
+
+        SimpleRedirectDialogFragment.newInstance().also {
+            dialog = it
+            return it
+        }
+    }
+    private fun isAlreadyADialogCreated(): Boolean {
+        return findPreviousDialogFragment() != null
+    }
+
+    private fun findPreviousDialogFragment(): RedirectDialogFragment? {
+        return supportFragmentManager.findFragmentByTag(RedirectDialogFragment.FRAGMENT_TAG) as? RedirectDialogFragment
+    }
+
     /**
      * Handles intents received when the activity is open.
      */
@@ -669,6 +696,26 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     @VisibleForTesting
     internal fun handleNewIntent(intent: Intent) {
         if (this is ExternalAppBrowserActivity) {
+            return
+        }
+
+        val startIntent = intent.getParcelableExtra(TorUtils.TORBROWSER_START_ACTIVITY_PROMPT, PendingIntent::class.java); //  getParcelableExtra<PendingIntent>(TorUtils.TORBROWSER_START_ACTIVITY_PROMPT)
+        if (startIntent != null) {
+            if (startIntent.creatorPackage == applicationContext.packageName) {
+                val dialog = getOrCreateDialog()
+                dialog.onConfirmRedirect = {
+                    @Suppress("EmptyCatchBlock")
+                    try {
+                        startIntent.send()
+                    } catch (error: PendingIntent.CanceledException) {
+                    }
+                }
+                dialog.onCancelRedirect = {}
+
+                if (!isAlreadyADialogCreated()) {
+                    dialog.showNow(supportFragmentManager, RedirectDialogFragment.FRAGMENT_TAG)
+                }
+            }
             return
         }
 
@@ -906,11 +953,17 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     internal fun getModeFromIntentOrLastKnown(intent: Intent?): BrowsingMode {
         intent?.toSafeIntent()?.let {
             if (it.hasExtra(PRIVATE_BROWSING_MODE)) {
-                val startPrivateMode = it.getBooleanExtra(PRIVATE_BROWSING_MODE, false)
+                val startPrivateMode = settings().shouldDisableNormalMode ||
+                    it.getBooleanExtra(PRIVATE_BROWSING_MODE, settings().openLinksInAPrivateTab)
+
                 return BrowsingMode.fromBoolean(isPrivate = startPrivateMode)
             }
         }
-        return settings().lastKnownMode
+        return when {
+            settings().shouldDisableNormalMode -> BrowsingMode.Private
+            settings().openLinksInAPrivateTab -> BrowsingMode.Private
+            else -> settings().lastKnownMode
+        }
     }
 
     /**

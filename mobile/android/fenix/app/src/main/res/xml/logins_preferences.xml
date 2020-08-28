@@ -19,7 +19,8 @@
         android:summary="@string/preferences_android_autofill_description" />
     <org.mozilla.fenix.settings.SyncPreference
         android:key="@string/pref_key_sync_logins"
-        android:title="@string/preferences_passwords_sync_logins_2" />
+        android:title="@string/preferences_passwords_sync_logins_2"
+        app:isPreferenceVisible="false" />
     <Preference
         android:key="@string/pref_key_saved_logins"
         android:title="@string/preferences_passwords_saved_logins_2" />

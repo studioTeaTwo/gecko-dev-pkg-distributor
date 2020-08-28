@@ -186,10 +186,7 @@ class HomeMenuView(
             HomeMenu.Item.Help -> {
                 HomeMenuMetrics.helpTapped.record(NoExtras())
                 homeActivity.openToBrowserAndLoad(
-                    searchTermOrURL = SupportUtils.getSumoURLForTopic(
-                        context = context,
-                        topic = SupportUtils.SumoTopic.HELP,
-                    ),
+                    searchTermOrURL = SupportUtils.getTorHelpPageUrl(),
                     newTab = true,
                     from = BrowserDirection.FromHome,
                 )

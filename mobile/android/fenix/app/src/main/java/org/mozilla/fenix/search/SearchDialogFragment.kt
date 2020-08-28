@@ -444,6 +444,13 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
 
             searchSuggestionHintBinding.title.text =
                 getString(R.string.search_suggestions_onboarding_title)
+
+            // Hide Search Suggestions prompt and disable
+            inflated.visibility = View.GONE
+            requireContext().settings().also {
+                it.shouldShowSearchSuggestionsInPrivate = false
+                it.showSearchSuggestionsInPrivateOnboardingFinished = true
+            }
         }
 
         binding.searchSuggestionsHint.setOnInflateListener((stubListener))

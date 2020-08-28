@@ -15,7 +15,9 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentStart="true"
-        android:scaleType="centerInside" />
+        android:scaleType="centerInside"
+        android:scaleX="1.5"
+        android:scaleY="1.5"/>
 
     <TextView
         android:id="@+id/button_search_widget_new_tab"
