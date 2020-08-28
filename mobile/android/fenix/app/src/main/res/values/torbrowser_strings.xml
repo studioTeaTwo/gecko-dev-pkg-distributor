@@ -5,6 +5,13 @@
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="tor_about_content">%1$s is produced by the Tor Project, a U.S.-based 501(c)(3) nonprofit.</string>
 
+    <!-- Preference for enabling non-Private Browsing Mode-->
+    <string name="preferences_disable_normal_mode">Allow Only Private Browsing Mode</string>
+    <!-- Preference link to donate to The Tor Project-->
+    <string name="preferences_donate">Donate to The Tor Project</string>
+    <!-- Preference for allowing screenshots to be taken in the app-->
+    <string name="preferences_allow_screenshots">Allow screenshots</string>
+
     <string name="tor_bootstrap_connect">Connect</string>
     <string name="tor_bootstrap_connecting">Connecting</string>
     <string name="tor_bootstrap_connecting_failed">Connecting Failed</string>
@@ -61,4 +68,7 @@
     <string name="tor_security_level_safest_description">Only allow website features required for static sites and basic services. These changes affect images, media, and scripts.</string>
 
     <string name="btn_cancel">Cancel</string>
+
+    <!-- Spoof locale to English -->
+    <string name="tor_spoof_english">Request English versions of web pages for enhanced privacy</string>
 </resources>

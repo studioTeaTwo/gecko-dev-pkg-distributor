@@ -619,7 +619,7 @@ abstract class BaseBrowserFragment :
                 PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                     context.getPreferenceKey(R.string.pref_key_external_download_manager),
                     false,
-                )
+                ) && false
             },
             promptsStyling = DownloadsFeature.PromptsStyling(
                 gravity = Gravity.BOTTOM,

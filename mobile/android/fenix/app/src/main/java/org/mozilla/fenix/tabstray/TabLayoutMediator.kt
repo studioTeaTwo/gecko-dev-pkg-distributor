@@ -4,8 +4,10 @@
 
 package org.mozilla.fenix.tabstray
 
+import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.viewpager2.widget.ViewPager2
+import androidx.core.view.isGone
 import com.google.android.material.tabs.TabLayout
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.support.base.feature.LifecycleAwareFeature
@@ -35,6 +37,15 @@ class TabLayoutMediator(
         tabLayout.addOnTabSelectedListener(observer)
 
         selectActivePage()
+
+        // Find normal mode tabs and set visibility
+        tabLayout.getTabAt(POSITION_NORMAL_TABS)?.getCustomView()?.apply {
+            // The View we get from getCustomView() is only a sub-component
+            // of the actual tab (for example, the tab-count box). We need
+            // the "Custom View"'s parent for controlling the visibility
+            // of the entire tab.
+            (getParent() as? View)?.isGone = true
+        }
     }
 
     override fun stop() {

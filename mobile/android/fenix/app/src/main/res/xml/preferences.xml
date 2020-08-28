@@ -10,12 +10,14 @@
         android:key="@string/pref_key_sign_in"
         android:layout="@layout/sign_in_preference"
         android:summary="@string/preferences_sign_in_description_2"
-        android:title="@string/preferences_sync_2"
+        app:isPreferenceVisible="false"        
+	android:title="@string/preferences_sync_2"
         app:allowDividerBelow="false" />
 
     <androidx.preference.SwitchPreference
         android:key="@string/pref_key_allow_domestic_china_fxa_server"
         android:title="@string/preferences_allow_domestic_china_fxa_server"
+        app:isPreferenceVisible="false"
         android:defaultValue="true"/>
 
     <androidx.preference.PreferenceCategory
@@ -69,6 +71,7 @@
 
         <androidx.preference.Preference
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:key="@string/pref_key_credit_cards"
             android:title="@string/preferences_credit_cards_2" />
 
@@ -101,6 +104,7 @@
         <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preferences_private_browsing_options" />
 
         <androidx.preference.Preference
@@ -122,6 +126,7 @@
         <androidx.preference.Preference
             android:key="@string/pref_key_tracking_protection_settings"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preference_enhanced_tracking_protection" />
 
         <androidx.preference.Preference
@@ -147,6 +152,7 @@
         <androidx.preference.Preference
             android:key="@string/pref_key_data_choices"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preferences_data_collection" />
 
     </androidx.preference.PreferenceCategory>
@@ -155,6 +161,12 @@
         android:title="@string/preferences_category_advanced"
         android:key="@string/pref_key_advanced"
         android:layout="@layout/preference_category_no_icon_style">
+
+        <SwitchPreference
+            android:key="@string/pref_key_allow_screenshots_in_private_mode"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_allow_screenshots" />
+
         <androidx.preference.Preference
             android:key="@string/pref_key_addons"
             app:iconSpaceReserved="false"
@@ -180,6 +192,7 @@
             android:defaultValue="false"
             android:key="@string/pref_key_external_download_manager"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preferences_external_download_manager" />
 
         <androidx.preference.SwitchPreference
@@ -214,6 +227,11 @@
             android:key="@string/pref_key_about"
             app:iconSpaceReserved="false"
             android:title="@string/preferences_about" />
+
+        <androidx.preference.Preference
+            android:icon="@drawable/ic_favorite"
+            android:key="@string/pref_key_donate"
+            android:title="@string/preferences_donate" />
 
         <androidx.preference.Preference
             android:key="@string/pref_key_debug_settings"
