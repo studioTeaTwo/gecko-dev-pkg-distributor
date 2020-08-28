@@ -171,7 +171,9 @@
     <action
         android:id="@+id/action_global_menuDialogFragment"
         app:destination="@id/menu_graph" />
-
+    <action
+        android:id="@+id/action_global_homeFragment"
+        app:destination="@id/homeFragment" />
     <dialog
         android:id="@+id/tabsTrayFragment"
         android:name="org.mozilla.fenix.tabstray.TabsTrayFragment">

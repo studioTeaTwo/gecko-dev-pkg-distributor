@@ -55,6 +55,7 @@ import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.setTextColor
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.library.LibraryPageFragment
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.utils.allowUndo
@@ -136,17 +137,9 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        val accountManager = requireComponents.backgroundServices.accountManager
         consumeFrom(bookmarkStore) {
             bookmarkView.update(it)
-
-            // Only display the sign-in prompt if we're inside of the virtual "Desktop Bookmarks" node.
-            // Don't want to pester user too much with it, and if there are lots of bookmarks present,
-            // it'll just get visually lost. Inside of the "Desktop Bookmarks" node, it'll nicely stand-out,
-            // since there are always only three other items in there. It's also the right place contextually.
-            bookmarkView.binding.bookmarkFoldersSignIn.isVisible =
-                it.tree?.guid == BookmarkRoot.Root.id && accountManager.authenticatedAccount() == null
+            bookmarkView.binding.bookmarkFoldersSignIn.isVisible = false
         }
     }
 
@@ -186,6 +179,10 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
                     inflater.inflate(R.menu.bookmarks_select_multi_not_item, menu)
                 } else {
                     inflater.inflate(R.menu.bookmarks_select_multi, menu)
+
+                    menu.findItem(R.id.open_bookmarks_in_new_tabs_multi_select)?.apply {
+                        isVisible = !requireContext().settings().shouldDisableNormalMode
+                    }
 
                     menu.findItem(R.id.delete_bookmarks_multi_select).title =
                         SpannableString(getString(R.string.bookmark_menu_delete_button)).apply {

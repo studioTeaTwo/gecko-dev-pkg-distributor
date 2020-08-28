@@ -32,6 +32,14 @@ class TabsSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.tabs_preferences, rootKey)
+
+        findPreference<RadioButtonPreference>(getString(R.string.pref_key_close_tabs_manually))?.parent?.apply {
+            isVisible = !context.settings().shouldDisableNormalMode
+        }
+
+        findPreference<PreferenceCategory>(getString(R.string.pref_key_inactive_tabs_category))?.apply {
+            isVisible = !context.settings().shouldDisableNormalMode
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

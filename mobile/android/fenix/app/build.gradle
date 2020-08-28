@@ -633,9 +633,9 @@ dependencies {
     implementation project(':feature-share')
     implementation project(':feature-accounts-push')
     implementation project(':feature-webauthn')
-    implementation project(':feature-webcompat')
+//  implementation project(':feature-webcompat')
     implementation project(':feature-webnotifications')
-    implementation project(':feature-webcompat-reporter')
+//  implementation project(':feature-webcompat-reporter')
 
     implementation project(':service-pocket')
     implementation project(':service-contile')

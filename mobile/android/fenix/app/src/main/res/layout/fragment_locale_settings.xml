@@ -7,13 +7,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/enable_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:background="?android:attr/selectableItemBackground"
+        android:checked="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginStart="54dp"
+        android:padding="16dp"
+        android:text="@string/tor_spoof_english"
+        android:textColor="?textPrimary"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"  />
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/locale_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/enable_switch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
