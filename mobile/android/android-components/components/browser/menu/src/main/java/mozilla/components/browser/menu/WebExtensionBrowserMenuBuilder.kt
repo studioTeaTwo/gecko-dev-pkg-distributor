@@ -9,7 +9,6 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import mozilla.components.browser.menu.item.BackPressMenuItem
 import mozilla.components.browser.menu.item.BrowserMenuDivider
-import mozilla.components.browser.menu.item.BrowserMenuImageText
 import mozilla.components.browser.menu.item.NO_ID
 import mozilla.components.browser.menu.item.ParentBrowserMenuItem
 import mozilla.components.browser.menu.item.WebExtensionBrowserMenuItem
@@ -97,21 +96,19 @@ class WebExtensionBrowserMenuBuilder(
                 iconTintColorResource = style.webExtIconTintColorResource,
             )
 
-            val addonsManagerMenuItem = BrowserMenuImageText(
-                label = context.getString(R.string.mozac_browser_menu_extensions_manager),
-                imageResource = style.addonsManagerMenuItemDrawableRes,
-                iconTintColorResource = style.webExtIconTintColorResource,
-            ) {
-                onAddonsManagerTapped.invoke()
-            }
+//            val addonsManagerMenuItem = BrowserMenuImageText(
+//                label = context.getString(R.string.mozac_browser_menu_extensions_manager),
+//                imageResource = style.addonsManagerMenuItemDrawableRes,
+//                iconTintColorResource = style.webExtIconTintColorResource,
+//            ) {
+//                onAddonsManagerTapped.invoke()
+//            }
 
             val webExtSubMenuItems = if (appendExtensionSubMenuAtStart) {
                 listOf(backPressMenuItem) + BrowserMenuDivider() +
-                    filteredExtensionMenuItems +
-                    BrowserMenuDivider() + addonsManagerMenuItem
+                    filteredExtensionMenuItems
             } else {
-                listOf(addonsManagerMenuItem) + BrowserMenuDivider() +
-                    filteredExtensionMenuItems +
+                filteredExtensionMenuItems +
                     BrowserMenuDivider() + backPressMenuItem
             }
 
@@ -126,25 +123,28 @@ class WebExtensionBrowserMenuBuilder(
                 endOfMenuAlwaysVisible = endOfMenuAlwaysVisible,
             )
         } else {
-            BrowserMenuImageText(
-                label = context.getString(R.string.mozac_browser_menu_extensions),
-                imageResource = style.addonsManagerMenuItemDrawableRes,
-                iconTintColorResource = style.webExtIconTintColorResource,
-            ) {
-                onAddonsManagerTapped.invoke()
-            }
+//            BrowserMenuImageText(
+//                label = context.getString(R.string.mozac_browser_menu_extensions),
+//                imageResource = style.addonsManagerMenuItemDrawableRes,
+//                iconTintColorResource = style.webExtIconTintColorResource,
+//            ) {
+//                onAddonsManagerTapped.invoke()
+//            }
+            null
         }
         val mainMenuIndex = items.indexOfFirst { browserMenuItem ->
             (browserMenuItem as? WebExtensionPlaceholderMenuItem)?.id ==
                 WebExtensionPlaceholderMenuItem.MAIN_EXTENSIONS_MENU_ID
         }
 
-        return if (mainMenuIndex != -1) {
+        return if (mainMenuIndex != -1 && addonsMenuItem != null) {
             items[mainMenuIndex] = addonsMenuItem
             items
             // if we do not have a placeholder we should add the extension submenu at top or bottom
         } else {
-            if (appendExtensionSubMenuAtStart) {
+            if (addonsMenuItem == null) {
+                items
+            } else if (appendExtensionSubMenuAtStart) {
                 listOf(addonsMenuItem) + items
             } else {
                 items + addonsMenuItem
