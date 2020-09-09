@@ -1,0 +1,9 @@
+## torrc-defaults for Tor Browser for Android
+AvoidDiskWrites 1
+# (stderr|stdout|syslog|file FILENAME).
+Log notice stdout
+CookieAuthentication 1
+DormantCanceledByStartup 1
+ClientTransportPlugin meek_lite,obfs2,obfs3,obfs4,scramblesuit,webtunnel exec ./libObfs4proxy.so
+ClientTransportPlugin snowflake exec ./libSnowflake.so
+ClientTransportPlugin conjure exec ./libConjure.so -registerURL https://registration.refraction.network/api

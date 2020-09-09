@@ -137,6 +137,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         isDeviceRamAboveThreshold()
     }
 
+    var terminating = false
+
     open val components by lazy { Components(this) }
 
     var visibilityLifecycleCallback: VisibilityLifecycleCallback? = null
@@ -184,6 +186,21 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         GlobalScope.launch(Dispatchers.IO) {
             PerfStartup.applicationOnCreate.accumulateSamples(listOf(durationMillis))
         }
+    }
+
+    fun isTerminating() = terminating
+
+    fun terminate() {
+        onTerminate()
+        System.exit(0)
+    }
+
+    override fun onTerminate() {
+        terminating = true
+
+        super.onTerminate()
+        components.torController.stop()
+        components.torController.stopTor()
     }
 
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
@@ -241,14 +258,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
     @VisibleForTesting
     protected open fun setupInMainProcessOnly() {
-        // ⚠️ DO NOT ADD ANYTHING ABOVE THIS LINE.
-        // Especially references to the engine/BrowserStore which can alter the app initialization.
-        // See: https://github.com/mozilla-mobile/fenix/issues/26320
-        //
-        // We can initialize Nimbus before Glean because Glean will queue messages
-        // before it's initialized.
-        initializeNimbus()
-
         ProfilerMarkerFactProcessor.create { components.core.engine.profiler }.register()
 
         run {
@@ -314,6 +323,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         components.analytics.metricsStorage.tryRegisterAsUsageRecorder(this)
 
         downloadWallpapers()
+
+        components.torController.start()
     }
 
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage

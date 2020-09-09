@@ -395,4 +395,30 @@
 
     <!--Translations -->
     <string name="pref_key_ignore_translations_data_saver_warning" translatable="false">pref_key_ignore_translations_data_saver_warning</string>
+
+    <string name="pref_key_show_unified_search" translatable="false">pref_key_show_unified_search</string>
+
+    <string name="pref_key_noscript_installed" translatable="false">pref_key_noscript_installed</string>
+
+    <!-- Security Level Settings -->
+    <string name="pref_key_tor_security_level_settings" translatable="false">pref_key_tor_security_level_settings</string>
+    <string name="pref_key_tor_security_level_standard_option" translatable="false">pref_key_tor_security_level_standard_option</string>
+    <string name="pref_key_tor_security_level_safer_option" translatable="false">pref_key_tor_security_level_safer_option</string>
+    <string name="pref_key_tor_security_level_safest_option" translatable="false">pref_key_tor_security_level_safest_option</string>
+
+    <string name="pref_key_tor_network_settings" translatable="false">pref_key_tor_network_settings</string>
+    <string name="pref_key_tor_network_settings_explanation" translatable="false">pref_key_tor_network_settings_explanation</string>
+    <string name="pref_key_tor_network_settings_bridge_config" translatable="false">pref_key_tor_network_settings_bridge_config</string>
+    <string name="pref_key_tor_network_settings_bridge_config_explanation" translatable="false">pref_key_tor_network_settings_bridge_config_explanation</string>
+    <string name="pref_key_tor_network_settings_bridge_config_toggle" translatable="false">pref_key_tor_network_settings_bridge_config_toggle</string>
+    <string name="pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4" translatable="false">pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4</string>
+    <string name="pref_key_tor_network_settings_bridge_config_builtin_bridge_meek_azure" translatable="false">pref_key_tor_network_settings_bridge_config_builtin_bridge_meek_azure</string>
+    <string name="pref_key_tor_network_settings_bridge_config_builtin_bridge_snowflake" translatable="false">pref_key_tor_network_settings_bridge_config_builtin_bridge_snowflake</string>
+    <string name="pref_key_tor_network_settings_bridge_config_user_provided_bridge" translatable="false">pref_key_tor_network_settings_bridge_config_user_provided_bridge</string>
+    <string name="pref_key_tor_network_settings_bridge_config_user_provided_bridge_preference" translatable="false">pref_key_tor_network_settings_bridge_config_user_provided_bridge_preference</string>
+    <string name="pref_key_tor_network_settings_bridge_config_current_bridge" translatable="false">pref_key_tor_network_settings_bridge_config_current_bridge</string>
+    <string name="pref_key_tor_network_settings_status">pref_key_tor_network_settings_status</string>
+    <string name="pref_key_tor_network_settings_tor_ready">pref_key_tor_network_settings_tor_ready</string>
+    <string name="pref_key_tor_network_settings_state">pref_key_tor_network_settings_state</string>
+    <string name="pref_key_tor_network_settings_bridges_enabled">pref_key_tor_network_settings_bridges_enabled</string>
 </resources>
