@@ -305,6 +305,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         appContext.getString(R.string.pref_key_return_to_browser),
         false,
     )
+    
+    var spoofEnglish by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_spoof_english),
+        default = false
+    )
 
     var defaultSearchEngineName by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_search_engine),

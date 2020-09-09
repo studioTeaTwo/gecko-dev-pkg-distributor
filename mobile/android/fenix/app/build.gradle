@@ -311,12 +311,20 @@ android.applicationVariants.configureEach { variant ->
     def isDebugOrDCD = isDebug || isDataCollectionDisabled
     def useReleaseVersioning = variant.buildType.buildConfigFields['USE_RELEASE_VERSIONING']?.value ?: false
 
+    def disableTor = false
+    if (project.hasProperty("disableTor")) {
+        disableTor = project.getProperty("disableTor")
+    }
+
     println("----------------------------------------------")
     println("Variant name:      " + variant.name)
     println("Application ID:    " + [variant.applicationId, variant.buildType.applicationIdSuffix].findAll().join())
     println("Build type:        " + variant.buildType.name)
     println("Flavor:            " + variant.flavorName)
     println("Telemetry enabled: " + !isDebugOrDCD)
+    println("Tor is disabled:   " + disableTor)
+
+    buildConfigField "boolean", "DISABLE_TOR", "$disableTor"
 
     if (useReleaseVersioning) {
         // The Google Play Store does not allow multiple APKs for the same app that all have the
@@ -764,6 +772,9 @@ dependencies {
 
     lintPublish project(":mozilla-lint-rules")
     lintChecks project(':tooling-lint')
+
+    // Tor Expert Bundle
+    implementation files('tor-expert-bundle.aar')
 }
 
 protobuf {

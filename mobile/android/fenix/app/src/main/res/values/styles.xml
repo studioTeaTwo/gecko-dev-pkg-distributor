@@ -325,6 +325,7 @@
         <item name="fenixWordmarkText">@drawable/ic_wordmark_text_private</item>
         <item name="fenixWordmarkLogo">@drawable/ic_wordmark_logo</item>
         <item name="homeBackground">@drawable/private_home_background_gradient</item>
+        <item name="torBootstrapBackground">@drawable/tor_bootstrap_background_gradient</item>
         <item name="bottomBarBackground">@drawable/private_home_bottom_bar_background_gradient</item>
         <item name="bottomBarBackgroundTop">@drawable/private_home_bottom_bar_background_gradient_top</item>
         <item name="mozac_ic_private_mode_circle_fill_background_color">@color/photonWhite</item>
@@ -413,10 +414,18 @@
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
     </style>
 
+    <style name="TorHeaderTextStyle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
+        <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
+    </style>
+
     <style name="Header24TextStyle" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:textColor">?textPrimary</item>
         <item name="android:textSize">24sp</item>
-        <item name="fontFamily">@font/metropolis_semibold</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
+        <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
     </style>
 
     <style name="Header20TextStyle" parent="TextAppearance.MaterialComponents.Body1" tools:ignore="UnusedResources">
@@ -458,6 +467,10 @@
     <style name="Button14TextStyle" parent="TextAppearance.MaterialComponents.Button" tools:ignore="UnusedResources">
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="TorBody16TextStyle" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">#000000</item>
     </style>
 
     <style name="Subtitle12TextStyle" parent="TextAppearance.MaterialComponents.Body1">

@@ -1347,13 +1347,6 @@ class GeckoEngine(
                     localeUpdater.updateValue()
                 }
             }
-        override var prioritizeOnions: Boolean
-            get() = runtime.settings.prioritizeOnions
-            set(value) {
-                value.let {
-                    runtime.settings.prioritizeOnions = it
-                }
-            }
     }.apply {
         defaultSettings?.let {
             this.javascriptEnabled = it.javascriptEnabled
@@ -1382,7 +1375,6 @@ class GeckoEngine(
             this.emailTrackerBlockingPrivateBrowsing = it.emailTrackerBlockingPrivateBrowsing
             this.torSecurityLevel = it.torSecurityLevel
             this.spoofEnglish = it.spoofEnglish
-            this.prioritizeOnions = it.prioritizeOnions
         }
     }
 

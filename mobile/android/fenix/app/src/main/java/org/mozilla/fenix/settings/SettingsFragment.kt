@@ -293,6 +293,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 SettingsFragmentDirections.actionSettingsFragmentToSearchEngineFragment()
             }
 
+            resources.getString(R.string.pref_key_tor_network_settings) -> {
+                SettingsFragmentDirections.actionSettingsFragmentToTorNetworkSettingsFragment()
+            }
+
             resources.getString(R.string.pref_key_tabs) -> {
                 SettingsFragmentDirections.actionSettingsFragmentToTabsSettingsFragment()
             }

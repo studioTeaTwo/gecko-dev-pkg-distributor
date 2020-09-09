@@ -4,4 +4,61 @@
 <resources>
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="tor_about_content">%1$s is produced by the Tor Project, a U.S.-based 501(c)(3) nonprofit.</string>
+
+    <string name="tor_bootstrap_connect">Connect</string>
+    <string name="tor_bootstrap_connecting">Connecting</string>
+    <string name="tor_bootstrap_connecting_failed">Connecting Failed</string>
+    <string name="tor_bootstrap_quick_start_label">Quick Start</string>
+    <string name="tor_bootstrap_quick_start_disabled">Enable Quick Start to connect automatically in the future</string>
+    <string name="tor_bootstrap_quick_start_enabled">%s will connect automatically to the Tor Network in the future</string>
+    <string name="tor_bootstrap_swipe_for_logs">Swipe to the left to see Tor logs</string>
+    <string name="tor_initializing_log">Initializing Tor Log</string>
+
+    <string name="tor_onboarding_security_level">Set your Security Level</string>
+    <string name="tor_onboarding_security_level_description">Disable certain web features that can be used to attack you, and harm your security, anonymity, and privacy.</string>
+    <string name="tor_onboarding_security_settings_button">Open Security Settings</string>
+    <string name="tor_onboarding_donate_header">Donate and keep Tor safe</string>
+    <string name="tor_onboarding_donate_description">Tor is free to use because of donations from people like you.</string>
+    <string name="tor_onboarding_donate_button">Donate Now</string>
+
+    <string name="tor_explore_privately">Explore. Privately.</string>
+
+    <string name="library_new_circuit">New circuit</string>
+
+    <string name="preferences_tor_network_settings">Tor Network</string>
+    <string name="preferences_tor_network_settings_explanation">Tor Browser routes your traffic over the Tor Network, run by thousands of volunteers around the world.</string>
+    <string name="preferences_tor_network_settings_bridge_config">Config Bridge</string>
+    <string name="preferences_tor_network_settings_bridge_config_description">Use a Bridge to connect to Tor</string>
+    <string name="preferences_tor_network_settings_bridge_config_description_builtin_transport_enabled">You’re using a built-in bridge to connect to Tor</string>
+    <string name="preferences_tor_network_settings_bridge_config_description_user_provided_enabled">You provided a bridge to connect to Tor</string>
+    <string name="preferences_tor_network_settings_bridge_config_explanation">Bridges are unlisted relays that make it more difficult to block connections to the Tor Network. Because of how certain countries try to block Tor, certain bridges work in certain countries but not others.</string>
+    <string name="preferences_tor_network_settings_bridge_config_toggle">Use a Bridge</string>
+    <string name="preferences_tor_network_settings_bridge_config_toggle_description">Config a bridge to connect to Tor</string>
+    <string name="preferences_tor_network_settings_bridge_config_builtin_bridge_obfs4">obfs4</string>
+    <string name="preferences_tor_network_settings_bridge_config_builtin_bridge_meek_azure">meek-azure</string>
+    <string name="preferences_tor_network_settings_bridge_config_builtin_bridge_snowflake">snowflake</string>
+    <string name="preferences_tor_network_settings_bridge_config_user_provided_bridge">Provide a Bridge I know</string>
+    <string name="preferences_tor_network_settings_bridge_config_user_provided_bridge_description">Enter bridge information from a trusted source</string>
+    <string name="preferences_tor_network_settings_bridge_config_current_bridge">Current Configured Bridge: %s</string>
+    <string name="tor_network_settings_bridge_not_configured">Not Configured</string>
+    <string name="preferences_tor_network_settings_status">Current Status</string>
+    <string name="preferences_tor_network_settings_tor_ready">Is Tor Ready: %s</string>
+    <string name="preferences_tor_network_settings_state">State: %s</string>
+    <string name="preferences_tor_network_settings_yes">Yes</string>
+    <string name="preferences_tor_network_settings_no">No</string>
+    <string name="preferences_tor_network_settings_disconnected">Disconnected</string>
+    <string name="preferences_tor_network_settings_connecting">Connecting</string>
+    <string name="preferences_tor_network_settings_connected">Connected</string>
+    <string name="preferences_tor_network_settings_restarting">Restarting</string>
+    <string name="preferences_tor_network_settings_bridges_enabled">Bridges are enabled: %s</string>
+
+    <!-- Description of security levels -->
+    <string name="tor_security_level_standard_option">Standard</string>
+    <string name="tor_security_level_standard_description">All Tor Browser and website features are enabled.</string>
+    <string name="tor_security_level_safer_option">Safer</string>
+    <string name="tor_security_level_safer_description">Disable website features that are often dangerous, causing some sites to lose functionality.</string>
+    <string name="tor_security_level_safest_option">Safest</string>
+    <string name="tor_security_level_safest_description">Only allow website features required for static sites and basic services. These changes affect images, media, and scripts.</string>
+
+    <string name="btn_cancel">Cancel</string>
 </resources>

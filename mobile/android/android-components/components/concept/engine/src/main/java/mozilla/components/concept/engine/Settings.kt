@@ -259,7 +259,6 @@ abstract class Settings {
 
     open var spoofEnglish: Boolean by UnsupportedSetting()
 
-    open var prioritizeOnions: Boolean by UnsupportedSetting()
 }
 
 /**
