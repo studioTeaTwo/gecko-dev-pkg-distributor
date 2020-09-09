@@ -106,79 +106,80 @@ class BrowserToolbarCFRPresenter(
      */
     @Suppress("MagicNumber")
     fun start() {
-        when (getCFRToShow()) {
-            ToolbarCFR.TCP -> {
-                scope = browserStore.flowScoped { flow ->
-                    flow.mapNotNull { it.findCustomTabOrSelectedTab(sessionId)?.content?.progress }
-                        // The "transformWhile" below ensures that the 100% progress is only collected once.
-                        .transformWhile { progress ->
-                            emit(progress)
-                            progress != 100
-                        }.filter { popup == null && it == 100 }.collect {
-                            scope?.cancel()
-                            showTcpCfr()
-                        }
-                }
-            }
-            ToolbarCFR.COOKIE_BANNERS -> {
-                scope = browserStore.flowScoped { flow ->
-                    flow.mapNotNull { it.findCustomTabOrSelectedTab(sessionId) }
-                        .ifAnyChanged { tab ->
-                            arrayOf(
-                                tab.cookieBanner,
-                            )
-                        }
-                        .filter {
-                            it.content.private && it.cookieBanner == CookieBannerHandlingStatus.HANDLED
-                        }
-                        .collect {
-                            scope?.cancel()
-                            settings.shouldShowCookieBannersCFR = false
-                            showCookieBannersCFR()
-                        }
-                }
-            }
-
-            ToolbarCFR.SHOPPING, ToolbarCFR.SHOPPING_OPTED_IN -> {
-                scope = browserStore.flowScoped { flow ->
-                    val shouldShowCfr: Boolean? = flow.mapNotNull { it.selectedTab }
-                        .filter { it.content.isProductUrl && it.content.progress == 100 && !it.content.loading }
-                        .distinctUntilChanged()
-                        .map { toolbar.findViewById<View>(R.id.mozac_browser_toolbar_page_actions).isVisible }
-                        .filter { popup == null && it }
-                        .firstOrNull()
-
-                    if (shouldShowCfr == true) {
-                        showShoppingCFR(getCFRToShow() == ToolbarCFR.SHOPPING_OPTED_IN)
-                    }
-
-                    scope?.cancel()
-                }
-            }
-
-            ToolbarCFR.ERASE -> {
-                scope = browserStore.flowScoped { flow ->
-                    flow
-                        .mapNotNull { it.findCustomTabOrSelectedTab(sessionId) }
-                        .filter { it.content.private }
-                        .map { it.content.progress }
-                        // The "transformWhile" below ensures that the 100% progress is only collected once.
-                        .transformWhile { progress ->
-                            emit(progress)
-                            progress != 100
-                        }
-                        .filter { popup == null && it == 100 }
-                        .collect {
-                            scope?.cancel()
-                            showEraseCfr()
-                        }
-                }
-            }
-
-            ToolbarCFR.NONE -> {
-                // no-op
-            }
-        }
+//        Removed for Bug 42089: Remove ability to submit site support requests
+//        when (getCFRToShow()) {
+//            ToolbarCFR.TCP -> {
+//                scope = browserStore.flowScoped { flow ->
+//                    flow.mapNotNull { it.findCustomTabOrSelectedTab(sessionId)?.content?.progress }
+//                        // The "transformWhile" below ensures that the 100% progress is only collected once.
+//                        .transformWhile { progress ->
+//                            emit(progress)
+//                            progress != 100
+//                        }.filter { popup == null && it == 100 }.collect {
+//                            scope?.cancel()
+//                            showTcpCfr()
+//                        }
+//                }
+//            }
+//            ToolbarCFR.COOKIE_BANNERS -> {
+//                scope = browserStore.flowScoped { flow ->
+//                    flow.mapNotNull { it.findCustomTabOrSelectedTab(sessionId) }
+//                        .ifAnyChanged { tab ->
+//                            arrayOf(
+//                                tab.cookieBanner,
+//                            )
+//                        }
+//                        .filter {
+//                            it.content.private && it.cookieBanner == CookieBannerHandlingStatus.HANDLED
+//                        }
+//                        .collect {
+//                            scope?.cancel()
+//                            settings.shouldShowCookieBannersCFR = false
+//                            showCookieBannersCFR()
+//                        }
+//                }
+//            }
+//
+//            ToolbarCFR.SHOPPING, ToolbarCFR.SHOPPING_OPTED_IN -> {
+//                scope = browserStore.flowScoped { flow ->
+//                    val shouldShowCfr: Boolean? = flow.mapNotNull { it.selectedTab }
+//                        .filter { it.content.isProductUrl && it.content.progress == 100 && !it.content.loading }
+//                        .distinctUntilChanged()
+//                        .map { toolbar.findViewById<View>(R.id.mozac_browser_toolbar_page_actions).isVisible }
+//                        .filter { popup == null && it }
+//                        .firstOrNull()
+//
+//                    if (shouldShowCfr == true) {
+//                        showShoppingCFR(getCFRToShow() == ToolbarCFR.SHOPPING_OPTED_IN)
+//                    }
+//
+//                    scope?.cancel()
+//                }
+//            }
+//
+//            ToolbarCFR.ERASE -> {
+//                scope = browserStore.flowScoped { flow ->
+//                    flow
+//                        .mapNotNull { it.findCustomTabOrSelectedTab(sessionId) }
+//                        .filter { it.content.private }
+//                        .map { it.content.progress }
+//                        // The "transformWhile" below ensures that the 100% progress is only collected once.
+//                        .transformWhile { progress ->
+//                            emit(progress)
+//                            progress != 100
+//                        }
+//                        .filter { popup == null && it == 100 }
+//                        .collect {
+//                            scope?.cancel()
+//                            showEraseCfr()
+//                        }
+//                }
+//            }
+//
+//            ToolbarCFR.NONE -> {
+//                // no-op
+//            }
+//        }
     }
 
     /**

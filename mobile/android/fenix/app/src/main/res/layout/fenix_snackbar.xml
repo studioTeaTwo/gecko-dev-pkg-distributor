@@ -21,6 +21,12 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 
+        <!--
+        TextView below changed as part of tor-browser#43229 to match the designs
+        https://www.figma.com/design/vXrWeiV2IlKx5IIZVLtxBX/Android-Components?node-id=1807-3117&t=8Gc1mpPYPQCLMYH2-1 screenshot shown here
+        Line spacing eyeballed from screenshot here
+        https://gitlab.torproject.org/tpo/applications/tor-browser/-/merge_requests/1275#note_3125666
+        -->
         <TextView
             android:id="@+id/snackbar_text"
             android:layout_width="0dp"
@@ -29,8 +35,9 @@
             android:letterSpacing="0.05"
             android:minHeight="46dp"
             android:maxLines="2"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:lineSpacingExtra="8sp"
             android:textAlignment="textStart"
             android:textColor="@color/photonWhite"
             android:textSize="18sp"

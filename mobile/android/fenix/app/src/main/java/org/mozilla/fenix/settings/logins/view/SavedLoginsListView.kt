@@ -64,7 +64,7 @@ class SavedLoginsListView(
         } else {
             binding.progressBar.isVisible = false
             binding.savedLoginsList.isVisible = state.loginList.isNotEmpty()
-            binding.savedPasswordsEmptyView.isVisible = state.loginList.isEmpty()
+            binding.savedPasswordsEmptyView.isVisible = false
         }
         loginsAdapter.submitList(state.filteredItems) {
             // Reset scroll position to the first item after submitted list was committed.

@@ -452,6 +452,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 SettingsFragmentDirections.actionSettingsFragmentToAboutFragment()
             }
 
+            resources.getString(R.string.pref_key_donate) -> {
+                (activity as HomeActivity).openToBrowserAndLoad(
+                    searchTermOrURL = SupportUtils.DONATE_URL,
+                    newTab = true,
+                    from = BrowserDirection.FromSettings
+                )
+                null
+            }
+
             // Only displayed when secret settings are enabled
             resources.getString(R.string.pref_key_debug_settings) -> {
                 SettingsFragmentDirections.actionSettingsFragmentToSecretSettingsFragment()
@@ -489,6 +498,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val preferenceRemoteDebugging = findPreference<Preference>(debuggingKey)
         val preferenceMakeDefaultBrowser =
             requirePreference<DefaultBrowserPreference>(R.string.pref_key_make_default_browser)
+
+        requirePreference<Preference>(R.string.pref_key_allow_screenshots_in_private_mode).apply {
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
 
         if (!Config.channel.isReleased) {
             preferenceLeakCanary?.setOnPreferenceChangeListener { _, newValue ->
