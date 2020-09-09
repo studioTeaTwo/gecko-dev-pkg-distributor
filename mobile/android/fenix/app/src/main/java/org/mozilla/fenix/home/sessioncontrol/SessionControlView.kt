@@ -131,6 +131,15 @@ private fun showCollections(
 
 private fun privateModeAdapterItems() = listOf(AdapterItem.PrivateBrowsingDescription)
 
+private fun bootstrapAdapterItems() = listOf(AdapterItem.TorBootstrap)
+
+private fun torOnboardingAdapterItems() =
+    listOf(
+        AdapterItem.TorOnboardingSecurityLevel,
+        AdapterItem.TorOnboardingDonate,
+        // AdapterItem.OnboardingFinish
+    )
+
 private fun AppState.toAdapterList(settings: Settings): List<AdapterItem> = when (mode) {
     BrowsingMode.Normal -> normalModeAdapterItems(
         settings,

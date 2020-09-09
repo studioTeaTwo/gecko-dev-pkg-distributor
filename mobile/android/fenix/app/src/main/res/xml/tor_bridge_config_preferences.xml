@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.Preference
+        android:key="@string/pref_key_tor_network_settings_bridge_config_explanation"
+        android:summary="@string/preferences_tor_network_settings_bridge_config_explanation"
+        app:allowDividerBelow="false" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:title="@string/preferences_tor_network_settings_bridge_config_toggle"
+        android:summary="@string/preferences_tor_network_settings_bridge_config_toggle_description" />
+    <org.mozilla.fenix.settings.RadioButtonPreference
+        android:defaultValue="false"
+        android:dependency="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4"
+        android:title="@string/preferences_tor_network_settings_bridge_config_builtin_bridge_obfs4" />
+    <org.mozilla.fenix.settings.RadioButtonPreference
+        android:defaultValue="false"
+        android:dependency="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_builtin_bridge_meek_azure"
+        android:title="@string/preferences_tor_network_settings_bridge_config_builtin_bridge_meek_azure" />
+    <org.mozilla.fenix.settings.RadioButtonPreference
+        android:defaultValue="false"
+        android:dependency="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_builtin_bridge_snowflake"
+        android:title="@string/preferences_tor_network_settings_bridge_config_builtin_bridge_snowflake" />
+    <EditTextPreference
+        android:dependency="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_user_provided_bridge"
+        android:title="@string/preferences_tor_network_settings_bridge_config_user_provided_bridge"
+        android:summary="@string/preferences_tor_network_settings_bridge_config_user_provided_bridge_description" />
+    <Preference
+        android:dependency="@string/pref_key_tor_network_settings_bridge_config_toggle"
+        android:key="@string/pref_key_tor_network_settings_bridge_config_current_bridge"
+        android:title="@string/preferences_tor_network_settings_bridge_config_current_bridge" />
+</androidx.preference.PreferenceScreen>
