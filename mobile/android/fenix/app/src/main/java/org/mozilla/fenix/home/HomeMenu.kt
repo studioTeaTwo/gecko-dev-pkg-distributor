@@ -63,7 +63,7 @@ class HomeMenu(
         object ManageAccountAndDevices : Item()
         object WhatsNew : Item()
         object Help : Item()
-        object CustomizeHome : Item()
+//        object CustomizeHome : Item()
         object Settings : Item()
         object Quit : Item()
         object ReconnectSync : Item()
@@ -121,7 +121,7 @@ class HomeMenu(
 
     @Suppress("ComplexMethod")
     private fun coreMenuItems(): List<BrowserMenuItem> {
-        val settings = context.components.settings
+        // val settings = context.components.settings
 
         val bookmarksItem = BrowserMenuImageText(
             context.getString(R.string.library_bookmarks),
@@ -155,13 +155,13 @@ class HomeMenu(
             onItemTapped.invoke(Item.Passwords)
         }
 
-        val extensionsItem = BrowserMenuImageText(
-            context.getString(R.string.browser_menu_extensions),
-            R.drawable.ic_addons_extensions,
-            primaryTextColor,
-        ) {
-            onItemTapped.invoke(Item.Extensions)
-        }
+//        val extensionsItem = BrowserMenuImageText(
+//            context.getString(R.string.browser_menu_extensions),
+//            R.drawable.ic_addons_extensions,
+//            primaryTextColor,
+//        ) {
+//            onItemTapped.invoke(Item.Extensions)
+//        }
 
         val manageAccountAndDevicesItem = SimpleBrowserMenuItem(
             context.getString(R.string.browser_menu_manage_account_and_devices),
@@ -190,19 +190,19 @@ class HomeMenu(
             onItemTapped.invoke(Item.Help)
         }
 
-        val customizeHomeItem = BrowserMenuImageText(
-            context.getString(R.string.browser_menu_customize_home_1),
-            R.drawable.ic_customize,
-            primaryTextColor,
-        ) {
-            onItemTapped.invoke(Item.CustomizeHome)
-            AppMenu.customizeHomepage.record(NoExtras())
-        }
+//        val customizeHomeItem = BrowserMenuImageText(
+//            context.getString(R.string.browser_menu_customize_home_1),
+//            R.drawable.ic_customize,
+//            primaryTextColor,
+//        ) {
+//            onItemTapped.invoke(Item.CustomizeHome)
+//            AppMenu.customizeHomepage.record(NoExtras())
+//        }
 
         // Use nimbus to set the icon and title.
-        val nimbusValidation = FxNimbus.features.nimbusValidation.value()
+        // val nimbusValidation = FxNimbus.features.nimbusValidation.value()
         val settingsItem = BrowserMenuImageText(
-            nimbusValidation.settingsTitle,
+            context.getString(R.string.browser_menu_settings),
             R.drawable.mozac_ic_settings_24,
             primaryTextColor,
         ) {
@@ -224,15 +224,15 @@ class HomeMenu(
         // We will show syncSignIn item when the accountAuth item:
         //    1. is not needed or
         //    2. it is needed, but the account manager is not available yet
-        val syncSignInMenuItem = if (accountAuthItem == null) syncSignInMenuItem() else null
+        // val syncSignInMenuItem = if (accountAuthItem == null) syncSignInMenuItem() else null
 
         val menuItems = listOfNotNull(
             bookmarksItem,
-            historyItem,
+            if (context.settings().shouldDisableNormalMode) null else historyItem,
             downloadsItem,
             passwordsItem,
-            extensionsItem,
-            syncSignInMenuItem,
+            // extensionsItem,
+            // syncSignInMenuItem,
             accountAuthItem,
             if (Config.channel.isMozillaOnline) manageAccountAndDevicesItem else null,
             BrowserMenuDivider(),
@@ -240,9 +240,9 @@ class HomeMenu(
             BrowserMenuDivider(),
             whatsNewItem,
             helpItem,
-            customizeHomeItem,
+//            customizeHomeItem,
             settingsItem,
-            if (settings.shouldDeleteBrowsingDataOnQuit) quitItem else null,
+            quitItem
         ).also { items ->
             items.getHighlight()?.let { onHighlightPresent(it) }
         }

@@ -171,7 +171,9 @@
     <action
         android:id="@+id/action_global_menuDialogFragment"
         app:destination="@id/menu_graph" />
-
+    <action
+        android:id="@+id/action_global_homeFragment"
+        app:destination="@id/homeFragment" />
     <dialog
         android:id="@+id/tabsTrayFragment"
         android:name="org.mozilla.fenix.tabstray.TabsTrayFragment">
@@ -845,6 +847,11 @@
         android:id="@+id/sponsoredStoriesSettings"
         android:name="org.mozilla.fenix.settings.SponsoredStoriesSettingsFragment"
         android:label="@string/preferences_debug_settings_custom_sponsored_stories_parameters" />
+    <fragment
+        android:id="@+id/torBridgeConfigFragment"
+        android:name="org.mozilla.fenix.settings.TorBridgeConfigFragment"
+        android:label="@string/preferences_tor_network_settings_bridge_config"
+        tools:layout="@layout/fragment_tor_bridge_config" />
     <fragment
         android:id="@+id/trackingProtectionFragment"
         android:name="org.mozilla.fenix.settings.TrackingProtectionFragment">

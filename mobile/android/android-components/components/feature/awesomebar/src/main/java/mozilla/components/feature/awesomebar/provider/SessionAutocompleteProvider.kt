@@ -36,7 +36,7 @@ class SessionAutocompleteProvider(
 
         val tabUrl = store.state.tabs
             .firstOrNull {
-                !it.content.private && doesUrlStartsWithText(it.content.url, query)
+                /* !it.content.private && */ doesUrlStartsWithText(it.content.url, query)
             }
             ?.content?.url
             ?: return null

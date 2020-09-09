@@ -17,5 +17,7 @@
         android:layout_gravity="center"
         android:contentDescription="@string/search_widget_content_description_2"
         android:scaleType="centerInside"
-        tools:src="@mipmap/ic_launcher" />
+        tools:src="@mipmap/ic_launcher_foreground"
+        android:scaleX="1.5"
+        android:scaleY="1.5"/>
 </FrameLayout>

@@ -180,7 +180,7 @@
         app:layout_constraintEnd_toStartOf="@id/mediaKeySystemAccessStatus"
         app:layout_constraintStart_toStartOf="parent"
         android:textColor="?attr/textPrimary"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
     <TextView
         android:id="@+id/mediaKeySystemAccessStatus"
@@ -192,7 +192,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/mediaKeySystemAccessLabel"
         tools:text="@string/preference_option_phone_feature_blocked"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
 
     <TextView

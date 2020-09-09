@@ -71,7 +71,6 @@ open class DefaultToolbarMenu(
     private var isCurrentUrlBookmarked = false
     private var isBookmarkedJob: Job? = null
 
-    private val shouldDeleteDataOnQuit = context.settings().shouldDeleteBrowsingDataOnQuit
     private val shouldUseBottomToolbar = context.settings().shouldUseBottomToolbar
     private val shouldShowMenuToolbar = !IncompleteRedesignToolbarFeature(context.settings()).isEnabled
     private val shouldShowTopSites = context.settings().showTopSitesFeature
@@ -299,18 +298,18 @@ open class DefaultToolbarMenu(
     //    iconTintColorResource = primaryTextColor(),
     //)
 
-    private val addToHomeScreenItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_add_to_homescreen),
-        imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
-        iconTintColorResource = primaryTextColor(),
-        isCollapsingMenuLimit = true,
-    ) {
-        if (context.components.useCases.webAppUseCases.isInstallable()) {
-            onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
-        } else {
-            onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
-        }
-    }
+    //private val addToHomeScreenItem = BrowserMenuImageText(
+    //    label = context.getString(R.string.browser_menu_add_to_homescreen),
+    //    imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
+    //    iconTintColorResource = primaryTextColor(),
+    //    isCollapsingMenuLimit = true,
+    //) {
+    //    if (context.components.useCases.webAppUseCases.isInstallable()) {
+    //        onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
+    //    } else {
+    //        onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
+    //    }
+    //}
 
     private val addRemoveTopSitesItem = TwoStateBrowserMenuImageText(
         primaryLabel = context.getString(R.string.browser_menu_add_to_shortcuts),
@@ -330,13 +329,13 @@ open class DefaultToolbarMenu(
         },
     )
 
-    private val saveToCollectionItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_save_to_collection_2),
-        imageResource = R.drawable.ic_tab_collection,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.SaveToCollection)
-    }
+    //private val saveToCollectionItem = BrowserMenuImageText(
+    //    label = context.getString(R.string.browser_menu_save_to_collection_2),
+    //    imageResource = R.drawable.ic_tab_collection,
+    //    iconTintColorResource = primaryTextColor(),
+    //) {
+    //    onItemTapped.invoke(ToolbarMenu.Item.SaveToCollection)
+    //}
 
     private val printPageItem = BrowserMenuImageText(
         label = context.getString(R.string.menu_print),
@@ -395,13 +394,13 @@ open class DefaultToolbarMenu(
         onItemTapped.invoke(ToolbarMenu.Item.Quit)
     }
 
-    private fun syncMenuItem(): BrowserMenuItem {
-        return BrowserMenuSignIn(primaryTextColor()) {
-            onItemTapped.invoke(
-                ToolbarMenu.Item.SyncAccount(accountManager.accountState),
-            )
-        }
-    }
+    //private fun syncMenuItem(): BrowserMenuItem {
+    //    return BrowserMenuSignIn(primaryTextColor()) {
+    //        onItemTapped.invoke(
+    //            ToolbarMenu.Item.SyncAccount(accountManager.accountState),
+    //        )
+    //    }
+    //}
 
     @VisibleForTesting(otherwise = PRIVATE)
     val coreMenuItems by lazy {
@@ -415,23 +414,23 @@ open class DefaultToolbarMenu(
                 downloadsItem,
                 passwordsItem,
                 extensionsItem,
-                syncMenuItem(),
+                // syncMenuItem(),
                 BrowserMenuDivider(),
                 findInPageItem,
                 translationsItem.apply { visible = ::shouldShowTranslations },
                 desktopSiteItem,
                 // openInRegularTabItem.apply { visible = ::shouldShowOpenInRegularTab },
                 customizeReaderView.apply { visible = ::shouldShowReaderViewCustomization },
-                openInApp.apply { visible = ::shouldShowOpenInApp },
+                // openInApp.apply { visible = ::shouldShowOpenInApp },
                 // reportSiteIssuePlaceholder,
                 BrowserMenuDivider(),
-                addToHomeScreenItem.apply { visible = ::canAddToHomescreen },
-                if (shouldShowTopSites) addRemoveTopSitesItem else null,
-                saveToCollectionItem,
-                if (FxNimbus.features.print.value().browserPrintEnabled) printPageItem else null,
+                // addToHomeScreenItem.apply { visible = ::canAddToHomescreen },
+                // if (shouldShowTopSites) addRemoveTopSitesItem else null,
+                // saveToCollectionItem,
+                printPageItem,
                 BrowserMenuDivider(),
                 settingsItem,
-                if (shouldDeleteDataOnQuit) deleteDataOnQuit else null,
+                deleteDataOnQuit,
                 if (shouldUseBottomToolbar) BrowserMenuDivider() else null,
                 if (shouldUseBottomToolbar && shouldShowMenuToolbar) menuToolbar else null,
             )

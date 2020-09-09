@@ -44,6 +44,7 @@
     <string name="pref_key_override_amo_collection" translatable="false">pref_key_override_amo_collection</string>
     <string name="pref_key_enable_gecko_logs" translatable="false">pref_key_enable_gecko_logs</string>
     <string name="pref_key_rate" translatable="false">pref_key_rate</string>
+    <string name="pref_key_donate" translatable="false">pref_key_donate</string>
     <string name="pref_key_about" translatable="false">pref_key_about</string>
     <string name="pref_key_account" translatable="false">pref_key_account</string>
     <string name="pref_key_sign_in" translatable="false">pref_key_sign_in</string>
