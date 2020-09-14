@@ -62,6 +62,7 @@ open class HttpIconLoader(
             redirect = Request.Redirect.FOLLOW,
             useCaches = true,
             private = request.isPrivate,
+            origin = request.url
         )
 
         return try {
