@@ -1331,6 +1331,29 @@ class GeckoEngine(
         override var globalPrivacyControlEnabled: Boolean
             get() = runtime.settings.globalPrivacyControl
             set(value) { runtime.settings.setGlobalPrivacyControl(value) }
+
+        override var torSecurityLevel: Int
+            get() = runtime.settings.torSecurityLevel
+            set(value) {
+                value.let {
+                    runtime.settings.torSecurityLevel = it
+                }
+            }
+        override var spoofEnglish: Boolean
+            get() = runtime.settings.spoofEnglish
+            set(value) {
+                value.let {
+                    runtime.settings.spoofEnglish = it
+                    localeUpdater.updateValue()
+                }
+            }
+        override var prioritizeOnions: Boolean
+            get() = runtime.settings.prioritizeOnions
+            set(value) {
+                value.let {
+                    runtime.settings.prioritizeOnions = it
+                }
+            }
     }.apply {
         defaultSettings?.let {
             this.javascriptEnabled = it.javascriptEnabled
@@ -1357,6 +1380,9 @@ class GeckoEngine(
             this.cookieBannerHandlingGlobalRulesSubFrames = it.cookieBannerHandlingGlobalRulesSubFrames
             this.globalPrivacyControlEnabled = it.globalPrivacyControlEnabled
             this.emailTrackerBlockingPrivateBrowsing = it.emailTrackerBlockingPrivateBrowsing
+            this.torSecurityLevel = it.torSecurityLevel
+            this.spoofEnglish = it.spoofEnglish
+            this.prioritizeOnions = it.prioritizeOnions
         }
     }
 
