@@ -102,6 +102,11 @@
         android:layout="@layout/preference_category_no_icon_style">
 
         <androidx.preference.Preference
+            android:key="@string/pref_key_tor_security_level_settings"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_security_level_options" />
+
+        <androidx.preference.Preference
             android:key="@string/pref_key_private_browsing"
             app:iconSpaceReserved="false"
             app:isPreferenceVisible="false"
