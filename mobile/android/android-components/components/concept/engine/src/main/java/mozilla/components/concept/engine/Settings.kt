@@ -252,6 +252,11 @@ abstract class Settings {
      */
     open var emailTrackerBlockingPrivateBrowsing: Boolean by UnsupportedSetting()
 
+    /**
+     * Setting to control the current security level
+     */
+    open var torSecurityLevel: Int by UnsupportedSetting()
+
     open var spoofEnglish: Boolean by UnsupportedSetting()
 }
 
@@ -303,6 +308,7 @@ data class DefaultSettings(
     override var queryParameterStrippingAllowList: String = "",
     override var queryParameterStrippingStripList: String = "",
     override var emailTrackerBlockingPrivateBrowsing: Boolean = false,
+    override var torSecurityLevel: Int = 4,
     override var spoofEnglish: Boolean = false,
 ) : Settings()
 
