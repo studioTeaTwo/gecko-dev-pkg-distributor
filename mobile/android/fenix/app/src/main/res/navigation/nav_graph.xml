@@ -611,6 +611,20 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
         <action
+            android:id="@+id/action_settingsFragment_to_torBridgeConfigFragment"
+            app:destination="@id/torBridgeConfigFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_settingsFragment_to_torLogsFragment"
+            app:destination="@+id/torLogsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
             android:id="@+id/action_settingsFragment_to_trackingProtectionFragment"
             app:destination="@id/trackingProtectionFragment"
             app:enterAnim="@anim/slide_in_right"
@@ -659,6 +673,7 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <!--
         <action
             android:id="@+id/action_settingsFragment_to_openLinksInAppsFragment"
             app:destination="@id/openLinksInAppsFragment"
@@ -666,6 +681,7 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        -->
         <action
             android:id="@+id/action_settingsFragment_to_tabsSettingsFragment"
             app:destination="@id/tabsSettingsFragment"
@@ -864,8 +880,11 @@
     <fragment
         android:id="@+id/torBridgeConfigFragment"
         android:name="org.mozilla.fenix.settings.TorBridgeConfigFragment"
-        android:label="@string/preferences_tor_network_settings_bridge_config"
-        tools:layout="@layout/fragment_tor_bridge_config" />
+        android:label="@string/preferences_tor_network_settings_bridge_config" />
+    <fragment
+        android:id="@+id/torLogsFragment"
+        android:name="org.mozilla.fenix.tor.TorLogsComposeFragment"
+        android:label="@string/preferences_tor_logs" />
     <fragment
         android:id="@+id/trackingProtectionFragment"
         android:name="org.mozilla.fenix.settings.TrackingProtectionFragment">
@@ -884,9 +903,11 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+    <!--
     <fragment
         android:id="@+id/openLinksInAppsFragment"
         android:name="org.mozilla.fenix.settings.OpenLinksInAppsFragment" />
+    -->
     <fragment
         android:id="@+id/deleteBrowsingDataFragment"
         android:name="org.mozilla.fenix.settings.deletebrowsingdata.DeleteBrowsingDataFragment"
