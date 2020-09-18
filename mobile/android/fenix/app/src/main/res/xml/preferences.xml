@@ -99,6 +99,7 @@
 
     <androidx.preference.PreferenceCategory
         android:title="@string/preferences_category_privacy_security"
+        android:key="@string/pref_key_privacy"
         android:layout="@layout/preference_category_no_icon_style">
 
         <androidx.preference.Preference
@@ -157,6 +158,49 @@
 
     </androidx.preference.PreferenceCategory>
 
+    <!-- title="@string/preferences_category_advanced"
+         key="@string/pref_key_advanced"-->
+    <PreferenceCategory
+        android:title="@string/preferences_tor_connection_settings_title"
+        android:key="@string/pref_key_connection"
+        android:layout="@layout/preference_category_no_icon_style">
+
+        <Preference
+            android:key="@string/pref_key_tor_network_settings_explanation"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_network_settings_explanation" />
+
+        <Preference
+            android:key="@string/pref_key_tor_network_settings_bridge_config"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_network_settings_bridge_config"
+            android:summary="@string/preferences_tor_network_settings_bridge_config_description" />
+
+        <SwitchPreference
+            android:key="@string/pref_key_quick_start"
+            android:summary="@string/connection_assist_always_connect_automatically_toggle_description"
+            android:title="@string/tor_bootstrap_quick_start_label"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/pref_key_use_html_connection_ui"
+            android:summary="Recommended only for debugging"
+            android:title="Enable HTML connection UI"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_tor_logs"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_logs"
+            android:summary="@string/preferences_tor_logs_description" />
+
+        <!-- Auto connect -->
+
+        <!-- Tor Logs -->
+
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/preferences_category_advanced"
         android:key="@string/pref_key_advanced"
@@ -182,12 +226,12 @@
             android:key="@string/pref_key_override_amo_collection"
             app:iconSpaceReserved="false"
             android:title="@string/preferences_customize_extension_collection" />
-
+        <!--
         <androidx.preference.Preference
             android:key="@string/pref_key_open_links_in_apps"
             android:title="@string/preferences_open_links_in_apps"
             app:iconSpaceReserved="false" />
-
+        -->
         <androidx.preference.SwitchPreference
             android:defaultValue="false"
             android:key="@string/pref_key_external_download_manager"

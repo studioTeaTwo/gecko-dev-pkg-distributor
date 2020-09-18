@@ -934,28 +934,28 @@ class SettingsTest {
         assertFalse(settings.shouldUseHttpsOnlyInPrivateTabsOnly)
     }
 
-    @Test
-    fun `GIVEN open links in apps setting THEN return the correct display string`() {
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
-        settings.lastKnownMode = BrowsingMode.Normal
-        assertEquals(settings.getOpenLinksInAppsString(), "Always")
-
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
-        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
-
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
-        assertEquals(settings.getOpenLinksInAppsString(), "Never")
-
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
-        settings.lastKnownMode = BrowsingMode.Private
-        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
-
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
-        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
-
-        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
-        assertEquals(settings.getOpenLinksInAppsString(), "Never")
-    }
+//    @Test
+//    fun `GIVEN open links in apps setting THEN return the correct display string`() {
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
+//        settings.lastKnownMode = BrowsingMode.Normal
+//        assertEquals(settings.getOpenLinksInAppsString(), "Always")
+//
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
+//        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+//
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
+//        assertEquals(settings.getOpenLinksInAppsString(), "Never")
+//
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
+//        settings.lastKnownMode = BrowsingMode.Private
+//        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+//
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
+//        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+//
+//        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
+//        assertEquals(settings.getOpenLinksInAppsString(), "Never")
+//    }
 
     @Test
     fun `GIVEN a written integer value for pref_key_search_widget_installed WHEN reading searchWidgetInstalled THEN do not throw a ClassCastException`() {
