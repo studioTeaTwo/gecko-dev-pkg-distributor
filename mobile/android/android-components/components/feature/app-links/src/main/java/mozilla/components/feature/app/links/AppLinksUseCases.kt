@@ -26,6 +26,7 @@ import java.lang.Exception
 import java.lang.NullPointerException
 import java.lang.NumberFormatException
 import java.net.URISyntaxException
+import mozilla.components.support.utils.TorUtils
 
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 internal const val EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url"
@@ -232,7 +233,7 @@ class AppLinksUseCases(
                     if (launchInNewTask) {
                         it.flags = it.flags or Intent.FLAG_ACTIVITY_NEW_TASK
                     }
-                    context.startActivity(it)
+                    TorUtils.startActivityPrompt(context, it)
                 } catch (e: Exception) {
                     when (e) {
                         is ActivityNotFoundException, is SecurityException, is NullPointerException -> {
