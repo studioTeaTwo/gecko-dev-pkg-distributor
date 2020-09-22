@@ -26,6 +26,7 @@ import mozilla.components.support.ktx.kotlin.stripMailToProtocol
 import mozilla.components.support.ktx.kotlin.takeOrReplace
 import mozilla.components.ui.widgets.DefaultSnackbarDelegate
 import mozilla.components.ui.widgets.SnackbarDelegate
+import mozilla.components.support.utils.TorUtils
 
 /**
  * A candidate for an item to be displayed in the context menu.
@@ -491,7 +492,8 @@ data class ContextMenuCandidate(
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     putExtra(Intent.EXTRA_TEXT, hitResult.getLink())
                 }
-                context.startActivity(
+                TorUtils.startActivityPrompt(
+                    context,
                     intent.createChooserExcludingCurrentApp(
                         context,
                         context.getString(R.string.mozac_feature_contextmenu_share_link),

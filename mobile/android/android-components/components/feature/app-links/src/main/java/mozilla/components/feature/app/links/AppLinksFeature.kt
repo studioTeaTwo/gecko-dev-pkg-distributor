@@ -108,7 +108,7 @@ class AppLinksFeature(
         }
 
         @Suppress("ComplexCondition")
-        if (isSameCallerAndApp(tab, appIntent) || (!tab.content.private && !shouldPrompt()) ||
+        if (isSameCallerAndApp(tab, appIntent) || (true || !tab.content.private && !shouldPrompt()) ||
             fragmentManager == null
         ) {
             doOpenApp()
