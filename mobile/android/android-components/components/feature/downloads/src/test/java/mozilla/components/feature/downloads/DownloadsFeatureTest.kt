@@ -78,60 +78,60 @@ class DownloadsFeatureTest {
         )
     }
 
-    @Test
-    fun `Adding a download object will request permissions if needed`() {
-        val fragmentManager: FragmentManager = mock()
+//    @Test
+//    fun `Adding a download object will request permissions if needed`() {
+//        val fragmentManager: FragmentManager = mock()
+//
+//        val download = DownloadState(url = "https://www.mozilla.org", sessionId = "test-tab")
+//
+//        var requestedPermissions = false
+//
+//        val feature = DownloadsFeature(
+//            testContext,
+//            store,
+//            useCases = mock(),
+//            onNeedToRequestPermissions = { requestedPermissions = true },
+//            fragmentManager = mockFragmentManager(),
+//        )
+//
+//        feature.start()
+//
+//        assertFalse(requestedPermissions)
+//
+//        store.dispatch(ContentAction.UpdateDownloadAction("test-tab", download))
+//            .joinBlocking()
+//
+//        dispatcher.scheduler.advanceUntilIdle()
+//
+//        assertTrue(requestedPermissions)
+//        verify(fragmentManager, never()).beginTransaction()
+//    }
 
-        val download = DownloadState(url = "https://www.mozilla.org", sessionId = "test-tab")
-
-        var requestedPermissions = false
-
-        val feature = DownloadsFeature(
-            testContext,
-            store,
-            useCases = mock(),
-            onNeedToRequestPermissions = { requestedPermissions = true },
-            fragmentManager = mockFragmentManager(),
-        )
-
-        feature.start()
-
-        assertFalse(requestedPermissions)
-
-        store.dispatch(ContentAction.UpdateDownloadAction("test-tab", download))
-            .joinBlocking()
-
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertTrue(requestedPermissions)
-        verify(fragmentManager, never()).beginTransaction()
-    }
-
-    @Test
-    fun `Adding a download when permissions are granted will show dialog`() {
-        val fragmentManager: FragmentManager = mockFragmentManager()
-
-        grantPermissions()
-
-        val feature = DownloadsFeature(
-            testContext,
-            store,
-            useCases = mock(),
-            fragmentManager = fragmentManager,
-        )
-
-        feature.start()
-
-        verify(fragmentManager, never()).beginTransaction()
-        val download = DownloadState(url = "https://www.mozilla.org", sessionId = "test-tab")
-
-        store.dispatch(ContentAction.UpdateDownloadAction("test-tab", download))
-            .joinBlocking()
-
-        dispatcher.scheduler.advanceUntilIdle()
-
-        verify(fragmentManager).beginTransaction()
-    }
+//    @Test
+//    fun `Adding a download when permissions are granted will show dialog`() {
+//        val fragmentManager: FragmentManager = mockFragmentManager()
+//
+//        grantPermissions()
+//
+//        val feature = DownloadsFeature(
+//            testContext,
+//            store,
+//            useCases = mock(),
+//            fragmentManager = fragmentManager,
+//        )
+//
+//        feature.start()
+//
+//        verify(fragmentManager, never()).beginTransaction()
+//        val download = DownloadState(url = "https://www.mozilla.org", sessionId = "test-tab")
+//
+//        store.dispatch(ContentAction.UpdateDownloadAction("test-tab", download))
+//            .joinBlocking()
+//
+//        dispatcher.scheduler.advanceUntilIdle()
+//
+//        verify(fragmentManager).beginTransaction()
+//    }
 
     @Test
     fun `Try again calls download manager`() {
@@ -974,136 +974,136 @@ class DownloadsFeatureTest {
         verify(spyContext, times(0)).startActivity(any())
     }
 
-    @Test
-    fun `GIVEN permissions are granted WHEN our app is selected for download THEN perform the download`() {
-        val spyContext = spy(testContext)
-        val usecases: DownloadsUseCases = mock()
-        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
-        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
-        val tab = createTab("https://www.mozilla.org", id = "test-tab")
-        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
-        val ourApp = DownloaderApp(name = "app", packageName = testContext.packageName, resolver = mock(), activityName = "", url = "", contentType = null)
-        var wasPermissionsRequested = false
-        val feature = spy(
-            DownloadsFeature(
-                applicationContext = testContext,
-                store = mock(),
-                useCases = usecases,
-                onNeedToRequestPermissions = { wasPermissionsRequested = true },
-            ),
-        )
-        doReturn(false).`when`(feature).startDownload(any())
+//    @Test
+//    fun `GIVEN permissions are granted WHEN our app is selected for download THEN perform the download`() {
+//        val spyContext = spy(testContext)
+//        val usecases: DownloadsUseCases = mock()
+//        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
+//        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
+//        val tab = createTab("https://www.mozilla.org", id = "test-tab")
+//        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
+//        val ourApp = DownloaderApp(name = "app", packageName = testContext.packageName, resolver = mock(), activityName = "", url = "", contentType = null)
+//        var wasPermissionsRequested = false
+//        val feature = spy(
+//            DownloadsFeature(
+//                applicationContext = testContext,
+//                store = mock(),
+//                useCases = usecases,
+//                onNeedToRequestPermissions = { wasPermissionsRequested = true },
+//            ),
+//        )
+//        doReturn(false).`when`(feature).startDownload(any())
+//
+//        grantPermissions()
+//        feature.onDownloaderAppSelected(ourApp, tab, download)
+//
+//        verify(feature).startDownload(download)
+//        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
+//        assertFalse(wasPermissionsRequested)
+//        verify(spyContext, never()).startActivity(any())
+//    }
 
-        grantPermissions()
-        feature.onDownloaderAppSelected(ourApp, tab, download)
+//    @Test
+//    fun `GIVEN permissions are not granted WHEN our app is selected for download THEN request the needed permissions`() {
+//        val spyContext = spy(testContext)
+//        val usecases: DownloadsUseCases = mock()
+//        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
+//        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
+//        val tab = createTab("https://www.mozilla.org", id = "test-tab")
+//        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
+//        val ourApp = DownloaderApp(name = "app", packageName = testContext.packageName, resolver = mock(), activityName = "", url = "", contentType = null)
+//        var wasPermissionsRequested = false
+//        val feature = spy(
+//            DownloadsFeature(
+//                applicationContext = testContext,
+//                store = mock(),
+//                useCases = usecases,
+//                onNeedToRequestPermissions = { wasPermissionsRequested = true },
+//            ),
+//        )
+//
+//        feature.onDownloaderAppSelected(ourApp, tab, download)
+//
+//        verify(feature, never()).startDownload(any())
+//        verify(consumeDownloadUseCase, never()).invoke(anyString(), anyString())
+//        assertTrue(wasPermissionsRequested)
+//        verify(spyContext, never()).startActivity(any())
+//    }
 
-        verify(feature).startDownload(download)
-        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
-        assertFalse(wasPermissionsRequested)
-        verify(spyContext, never()).startActivity(any())
-    }
+//    @Test
+//    fun `GIVEN a download WHEN a 3rd party app is selected THEN delegate download to it`() {
+//        val spyContext = spy(testContext)
+//        val usecases: DownloadsUseCases = mock()
+//        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
+//        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
+//        val tab = createTab("https://www.mozilla.org", id = "test-tab")
+//        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
+//        val anotherApp = DownloaderApp(
+//            name = "app",
+//            packageName = "test",
+//            resolver = mock(),
+//            activityName = "",
+//            url = download.url,
+//            contentType = null,
+//        )
+//        val feature = spy(
+//            DownloadsFeature(
+//                applicationContext = spyContext,
+//                store = mock(),
+//                useCases = usecases,
+//            ),
+//        )
+//        val intentArgumentCaptor = argumentCaptor<Intent>()
+//        val expectedIntent = with(feature) { anotherApp.toIntent() }
+//
+//        feature.onDownloaderAppSelected(anotherApp, tab, download)
+//
+//        verify(spyContext).startActivity(intentArgumentCaptor.capture())
+//        assertEquals(expectedIntent.toUri(0), intentArgumentCaptor.value.toUri(0))
+//        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
+//        verify(feature, never()).startDownload(any())
+//        assertNull(ShadowToast.getTextOfLatestToast())
+//    }
 
-    @Test
-    fun `GIVEN permissions are not granted WHEN our app is selected for download THEN request the needed permissions`() {
-        val spyContext = spy(testContext)
-        val usecases: DownloadsUseCases = mock()
-        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
-        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
-        val tab = createTab("https://www.mozilla.org", id = "test-tab")
-        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
-        val ourApp = DownloaderApp(name = "app", packageName = testContext.packageName, resolver = mock(), activityName = "", url = "", contentType = null)
-        var wasPermissionsRequested = false
-        val feature = spy(
-            DownloadsFeature(
-                applicationContext = testContext,
-                store = mock(),
-                useCases = usecases,
-                onNeedToRequestPermissions = { wasPermissionsRequested = true },
-            ),
-        )
-
-        feature.onDownloaderAppSelected(ourApp, tab, download)
-
-        verify(feature, never()).startDownload(any())
-        verify(consumeDownloadUseCase, never()).invoke(anyString(), anyString())
-        assertTrue(wasPermissionsRequested)
-        verify(spyContext, never()).startActivity(any())
-    }
-
-    @Test
-    fun `GIVEN a download WHEN a 3rd party app is selected THEN delegate download to it`() {
-        val spyContext = spy(testContext)
-        val usecases: DownloadsUseCases = mock()
-        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
-        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
-        val tab = createTab("https://www.mozilla.org", id = "test-tab")
-        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
-        val anotherApp = DownloaderApp(
-            name = "app",
-            packageName = "test",
-            resolver = mock(),
-            activityName = "",
-            url = download.url,
-            contentType = null,
-        )
-        val feature = spy(
-            DownloadsFeature(
-                applicationContext = spyContext,
-                store = mock(),
-                useCases = usecases,
-            ),
-        )
-        val intentArgumentCaptor = argumentCaptor<Intent>()
-        val expectedIntent = with(feature) { anotherApp.toIntent() }
-
-        feature.onDownloaderAppSelected(anotherApp, tab, download)
-
-        verify(spyContext).startActivity(intentArgumentCaptor.capture())
-        assertEquals(expectedIntent.toUri(0), intentArgumentCaptor.value.toUri(0))
-        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
-        verify(feature, never()).startDownload(any())
-        assertNull(ShadowToast.getTextOfLatestToast())
-    }
-
-    @Test
-    fun `GIVEN a download WHEN a 3rd party app is selected and the download fails THEN show a warning toast and consume the download`() {
-        val spyContext = spy(testContext)
-        val usecases: DownloadsUseCases = mock()
-        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
-        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
-        val tab = createTab("https://www.mozilla.org", id = "test-tab")
-        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
-        val anotherApp = DownloaderApp(
-            name = "app",
-            packageName = "test",
-            resolver = mock(),
-            activityName = "",
-            url = download.url,
-            contentType = null,
-        )
-        val feature = spy(
-            DownloadsFeature(
-                applicationContext = spyContext,
-                store = mock(),
-                useCases = usecases,
-            ),
-        )
-        val expectedWarningText = testContext.getString(
-            R.string.mozac_feature_downloads_unable_to_open_third_party_app,
-            anotherApp.name,
-        )
-        val intentArgumentCaptor = argumentCaptor<Intent>()
-        val expectedIntent = with(feature) { anotherApp.toIntent() }
-        doThrow(ActivityNotFoundException()).`when`(spyContext).startActivity(any())
-
-        feature.onDownloaderAppSelected(anotherApp, tab, download)
-
-        verify(spyContext).startActivity(intentArgumentCaptor.capture())
-        assertEquals(expectedIntent.toUri(0), intentArgumentCaptor.value.toUri(0))
-        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
-        verify(feature, never()).startDownload(any())
-        assertEquals(expectedWarningText, ShadowToast.getTextOfLatestToast())
-    }
+//    @Test
+//    fun `GIVEN a download WHEN a 3rd party app is selected and the download fails THEN show a warning toast and consume the download`() {
+//        val spyContext = spy(testContext)
+//        val usecases: DownloadsUseCases = mock()
+//        val consumeDownloadUseCase: ConsumeDownloadUseCase = mock()
+//        doReturn(consumeDownloadUseCase).`when`(usecases).consumeDownload
+//        val tab = createTab("https://www.mozilla.org", id = "test-tab")
+//        val download = DownloadState(url = "https://www.mozilla.org/file.txt", sessionId = "test-tab", id = "test")
+//        val anotherApp = DownloaderApp(
+//            name = "app",
+//            packageName = "test",
+//            resolver = mock(),
+//            activityName = "",
+//            url = download.url,
+//            contentType = null,
+//        )
+//        val feature = spy(
+//            DownloadsFeature(
+//                applicationContext = spyContext,
+//                store = mock(),
+//                useCases = usecases,
+//            ),
+//        )
+//        val expectedWarningText = testContext.getString(
+//            R.string.mozac_feature_downloads_unable_to_open_third_party_app,
+//            anotherApp.name,
+//        )
+//        val intentArgumentCaptor = argumentCaptor<Intent>()
+//        val expectedIntent = with(feature) { anotherApp.toIntent() }
+//        doThrow(ActivityNotFoundException()).`when`(spyContext).startActivity(any())
+//
+//        feature.onDownloaderAppSelected(anotherApp, tab, download)
+//
+//        verify(spyContext).startActivity(intentArgumentCaptor.capture())
+//        assertEquals(expectedIntent.toUri(0), intentArgumentCaptor.value.toUri(0))
+//        verify(consumeDownloadUseCase).invoke(tab.id, download.id)
+//        verify(feature, never()).startDownload(any())
+//        assertEquals(expectedWarningText, ShadowToast.getTextOfLatestToast())
+//    }
 
     @Test
     fun `when an app third party is selected for downloading we MUST forward the download`() {
