@@ -175,6 +175,7 @@
             android:defaultValue="false"
             android:key="@string/pref_key_external_download_manager"
             app:iconSpaceReserved="false"
+            app:isPreferenceVisible="false"
             android:title="@string/preferences_external_download_manager" />
 
         <androidx.preference.SwitchPreference
