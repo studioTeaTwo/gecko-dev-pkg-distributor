@@ -28,7 +28,6 @@ import mozilla.components.feature.downloads.dialog.DeniedPermissionDialogFragmen
 import mozilla.components.feature.downloads.ext.realFilenameOrGuessed
 import mozilla.components.feature.downloads.facts.emitPromptDismissedFact
 import mozilla.components.feature.downloads.facts.emitPromptDisplayedFact
-import mozilla.components.feature.downloads.manager.AndroidDownloadManager
 import mozilla.components.feature.downloads.manager.DownloadManager
 import mozilla.components.feature.downloads.manager.noop
 import mozilla.components.feature.downloads.manager.onDownloadStopped
@@ -112,7 +111,7 @@ class DownloadsFeature(
     internal val useCases: DownloadsUseCases,
     override var onNeedToRequestPermissions: OnNeedToRequestPermissions = { },
     onDownloadStopped: onDownloadStopped = noop,
-    private val downloadManager: DownloadManager = AndroidDownloadManager(applicationContext, store),
+    private val downloadManager: DownloadManager,
     private val tabId: String? = null,
     private val fragmentManager: FragmentManager? = null,
     private val promptsStyling: PromptsStyling? = null,
