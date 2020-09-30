@@ -1,0 +1,22 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<SearchPlugin xmlns="http://www.mozilla.org/2006/browser/search/">
+<ShortName>Yahoo</ShortName>
+<Description>Yahoo Search</Description>
+<InputEncoding>UTF-8</InputEncoding>
+<Image width="16" height="16">data:image/png;base64,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</Image>
+<Url type="application/x-suggestions+json" method="GET"
+     template="https://search.yahoo.com/sugg/ff">
+  <Param name="output"  value="fxjson" />
+  <Param name="appid"   value="ffd" />
+  <Param name="command" value="{searchTerms}" />
+</Url>
+<Url type="text/html" method="GET" template="https://search.yahoo.com/yhs/search"
+     resultdomain="yahoo.com" rel="searchform">
+  <Param name="p" value="{searchTerms}"/>
+  <Param name="ei" value="UTF-8"/>
+  <Param name="hspart" value="mozilla"/>
+</Url>
+</SearchPlugin>

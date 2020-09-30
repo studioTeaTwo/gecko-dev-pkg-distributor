@@ -30,6 +30,9 @@ internal const val GOOGLE_ID = "google"
 internal val GENERAL_SEARCH_ENGINE_IDS = setOf(
     GOOGLE_ID,
     "ddg",
+    "ddg-onion",
+    "startpage",
+    "startpage-onion",
     "bing",
     "baidu",
     "ecosia",
