@@ -53,6 +53,7 @@
         tools:text="@string/mozac_feature_addons_installed_dialog_description_2" />
 
     <androidx.appcompat.widget.AppCompatCheckBox
+        android:visibility="gone"
         android:id="@+id/allow_in_private_browsing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
