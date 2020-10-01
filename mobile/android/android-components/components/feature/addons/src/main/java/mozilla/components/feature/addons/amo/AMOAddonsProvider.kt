@@ -63,7 +63,7 @@ internal const val PAGE_SIZE = 50
  * should remain valid before a refresh is attempted. Defaults to -1, meaning no cache
  * is being used by default
  */
-class AMOAddonsProvider(
+open class AMOAddonsProvider(
     private val context: Context,
     private val client: Client,
     private val serverURL: String = DEFAULT_SERVER_URL,
@@ -237,7 +237,7 @@ class AMOAddonsProvider(
     }
 
     @VisibleForTesting
-    internal fun writeToDiskCache(collectionResponse: String, language: String?) {
+    open fun writeToDiskCache(collectionResponse: String, language: String?) {
         synchronized(diskCacheLock) {
             getCacheFile(context, language, useFallbackFile = false).writeString { collectionResponse }
         }

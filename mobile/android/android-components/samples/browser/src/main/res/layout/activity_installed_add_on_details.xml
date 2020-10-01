@@ -70,6 +70,7 @@
                 app:drawableStartCompat="@drawable/mozac_ic_permissions" />
 
         <androidx.appcompat.widget.SwitchCompat
+            android:visibility="gone"
             android:id="@+id/allow_in_private_browsing_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
