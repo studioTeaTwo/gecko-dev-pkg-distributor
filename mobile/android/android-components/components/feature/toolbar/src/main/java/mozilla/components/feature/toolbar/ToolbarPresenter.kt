@@ -18,6 +18,7 @@ import mozilla.components.concept.toolbar.Toolbar.Highlight
 import mozilla.components.concept.toolbar.Toolbar.SiteTrackingProtection
 import mozilla.components.feature.toolbar.internal.URLRenderer
 import mozilla.components.lib.state.ext.flowScoped
+import mozilla.components.support.ktx.kotlin.isOnionUrl
 
 /**
  * Presenter implementation for a toolbar implementation in order to update the toolbar whenever
@@ -69,7 +70,11 @@ class ToolbarPresenter(
             toolbar.displayProgress(tab.content.progress)
 
             toolbar.siteSecure = if (tab.content.securityInfo.secure) {
-                Toolbar.SiteSecurity.SECURE
+                if (tab.content.url.isOnionUrl()) {
+                    Toolbar.SiteSecurity.ONION
+                } else {
+                    Toolbar.SiteSecurity.SECURE
+                }
             } else {
                 Toolbar.SiteSecurity.INSECURE
             }

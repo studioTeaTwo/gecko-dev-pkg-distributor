@@ -246,6 +246,15 @@ fun String.urlContainsQueryParameters(searchParameters: String): Boolean = try {
 }
 
 /**
+ * Returns whether the string is an .onion URL.
+ */
+fun String.isOnionUrl(): Boolean = try {
+    URL(this).host.endsWith(".onion")
+} catch (e: MalformedURLException) {
+    false
+}
+
+/**
  * Compares 2 URLs and returns true if they have the same origin,
  * which means: same protocol, same host, same port.
  * It will return false if either this or [other] is not a valid URL.
