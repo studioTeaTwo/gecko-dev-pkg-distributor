@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="@color/mozac_ui_icons_fill"
+        android:fillType="evenOdd"
+        android:pathData="M12 18.25c2.0711 0 3.75-1.6789 3.75-3.75s-1.6789-3.75-3.75-3.75c-2.0711 0-3.75 1.6789-3.75 3.75s1.6789 3.75 3.75 3.75zm0 1.25c2.7614 0 5-2.2386 5-5s-2.2386-5-5-5c-2.7614 0-5 2.2386-5 5s2.2386 5 5 5z" />
+    <path
+        android:fillColor="@color/mozac_ui_icons_fill"
+        android:fillType="evenOdd"
+        android:pathData="M12 15.75c0.6903 0 1.25-0.5596 1.25-1.25 0-0.6903-0.5597-1.25-1.25-1.25s-1.25 0.5597-1.25 1.25c0 0.6904 0.5597 1.25 1.25 1.25zm0 1.25c1.3807 0 2.5-1.1193 2.5-2.5s-1.1193-2.5-2.5-2.5-2.5 1.1193-2.5 2.5 1.1193 2.5 2.5 2.5z" />
+    <path
+        android:fillColor="@color/mozac_ui_icons_fill"
+        android:fillType="evenOdd"
+        android:pathData="M17 8.9097c1.5344 1.3733 2.5 3.3691 2.5 5.5903 0 4.1421-3.3579 7.5-7.5 7.5-4.1421 0-7.5-3.3579-7.5-7.5 0-2.2212 0.96563-4.217 2.5-5.5903v-1.9097c0-2.7614 2.2386-5 5-5 2.7614 0 5 2.2386 5 5zm-8.4375-1.0774c1.0298-0.53198 2.1985-0.83239 3.4375-0.83239s2.4078 0.30041 3.4375 0.83239v-0.83239c0-1.8985-1.539-3.4375-3.4375-3.4375s-3.4375 1.539-3.4375 3.4375zm9.6875 6.6676c0 3.4518-2.7982 6.25-6.25 6.25-3.4518 0-6.25-2.7982-6.25-6.25s2.7982-6.25 6.25-6.25c3.4518 0 6.25 2.7982 6.25 6.25z" />
+</vector>

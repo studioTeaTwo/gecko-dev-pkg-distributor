@@ -488,6 +488,7 @@ interface Toolbar : ScrollableToolbar {
     enum class SiteSecurity {
         INSECURE,
         SECURE,
+        ONION,
     }
 
     /**
