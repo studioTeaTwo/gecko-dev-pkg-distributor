@@ -493,6 +493,7 @@ class DisplayToolbar internal constructor(
         @ColorInt val color = when (siteSecurity) {
             Toolbar.SiteSecurity.INSECURE -> colors.securityIconInsecure
             Toolbar.SiteSecurity.SECURE -> colors.securityIconSecure
+            Toolbar.SiteSecurity.ONION -> colors.securityIconSecure
         }
         if (color == Color.TRANSPARENT && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             views.securityIndicator.clearColorFilter()
