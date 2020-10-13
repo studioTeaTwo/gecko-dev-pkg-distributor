@@ -18,6 +18,8 @@ typealias DatetimeMetricType = mozilla.telemetry.glean.private.DatetimeMetricTyp
 typealias DenominatorMetricType = mozilla.telemetry.glean.private.DenominatorMetricType
 typealias EventMetricType<T> = mozilla.telemetry.glean.private.EventMetricType<T>
 typealias HistogramMetricBase = mozilla.telemetry.glean.private.HistogramBase
+// Some of our tooling seems to be still autogenerating the old HistogramBase still
+typealias HistogramBase = mozilla.telemetry.glean.private.HistogramBase
 typealias HistogramType = mozilla.telemetry.glean.private.HistogramType
 typealias LabeledMetricType<T> = mozilla.telemetry.glean.private.LabeledMetricType<T>
 typealias MemoryDistributionMetricType = mozilla.telemetry.glean.private.MemoryDistributionMetricType
