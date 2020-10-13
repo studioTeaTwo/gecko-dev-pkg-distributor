@@ -30,7 +30,17 @@ import static org.gradle.api.tasks.testing.TestResult.ResultType
 
 apply from: 'benchmark.gradle'
 
+def obtainTestBuildType() {
+    def result = "debug";
+    if (project.hasProperty("testBuildType")) {
+        result = project.getProperties().get("testBuildType")
+    }
+    result
+}
+
 android {
+    testBuildType obtainTestBuildType()
+
     project.maybeConfigForJetpackBenchmark(it)
     if (project.hasProperty("testBuildType")) {
         // Allowing to configure the test build type via command line flag (./gradlew -PtestBuildType=beta ..)
@@ -911,14 +921,22 @@ def getSupportedLocales() {
     // This isn't running as a task, instead the array is build when the gradle file is parsed.
     // https://github.com/mozilla-mobile/fenix/issues/14175
     def foundLocales = new StringBuilder()
+    def languageCodes = []
     foundLocales.append("new String[]{")
 
     fileTree("src/main/res").visit { FileVisitDetails details ->
-        if (details.file.path.endsWith("${File.separator}strings.xml")) {
+        if (details.file.path.endsWith("${File.separator}torbrowser_strings.xml")) {
             def languageCode = details.file.parent.tokenize(File.separator).last().replaceAll('values-', '').replaceAll('-r', '-')
             languageCode = (languageCode == "values") ? "en-US" : languageCode
-            foundLocales.append("\"").append(languageCode).append("\"").append(",")
+            languageCodes.add(languageCode)
         }
+    }
+
+    // The order of files in a `FileTree` is not stable, even on a single
+    // computer. Thus we need to sort the `languageCode`s. See: fenix#40083.
+    languageCodes.sort()
+    languageCodes.each {
+        foundLocales.append("\"").append(it).append("\"").append(",")
     }
 
     foundLocales.append("}")

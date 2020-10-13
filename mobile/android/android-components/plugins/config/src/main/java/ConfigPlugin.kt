@@ -20,7 +20,12 @@ object Config {
 
     @JvmStatic
     private fun generateDebugVersionName(): String {
-        val today = Date()
+        val today = if (System.getenv("MOZ_BUILD_DATE") != null) {
+            val format = SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
+            format.parse(System.getenv("MOZ_BUILD_DATE"))
+        } else {
+            Date()
+        }
         // Append the year (2 digits) and week in year (2 digits). This will make it easier to distinguish versions and
         // identify ancient versions when debugging issues. However this will still keep the same version number during
         // the week so that we do not end up with a lot of versions in tools like Sentry. As an extra this matches the
@@ -65,13 +70,20 @@ object Config {
      */
     @JvmStatic
     fun generateBuildDate(): String {
-        return LocalDateTime.now().toString()
+        return if (System.getenv("MOZ_BUILD_DATE") != null) {
+          // Converting our MOZ_BUILD_DATE to LocalDateTime
+          val format = SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
+          val date = format.parse(System.getenv("MOZ_BUILD_DATE"))
+          java.sql.Timestamp(date.getTime()).toLocalDateTime().toString()
+        } else {
+          LocalDateTime.now().toString()
+        }
     }
 
     private val fennecBaseVersionCode by lazy {
         val format = SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
         val cutoff = format.parse("20141228000000")
-        val build = Date()
+        val build = if (System.getenv("MOZ_BUILD_DATE") != null) format.parse(System.getenv("MOZ_BUILD_DATE")) else Date()
 
         Math.floor((build.time - cutoff.time) / (1000.0 * 60.0 * 60.0)).toInt()
     }

@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption
 buildscript {
     // This logic is duplicated in the allprojects block: I don't know how to fix that.
     repositories {
+        mavenLocal()
         gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
                 url repository
@@ -51,6 +52,7 @@ plugins {
 allprojects {
     // This logic is duplicated in the buildscript block: I don't know how to fix that.
     repositories {
+        mavenLocal()
         gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
                 url repository
