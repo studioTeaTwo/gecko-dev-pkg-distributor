@@ -30,7 +30,17 @@ import static org.gradle.api.tasks.testing.TestResult.ResultType
 
 apply from: 'benchmark.gradle'
 
+def obtainTestBuildType() {
+    def result = "debug";
+    if (project.hasProperty("testBuildType")) {
+        result = project.getProperties().get("testBuildType")
+    }
+    result
+}
+
 android {
+    testBuildType obtainTestBuildType()
+
     project.maybeConfigForJetpackBenchmark(it)
     if (project.hasProperty("testBuildType")) {
         // Allowing to configure the test build type via command line flag (./gradlew -PtestBuildType=beta ..)
@@ -301,12 +311,22 @@ android.applicationVariants.configureEach { variant ->
     def isDebugOrDCD = isDebug || isDataCollectionDisabled
     def useReleaseVersioning = variant.buildType.buildConfigFields['USE_RELEASE_VERSIONING']?.value ?: false
 
+    // env var NIMBUS_FML always overrides this in the tbb built patched application services
+    // https://gitlab.torproject.org/tpo/applications/tor-browser-build/-/blob/main/projects/application-services/offline-nimbus-fml.diff?ref_type=heads
+    // so safe to have always set so local builds and supply their expected location as fetched by
+    // fenix/tools/tba-fetch-deps.sh
+    // We normalize the path because it is valid to open/build from both tb and fenix roots
+    def normalizedTBPath = rootProject.projectDir.absolutePath.minus("mobile/android/fenix")
+    System.setProperty("nimbusFml",  normalizedTBPath + "/mobile/android/fenix/tools/nimbus-fml")
+
+
     println("----------------------------------------------")
     println("Variant name:      " + variant.name)
     println("Application ID:    " + [variant.applicationId, variant.buildType.applicationIdSuffix].findAll().join())
     println("Build type:        " + variant.buildType.name)
     println("Flavor:            " + variant.flavorName)
     println("Telemetry enabled: " + !isDebugOrDCD)
+    println("nimbusFml:        " + System.getProperty("nimbusFml"))
 
     if (useReleaseVersioning) {
         // The Google Play Store does not allow multiple APKs for the same app that all have the
@@ -911,14 +931,22 @@ def getSupportedLocales() {
     // This isn't running as a task, instead the array is build when the gradle file is parsed.
     // https://github.com/mozilla-mobile/fenix/issues/14175
     def foundLocales = new StringBuilder()
+    def languageCodes = []
     foundLocales.append("new String[]{")
 
     fileTree("src/main/res").visit { FileVisitDetails details ->
-        if (details.file.path.endsWith("${File.separator}strings.xml")) {
+        if (details.file.path.endsWith("${File.separator}torbrowser_strings.xml")) {
             def languageCode = details.file.parent.tokenize(File.separator).last().replaceAll('values-', '').replaceAll('-r', '-')
             languageCode = (languageCode == "values") ? "en-US" : languageCode
-            foundLocales.append("\"").append(languageCode).append("\"").append(",")
+            languageCodes.add(languageCode)
         }
+    }
+
+    // The order of files in a `FileTree` is not stable, even on a single
+    // computer. Thus we need to sort the `languageCode`s. See: fenix#40083.
+    languageCodes.sort()
+    languageCodes.each {
+        foundLocales.append("\"").append(it).append("\"").append(",")
     }
 
     foundLocales.append("}")

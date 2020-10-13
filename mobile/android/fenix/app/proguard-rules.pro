@@ -130,3 +130,6 @@
 -dontwarn java.beans.IntrospectionException
 -dontwarn java.beans.Introspector
 -dontwarn java.beans.PropertyDescriptor
+
+# Workaround for 'already has mapping' r8 issue (https://issuetracker.google.com/issues/140851070)
+-keep class com.google.android.gms.common.internal.BaseGmsClient { *; }
