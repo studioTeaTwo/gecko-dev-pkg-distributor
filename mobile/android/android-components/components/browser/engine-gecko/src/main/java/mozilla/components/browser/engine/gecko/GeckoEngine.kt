@@ -1331,6 +1331,15 @@ class GeckoEngine(
         override var globalPrivacyControlEnabled: Boolean
             get() = runtime.settings.globalPrivacyControl
             set(value) { runtime.settings.setGlobalPrivacyControl(value) }
+
+        override var spoofEnglish: Boolean
+            get() = runtime.settings.spoofEnglish
+            set(value) {
+                value.let {
+                    runtime.settings.spoofEnglish = it
+                    localeUpdater.updateValue()
+                }
+            }
     }.apply {
         defaultSettings?.let {
             this.javascriptEnabled = it.javascriptEnabled
@@ -1357,6 +1366,7 @@ class GeckoEngine(
             this.cookieBannerHandlingGlobalRulesSubFrames = it.cookieBannerHandlingGlobalRulesSubFrames
             this.globalPrivacyControlEnabled = it.globalPrivacyControlEnabled
             this.emailTrackerBlockingPrivateBrowsing = it.emailTrackerBlockingPrivateBrowsing
+            this.spoofEnglish = it.spoofEnglish
         }
     }
 

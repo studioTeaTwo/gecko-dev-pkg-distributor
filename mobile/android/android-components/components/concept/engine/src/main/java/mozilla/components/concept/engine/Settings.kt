@@ -251,6 +251,8 @@ abstract class Settings {
      * Setting to control the email tracker blocking feature in the private browsing mode.
      */
     open var emailTrackerBlockingPrivateBrowsing: Boolean by UnsupportedSetting()
+
+    open var spoofEnglish: Boolean by UnsupportedSetting()
 }
 
 /**
@@ -301,6 +303,7 @@ data class DefaultSettings(
     override var queryParameterStrippingAllowList: String = "",
     override var queryParameterStrippingStripList: String = "",
     override var emailTrackerBlockingPrivateBrowsing: Boolean = false,
+    override var spoofEnglish: Boolean = false,
 ) : Settings()
 
 class UnsupportedSetting<T> {

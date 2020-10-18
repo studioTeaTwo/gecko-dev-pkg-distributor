@@ -23,6 +23,8 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.components.StoreProvider
 import org.mozilla.fenix.databinding.FragmentLocaleSettingsBinding
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.requireComponents
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 
 class LocaleSettingsFragment : Fragment(), MenuProvider {
@@ -46,6 +48,8 @@ class LocaleSettingsFragment : Fragment(), MenuProvider {
         _binding = FragmentLocaleSettingsBinding.inflate(inflater, container, false)
         val view = binding.root
 
+        bindEnableSwitch()
+
         val browserStore = requireContext().components.core.store
         val localeUseCase = LocaleUseCases(browserStore)
 
@@ -62,8 +66,17 @@ class LocaleSettingsFragment : Fragment(), MenuProvider {
                 localeUseCase = localeUseCase,
             ),
         )
-        localeView = LocaleSettingsView(binding.root, interactor)
+        localeView = LocaleSettingsView(binding.localeContainer, interactor)
         return view
+    }
+
+    private fun bindEnableSwitch() {
+        val switch = binding.enableSwitch
+        switch.isChecked = requireComponents.core.engine.settings.spoofEnglish
+        switch.setOnCheckedChangeListener { _, isChecked ->
+            context?.settings()?.spoofEnglish = isChecked
+            requireComponents.core.engine.settings.spoofEnglish = isChecked
+        }
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
