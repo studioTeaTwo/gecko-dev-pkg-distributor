@@ -399,4 +399,6 @@
     <string name="pref_key_noscript_installed" translatable="false">pref_key_noscript_installed</string>
     <string name="pref_key_noscript_updated" translatable="false">pref_key_noscript_updated</string>
     <string name="pref_key_https_everywhere_removed" translatable="false">pref_key_https_everywhere_removed</string>
+
+    <string name="pref_key_spoof_english" translatable="false">pref_key_spoof_english</string>
 </resources>
