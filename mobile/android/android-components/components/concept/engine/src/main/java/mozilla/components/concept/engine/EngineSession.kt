@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.annotation.CallSuper
 import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy.CookiePolicy.ACCEPT_ALL
 import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy.CookiePolicy.ACCEPT_FIRST_PARTY_AND_ISOLATE_OTHERS
+import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy.CookiePolicy.ACCEPT_ONLY_FIRST_PARTY
 import mozilla.components.concept.engine.content.blocking.Tracker
 import mozilla.components.concept.engine.history.HistoryItem
 import mozilla.components.concept.engine.manifest.WebAppManifest
@@ -543,7 +544,9 @@ abstract class EngineSession(
         companion object {
             fun none() = TrackingProtectionPolicy(
                 trackingCategories = arrayOf(TrackingCategory.NONE),
-                cookiePolicy = ACCEPT_ALL,
+                useForPrivateSessions = false,
+                useForRegularSessions = false,
+                cookiePolicy = ACCEPT_ONLY_FIRST_PARTY,
             )
 
             /**
