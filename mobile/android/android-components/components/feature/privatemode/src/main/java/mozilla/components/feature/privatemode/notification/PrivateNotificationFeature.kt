@@ -44,6 +44,7 @@ class PrivateNotificationFeature<T : AbstractPrivateNotificationService>(
     }
 
     override fun stop() {
+        applicationContext.stopService(Intent(applicationContext, notificationServiceClass.java))
         scope?.cancel()
     }
 }
