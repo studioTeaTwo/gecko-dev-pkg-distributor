@@ -650,6 +650,24 @@ let JSWINDOWACTORS = {
     },
 
     messageManagerGroups: ["browsers"],
+
+    allFrames: true,
+  },
+
+  CryptoSafety: {
+    parent: {
+      esModuleURI: "resource:///actors/CryptoSafetyParent.sys.mjs",
+    },
+
+    child: {
+      esModuleURI: "resource:///actors/CryptoSafetyChild.sys.mjs",
+      group: "browsers",
+      events: {
+        copy: { mozSystemGroup: true },
+        cut: { mozSystemGroup: true },
+      },
+    },
+
     allFrames: true,
   },
 
