@@ -54,6 +54,8 @@ FINAL_TARGET_FILES.actors += [
     "ContentSearchParent.sys.mjs",
     "ContextMenuChild.sys.mjs",
     "ContextMenuParent.sys.mjs",
+    "CryptoSafetyChild.sys.mjs",
+    "CryptoSafetyParent.sys.mjs",
     "DecoderDoctorChild.sys.mjs",
     "DecoderDoctorParent.sys.mjs",
     "DOMFullscreenChild.sys.mjs",
