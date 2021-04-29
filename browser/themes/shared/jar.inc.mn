@@ -29,6 +29,7 @@
   skin/classic/browser/toolbarbuttons.css                      (../shared/toolbarbuttons.css)
   skin/classic/browser/toolbarbutton-icons.css                 (../shared/toolbarbutton-icons.css)
   skin/classic/browser/tor-branding.css                        (../shared/tor-branding.css)
+  skin/classic/browser/tor-urlbar-button.css                   (../shared/tor-urlbar-button.css)
   skin/classic/browser/urlbar-dynamic-results.css              (../shared/urlbar-dynamic-results.css)
   skin/classic/browser/urlbar-searchbar.css                    (../shared/urlbar-searchbar.css)
   skin/classic/browser/urlbarView.css                          (../shared/urlbarView.css)

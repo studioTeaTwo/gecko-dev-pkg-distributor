@@ -290,7 +290,7 @@ function recordTRREventTelemetry(
   }
 }
 
-function initPage() {
+async function initPage() {
   // We show an offline support page in case of a system-wide error,
   // when a user cannot connect to the internet and access the SUMO website.
   // For example, clock error, which causes certerrors across the web or
@@ -474,6 +474,16 @@ function initPage() {
     case "sslv3Used":
       learnMore.hidden = false;
       document.body.className = "certerror";
+      break;
+
+    case "proxyConnectFailure":
+      if (await RPMSendQuery("ShouldShowTorConnect")) {
+        // pass orginal destination as redirect param
+        const encodedRedirect = encodeURIComponent(document.location.href);
+        document.location.replace(
+          `about:torconnect?redirect=${encodedRedirect}`
+        );
+      }
       break;
   }
 
