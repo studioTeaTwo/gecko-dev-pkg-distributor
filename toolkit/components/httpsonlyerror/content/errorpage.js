@@ -127,8 +127,17 @@ function addAutofocus(selector, position = "afterbegin") {
 
 /* Initialize Page */
 
-initPage();
-// Dispatch this event so tests can detect that we finished loading the error page.
-// We're using the same event name as neterror because BrowserTestUtils.sys.mjs relies on that.
-let event = new CustomEvent("AboutNetErrorLoad", { bubbles: true });
-document.dispatchEvent(event);
+RPMSendQuery("ShouldShowTorConnect").then(shouldShow => {
+  if (shouldShow) {
+    // pass orginal destination as redirect param
+    const encodedRedirect = encodeURIComponent(document.location.href);
+    document.location.replace(`about:torconnect?redirect=${encodedRedirect}`);
+    return;
+  }
+
+  initPage();
+  // Dispatch this event so tests can detect that we finished loading the error page.
+  // We're using the same event name as neterror because BrowserTestUtils.sys.mjs relies on that.
+  let event = new CustomEvent("AboutNetErrorLoad", { bubbles: true });
+  document.dispatchEvent(event);
+});

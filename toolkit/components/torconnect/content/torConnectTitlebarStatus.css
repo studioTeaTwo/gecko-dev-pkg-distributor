@@ -1,0 +1,73 @@
+#tor-connect-titlebar-status:not([hidden]) {
+  display: flex;
+  align-items: center;
+  /* Want same as #private-browsing-indicator-with-label */
+  margin-inline: 7px;
+}
+
+#tor-connect-titlebar-status-label {
+  margin-inline: 6px;
+  white-space: nowrap;
+}
+
+#tor-connect-titlebar-status img {
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+  width: 16px;
+  height: 16px;
+  object-fit: none;
+  --num-animation-steps: 8;
+  /* First frame has no offset. */
+  --tor-not-connected-offset: 0;
+  /* Each frame/step is offset by 20px from the previous. */
+  --tor-connected-offset: calc(-20px * var(--num-animation-steps));
+  object-position: var(--tor-not-connected-offset);
+}
+
+#tor-connect-titlebar-status.tor-connect-status-potentially-blocked img {
+  /* NOTE: context-stroke is only used for the first "frame" for the slash. When
+   * we assign the potentially-blocked class, we do *not* expect to be connected
+   * at the same time, so we only expect this first frame to be visible in this
+   * state. */
+  stroke: #c50042;
+}
+
+@media (prefers-color-scheme: dark) {
+  #tor-connect-titlebar-status.tor-connect-status-potentially-blocked img {
+    stroke: #ff9aa2;
+  }
+}
+
+#tor-connect-titlebar-status.tor-connect-status-connected img {
+  object-position: var(--tor-connected-offset);
+}
+
+#tor-connect-titlebar-status.tor-connect-status-connected {
+  color: var(--tor-accent-color);
+}
+
+@keyframes onion-not-connected-to-connected {
+  from {
+    object-position: var(--tor-not-connected-offset);
+  }
+
+  to {
+    object-position: var(--tor-connected-offset);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #tor-connect-titlebar-status.tor-connect-status-connected.tor-connect-status-animate-transition {
+    transition: color 1000ms;
+  }
+
+  #tor-connect-titlebar-status.tor-connect-status-connected.tor-connect-status-animate-transition img {
+    animation-name: onion-not-connected-to-connected;
+    animation-delay: 200ms;
+    animation-fill-mode: both;
+    /* Run animation at 60 frames-per-second. */
+    animation-duration: calc(var(--num-animation-steps) * 1000ms / 60);
+    animation-timing-function: steps(var(--num-animation-steps));
+  }
+}
