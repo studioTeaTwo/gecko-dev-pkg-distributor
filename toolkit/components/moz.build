@@ -79,6 +79,7 @@ DIRS += [
     "thumbnails",
     "timermanager",
     "tooltiptext",
+    "torconnect",
     "tor-launcher",
     "typeaheadfind",
     "utils",

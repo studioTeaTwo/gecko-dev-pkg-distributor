@@ -104,6 +104,12 @@
                      oncommand="ContentAnalysis.showPanel(this, PanelUI);"
                      class="toolbarbutton-1 content-analysis-indicator-icon"/>
 
+      <html:div id="tor-connect-titlebar-status" role="status">
+        <html:img alt=""
+                  src="chrome://global/content/torconnect/tor-not-connected-to-connected-animated.svg" />
+        <html:span id="tor-connect-titlebar-status-label"></html:span>
+      </html:div>
+
 #include titlebar-items.inc.xhtml
 
     </toolbar>
@@ -422,6 +428,13 @@
                 <image id="star-button"
                        class="urlbar-icon"/>
               </hbox>
+            </hbox>
+
+            <hbox id="tor-connect-urlbar-button"
+                  role="button"
+                  class="tor-button tor-urlbar-button"
+                  hidden="true">
+              <label id="tor-connect-urlbar-button-label"/>
             </hbox>
           </hbox>
         </hbox>
