@@ -1,0 +1,274 @@
+
+/* Copyright (c) 2021, The Tor Project, Inc. */
+
+@import url("chrome://global/skin/error-pages.css");
+@import url("chrome://global/skin/tor-colors.css");
+@import url("chrome://global/skin/onion-pattern.css");
+
+:root {
+  --onion-opacity: 1;
+  --onion-color: var(--card-outline-color);
+}
+
+#breadcrumbs {
+  display: flex;
+  align-items: center;
+  margin: 0 0 24px 0;
+}
+
+#breadcrumbs.hidden {
+  visibility: hidden;
+}
+
+.breadcrumb-item, .breadcrumb-separator {
+  display: flex;
+  margin: 0;
+  margin-inline-start: 20px;
+  padding: 8px;
+}
+
+.breadcrumb-item {
+  align-items: center;
+  cursor: pointer;
+  color: var(--in-content-text-color);
+  border-radius: 4px;
+}
+
+.breadcrumb-item:hover {
+  color: var(--in-content-accent-color);
+  background-color: var(--in-content-button-background-hover);
+}
+
+.breadcrumb-item:active {
+  color: var(--in-content-accent-color-active);
+  background-color: var(--in-content-button-background-active);
+}
+
+.breadcrumb-separator {
+  width: 15px;
+  list-style-image: url("chrome://global/content/torconnect/arrow-right.svg");
+}
+
+.breadcrumb-separator:dir(rtl) {
+  scale: -1 1;
+}
+
+.breadcrumb-icon {
+  display: inline list-item;
+  height: 16px;
+  list-style-position: inside;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.breadcrumb-item.active {
+  color: var(--in-content-accent-color);
+}
+
+.breadcrumb-item.disabled, .breadcrumb-item.disabled:hover, .breadcrumb-item.disabled:active {
+  color: var(--in-content-text-color);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.breadcrumb-item.error {
+  color: var(--in-content-danger-button-background);
+}
+
+.breadcrumb-item.error:hover {
+  color: var(--in-content-danger-button-background-hover);
+}
+
+.breadcrumb-item.error:active {
+  color: var(--in-content-danger-button-background-active);
+}
+
+.breadcrumb-item.hidden, .breadcrumb-separator.hidden {
+  display: none;
+}
+
+#connect-to-tor {
+  margin-inline-start: 0;
+}
+
+#connect-to-tor-icon {
+  list-style-image: url("chrome://global/content/torconnect/tor-connect.svg");
+}
+
+#connection-assist-icon {
+  list-style-image: url("chrome://global/content/torconnect/tor-connect-broken.svg");
+}
+
+#location-settings-icon {
+  list-style-image: url("chrome://global/content/torconnect/globe.svg");
+}
+
+#try-bridge {
+  cursor: default;
+}
+
+#try-bridge-icon {
+  list-style-image: url("chrome://global/content/torconnect/bridge.svg");
+}
+
+#locationDropdownLabel {
+  margin-block: auto;
+  margin-inline: 4px;
+}
+
+#locationDropdownLabel.error {
+  color: var(--text-color-error)
+}
+
+/* this follows similar css in error-pages.css for buttons */
+@media only screen and (min-width: 480px) {
+  form#locationDropdown {
+    margin-inline: 4px;
+    /* subtracting out the margin is needeed because by
+       default forms have different margins than buttons */
+    max-width: calc(100% - 8px);
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  #tryAgainButton {
+    margin-top: 4px;
+  }
+}
+
+form#locationDropdown {
+  width: 240px;
+}
+
+form#locationDropdown select {
+  max-width: 100%;
+  margin-inline: 0;
+  font-weight: 700;
+}
+
+:root {
+  --progressbar-shadow-start: rgba(255, 255, 255, 0.7);
+  --progressbar-gradient: linear-gradient(90deg, #FC00FF 0%, #00DBDE 50%, #FC00FF 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --progressbar-shadow-start: rgba(28, 27, 34, 0.7);
+  }
+}
+
+#progressBar:not([hidden]) {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  display: grid;
+  --progress-percent: 0%;
+  --progress-animation: progressAnimation 5s ease infinite;
+  --progress-bar-height: 7px;
+}
+
+#progressBar > * {
+  grid-area: 1 / 1;
+}
+
+#progressBarBackground {
+  width: 100%;
+  height: var(--progress-bar-height);
+  background: var(--in-content-box-info-background);
+}
+
+#progressBackground {
+  z-index: 1;
+  width: var(--progress-percent);
+  height: 66px;
+  margin-block-start: -26px;
+  background-image:
+    linear-gradient(var(--progressbar-shadow-start), var(--in-content-page-background) 100%),
+    var(--progressbar-gradient);
+  animation: var(--progress-animation);
+  filter: blur(5px);
+  border-end-end-radius: 33px;
+}
+
+#progressSolid {
+  z-index: 2;
+  width: var(--progress-percent);
+  height: var(--progress-bar-height);
+  border-start-end-radius: calc(var(--progress-bar-height) / 2);
+  border-end-end-radius: calc(var(--progress-bar-height) / 2);
+  background-image: var(--progressbar-gradient);
+  animation: var(--progress-animation);
+}
+
+#progressBackground, #progressSolid {
+  background-size: 200% 100%;
+}
+
+@keyframes progressAnimation {
+  0% {
+    background-position: 200%;
+  }
+  50% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: 0%;
+  }
+}
+
+@keyframes progressAnimation {
+  0% {
+    background-position: 200%;
+  }
+  50% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: 0%;
+  }
+}
+
+#connectPageContainer {
+  margin-top: 10vh;
+  width: 100%;
+  max-width: 45em;
+}
+
+#quickstartToggle {
+  width: max-content;
+}
+
+/* mirrors p element spacing */
+#viewLogButton {
+  margin: 1em 0;
+}
+
+body.aboutTorConnect {
+  justify-content: space-between;
+  /* Always reserve 150px for the background, plus 15px padding with content. */
+  padding-block-end: calc(var(--onion-pattern-height) + 15px);
+}
+
+body.aboutTorConnect .title {
+  background-image: url("chrome://global/content/torconnect/tor-connect.svg");
+  -moz-context-properties: stroke, fill, fill-opacity;
+  fill-opacity: var(--onion-opacity);
+  fill: var(--onion-color);
+  stroke: var(--onion-color);
+  /* Make sure there is no padding between the title and #breadcrumbs. */
+  padding-block-start: 0;
+}
+
+body.aboutTorConnect .title.offline {
+  background-image: url("chrome://global/content/torconnect/connection-failure.svg");
+}
+
+body.aboutTorConnect .title:is(.assist, .final) {
+  background-image: url("chrome://global/content/torconnect/tor-connect-broken.svg");
+}
+
+body.aboutTorConnect .title.location {
+  background-image: url("chrome://global/content/torconnect/connection-location.svg");
+  stroke: var(--in-content-warning-icon-color);
+}

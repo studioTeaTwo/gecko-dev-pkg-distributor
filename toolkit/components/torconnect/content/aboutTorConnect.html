@@ -1,0 +1,90 @@
+<!-- Copyright (c) 2021, The Tor Project, Inc. -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome:; object-src 'none'"
+    />
+    <link
+      rel="stylesheet"
+      href="chrome://global/content/torconnect/aboutTorConnect.css"
+      type="text/css"
+      media="all"
+    />
+
+    <script
+      type="module"
+      src="chrome://global/content/elements/moz-toggle.mjs"
+    ></script>
+  </head>
+  <body class="aboutTorConnect onion-pattern-background">
+    <div id="progressBar" hidden="hidden">
+      <div id="progressSolid"></div>
+      <div id="progressBackground"></div>
+      <div id="progressBarBackground"></div>
+    </div>
+    <div id="connectPageContainer" class="container">
+      <div id="breadcrumbs" class="hidden">
+        <span id="connect-to-tor" class="breadcrumb-item">
+          <span id="connect-to-tor-icon" class="breadcrumb-icon"></span>
+          <span class="breadcrumb-label"></span>
+        </span>
+        <span
+          id="connection-assist-separator"
+          class="breadcrumb-separator breadcrumb-icon"
+        ></span>
+        <span id="connection-assist" class="breadcrumb-item">
+          <span id="connection-assist-icon" class="breadcrumb-icon"></span>
+          <span class="breadcrumb-label"></span>
+        </span>
+        <span
+          id="try-bridge-separator"
+          class="breadcrumb-separator breadcrumb-icon"
+        ></span>
+        <span id="try-bridge" class="breadcrumb-item">
+          <span id="try-bridge-icon" class="breadcrumb-icon"></span>
+          <span class="breadcrumb-label"></span>
+        </span>
+      </div>
+      <div id="text-container">
+        <div class="title">
+          <h1 class="title-text"></h1>
+        </div>
+        <div id="connectLongContent">
+          <p id="connectLongContentText"></p>
+        </div>
+        <div id="connectShortDesc">
+          <p id="connectShortDescText"></p>
+        </div>
+
+        <button id="viewLogButton"></button>
+
+        <div id="quickstartContainer">
+          <moz-toggle id="quickstartToggle" label-align-after=""></moz-toggle>
+        </div>
+
+        <div id="connectButtonContainer" class="button-container">
+          <button id="restartButton" hidden="true"></button>
+          <button id="configureButton" hidden="true"></button>
+          <button id="cancelButton" hidden="true"></button>
+          <button
+            id="connectButton"
+            hidden="true"
+            class="tor-button"
+          ></button>
+          <label id="locationDropdownLabel" for="countries"></label>
+          <form id="locationDropdown" hidden="true">
+            <select id="countries"></select>
+          </form>
+          <button
+            id="tryBridgeButton"
+            hidden="true"
+            class="tor-button"
+          ></button>
+        </div>
+      </div>
+    </div>
+    <script src="chrome://global/content/torconnect/aboutTorConnect.js"></script>
+  </body>
+</html>
