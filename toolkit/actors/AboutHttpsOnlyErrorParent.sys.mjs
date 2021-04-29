@@ -5,6 +5,8 @@
 import { HomePage } from "resource:///modules/HomePage.sys.mjs";
 import { PrivateBrowsingUtils } from "resource://gre/modules/PrivateBrowsingUtils.sys.mjs";
 
+import { TorConnect } from "resource://gre/modules/TorConnect.sys.mjs";
+
 export class AboutHttpsOnlyErrorParent extends JSWindowActorParent {
   get browser() {
     return this.browsingContext.top.embedderElement;
@@ -15,7 +17,10 @@ export class AboutHttpsOnlyErrorParent extends JSWindowActorParent {
       case "goBack":
         this.goBackFromErrorPage(this.browser);
         break;
+      case "ShouldShowTorConnect":
+        return TorConnect.shouldShowTorConnect;
     }
+    return undefined;
   }
 
   goBackFromErrorPage(aBrowser) {

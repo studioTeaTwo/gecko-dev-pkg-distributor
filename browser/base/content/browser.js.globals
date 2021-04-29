@@ -274,5 +274,10 @@
   "SecurityLevelButton",
   "NewIdentityButton",
   "TorDomainIsolator",
-  "gTorCircuitPanel"
+  "gTorCircuitPanel",
+  "TorConnect",
+  "TorConnectState",
+  "TorConnectTopics",
+  "gTorConnectUrlbarButton",
+  "gTorConnectTitlebarStatus"
 ]

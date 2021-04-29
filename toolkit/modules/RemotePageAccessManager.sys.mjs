@@ -71,6 +71,7 @@ export let RemotePageAccessManager = {
       RPMAddMessageListener: ["WWWReachable"],
       RPMTryPingSecureWWWLink: ["*"],
       RPMOpenSecureWWWLink: ["*"],
+      RPMSendQuery: ["ShouldShowTorConnect"],
     },
     "about:certificate": {
       RPMSendQuery: ["getCertificates"],
@@ -120,7 +121,7 @@ export let RemotePageAccessManager = {
       RPMGetTRRDomain: ["*"],
       RPMIsSiteSpecificTRRError: ["*"],
       RPMSetTRRDisabledLoadFlags: ["*"],
-      RPMSendQuery: ["Browser:AddTRRExcludedDomain"],
+      RPMSendQuery: ["Browser:AddTRRExcludedDomain", "ShouldShowTorConnect"],
       RPMGetIntPref: ["network.trr.mode"],
     },
     "about:newtab": {
@@ -221,6 +222,27 @@ export let RemotePageAccessManager = {
       RPMSendAsyncMessage: ["Load", "closeTab", "restoreTab", "restoreAll"],
       RPMAddMessageListener: ["*"],
       RPMRemoveMessageListener: ["*"],
+    },
+    "about:torconnect": {
+      RPMAddMessageListener: [
+        "torconnect:state-change",
+        "torconnect:user-action",
+      ],
+      RPMSendAsyncMessage: [
+        "torconnect:open-tor-preferences",
+        "torconnect:begin-bootstrap",
+        "torconnect:begin-autobootstrap",
+        "torconnect:cancel-bootstrap",
+        "torconnect:set-quickstart",
+        "torconnect:view-tor-logs",
+        "torconnect:restart",
+        "torconnect:set-ui-state",
+        "torconnect:broadcast-user-action",
+      ],
+      RPMSendQuery: [
+        "torconnect:get-init-args",
+        "torconnect:get-country-codes",
+      ],
     },
     "about:welcome": {
       RPMSendAsyncMessage: ["ActivityStream:ContentToMain"],

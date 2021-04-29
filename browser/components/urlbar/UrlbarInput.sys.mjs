@@ -20,6 +20,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ReaderMode: "resource://gre/modules/ReaderMode.sys.mjs",
   SearchUIUtils: "resource:///modules/SearchUIUtils.sys.mjs",
   SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
+  TorConnect: "resource://gre/modules/TorConnect.sys.mjs",
   UrlbarController: "resource:///modules/UrlbarController.sys.mjs",
   UrlbarEventBufferer: "resource:///modules/UrlbarEventBufferer.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
@@ -273,6 +274,36 @@ export class UrlbarInput {
     ChromeUtils.defineLazyGetter(this, "logger", () =>
       lazy.UrlbarUtils.getLogger({ prefix: "Input" })
     );
+  }
+
+  // in certain scenarios we want user input uris to open in a new tab if they do so from the
+  // about:torconnect tab
+  #maybeUpdateOpenLocationForTorConnect(
+    openUILinkWhere,
+    currentURI,
+    destinationURI
+  ) {
+    try {
+      // only open in new tab if:
+      if (
+        // user is navigating away from about:torconnect
+        currentURI === "about:torconnect" &&
+        // we are trying to open in same tab
+        openUILinkWhere === "current" &&
+        // only if user still has not bootstrapped
+        lazy.TorConnect.shouldShowTorConnect &&
+        // and user is not just navigating to about:torconnect
+        destinationURI !== "about:torconnect"
+      ) {
+        return "tab";
+      }
+    } catch (e) {
+      // swallow exception and fall through returning original so we don't accidentally break
+      // anything if an exception is thrown
+      this.logger.error(e?.message ? e.message : e);
+    }
+
+    return openUILinkWhere;
   }
 
   /**
@@ -2986,6 +3017,11 @@ export class UrlbarInput {
       this.inputField.setSelectionRange(0, 0);
     }
 
+    openUILinkWhere = this.#maybeUpdateOpenLocationForTorConnect(
+      openUILinkWhere,
+      this.window.gBrowser.currentURI.asciiSpec,
+      url
+    );
     if (openUILinkWhere != "current") {
       this.handleRevert();
     }

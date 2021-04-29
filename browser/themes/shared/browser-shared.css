@@ -28,6 +28,7 @@
 @import url("chrome://browser/skin/formautofill-notification.css");
 @import url("chrome://browser/skin/tor-branding.css");
 @import url("chrome://global/skin/tor-colors.css");
+@import url("chrome://browser/skin/tor-urlbar-button.css");
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
