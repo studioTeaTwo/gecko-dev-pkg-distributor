@@ -325,7 +325,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             }
         } else {
             lifecycleScope.launch(IO) {
-                showFullscreenMessageIfNeeded(applicationContext)
+                // showFullscreenMessageIfNeeded(applicationContext)
             }
 
             // Unless the activity is recreated, navigate to home first (without rendering it)
@@ -362,7 +362,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 ?.also {
                     Events.appOpened.record(Events.AppOpenedExtra(it))
                     // This will record an event in Nimbus' internal event store. Used for behavioral targeting
-                    components.nimbus.events.recordEvent("app_opened")
+                    // components.nimbus.events.recordEvent("app_opened")
 
                     if (safeIntent.action.equals(ACTION_OPEN_PRIVATE_TAB) && it == APP_ICON) {
                         AppIcon.newPrivateTabTapped.record(NoExtras())
@@ -1316,10 +1316,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             keyDismissButtonText = null,
         )
 
+        /*
         researchSurfaceDialogFragment.onAccept = {
             processIntent(messaging.getIntentForMessage(nextMessage))
             components.appStore.dispatch(AppAction.MessagingAction.MessageClicked(nextMessage))
         }
+        */
 
         researchSurfaceDialogFragment.onDismiss = {
             components.appStore.dispatch(AppAction.MessagingAction.MessageDismissed(nextMessage))
@@ -1332,10 +1334,10 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             )
         }
 
-        // Update message as displayed.
-        val currentBootUniqueIdentifier = BootUtils.getBootIdentifier(context)
-
-        messaging.onMessageDisplayed(nextMessage, currentBootUniqueIdentifier)
+//        // Update message as displayed.
+//        val currentBootUniqueIdentifier = BootUtils.getBootIdentifier(context)
+//
+//        messaging.onMessageDisplayed(nextMessage, currentBootUniqueIdentifier)
     }
 
     companion object {
