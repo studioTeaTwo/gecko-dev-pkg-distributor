@@ -6,16 +6,21 @@ package org.mozilla.fenix.components
 
 import android.content.Context
 import mozilla.components.service.nimbus.NimbusApi
+import mozilla.components.service.nimbus.NimbusDisabled
 import mozilla.components.service.nimbus.messaging.FxNimbusMessaging
+import mozilla.components.service.nimbus.messaging.Message
+import mozilla.components.service.nimbus.messaging.MessageMetadataStorage
 import mozilla.components.service.nimbus.messaging.NimbusMessagingController
 import mozilla.components.service.nimbus.messaging.NimbusMessagingControllerInterface
 import mozilla.components.service.nimbus.messaging.NimbusMessagingStorage
 import mozilla.components.service.nimbus.messaging.OnDiskMessageMetadataStorage
 import org.mozilla.experiments.nimbus.NimbusEventStore
 import org.mozilla.experiments.nimbus.NimbusMessagingHelperInterface
+import org.mozilla.experiments.nimbus.NullNimbus
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.experiments.createNimbus
 import org.mozilla.fenix.messaging.CustomAttributeProvider
+import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.lazyMonitored
 
 /**
@@ -28,7 +33,14 @@ class NimbusComponents(private val context: Context) {
      * should be mediated through a FML generated class, e.g. [FxNimbus].
      */
     val sdk: NimbusApi by lazyMonitored {
-        createNimbus(context, BuildConfig.NIMBUS_ENDPOINT)
+        if (BuildConfig.DATA_COLLECTION_DISABLED) {
+            NimbusDisabled(context)
+        } else {
+            createNimbus(context, BuildConfig.NIMBUS_ENDPOINT).also { api ->
+                FxNimbus.api = api
+            }
+        }
+
     }
 
     /**
@@ -44,7 +56,8 @@ class NimbusComponents(private val context: Context) {
      * the JEXL helper available from [createJexlHelper].
      */
     val events: NimbusEventStore by lazyMonitored {
-        sdk.events
+        NullNimbus(context)
+        //sdk.events
     }
 
     /**
@@ -92,10 +105,25 @@ class NimbusComponents(private val context: Context) {
     private val messagingStorage by lazyMonitored {
         NimbusMessagingStorage(
             context = context,
-            metadataStorage = OnDiskMessageMetadataStorage(context),
+            metadataStorage = NullMessageMetadataStorage(), //OnDiskMessageMetadataStorage(context),
             nimbus = sdk,
             messagingFeature = FxNimbusMessaging.features.messaging,
             attributeProvider = CustomAttributeProvider,
         )
+    }
+}
+// Noop impl of MessageMetadataStorage to replace OnDiskMessageMetadataStorage
+class NullMessageMetadataStorage(): MessageMetadataStorage {
+    override suspend fun getMetadata(): Map<String, Message.Metadata> {
+        var metadataMap: MutableMap<String, Message.Metadata> = hashMapOf()
+        return metadataMap
+    }
+
+    override suspend fun addMetadata(metadata: Message.Metadata): Message.Metadata {
+        return metadata
+    }
+
+    override suspend fun updateMetadata(metadata: Message.Metadata) {
+        // noop
     }
 }

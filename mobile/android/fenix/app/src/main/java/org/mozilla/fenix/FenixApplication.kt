@@ -215,7 +215,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         )
 
         // Set the metric configuration from Nimbus.
-        Glean.applyServerKnobsConfig(FxNimbus.features.glean.value().metricsEnabled)
+        // Glean.applyServerKnobsConfig(FxNimbus.features.glean.value().metricsEnabled)
 
         Glean.initialize(
             applicationContext = this,
