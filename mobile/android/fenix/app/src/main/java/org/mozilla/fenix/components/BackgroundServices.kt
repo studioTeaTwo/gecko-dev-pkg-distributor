@@ -254,7 +254,7 @@ internal class TelemetryAccountObserver(
             // User signed-in into an existing FxA account.
             AuthType.Signin -> {
                 SyncAuth.signIn.record(NoExtras())
-                context.components.nimbus.events.recordEvent("sync_auth.sign_in")
+                // context.components.nimbus.events.recordEvent("sync_auth.sign_in")
             }
 
             // User created a new FxA account.

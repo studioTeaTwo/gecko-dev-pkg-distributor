@@ -765,7 +765,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
 
     override fun navToQuickSettingsSheet(tab: SessionState, sitePermissions: SitePermissions?) {
         val useCase = requireComponents.useCases.trackingProtectionUseCases
-        FxNimbus.features.cookieBanners.recordExposure()
+        // FxNimbus.features.cookieBanners.recordExposure()
         useCase.containsException(tab.id) { hasTrackingProtectionException ->
             lifecycleScope.launch {
                 val cookieBannersStorage = requireComponents.core.cookieBannersStorage
