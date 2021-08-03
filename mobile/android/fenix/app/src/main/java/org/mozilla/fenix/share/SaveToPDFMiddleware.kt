@@ -154,7 +154,7 @@ class SaveToPDFMiddleware(
                                 source = telemetrySource(isPdf),
                             ),
                         )
-                        nimbusEventStore.recordEvent("print_tapped")
+                        // nimbusEventStore.recordEvent("print_tapped")
                     } else {
                         Events.saveToPdfTapped.record(
                             Events.SaveToPdfTappedExtra(
