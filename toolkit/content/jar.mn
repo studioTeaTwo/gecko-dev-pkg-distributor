@@ -157,3 +157,5 @@ toolkit.jar:
 # Third party files
    content/global/third_party/d3/d3.js                (/third_party/js/d3/d3.js)
    content/global/third_party/cfworker/json-schema.js (/third_party/js/cfworker/json-schema.js)
+
+   content/global/pt_config.json               (pt_config.json)
