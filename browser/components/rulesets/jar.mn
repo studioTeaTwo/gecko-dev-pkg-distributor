@@ -1,0 +1,5 @@
+browser.jar:
+    content/browser/rulesets/aboutRulesets.css                   (content/aboutRulesets.css)
+    content/browser/rulesets/aboutRulesets.html                  (content/aboutRulesets.html)
+    content/browser/rulesets/aboutRulesets.js                    (content/aboutRulesets.js)
+    content/browser/rulesets/securedrop.svg                      (content/securedrop.svg)

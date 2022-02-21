@@ -6174,6 +6174,10 @@ static const PrefListEntry sOverrideRestrictionsList[]{
     // has it set as a string...
     PREF_LIST_ENTRY("services.settings.preview_enabled"),
     PREF_LIST_ENTRY("services.settings.server"),
+
+    // tor-browser#41165, tor-browser!765: leave this static pref in
+    // gSharedMap to prevent a crash in gpu process in debug builds.
+    PREF_LIST_ENTRY("browser.urlbar.onionRewrites.enabled"),
 };
 
 // These prefs are dynamically-named (i.e. not specified in prefs.js or
