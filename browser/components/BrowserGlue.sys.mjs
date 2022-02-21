@@ -52,6 +52,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   Normandy: "resource://normandy/Normandy.sys.mjs",
+  OnionAliasStore: "resource:///modules/OnionAliasStore.sys.mjs",
   OnboardingMessageProvider:
     "resource:///modules/asrouter/OnboardingMessageProvider.sys.mjs",
   OsEnvironment: "resource://gre/modules/OsEnvironment.sys.mjs",
@@ -92,6 +93,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   TabCrashHandler: "resource:///modules/ContentCrashHandlers.sys.mjs",
   TabUnloader: "resource:///modules/TabUnloader.sys.mjs",
   TelemetryUtils: "resource://gre/modules/TelemetryUtils.sys.mjs",
+  TorConnect: "resource://gre/modules/TorConnect.sys.mjs",
+  TorConnectTopics: "resource://gre/modules/TorConnect.sys.mjs",
   TorProviderBuilder: "resource://gre/modules/TorProviderBuilder.sys.mjs",
   UIState: "resource://services-sync/UIState.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
@@ -889,6 +892,19 @@ let JSWINDOWACTORS = {
 
     messageManagerGroups: ["browsers"],
     enablePreference: "accessibility.blockautorefresh",
+  },
+
+  Rulesets: {
+    parent: {
+      esModuleURI: "resource:///modules/RulesetsParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///modules/RulesetsChild.sys.mjs",
+      events: {
+        DOMWindowCreated: {},
+      },
+    },
+    matches: ["about:rulesets*"],
   },
 
   ScreenshotsComponent: {
@@ -2352,6 +2368,7 @@ BrowserGlue.prototype = {
         // can perform at-shutdown tasks later in shutdown.
         Services.fog;
       },
+      () => lazy.OnionAliasStore.uninit(),
     ];
 
     for (let task of tasks) {
@@ -3094,6 +3111,30 @@ BrowserGlue.prototype = {
         name: "Blocklist.loadBlocklistAsync",
         task: () => {
           lazy.Blocklist.loadBlocklistAsync();
+        },
+      },
+
+      {
+        task: () => {
+          if (!lazy.TorConnect.shouldShowTorConnect) {
+            // we will take this path when the user is using the legacy tor launcher or
+            // when Tor Browser didn't launch its own tor.
+            lazy.OnionAliasStore.init();
+          } else {
+            // this path is taken when using about:torconnect, we wait to init
+            // after we are bootstrapped and connected to tor
+            const topic = lazy.TorConnectTopics.BootstrapComplete;
+            let bootstrapObserver = {
+              observe(aSubject, aTopic) {
+                if (aTopic === topic) {
+                  lazy.OnionAliasStore.init();
+                  // we only need to init once, so remove ourselves as an obvserver
+                  Services.obs.removeObserver(this, topic);
+                }
+              },
+            };
+            Services.obs.addObserver(bootstrapObserver, topic);
+          }
         },
       },
 

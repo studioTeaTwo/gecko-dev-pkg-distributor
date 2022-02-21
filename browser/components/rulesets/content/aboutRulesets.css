@@ -1,0 +1,306 @@
+/* Copyright (c) 2022, The Tor Project, Inc. */
+
+/* General rules */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font: message-box;
+  background-color: var(--in-content-page-background);
+  color: var(--in-content-page-color);
+  font-size: 15px;
+  cursor: default;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+}
+
+input[type=text] {
+  margin: 0;
+  width: 360px;
+  max-width: 100%;
+}
+
+textarea {
+  margin: 0;
+  width: var(--content-width);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+select, option {
+  font-weight: 700;
+}
+
+dt {
+  margin: var(--ruleset-vmargin) 0 0 0;
+  padding: 0;
+  color: var(--text-color-deemphasized);
+  font-size: 85%;
+}
+
+dd {
+  margin: 8px 0 0 0;
+  padding: 0;
+  max-width: 600px;
+  box-sizing: border-box;
+}
+
+hr {
+  width: 40px;
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--in-content-border-color);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Initial warning */
+
+#warning-wrapper {
+  display: none;
+}
+
+.state-warning #warning-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+#warning {
+  margin-top: -20vh;
+  padding: 0 160px;
+  background-image: url("chrome://global/skin/icons/warning.svg");
+  background-position: 84px 0;
+  background-repeat: no-repeat;
+  background-size: 48px;
+  fill: #ffbd4f;
+  -moz-context-properties: fill;
+}
+
+#warning:dir(rtl) {
+  background-position: right 84px top 0;
+}
+
+#warning-description {
+  margin: 30px 0 16px 0;
+}
+
+#warning-buttonbar {
+  margin-top: 30px;
+  text-align: right;
+}
+
+/* Actual content */
+
+:root {
+  --sidebar-width: 320px;
+  --content-width: 600px;
+  --ruleset-vmargin: 40px;
+}
+
+#main-content {
+  display: flex;
+  height: 100%;
+}
+
+.state-warning #main-content {
+  display: none;
+}
+
+section {
+  display: none;
+  flex: 1 0 auto;
+  padding: 40px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  width: var(--content-width);
+  max-width: 100%;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--in-content-border-color);
+}
+
+.title h1 {
+  margin: 0;
+  padding: 0;
+  padding-inline-start: 35px;
+  font-size: 20px;
+  font-weight: 700;
+  background-image: url("chrome://browser/content/rulesets/securedrop.svg");
+  background-position: 0 center;
+  background-size: 22px;
+  min-height: 22px;
+  background-repeat: no-repeat;
+}
+
+#main-content h1:dir(rtl) {
+  background-position: right 0 top 4px;
+}
+
+/* Ruleset list */
+
+aside {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 var(--sidebar-width);
+  box-sizing: border-box;
+
+  border-inline-end: 1px solid var(--in-content-border-color);
+  background-color: var(--in-content-box-background);
+}
+
+#ruleset-heading {
+  padding: 16px;
+  text-align: center;
+  font-weight: 700;
+  border-bottom: 1px solid var(--in-content-border-color);
+}
+
+#ruleset-list-container {
+  flex: 1;
+}
+
+#ruleset-list-empty {
+  padding: 16px;
+  text-align: center;
+}
+
+#ruleset-list-empty-description {
+  font-size: 80%;
+}
+
+#ruleset-list {
+  margin: 0;
+  padding: 0;
+}
+
+#ruleset-list li {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 10px 18px;
+  list-style: none;
+  border-inline-start: 4px solid transparent;
+  border-bottom: 1px solid var(--in-content-border-color);
+}
+
+#ruleset-list li:last-child {
+  border-bottom: none;
+}
+
+#ruleset-list .icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 12px;
+  background-image: url("chrome://browser/content/rulesets/securedrop.svg");
+  background-size: 16px;
+}
+
+#ruleset-list .icon.has-favicon {
+  background: transparent;
+}
+
+#ruleset-list .name {
+  font-weight: 700;
+}
+
+#ruleset-list .description {
+  font-size: 85%;
+  color: var(--text-color-deemphasized);
+}
+
+#ruleset-list .selected {
+  border-inline-start-color: var(--in-content-accent-color);
+}
+
+#ruleset-list .selected.disabled {
+  border-inline-start-color: var(--in-content-border-color);
+}
+
+#ruleset-list li:not(.selected):hover {
+  background-color: var(--in-content-button-background-hover);
+  color: var(--in-content-button-text-color-hover);
+}
+
+#ruleset-list li:not(.selected):hover:active {
+  background-color: var(--in-content-button-background-active);
+}
+
+#ruleset-list #ruleset-template {
+  display: none;
+}
+
+/* Ruleset details */
+
+.state-details #ruleset-details {
+  display: block;
+}
+
+#ruleset-jwk-value {
+  padding: 8px;
+  border-radius: 2px;
+  background-color: var(--in-content-box-background);
+  font-size: 85%;
+  line-break: anywhere;
+  /* ASCII-only text, so can set line-height. */
+  line-height: 1.4;
+}
+
+#ruleset-edit {
+  margin-inline-start: auto;
+  padding-inline-start: 32px;
+  background-image: url("chrome://global/skin/icons/edit.svg");
+  background-repeat: no-repeat;
+  background-position: 8px;
+  -moz-context-properties: fill;
+  fill: currentColor;
+  min-width: auto;
+  flex: 0 0 auto;
+}
+
+#ruleset-enable {
+  margin-top: var(--ruleset-vmargin);
+}
+
+#ruleset-buttonbar {
+  margin: var(--ruleset-vmargin) 0;
+}
+
+#ruleset-updated {
+  margin-top: 24px;
+  color: var(--text-color-deemphasized);
+  font-size: 85%;
+}
+
+/* Edit ruleset */
+
+.state-edit #edit-ruleset {
+  display: block;
+}
+
+#edit-ruleset label {
+  color: var(--text-color-deemphasized);
+  display: block;
+}
+
+#edit-ruleset label, #edit-buttonbar {
+  margin-top: var(--ruleset-vmargin);
+}
+
+label#edit-enable {
+  display: flex;
+  align-items: center;
+}

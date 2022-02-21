@@ -139,7 +139,11 @@ class SSLServerCertVerificationJob : public Runnable {
         mStapledOCSPResponse(std::move(stapledOCSPResponse)),
         mSCTsFromTLSExtension(std::move(sctsFromTLSExtension)),
         mDCInfo(std::move(dcInfo)),
-        mResultTask(aResultTask) {}
+        mResultTask(aResultTask) {
+    FixOnionAlias();
+  }
+
+  void FixOnionAlias();
 
   uint64_t mAddrForLogging;
   void* mPinArg;

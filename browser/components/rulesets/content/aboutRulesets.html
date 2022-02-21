@@ -1,0 +1,182 @@
+<!-- Copyright (c) 2022, The Tor Project, Inc. -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome:; object-src 'none'"
+    />
+    <link rel="stylesheet" href="chrome://global/skin/in-content/common.css" />
+    <link
+      rel="stylesheet"
+      href="chrome://browser/content/rulesets/aboutRulesets.css"
+    />
+
+    <link rel="localization" href="branding/brand.ftl" />
+    <link rel="localization" href="toolkit/global/tor-browser.ftl" />
+  </head>
+  <body>
+    <!-- Warning -->
+    <div id="warning-wrapper">
+      <div id="warning">
+        <h1 id="warning-title" data-l10n-id="rulesets-warning-heading"></h1>
+        <p
+          id="warning-description"
+          data-l10n-id="rulesets-warning-description"
+        ></p>
+        <p>
+          <label>
+            <input
+              id="warning-enable-checkbox"
+              type="checkbox"
+              checked="checked"
+            />
+            <span
+              id="warning-enable-label"
+              data-l10n-id="rulesets-warning-checkbox"
+            ></span>
+          </label>
+        </p>
+        <div id="warning-buttonbar">
+          <button
+            id="warning-button"
+            autofocus="autofocus"
+            data-l10n-id="rulesets-warning-continue-button"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-content">
+      <!-- Ruleset list -->
+      <aside>
+        <div
+          id="ruleset-heading"
+          data-l10n-id="rulesets-side-panel-heading"
+        ></div>
+        <div id="ruleset-list-container">
+          <div id="ruleset-list-empty">
+            <p
+              id="ruleset-list-empty-title"
+              data-l10n-id="rulesets-side-panel-no-rules"
+            ></p>
+            <p
+              id="ruleset-list-empty-description"
+              data-l10n-id="rulesets-side-panel-no-rules-description"
+            ></p>
+          </div>
+          <ul id="ruleset-list">
+            <li id="ruleset-template">
+              <div class="icon"></div>
+              <div>
+                <div class="name"></div>
+                <div class="description"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Ruleset details -->
+      <section id="ruleset-details">
+        <div class="title">
+          <h1 id="ruleset-title"></h1>
+          <button
+            id="ruleset-edit"
+            class="ghost-button"
+            data-l10n-id="rulesets-details-edit-button"
+          ></button>
+        </div>
+        <dl>
+          <dt id="ruleset-jwk-label" data-l10n-id="rulesets-details-jwk"></dt>
+          <dd id="ruleset-jwk-value"></dd>
+          <dt
+            id="ruleset-path-prefix-label"
+            data-l10n-id="rulesets-details-path"
+          ></dt>
+          <dd>
+            <a id="ruleset-path-prefix-value" target="_blank"></a>
+          </dd>
+          <dt
+            id="ruleset-scope-label"
+            data-l10n-id="rulesets-details-scope"
+          ></dt>
+          <dd id="ruleset-scope-value"></dd>
+        </dl>
+        <label id="ruleset-enable">
+          <input type="checkbox" id="ruleset-enable-checkbox" />
+          <span
+            id="ruleset-enable-label"
+            data-l10n-id="rulesets-details-enable-checkbox"
+          ></span>
+        </label>
+        <div id="ruleset-buttonbar">
+          <button
+            id="ruleset-update-button"
+            data-l10n-id="rulesets-details-update-button"
+          ></button>
+        </div>
+        <hr />
+        <p id="ruleset-updated"></p>
+      </section>
+
+      <!-- Edit ruleset -->
+      <section id="edit-ruleset">
+        <div class="title">
+          <h1 id="edit-title"></h1>
+        </div>
+        <form id="edit-ruleset-form">
+          <label>
+            <div id="edit-jwk-label" data-l10n-id="rulesets-details-jwk"></div>
+            <textarea
+              id="edit-jwk-textarea"
+              rows="10"
+              data-l10n-id="rulesets-details-jwk-input"
+            ></textarea>
+          </label>
+          <label>
+            <div
+              id="edit-path-prefix-label"
+              data-l10n-id="rulesets-details-path"
+            ></div>
+            <input
+              id="edit-path-prefix-input"
+              type="text"
+              data-l10n-id="rulesets-details-path-input"
+            />
+          </label>
+          <label>
+            <div
+              id="edit-scope-label"
+              data-l10n-id="rulesets-details-scope"
+            ></div>
+            <input
+              id="edit-scope-input"
+              type="text"
+              data-l10n-id="rulesets-details-scope-input"
+            />
+          </label>
+          <label id="edit-enable">
+            <input type="checkbox" id="edit-enable-checkbox" />
+            <span
+              id="edit-enable-label"
+              data-l10n-id="rulesets-details-enable-checkbox"
+            ></span>
+          </label>
+          <div id="edit-buttonbar">
+            <button
+              id="edit-save"
+              class="primary"
+              data-l10n-id="rulesets-details-save-button"
+            ></button>
+            <button
+              id="edit-cancel"
+              data-l10n-id="rulesets-details-cancel-button"
+            ></button>
+          </div>
+        </form>
+      </section>
+    </div>
+    <script src="chrome://browser/content/rulesets/aboutRulesets.js"></script>
+  </body>
+</html>

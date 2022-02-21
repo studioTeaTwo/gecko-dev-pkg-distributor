@@ -123,3 +123,5 @@ pref("browser.torcircuitpanel.loglevel", "Log");
 pref("browser.tor_android.log_level", "Info");
 pref("browser.dragdropfilter.log_level", "Warn");
 pref("browser.onionAuthPrompt.loglevel", "Warn");
+pref("browser.onionalias.log_level", "Warn");
+pref("browser.torRequestWatch.log_level", "Warn");
