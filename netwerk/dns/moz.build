@@ -120,3 +120,7 @@ LOCAL_INCLUDES += [
 ]
 
 USE_LIBS += ["icu"]
+
+XPIDL_SOURCES += ["IOnionAliasService.idl"]
+UNIFIED_SOURCES += ["OnionAliasService.cpp"]
+EXPORTS.torproject += ["OnionAliasService.h"]

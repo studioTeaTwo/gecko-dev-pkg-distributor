@@ -217,6 +217,20 @@ export let RemotePageAccessManager = {
       ],
       RPMRecordTelemetryEvent: ["*"],
     },
+    "about:rulesets": {
+      RPMAddMessageListener: ["rulesets:channels-change"],
+      RPMSendAsyncMessage: [
+        "rulesets:delete-channel",
+        "rulesets:enable-channel",
+        "rulesets:set-show-warning",
+      ],
+      RPMSendQuery: [
+        "rulesets:get-channels",
+        "rulesets:get-init-args",
+        "rulesets:set-channel",
+        "rulesets:update-channel",
+      ],
+    },
     // Removed about:shoppingsidebar. tor-browser#42831.
     "about:tabcrashed": {
       RPMSendAsyncMessage: ["Load", "closeTab", "restoreTab", "restoreAll"],

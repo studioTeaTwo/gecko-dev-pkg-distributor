@@ -5068,6 +5068,12 @@ pro.om
 
 // onion : https://tools.ietf.org/html/rfc7686
 onion
+tor.onion
+securedrop.tor.onion
+// An additional TLD for abc.au.securedrop.tor.onion only.
+// See tor-browser#41831.
+// TODO: Remove once abc.au has migrated. See tor-browser#43443.
+au.securedrop.tor.onion
 
 // org : https://www.iana.org/domains/root/db/org.html
 org

@@ -25,6 +25,8 @@
 #include "mozilla/net/DNS.h"
 #include "mozilla/Unused.h"
 
+#include "IOnionAliasService.h"
+
 using mozilla::LogLevel;
 using namespace mozilla::net;
 
@@ -841,11 +843,23 @@ PRStatus nsSOCKSSocketInfo::WriteV5ConnectRequest() {
   // Add the address to the SOCKS 5 request. SOCKS 5 supports several
   // address types, so we pick the one that works best for us.
   if (proxy_resolve) {
-    // Add the host name. Only a single byte is used to store the length,
-    // so we must prevent long names from being used.
-    buf2 = buf.WriteUint8(0x03)  // addr type -- domainname
-               .WriteUint8(mDestinationHost.Length())             // name length
-               .WriteString<MAX_HOSTNAME_LEN>(mDestinationHost);  // Hostname
+    if (StringEndsWith(mDestinationHost, ".tor.onion"_ns)) {
+      nsAutoCString realHost;
+      nsCOMPtr<IOnionAliasService> oas = do_GetService(ONIONALIAS_CID);
+      if (NS_FAILED(oas->GetOnionAlias(mDestinationHost, realHost))) {
+        HandshakeFinished(PR_BAD_ADDRESS_ERROR);
+        return PR_FAILURE;
+      }
+      buf2 = buf.WriteUint8(0x03)
+                 .WriteUint8(realHost.Length())
+                 .WriteString<MAX_HOSTNAME_LEN>(realHost);
+    } else {
+      // Add the host name. Only a single byte is used to store the length,
+      // so we must prevent long names from being used.
+      buf2 = buf.WriteUint8(0x03)  // addr type -- domainname
+                 .WriteUint8(mDestinationHost.Length())  // name length
+                 .WriteString<MAX_HOSTNAME_LEN>(mDestinationHost);  // Hostname
+    }
     if (!buf2) {
       LOGERROR(("socks5: destination host name is too long!"));
       HandshakeFinished(PR_BAD_ADDRESS_ERROR);
