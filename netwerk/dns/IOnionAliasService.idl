@@ -1,0 +1,34 @@
+#include "nsISupports.idl"
+
+/**
+ * Service used for .tor.onion aliases.
+ * It stores the real .onion address that correspond to .tor.onion addresses,
+ * so that both C++ code and JS can access them.
+ */
+[scriptable, uuid(0df7784b-7316-486d-bc99-bf47b7a05974)]
+interface IOnionAliasService : nsISupports
+{
+  /**
+   * Add a new Onion alias
+   * @param aShortHostname
+   *        The short hostname that is being rewritten
+   * @param aLongHostname
+   *        The complete onion v3 hostname
+   */
+  void addOnionAlias(in ACString aShortHostname,
+                     in ACString aLongHostname);
+
+  /**
+   * Return an onion alias.
+   *
+   * @param aShortHostname
+   *        The .tor.onion hostname to resolve
+   * @return a v3 address, or the input, if the short hostname is not known
+   */
+  ACString getOnionAlias(in ACString aShortHostname);
+
+  /**
+   * Clears Onion aliases.
+   */
+  void clearOnionAliases();
+};

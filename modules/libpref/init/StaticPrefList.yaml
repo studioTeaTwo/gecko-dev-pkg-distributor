@@ -1863,6 +1863,14 @@
   value: false
   mirror: always
 
+# tor-browser#28005, tor-browser#40458: enable .tor.onion aliases by default.
+# When they are enabled, the browser will need to refresh the alias lists by
+# connecting to third parties periodically.
+- name: browser.urlbar.onionRewrites.enabled
+  type: RelaxedAtomicBool
+  value: true
+  mirror: always
+
 - name: browser.viewport.desktopWidth
   type: RelaxedAtomicInt32
   value: 980

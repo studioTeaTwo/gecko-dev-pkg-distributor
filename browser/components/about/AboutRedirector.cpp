@@ -91,6 +91,11 @@ static const RedirEntry kRedirMap[] = {
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::ALLOW_SCRIPT},
 #endif
+    {"rulesets", "chrome://browser/content/rulesets/aboutRulesets.html",
+     nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
+         nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS |
+         nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::IS_SECURE_CHROME_UI},
     {"sessionrestore", "chrome://browser/content/aboutSessionRestore.xhtml",
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::HIDE_FROM_ABOUTABOUT |
          nsIAboutModule::IS_SECURE_CHROME_UI},

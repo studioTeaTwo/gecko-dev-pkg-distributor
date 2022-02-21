@@ -138,6 +138,8 @@
 #include "sslerr.h"
 #include "sslexp.h"
 
+#include "IOnionAliasService.h"
+
 extern mozilla::LazyLogModule gPIPNSSLog;
 
 using namespace mozilla::pkix;
@@ -831,6 +833,13 @@ SECStatus SSLServerCertVerificationJob::Dispatch(
 
   PR_SetError(PR_WOULD_BLOCK_ERROR, 0);
   return SECWouldBlock;
+}
+
+void SSLServerCertVerificationJob::FixOnionAlias() {
+  if (StringEndsWith(mHostName, ".tor.onion"_ns)) {
+    nsCOMPtr<IOnionAliasService> oas = do_GetService(ONIONALIAS_CID);
+    oas->GetOnionAlias(mHostName, mHostName);
+  }
 }
 
 NS_IMETHODIMP
