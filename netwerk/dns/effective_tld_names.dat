@@ -5038,6 +5038,8 @@ pro.om
 
 // onion : https://tools.ietf.org/html/rfc7686
 onion
+tor.onion
+securedrop.tor.onion
 
 // org : https://www.iana.org/domains/root/db/org.html
 org
