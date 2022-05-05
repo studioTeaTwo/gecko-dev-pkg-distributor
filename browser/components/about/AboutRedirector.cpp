@@ -15,6 +15,11 @@
 #include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/dom/ContentChild.h"
 
+// For Tor Browser manual
+#include "nsTHashSet.h"
+#include "mozilla/intl/LocaleService.h"
+#include "mozilla/Omnijar.h"
+
 namespace mozilla {
 namespace browser {
 
@@ -168,6 +173,12 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::HIDE_FROM_ABOUTABOUT |
          nsIAboutModule::IS_SECURE_CHROME_UI},
 #endif
+    // The correct URI must be obtained by GetManualChromeURI
+    {"manual", "about:blank",
+     nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
+         nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS |
+         nsIAboutModule::IS_SECURE_CHROME_UI},
 };
 
 static nsAutoCString GetAboutModuleName(nsIURI* aURI) {
@@ -182,6 +193,50 @@ static nsAutoCString GetAboutModuleName(nsIURI* aURI) {
 
   ToLowerCase(path);
   return path;
+}
+
+static nsTHashSet<nsCStringHashKey> GetManualLocales() {
+  nsTHashSet<nsCStringHashKey> locales;
+  RefPtr<nsZipArchive> zip = Omnijar::GetReader(Omnijar::APP);
+  UniquePtr<nsZipFind> find;
+  const nsAutoCString prefix("chrome/browser/content/browser/manual/");
+  nsAutoCString needle = prefix;
+  needle.Append("*.html");
+  if (NS_SUCCEEDED(zip->FindInit(needle.get(), getter_Transfers(find)))) {
+    const char* entryName;
+    uint16_t entryNameLen;
+    while (NS_SUCCEEDED(find->FindNext(&entryName, &entryNameLen))) {
+      // 5 is to remove the final `.html`
+      const size_t length = entryNameLen - prefix.Length() - 5;
+      locales.Insert(nsAutoCString(entryName + prefix.Length(), length));
+    }
+  }
+  return locales;
+}
+
+static nsAutoCString GetManualChromeURI() {
+  static nsTHashSet<nsCStringHashKey> locales = GetManualLocales();
+
+  nsAutoCString reqLocale;
+  intl::LocaleService::GetInstance()->GetAppLocaleAsBCP47(reqLocale);
+  // Check every time the URL is needed in case the locale has changed.
+  // It might help also if we start allowing to change language, e.g., with a
+  // get parameter (see tor-browser#42675).
+  if (!locales.Contains(reqLocale) && reqLocale.Length() > 2 &&
+      reqLocale[2] == '-') {
+    // At the moment, codes in our manual output are either 2 letters (en) or
+    // 5 letters (pt-BR)
+    reqLocale.SetLength(2);
+  }
+  if (!locales.Contains(reqLocale)) {
+    reqLocale = "en";
+  }
+
+  // %s is the language
+  constexpr char model[] = "chrome://browser/content/manual/%s.html";
+  nsAutoCString url;
+  url.AppendPrintf(model, reqLocale.get());
+  return url;
 }
 
 NS_IMETHODIMP
@@ -236,6 +291,10 @@ AboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
         NS_ENSURE_SUCCESS(rv, rv);
         rv = aboutNewTabService->GetWelcomeURL(url);
         NS_ENSURE_SUCCESS(rv, rv);
+      }
+
+      if (path.EqualsLiteral("manual")) {
+        url = GetManualChromeURI();
       }
 
       // fall back to the specified url in the map
@@ -295,6 +354,10 @@ AboutRedirector::GetChromeURI(nsIURI* aURI, nsIURI** chromeURI) {
   NS_ENSURE_ARG_POINTER(aURI);
 
   nsAutoCString name = GetAboutModuleName(aURI);
+
+  if (name.EqualsLiteral("manual")) {
+    return NS_NewURI(chromeURI, GetManualChromeURI());
+  }
 
   for (const auto& redir : kRedirMap) {
     if (name.Equals(redir.id)) {
