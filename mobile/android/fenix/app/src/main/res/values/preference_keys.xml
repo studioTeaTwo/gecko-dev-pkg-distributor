@@ -395,4 +395,8 @@
 
     <!--Translations -->
     <string name="pref_key_ignore_translations_data_saver_warning" translatable="false">pref_key_ignore_translations_data_saver_warning</string>
+
+    <string name="pref_key_noscript_installed" translatable="false">pref_key_noscript_installed</string>
+    <string name="pref_key_noscript_updated" translatable="false">pref_key_noscript_updated</string>
+    <string name="pref_key_https_everywhere_removed" translatable="false">pref_key_https_everywhere_removed</string>
 </resources>
