@@ -234,6 +234,7 @@ object WebExtensionSupport {
                     // when the add-on has already been installed, we don't need to show anything
                     // either.
                     val shouldDispatchAction = !installedExtensions.containsKey(extension.id) && !extension.isBuiltIn()
+                        && !extension.isBundled()
                     registerInstalledExtension(store, extension)
                     if (shouldDispatchAction) {
                         store.dispatch(
