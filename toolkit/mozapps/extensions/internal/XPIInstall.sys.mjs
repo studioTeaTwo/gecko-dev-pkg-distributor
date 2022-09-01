@@ -4475,6 +4475,14 @@ export var XPIInstall = {
       return false;
     }
 
+    // tor-browser#43132: short-circuit permission check on Android scriptless install from AMO
+    if (
+      AppConstants.platform == "android" &&
+      uri.prePath == "https://addons.mozilla.org"
+    ) {
+      return true;
+    }
+
     let requireWhitelist = Services.prefs.getBoolPref(
       PREF_XPI_WHITELIST_REQUIRED,
       true

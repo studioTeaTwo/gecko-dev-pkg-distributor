@@ -354,7 +354,9 @@ async function exportExtension(aAddon, aSourceURI) {
     disabledFlags.push("appVersionDisabled");
   }
   const baseURL = policy ? policy.getURL() : "";
-  const privateBrowsingAllowed = policy ? policy.privateBrowsingAllowed : false;
+  const privateBrowsingAllowed = policy
+    ? policy.privateBrowsingAllowed
+    : lazy.PrivateBrowsingUtils.permanentPrivateBrowsing;
 
   let updateDate;
   try {
@@ -509,6 +511,9 @@ class ExtensionInstallListener {
 
   async onInstallEnded(aInstall, aAddon) {
     debug`onInstallEnded addonId=${aAddon.id}`;
+    if (lazy.PrivateBrowsingUtils.permanentPrivateBrowsing) {
+      await GeckoViewWebExtension.setPrivateBrowsingAllowed(aAddon.id, true);
+    }
     const extension = await exportExtension(aAddon, aInstall.sourceURI);
     this.resolve({ extension });
   }
