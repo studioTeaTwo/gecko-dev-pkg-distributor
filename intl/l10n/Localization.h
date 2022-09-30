@@ -51,7 +51,9 @@ namespace intl {
       return true;
     }
 
-#if defined(NIGHTLY_BUILD) || defined(MOZ_DEV_EDITION) || defined(DEBUG)
+    // See tor-browser#41285
+#if defined(NIGHTLY_BUILD) || defined(MOZ_DEV_EDITION) || defined(DEBUG) || \
+    defined(TOR_BROWSER_NIGHTLY_BUILD)
     dom::Document* doc = nullptr;
     if (aGlobal) {
       nsPIDOMWindowInner* innerWindow = aGlobal->GetAsInnerWindow();
