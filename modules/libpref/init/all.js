@@ -4038,7 +4038,7 @@ pref("devtools.policy.disabled", false);
 // Enable deprecation warnings.
 pref("devtools.errorconsole.deprecation_warnings", true);
 
-#ifdef NIGHTLY_BUILD
+#if defined(NIGHTLY_BUILD) || defined(TOR_BROWSER_NIGHTLY_BUILD)
   // Don't show the Browser Toolbox prompt on local builds / nightly.
   pref("devtools.debugger.prompt-connection", false, sticky);
 #else
