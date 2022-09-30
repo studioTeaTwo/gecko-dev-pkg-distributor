@@ -1231,6 +1231,17 @@ set_define("MOZ_UPDATE_CHANNEL", update_channel)
 add_old_configure_assignment("MOZ_UPDATE_CHANNEL", update_channel)
 
 
+# Add a TOR_BROWSER_NIGHTLY_BUILD flag to use when MOZ_UPDATE_CHANNEL cannot be
+# used. For example, for the C++ preprocessor. See tor-browser#41340
+@depends("--enable-update-channel")
+def tor_browser_nightly_build(channel):
+    if channel and channel[0] in ["default", "nightly"]:
+        return True
+
+
+set_define("TOR_BROWSER_NIGHTLY_BUILD", tor_browser_nightly_build)
+
+
 option(
     env="MOZBUILD_STATE_PATH",
     nargs=1,
