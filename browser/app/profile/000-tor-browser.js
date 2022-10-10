@@ -113,3 +113,5 @@ pref("extensions.torlauncher.bridgedb_reflector", "https://1723079976.rsc.cdn77.
 pref("extensions.torlauncher.moat_service", "https://bridges.torproject.org/moat");
 
 // Log levels
+pref("browser.tor_provider.log_level", "Warn");
+pref("browser.tor_provider.cp_log_level", "Warn");

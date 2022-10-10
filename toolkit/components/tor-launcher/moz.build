@@ -1,0 +1,19 @@
+EXTRA_JS_MODULES += [
+    "TorBootstrapRequest.sys.mjs",
+    "TorControlPort.sys.mjs",
+    "TorLauncherUtil.sys.mjs",
+    "TorParsers.sys.mjs",
+    "TorProcess.sys.mjs",
+    "TorProcessAndroid.sys.mjs",
+    "TorProvider.sys.mjs",
+    "TorProviderBuilder.sys.mjs",
+    "TorStartupService.sys.mjs",
+]
+
+XPCOM_MANIFESTS += [
+    "components.conf",
+]
+
+EXTRA_COMPONENTS += [
+    "tor-launcher.manifest",
+]
