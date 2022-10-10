@@ -213,6 +213,7 @@
 @RESPATH@/browser/chrome/browser.manifest
 @RESPATH@/chrome/pdfjs.manifest
 @RESPATH@/chrome/pdfjs/*
+@RESPATH@/components/tor-launcher.manifest
 @RESPATH@/chrome/torbutton.manifest
 @RESPATH@/chrome/torbutton/*
 @RESPATH@/chrome/toolkit@JAREXT@
