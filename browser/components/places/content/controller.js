@@ -1283,6 +1283,7 @@ PlacesController.prototype = {
     [
       PlacesUtils.TYPE_X_MOZ_PLACE,
       PlacesUtils.TYPE_X_MOZ_URL,
+      "application/x-torbrowser-opaque",
       PlacesUtils.TYPE_PLAINTEXT,
     ].forEach(type => xferable.addDataFlavor(type));
 

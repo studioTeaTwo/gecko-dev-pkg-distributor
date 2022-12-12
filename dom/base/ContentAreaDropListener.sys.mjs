@@ -2,6 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  OpaqueDrag: "resource://gre/modules/DragDropFilter.sys.mjs",
+});
+
 // This component is used for handling dragover and drop of urls.
 //
 // It checks to see whether a drop of a url is allowed. For instance, a url
@@ -40,10 +46,15 @@ ContentAreaDropListener.prototype = {
       }
     }
 
-    type = "text/x-moz-url";
-    if (types.contains(type)) {
+    for (let type of ["text/x-moz-url", "application/x-torbrowser-opaque"]) {
+      if (!types.contains(type)) {
+        continue;
+      }
       data = dt.mozGetDataAt(type, i);
       if (data) {
+        if (type === "application/x-torbrowser-opaque") {
+          ({ type, value: data = "" } = lazy.OpaqueDrag.retrieve(data));
+        }
         let lines = data.split("\n");
         for (let i = 0, length = lines.length; i < length; i += 2) {
           this._addLink(links, lines[i], lines[i + 1], type);
@@ -236,6 +247,7 @@ ContentAreaDropListener.prototype = {
     if (
       !types.includes("application/x-moz-file") &&
       !types.includes("text/x-moz-url") &&
+      !types.includes("application/x-torbrowser-opaque") &&
       !types.includes("text/uri-list") &&
       !types.includes("text/x-moz-text-internal") &&
       !types.includes("text/plain")
