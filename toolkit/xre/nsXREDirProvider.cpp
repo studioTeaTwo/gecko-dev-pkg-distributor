@@ -235,7 +235,9 @@ nsresult nsXREDirProvider::GetUserProfilesRootDir(nsIFile** aResult) {
   nsresult rv = GetUserDataDirectory(getter_AddRefs(file), false);
 
   if (NS_SUCCEEDED(rv)) {
-#if !defined(XP_UNIX) || defined(XP_MACOSX)
+    // For some reason, we have decided not to append "Profiles" in Tor Browser.
+    // So, let's keep removing it, or we should somehow migrate the profile.
+#if !defined(TOR_BROWSER) && (!defined(XP_UNIX) || defined(XP_MACOSX))
     rv = file->AppendNative("Profiles"_ns);
 #endif
     // We must create the profile directory here if it does not exist.
@@ -253,7 +255,7 @@ nsresult nsXREDirProvider::GetUserProfilesLocalDir(nsIFile** aResult) {
   nsresult rv = GetUserDataDirectory(getter_AddRefs(file), true);
 
   if (NS_SUCCEEDED(rv)) {
-#if !defined(XP_UNIX) || defined(XP_MACOSX)
+#if !defined(TOR_BROWSER) && (!defined(XP_UNIX) || defined(XP_MACOSX))
     rv = file->AppendNative("Profiles"_ns);
 #endif
     // We must create the profile directory here if it does not exist.
@@ -1421,16 +1423,20 @@ nsresult nsXREDirProvider::GetUserDataDirectoryHome(nsIFile** aFile,
 
 #if defined(XP_MACOSX)
   FSRef fsRef;
+#  if defined(TOR_BROWSER)
+  OSType folderType = kApplicationSupportFolderType;
+#  else
   OSType folderType;
   if (aLocal) {
     folderType = kCachedDataFolderType;
   } else {
-#  ifdef MOZ_THUNDERBIRD
+#    ifdef MOZ_THUNDERBIRD
     folderType = kDomainLibraryFolderType;
-#  else
+#    else
     folderType = kApplicationSupportFolderType;
-#  endif
+#    endif
   }
+#  endif
   OSErr err = ::FSFindFolder(kUserDomain, folderType, kCreateFolder, &fsRef);
   NS_ENSURE_FALSE(err, NS_ERROR_FAILURE);
 
@@ -1442,6 +1448,17 @@ nsresult nsXREDirProvider::GetUserDataDirectoryHome(nsIFile** aFile,
 
   rv = dirFileMac->InitWithFSRef(&fsRef);
   NS_ENSURE_SUCCESS(rv, rv);
+
+#  if defined(TOR_BROWSER)
+  rv = dirFileMac->AppendNative("TorBrowser-Data"_ns);
+  NS_ENSURE_SUCCESS(rv, rv);
+  rv = dirFileMac->AppendNative("Browser"_ns);
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (aLocal) {
+    rv = dirFileMac->AppendNative("Caches"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+#  endif
 
   localDir = dirFileMac;
 #elif defined(XP_IOS)
@@ -1632,6 +1649,9 @@ nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
   nsresult rv = NS_OK;
 
 #if defined(XP_MACOSX)
+#  ifndef TOR_BROWSER
+  // For Tor Browser we already prepare the data directory as we need it, even
+  // when we are running a system install.
   if (!profile.IsEmpty()) {
     rv = AppendProfileString(aFile, profile.get());
   } else {
@@ -1641,6 +1661,7 @@ nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
     rv = aFile->AppendNative(appName);
   }
   NS_ENSURE_SUCCESS(rv, rv);
+#  endif
 
 #elif defined(XP_WIN)
   if (!profile.IsEmpty()) {
@@ -1724,4 +1745,22 @@ nsresult nsXREDirProvider::AppendProfileString(nsIFile* aFile,
   }
 
   return NS_OK;
+}
+
+nsresult nsXREDirProvider::GetTorBrowserUserDataDir(nsIFile** aFile) {
+#ifdef ANDROID
+  // We expect this function not to be called on Android.
+  // But, for sake of completeness, we handle also this case.
+  const char* homeDir = getenv("HOME");
+  if (!homeDir || !*homeDir) {
+    return NS_ERROR_FAILURE;
+  }
+  return NS_NewNativeLocalFile(nsDependentCString(homeDir), true, aFile);
+#endif
+
+  NS_ENSURE_ARG_POINTER(aFile);
+  nsCOMPtr<nsIFile> dataDir;
+  nsresult rv = GetUserDataDirectoryHome(getter_AddRefs(dataDir), false);
+  NS_ENSURE_SUCCESS(rv, rv);
+  return dataDir->GetParent(aFile);
 }
