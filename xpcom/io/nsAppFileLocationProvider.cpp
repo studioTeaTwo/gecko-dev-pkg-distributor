@@ -309,6 +309,17 @@ nsresult nsAppFileLocationProvider::GetProductDirectory(nsIFile** aLocalFile,
   if (NS_FAILED(rv)) {
     return rv;
   }
+
+#  if defined(TOR_BROWSER)
+  rv = localDir->AppendNative("TorBrowser-Data"_ns);
+  NS_ENSURE_SUCCESS(rv, rv);
+  rv = localDir->AppendNative("Browser"_ns);
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (aLocal) {
+    rv = localDir->AppendNative("Caches"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+#  endif
 #elif defined(XP_WIN)
   nsCOMPtr<nsIProperties> directoryService =
       do_GetService(NS_DIRECTORY_SERVICE_CONTRACTID, &rv);
@@ -331,10 +342,12 @@ nsresult nsAppFileLocationProvider::GetProductDirectory(nsIFile** aLocalFile,
 #  error dont_know_how_to_get_product_dir_on_your_platform
 #endif
 
+#if !defined(TOR_BROWSER)
   rv = localDir->AppendRelativeNativePath(DEFAULT_PRODUCT_DIR);
   if (NS_FAILED(rv)) {
     return rv;
   }
+#endif
   rv = localDir->Exists(&exists);
 
   if (NS_SUCCEEDED(rv) && !exists) {
@@ -375,10 +388,13 @@ nsresult nsAppFileLocationProvider::GetDefaultUserProfileRoot(
 
 #if defined(MOZ_WIDGET_COCOA) || defined(XP_WIN)
   // These 3 platforms share this part of the path - do them as one
+#  ifndef TOR_BROWSER
+  // Legacy: we do not use "Profiles" on Tor Browser.
   rv = localDir->AppendRelativeNativePath("Profiles"_ns);
   if (NS_FAILED(rv)) {
     return rv;
   }
+#  endif
 
   bool exists;
   rv = localDir->Exists(&exists);

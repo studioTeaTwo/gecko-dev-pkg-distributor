@@ -109,6 +109,13 @@ class nsXREDirProvider final : public nsIDirectoryServiceProvider2,
    */
   nsresult GetProfileDir(nsIFile** aResult);
 
+  /**
+   * Get the Tor Browser user data directory.
+   * We take for granted that for Tor Browser we can take the parent directory
+   * of the one returned by GetUserDataDirectoryHome (with aLocal = false).
+   */
+  nsresult GetTorBrowserUserDataDir(nsIFile** aFile);
+
  private:
   nsresult GetFilesInternal(const char* aProperty,
                             nsISimpleEnumerator** aResult);

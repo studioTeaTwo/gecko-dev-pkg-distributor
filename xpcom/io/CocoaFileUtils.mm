@@ -330,8 +330,12 @@ CFTypeRefPtr<CFURLRef> GetTemporaryFolder() {
 CFTypeRefPtr<CFURLRef> GetProductDirectory(bool aLocal) {
   nsAutoreleasePool localPool;
 
+#if defined(TOR_BROWSER)
+  NSSearchPathDirectory folderType = NSApplicationSupportDirectory;
+#else
   NSSearchPathDirectory folderType =
       aLocal ? NSCachesDirectory : NSLibraryDirectory;
+#endif
   NSFileManager* manager = [NSFileManager defaultManager];
   return CFTypeRefPtr<CFURLRef>::WrapUnderGetRule((__bridge CFURLRef)[[manager
       URLsForDirectory:folderType
