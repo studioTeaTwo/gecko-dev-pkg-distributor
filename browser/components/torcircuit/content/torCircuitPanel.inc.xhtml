@@ -1,0 +1,95 @@
+<panel id="tor-circuit-panel"
+       role="dialog"
+       aria-labelledby="tor-circuit-heading"
+       type="arrow"
+       orient="vertical"
+       class="cui-widget-panel panel-no-padding"
+       tabindex="0">
+  <!-- Use same semantic structure as #identity-popup and #protections-popup
+     - with a role="alertdialog" wrapping a role="document", except we use a
+     - "dialog" rather than an "alertdialog".
+     - Moreover, since this "dialog" may just be for reading, we also make the
+     - "dialog" part of the focus cycle and receive the initial focus, rather
+     - than finding the first focusable target within.
+     - We do not set "aria-describedby" for this "dialog" because the content
+     - is complex, so a flat string would not make sense. -->
+  <vbox id="tor-circuit-panel-document"
+        role="document">
+    <vbox class="panel-header">
+      <html:h1 id="tor-circuit-heading"></html:h1>
+      <html:div id="tor-circuit-alias" hidden="hidden">
+        <html:img
+          src="chrome://browser/content/tor-circuit-redirect.svg"
+          alt=""
+        />
+        <html:p id="tor-circuit-alias-label">
+          <html:a class="tor-circuit-alias-link" data-l10n-name="alias-link" />
+        </html:p>
+      </html:div>
+    </vbox>
+    <toolbarseparator/>
+    <vbox id="tor-circuit-panel-body" class="panel-subview-body">
+      <html:p
+        id="tor-circuit-node-list-name"
+        data-l10n-id="tor-circuit-panel-node-list-introduction"
+      ></html:p>
+      <html:ol id="tor-circuit-node-list">
+        <html:li
+          id="tor-circuit-start-item"
+          class="tor-circuit-node-item"
+          data-l10n-id="tor-circuit-panel-node-browser"
+        ></html:li>
+        <html:li
+          id="tor-circuit-relays-item"
+          class="tor-circuit-node-item tor-circuit-relays-item"
+          data-l10n-id="tor-circuit-panel-node-onion-relays"
+        ></html:li>
+        <html:li
+          id="tor-circuit-end-item"
+          class="tor-circuit-node-item"
+        ></html:li>
+      </html:ol>
+      <html:template id="tor-circuit-node-item-template">
+        <html:li class="tor-circuit-node-item">
+          <html:img class="tor-circuit-region-flag" alt="" />
+          <html:span class="tor-circuit-node-name"></html:span>
+          <html:span class="tor-circuit-addresses"></html:span>
+        </html:li>
+      </html:template>
+    </vbox>
+    <toolbarseparator/>
+    <!-- NOTE: To fully benefit from the .subviewbutton styling, we need to use
+       - a xul:toolbarbutton rather than a html:button.
+       - By default, a xul:toolbarbutton is not focusable so we need to add
+       - tabindex. -->
+    <toolbarbutton
+      id="tor-circuit-new-circuit"
+      class="subviewbutton panel-subview-footer-button tor-circuit-button"
+      tabindex="0"
+      aria-labelledby="tor-circuit-new-circuit-label"
+      aria-describedby="tor-circuit-new-circuit-description"
+    >
+      <vbox align="start">
+        <label
+          id="tor-circuit-new-circuit-label"
+          class="toolbarbutton-text"
+          data-l10n-id="tor-circuit-panel-new-button"
+        />
+        <label
+          id="tor-circuit-new-circuit-description"
+          class="tor-circuit-button-description"
+        />
+      </vbox>
+    </toolbarbutton>
+  </vbox>
+</panel>
+<menupopup id="tor-circuit-panel-alias-menu">
+  <!-- Copied from browser/base/content/browser-context.inc -->
+  <menuitem id="tor-circuit-panel-alias-menu-new-tab"
+            data-l10n-id="main-context-menu-open-link-new-tab"/>
+  <menuitem id="tor-circuit-panel-alias-menu-new-window"
+            data-l10n-id="main-context-menu-open-link-new-private-window"/>
+  <menuseparator/>
+  <menuitem id="tor-circuit-panel-alias-menu-copy"
+            data-l10n-id="main-context-menu-copy-link-simple"/>
+</menupopup>

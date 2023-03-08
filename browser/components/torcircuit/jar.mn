@@ -1,0 +1,10 @@
+browser.jar:
+	content/browser/torCircuitPanel.js           (content/torCircuitPanel.js)
+	content/browser/torCircuitPanel.css          (content/torCircuitPanel.css)
+	content/browser/tor-circuit-icon-mask.svg    (content/tor-circuit-icon-mask.svg)
+	content/browser/tor-circuit-redirect.svg     (content/tor-circuit-redirect.svg)
+	content/browser/tor-circuit-node-start.svg   (content/tor-circuit-node-start.svg)
+	content/browser/tor-circuit-node-middle.svg  (content/tor-circuit-node-middle.svg)
+	content/browser/tor-circuit-node-end.svg     (content/tor-circuit-node-end.svg)
+	content/browser/tor-circuit-node-relays.svg  (content/tor-circuit-node-relays.svg)
+	content/browser/tor-circuit-flags/           (content/tor-circuit-flags/*)

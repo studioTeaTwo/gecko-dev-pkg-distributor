@@ -1,0 +1,187 @@
+/* Toolbar button */
+
+#tor-circuit-button-icon {
+  width: 16px;
+  height: 16px;
+  /* We want to set flat fill if we have prefers-contrast. Otherwise, we want a
+   * gradient fill depending on the dark mode.
+   * context-fill is insufficient for a linear gradient, so we instead use the
+   * image as a mask and set the <xul:image> background color to the fill we
+   * want. */
+  mask-image: url("chrome://browser/content/tor-circuit-icon-mask.svg");
+  mask-origin: content-box;
+  mask-size: cover;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  /* High-Contrast fill. */
+  background: currentColor;
+}
+
+@media not ((prefers-contrast) or (forced-colors)) {
+  #tor-circuit-button-icon {
+    background: linear-gradient(315deg, #008799 0%, #6153C6 50%, #CA00CC 100%);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #tor-circuit-button-icon {
+      background: linear-gradient(315deg, #4CEAFF 0%, #808FFF 50%, #FD66FF 100%);
+    }
+  }
+}
+
+/* Panel */
+
+#tor-circuit-alias,
+#tor-circuit-node-list-name,
+.tor-circuit-addresses,
+.tor-circuit-button-description {
+  color: var(--text-color-deemphasized);
+}
+
+#tor-circuit-panel .panel-header {
+  /* .panel-header already inherits these same rules from panelUI-shared.css and
+   * xul.css. But .panel-header is normally "flex-direction: row", but we are
+   * using a vbox (i.e flex-direction: column) so that the heading is placed
+   * vertically above the #tor-circuit-alias when it is shown.  We want to
+   * ensure the layout rules we need for our different case so we are less
+   * vulnerable to changes in panelUI-shared.css. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.panel-header > h1#tor-circuit-heading {
+  /* Overwrite rule from panelUI-shared.css which gives this "flex: auto".
+   * Otherwise the heading will be stretched vertically and not be
+   * center-aligned. */
+  flex: 0 0 auto;
+}
+
+#tor-circuit-alias:not([hidden]) {
+  /* Same as padding for .panel-header */
+  margin-block-start: var(--arrowpanel-menuitem-margin-inline);
+  display: flex;
+  align-items: center;
+}
+
+#tor-circuit-alias img {
+  -moz-context-properties: fill;
+  fill: currentColor;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin-inline-end: 0.25em;
+}
+
+#tor-circuit-alias-label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+#tor-circuit-panel-body {
+  /* May grow larger than 480px if we have a long domain name or ip address. */
+  min-width: 480px;
+  /* Line up with the button at the bottom of the panel. */
+  margin: var(--arrowpanel-menuitem-margin);
+  padding: var(--arrowpanel-menuitem-padding);
+  gap: var(--arrowpanel-menuitem-padding-block);
+}
+
+#tor-circuit-node-list-name,
+#tor-circuit-node-list {
+  margin: 0;
+}
+
+#tor-circuit-node-list {
+  list-style: none;
+  padding-inline-start: var(--arrowpanel-menuitem-margin-inline);
+  /* Do not allow an item to wrap since this would break the circuit diagram. */
+  white-space: nowrap;
+}
+
+.tor-circuit-node-item {
+  /* We want the "bullets" of the list to act as the circuit diagram, and we
+   * also want them to be vertically aligned and scaled to the height of the
+   * list item so that the different parts visually connect.
+   * Using list-style-image does not give us enough control over sizing the
+   * image. So instead we use a background-image. */
+  padding-inline-start: 1.5em;
+  padding-block: 6px;
+  background-image: url("chrome://browser/content/tor-circuit-node-middle.svg");
+  -moz-context-properties: fill;
+  /* Light Gray 50 */
+  fill: rgb(191, 191, 201);
+  background-position-x: right;
+  background-position-y: center;
+  /* Bump the size by small amount to prevent rendering gaps.
+   * We're assuming here that each line will have the same height so that each
+   * image has the same size. */
+  background-size: auto calc(100% + 0.5px);
+  background-repeat: no-repeat;
+}
+
+.tor-circuit-node-item:not([hidden]) {
+  display: flex;
+  align-items: baseline;
+}
+
+.tor-circuit-node-item > * {
+  flex: 0 0 auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tor-circuit-node-item {
+    /* Light Gray 90 */
+    fill: rgb(128, 128, 142);
+  }
+}
+
+.tor-circuit-node-item:dir(ltr) {
+  background-position-x: left;
+}
+
+.tor-circuit-node-item#tor-circuit-start-item {
+  background-image: url("chrome://browser/content/tor-circuit-node-start.svg");
+}
+
+.tor-circuit-node-item#tor-circuit-end-item {
+  background-image: url("chrome://browser/content/tor-circuit-node-end.svg");
+}
+
+.tor-circuit-node-item#tor-circuit-relays-item {
+  background-image: url("chrome://browser/content/tor-circuit-node-relays.svg");
+}
+
+.tor-circuit-region-flag {
+  margin-inline-end: 0.5em;
+  height: 16px;
+  align-self: center;
+  /* Don't occupy any vertical height. */
+  margin-block: -8px;
+}
+
+.tor-circuit-region-flag.no-region-flag-src {
+  display: none;
+}
+
+.tor-circuit-addresses {
+  font-size: 0.9em;
+  font-family: monospace;
+  margin-inline-start: 0.75em;
+}
+
+.tor-circuit-ip-address {
+  /* Override the rule for <code>, which is -moz-fixed. */
+  font-family: inherit;
+}
+
+/* Footer buttons */
+.tor-circuit-button label {
+  margin: 0;
+}
+
+.tor-circuit-button label.tor-circuit-button-description {
+  margin-block-start: var(--space-xsmall);
+}
