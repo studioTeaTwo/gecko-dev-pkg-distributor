@@ -135,3 +135,4 @@ pref("torbrowser.bootstrap.log_level", "Info");
 pref("browser.torsettings.log_level", "Warn");
 pref("browser.torMoat.loglevel", "Warn");
 pref("browser.tordomainisolator.loglevel", "Warn");
+pref("browser.torcircuitpanel.loglevel", "Log");
