@@ -181,6 +181,17 @@
                  collapsed="true">
                 <image id="remote-control-icon"/>
             </box>
+            <!-- We follow the surrounding code and use a
+               - <xul:box role="button"> rather than a more semantic
+               - <html:button>, <xul:button> or <xul:toolbarbutton> -->
+            <box id="tor-circuit-button"
+                 role="button"
+                 class="identity-box-button"
+                 align="center"
+                 data-l10n-id="tor-circuit-urlbar-button"
+                 hidden="true">
+              <image id="tor-circuit-button-icon"/>
+            </box>
             <box class="chromeclass-toolbar-additional urlbar-search-button"/>
             <!-- Use onclick instead of normal popup= syntax since the popup
                  code fires onmousedown, and hence eats our favicon drag events. -->
