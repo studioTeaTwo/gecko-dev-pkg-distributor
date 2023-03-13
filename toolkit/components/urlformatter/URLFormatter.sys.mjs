@@ -137,6 +137,13 @@ nsURLFormatterService.prototype = {
     BB_VERSION() {
       return AppConstants.BASE_BROWSER_VERSION;
     },
+    BB_VERSION_FOR_URLS() {
+      let version = AppConstants.BASE_BROWSER_VERSION;
+      if (/^[0-9a\.]+$/.test(version)) {
+        version = version.replaceAll(".", "");
+      }
+      return version;
+    },
   },
 
   formatURL: function uf_formatURL(aFormat) {
