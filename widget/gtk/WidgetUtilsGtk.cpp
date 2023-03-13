@@ -143,6 +143,12 @@ void SetLastMousePressEvent(GdkEvent* aEvent) {
 bool IsRunningUnderSnap() { return !!GetSnapInstanceName(); }
 
 bool IsRunningUnderFlatpak() {
+  // tor-browser#42293: Don't disable updater when run by torbrowser-launcher
+  // flatpak
+  const char* torbrowserLauncher = g_getenv("TORBROWSER_LAUNCHER");
+  if (torbrowserLauncher) {
+    return false;
+  }
   // https://gitlab.gnome.org/GNOME/gtk/-/blob/4300a5c609306ce77cbc8a3580c19201dccd8d13/gdk/gdk.c#L472
   static bool sRunning = [] {
     return g_file_test("/.flatpak-info", G_FILE_TEST_EXISTS);

@@ -2488,11 +2488,11 @@ static bool IsServiceSpecificErrorCode(int errorCode) {
 static int CopyInstallDirToDestDir() {
   // These files should not be copied over to the updated app
 #ifdef XP_WIN
-#  define SKIPLIST_COUNT 3
+#  define SKIPLIST_COUNT 5
 #elif XP_MACOSX
 #  define SKIPLIST_COUNT 0
 #else
-#  define SKIPLIST_COUNT 2
+#  define SKIPLIST_COUNT 4
 #endif
   copy_recursive_skiplist<SKIPLIST_COUNT> skiplist;
 #ifndef XP_MACOSX
@@ -2501,6 +2501,21 @@ static int CopyInstallDirToDestDir() {
 #  ifdef XP_WIN
   skiplist.append(2, gInstallDirPath, NS_T("updated.update_in_progress.lock"));
 #  endif
+#endif
+
+  // Remove the following block if we move the profile outside the Browser
+  // directory.
+#if defined(BASE_BROWSER_UPDATE) && !defined(XP_MACOSX)
+#  ifdef XP_WIN
+  skiplist.append(SKIPLIST_COUNT - 2, gInstallDirPath,
+                  NS_T("TorBrowser/Data/Browser/profile.default/parent.lock"));
+#  else
+  skiplist.append(SKIPLIST_COUNT - 2, gInstallDirPath,
+                  NS_T("TorBrowser/Data/Browser/profile.default/.parentlock"));
+#  endif
+
+  skiplist.append(SKIPLIST_COUNT - 1, gInstallDirPath,
+                  NS_T("TorBrowser/Data/Tor/lock"));
 #endif
 
   return ensure_copy_recursive(gInstallDirPath, gWorkingDirPath, skiplist);
@@ -2926,7 +2941,7 @@ int LaunchCallbackAndPostProcessApps(int argc, NS_tchar** argv,
 #endif
 
   if (argc > callbackIndex) {
-#if defined(XP_WIN)
+#if defined(XP_WIN) && !defined(TOR_BROWSER)
     if (gSucceeded) {
       LOG(("Launching Windows post update process"));
       if (!LaunchWinPostProcess(gInstallDirPath, gPatchDirPath)) {

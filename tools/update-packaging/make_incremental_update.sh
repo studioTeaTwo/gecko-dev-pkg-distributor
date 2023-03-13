@@ -79,6 +79,8 @@ if [ $# = 0 ]; then
 fi
 
 requested_forced_updates='Contents/MacOS/firefox'
+directories_to_remove=""
+extra_files_to_remove=""
 
 while getopts "hqf:" flag
 do
@@ -113,6 +115,28 @@ fi
 workdir="$(mktemp -d)"
 updatemanifestv3="$workdir/updatev3.manifest"
 archivefiles="updatev3.manifest"
+
+# TODO When TOR_BROWSER_DATA_OUTSIDE_APP_DIR is used on all platforms,
+# we should remove the following lines:
+# If the NoScript extension has changed between
+# releases, add it to the "force updates" list.
+ext_path='TorBrowser/Data/Browser/profile.default/extensions'
+if [ -d "$newdir/$ext_path" ]; then
+  noscript='{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi'
+
+  # NoScript is a packed extension, so we simply compare the old and the new
+  # .xpi files.
+  noscript_path="$ext_path/$noscript"
+  diff -a "$olddir/$noscript_path" "$newdir/$noscript_path" > /dev/null
+  rc=$?
+  if [ $rc -gt 1 ]; then
+    notice "Unexpected exit $rc from $noscript_path diff command"
+    exit 2
+  elif [ $rc -eq 1 ]; then
+    requested_forced_updates="$requested_forced_updates $noscript_path"
+  fi
+fi
+# END TOR_BROWSER_DATA_OUTSIDE_APP_DIR removal
 
 mkdir -p "$workdir"
 
@@ -151,6 +175,22 @@ notice "Adding type instruction to update manifests"
 notice "       type partial"
 echo "type \"partial\"" >> $updatemanifestv3
 
+# TODO When TOR_BROWSER_DATA_OUTSIDE_APP_DIR is used on all platforms,
+# we should remove the following lines:
+# If removal of any old, existing directories is desired, emit the appropriate
+# rmrfdir commands.
+notice ""
+notice "Adding directory removal instructions to update manifests"
+for dir_to_remove in $directories_to_remove; do
+  # rmrfdir requires a trailing slash, so add one if missing.
+  if ! [[ "$dir_to_remove" =~ /$ ]]; then
+    dir_to_remove="${dir_to_remove}/"
+  fi
+  echo "rmrfdir \"$dir_to_remove\"" >> "$updatemanifestv3"
+done
+# END TOR_BROWSER_DATA_OUTSIDE_APP_DIR removal
+
+
 notice ""
 notice "Adding file patch and add instructions to update manifests"
 
@@ -170,6 +210,17 @@ for ((i=0; $i<$num_oldfiles; i=$i+1)); do
       $XZ $XZ_OPT --compress $BCJ_OPTIONS --lzma2 --format=xz --check=crc64 --force --stdout "$newdir/$f" > "$workdir/$f"
       copy_perm "$newdir/$f" "$workdir/$f"
       make_add_if_not_instruction "$f" "$updatemanifestv3"
+      archivefiles="$archivefiles \"$f\""
+      continue 1
+    fi
+
+    if check_for_add_if_update "$f"; then
+      # TODO: Remove once we do a watershed release
+      # The full workdir may not exist yet, so create it if necessary.
+      mkdir -p `dirname "$workdir/$f"`
+      $XZ $XZ_OPT --compress $BCJ_OPTIONS --lzma2 --format=xz --check=crc64 --force --stdout "$newdir/$f" > "$workdir/$f"
+      copy_perm "$newdir/$f" "$workdir/$f"
+      make_add_if_instruction "$f" "$updatemanifestv3"
       archivefiles="$archivefiles \"$f\""
       continue 1
     fi
@@ -265,6 +316,9 @@ for ((i=0; $i<$num_newfiles; i=$i+1)); do
 
   if check_for_add_if_not_update "$f"; then
     make_add_if_not_instruction "$f" "$updatemanifestv3"
+  elif check_for_add_if_update "$f"; then
+    # TODO: Remove once we do a watershed release
+    make_add_if_instruction "$f" "$updatemanifestv3"
   else
     make_add_instruction "$f" "$updatemanifestv3"
   fi
@@ -285,6 +339,14 @@ done
 notice ""
 notice "Adding file and directory remove instructions from file 'removed-files'"
 append_remove_instructions "$newdir" "$updatemanifestv3"
+
+# TODO When TOR_BROWSER_DATA_OUTSIDE_APP_DIR is used on all platforms,
+# we should remove the following lines:
+for f in $extra_files_to_remove; do
+  notice "     remove \"$f\""
+  echo "remove \"$f\"" >> "$updatemanifestv3"
+done
+# END TOR_BROWSER_DATA_OUTSIDE_APP_DIR removal
 
 notice ""
 notice "Adding directory remove instructions for directories that no longer exist"
