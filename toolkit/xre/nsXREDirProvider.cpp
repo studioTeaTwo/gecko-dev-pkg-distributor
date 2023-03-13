@@ -1121,18 +1121,19 @@ nsresult nsXREDirProvider::GetUpdateRootDir(nsIFile** aResult,
   // UpdateInfo directory under the user data directory.
 #  if defined(ANDROID)
 #    error "The Base Browser updater is not supported on Android."
-#  elif defined(XP_MACOSX)
-  rv = GetUserDataDirectory(getter_AddRefs(updRoot), false);
+#  endif
+  nsCOMPtr<nsIFile> dataDir;
+  rv = GetUserDataDirectoryHome(getter_AddRefs(dataDir), false);
   NS_ENSURE_SUCCESS(rv, rv);
-#  else
-  bool isPortable = true;
-  rv = GetIsPortableMode(&isPortable);
+  rv = dataDir->GetParent(getter_AddRefs(updRoot));
   NS_ENSURE_SUCCESS(rv, rv);
-  if (isPortable) {
-    rv = GetUserDataDirectoryHome(getter_AddRefs(updRoot), false);
-  } else {
-    rv = GetUserDataDirectory(getter_AddRefs(updRoot), true);
-  }
+#  if !defined(XP_MACOSX)
+  // For Tor Browser, the profile directory is TorBrowser/Data/Browser.
+  // Updates used to be in TorBrowser/updateInfo, so go up two directories.
+  // If we switch to data directory outside also on Windows and on Linux, we
+  // should remove this block.
+  dataDir = updRoot;
+  rv = dataDir->GetParent(getter_AddRefs(updRoot));
   NS_ENSURE_SUCCESS(rv, rv);
 #  endif
   rv = updRoot->AppendNative("UpdateInfo"_ns);
