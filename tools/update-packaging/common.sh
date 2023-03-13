@@ -8,6 +8,10 @@
 # Author: Darin Fisher
 #
 
+# TODO When TOR_BROWSER_DATA_OUTSIDE_APP_DIR is used on all platforms,
+# we should remove all lines in this file that contain:
+#      TorBrowser/Data
+
 # -----------------------------------------------------------------------------
 QUIET=0
 
@@ -111,6 +115,28 @@ make_add_if_not_instruction() {
   echo "add-if-not \"$f\" \"$f\"" >> "$filev3"
 }
 
+check_for_add_if_update() {
+  add_if_file_chk="$1"
+
+  # tor-browser#41776: We will remove with the old fontconfig file manually
+  # outside the update process. So, let the updater add the file if there.
+  # TODO: Remove once we do a watershed release.
+  if [ "$add_if_file_chk" = "TorBrowser/Data/fontconfig/fonts.conf" ]; then
+    ## "true" *giggle*
+    return 0;
+  fi
+  ## 'false'... because this is bash. Oh yay!
+  return 1;
+}
+
+make_add_if_instruction() {
+  f="$1"
+  filev3="$2"
+
+  verbose_notice " add-if \"$f\" \"$f\""
+  echo "add-if \"$f\" \"$f\"" >> "$filev3"
+}
+
 make_patch_instruction() {
   f="$1"
   filev3="$2"
@@ -170,6 +196,10 @@ append_remove_instructions() {
 
 # List all files in the current directory, stripping leading "./"
 # Pass a variable name and it will be filled as an array.
+# To support Tor Browser updates, skip the following files:
+#    TorBrowser/Data/Browser/profiles.ini
+#    TorBrowser/Data/Browser/profile.default/bookmarks.html
+#    TorBrowser/Data/Tor/torrc
 list_files() {
   count=0
   temp_filelist=$(mktemp)
@@ -180,6 +210,11 @@ list_files() {
     | sed 's/\.\/\(.*\)/\1/' \
     | sort -r > "${temp_filelist}"
   while read file; do
+    if [ "$file" = "TorBrowser/Data/Browser/profiles.ini" -o                   \
+         "$file" = "TorBrowser/Data/Browser/profile.default/bookmarks.html" -o \
+         "$file" = "TorBrowser/Data/Tor/torrc" ]; then
+      continue;
+    fi
     eval "${1}[$count]=\"$file\""
     (( count++ ))
   done < "${temp_filelist}"

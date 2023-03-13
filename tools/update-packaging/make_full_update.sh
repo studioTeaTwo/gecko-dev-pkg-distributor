@@ -81,6 +81,21 @@ notice "Adding type instruction to update manifests"
 notice "       type complete"
 echo "type \"complete\"" >> "$updatemanifestv3"
 
+# TODO When TOR_BROWSER_DATA_OUTSIDE_APP_DIR is used on all platforms,
+# we should remove the following lines:
+# If removal of any old, existing directories is desired, emit the appropriate
+# rmrfdir commands.
+notice ""
+notice "Adding directory removal instructions to update manifests"
+for dir_to_remove in $directories_to_remove; do
+  # rmrfdir requires a trailing slash; if slash is missing, add one.
+  if ! [[ "$dir_to_remove" =~ /$ ]]; then
+   dir_to_remove="${dir_to_remove}/"
+  fi
+  echo "rmrfdir \"$dir_to_remove\"" >> "$updatemanifestv3"
+done
+# END TOR_BROWSER_DATA_OUTSIDE_APP_DIR removal
+
 notice ""
 notice "Adding file add instructions to update manifests"
 num_files=${#files[*]}
@@ -90,6 +105,9 @@ for ((i=0; $i<$num_files; i=$i+1)); do
 
   if check_for_add_if_not_update "$f"; then
     make_add_if_not_instruction "$f" "$updatemanifestv3"
+  elif check_for_add_if_update "$f"; then
+    # TODO: Remove once we do a watershed release
+    make_add_if_instruction "$f" "$updatemanifestv3"
   else
     make_add_instruction "$f" "$updatemanifestv3"
   fi
