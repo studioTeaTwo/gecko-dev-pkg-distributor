@@ -94,6 +94,17 @@
   padding: 0.62em;
 }
 
+#downloadsPanelTorWarning {
+  margin-block-end: var(--arrowpanel-menuitem-padding-block);
+}
+
+#downloadsPanelTorWarningWrapper {
+ /* The wrapper element has its `width` attribute set by mozilla localisers.
+  * We want to ensure the element occupies the available width when the
+  * localiser width is smaller. See tor-browser#43312. */
+  min-width: 100%;
+}
+
 #downloadsHistory,
 #downloadsFooterButtons {
   margin: 0;

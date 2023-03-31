@@ -104,6 +104,25 @@
                   disablekeynav="true">
 
     <panelview id="downloadsPanel-mainView">
+      <!-- We add a wrapper around the #downloadsPanelTorWarning and give it the
+         - same Fluent ID as #downloadsListBox. This Fluent message allows
+         - Firefox localisers to set the width of the #downloadsListBox using
+         - the style attribute. We want the same width set for our downloads
+         - warning. Otherwise the warning will occupy its max-content width.
+         - NOTE: We require a wrapper element since #downloadsPanelTorWarning
+         - needs its own Fluent attributes.
+         - NOTE: This only works if #downloadsPanelTorWarningWrapper and
+         - #downloadsListBox share the same padding relative to their common
+         - ancestor.
+         - See tor-browser#43312. -->
+      <html:div
+        id="downloadsPanelTorWarningWrapper"
+        data-l10n-id="downloads-panel-items"
+        data-l10n-attrs="style"
+      >
+        <html:moz-message-bar id="downloadsPanelTorWarning">
+        </html:moz-message-bar>
+      </html:div>
       <vbox class="panel-view-body-unscrollable">
         <richlistbox id="downloadsListBox"
                      data-l10n-id="downloads-panel-items"
