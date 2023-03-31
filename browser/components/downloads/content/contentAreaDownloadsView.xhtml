@@ -33,6 +33,7 @@
 
     <html:link rel="localization" href="toolkit/global/textActions.ftl"/>
     <html:link rel="localization" href="browser/downloads.ftl" />
+    <html:link rel="localization" href="toolkit/global/tor-browser.ftl" />
   </linkset>
 
   <script src="chrome://global/content/globalOverlay.js"/>
@@ -47,6 +48,8 @@
     <key id="key_delete2" keycode="VK_BACK" command="cmd_delete"/>
   </keyset>
 #endif
+
+  <html:moz-message-bar id="aboutDownloadsTorWarning"></html:moz-message-bar>
 
   <richlistbox flex="1"
                seltype="multiple"

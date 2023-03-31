@@ -47,3 +47,7 @@ tree[is="places-tree"] > treechildren::-moz-tree-cell {
 .places-tooltip-box {
   display: block;
 }
+
+#placesDownloadsTorWarning:not(.downloads-visible) {
+  display: none;
+}

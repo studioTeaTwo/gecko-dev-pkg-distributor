@@ -15,6 +15,7 @@ EXTRA_JS_MODULES += [
     "DownloadsCommon.sys.mjs",
     "DownloadSpamProtection.sys.mjs",
     "DownloadsTaskbar.sys.mjs",
+    "DownloadsTorWarning.sys.mjs",
     "DownloadsViewableInternally.sys.mjs",
     "DownloadsViewUI.sys.mjs",
 ]
