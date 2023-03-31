@@ -40,6 +40,7 @@ ChromeUtils.defineESModuleGetters(this, {
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  DownloadsTorWarning: "resource:///modules/DownloadsTorWarning.sys.mjs",
 });
 
 const { Integration } = ChromeUtils.importESModule(
@@ -74,6 +75,13 @@ var DownloadsPanel = {
   _waitingDataForOpen: false,
 
   /**
+   * Tracks whether to show the tor warning or not.
+   *
+   * @type {?DownloadsTorWarning}
+   */
+  _torWarning: null,
+
+  /**
    * Starts loading the download data in background, without opening the panel.
    * Use showPanel instead to load the data and open the panel at the same time.
    */
@@ -88,6 +96,21 @@ var DownloadsPanel = {
         window
       );
     }
+
+    if (!this._torWarning) {
+      this._torWarning = new DownloadsTorWarning(
+        document.getElementById("downloadsPanelTorWarning"),
+        true,
+        () => {
+          // Re-assign focus that was lost.
+          this._focusPanel(true);
+        },
+        () => {
+          this.hidePanel();
+        }
+      );
+    }
+    this._torWarning.activate();
 
     if (this._initialized) {
       DownloadsCommon.log("DownloadsPanel is already initialized.");
@@ -156,6 +179,8 @@ var DownloadsPanel = {
     if (DownloadIntegration.downloadSpamProtection) {
       DownloadIntegration.downloadSpamProtection.unregister(window);
     }
+
+    this._torWarning?.deactivate();
 
     this._initialized = false;
 
@@ -486,24 +511,38 @@ var DownloadsPanel = {
   /**
    * Move focus to the main element in the downloads panel, unless another
    * element in the panel is already focused.
+   *
+   * @param {bool} [forceFocus=false] - Whether to force move the focus.
    */
-  _focusPanel() {
-    // We may be invoked while the panel is still waiting to be shown.
-    if (this.panel.state != "open") {
-      return;
+  _focusPanel(forceFocus = false) {
+    if (!forceFocus) {
+      // We may be invoked while the panel is still waiting to be shown.
+      if (this.panel.state != "open") {
+        return;
+      }
+
+      if (
+        document.activeElement &&
+        (this.panel.contains(document.activeElement) ||
+          this.panel.shadowRoot.contains(document.activeElement))
+      ) {
+        return;
+      }
     }
 
-    if (
-      document.activeElement &&
-      (this.panel.contains(document.activeElement) ||
-        this.panel.shadowRoot.contains(document.activeElement))
-    ) {
-      return;
-    }
     let focusOptions = {};
     if (this._preventFocusRing) {
       focusOptions.focusVisible = false;
     }
+
+    // Focus the "Got it" button if it is visible.
+    // This should ensure that the alert is read aloud by Orca when the
+    // downloads panel is opened. See tor-browser#42642.
+    if (!this._torWarning?.hidden) {
+      this._torWarning.dismissButton.focus(focusOptions);
+      return;
+    }
+
     if (DownloadsView.richListBox.itemCount > 0) {
       if (DownloadsView.canChangeSelectedItem) {
         DownloadsView.richListBox.selectedIndex = 0;
