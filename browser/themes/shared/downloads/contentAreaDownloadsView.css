@@ -25,3 +25,7 @@
   text-align: center;
   color: var(--text-color-deemphasized);
 }
+
+#aboutDownloadsTorWarning {
+  margin-block-end: 8px;
+}

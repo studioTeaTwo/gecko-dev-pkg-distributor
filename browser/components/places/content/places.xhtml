@@ -64,6 +64,7 @@
     <html:link rel="localization" href="browser/places.ftl"/>
     <html:link rel="localization" href="browser/downloads.ftl"/>
     <html:link rel="localization" href="browser/editBookmarkOverlay.ftl"/>
+    <html:link rel="localization" href="toolkit/global/tor-browser.ftl"/>
   </linkset>
 
   <script src="chrome://browser/content/places/places.js"/>
@@ -362,6 +363,8 @@
     </tree>
     <splitter collapse="none" persist="state"></splitter>
     <vbox id="contentView">
+      <html:moz-message-bar id="placesDownloadsTorWarning">
+      </html:moz-message-bar>
       <vbox id="placesViewsBox" flex="1">
         <tree id="placeContent"
               class="placesTree"
