@@ -92,6 +92,13 @@
 #downloadsPanel-mainView {
   min-width: 37em;
   padding: 0.62em;
+  /* If we don't set a width, #downloadsPanelTorWarning will request
+   * its max-content width. */
+  width: 37em;
+}
+
+#downloadsPanelTorWarning {
+  margin-block-end: var(--arrowpanel-menuitem-padding-block);
 }
 
 #downloadsHistory,
