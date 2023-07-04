@@ -91,6 +91,9 @@
         android:id="@+id/action_global_homeSettingsFragment"
         app:destination="@id/homeSettingsFragment" />
     <action
+        android:id="@+id/action_global_torSecurityLevelFragment"
+        app:destination="@id/torSecurityLevelFragment" />
+    <action
         android:id="@+id/action_global_privateBrowsingFragment"
         app:destination="@id/privateBrowsingFragment" />
     <action
@@ -594,6 +597,13 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
         <action
+            android:id="@+id/action_settingsFragment_to_torSecurityLevelFragment"
+            app:destination="@id/torSecurityLevelFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
             android:id="@+id/action_settingsFragment_to_privateBrowsingFragment"
             app:destination="@id/privateBrowsingFragment"
             app:enterAnim="@anim/slide_in_right"
@@ -849,6 +859,10 @@
         android:id="@+id/customizationFragment"
         android:name="org.mozilla.fenix.settings.CustomizationFragment"
         android:label="@string/preferences_customize" />
+    <fragment
+        android:id="@+id/torSecurityLevelFragment"
+        android:name="org.mozilla.fenix.settings.TorSecurityLevelFragment"
+        android:label="@string/preferences_tor_security_level_options" />
     <fragment
         android:id="@+id/privateBrowsingFragment"
         android:name="org.mozilla.fenix.settings.PrivateBrowsingFragment"

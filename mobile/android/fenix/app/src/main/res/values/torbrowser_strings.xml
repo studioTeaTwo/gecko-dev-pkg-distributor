@@ -23,6 +23,7 @@
 
     <string name="tor_onboarding_security_level">Set your Security Level</string>
     <string name="tor_onboarding_security_level_description">Disable certain web features that can be used to attack you, and harm your security, anonymity, and privacy.</string>
+    <string name="tor_onboarding_chosen_security_level_label">Current Security Level: %s</string>
     <string name="tor_onboarding_security_settings_button">Open Security Settings</string>
     <string name="tor_onboarding_donate_header">Donate and keep Tor safe</string>
     <string name="tor_onboarding_donate_description">Tor is free to use because of donations from people like you.</string>
@@ -58,6 +59,10 @@
     <string name="preferences_tor_network_settings_connected">Connected</string>
     <string name="preferences_tor_network_settings_restarting">Restarting</string>
     <string name="preferences_tor_network_settings_bridges_enabled">Bridges are enabled: %s</string>
+
+    <!-- Preference title for security level settings -->
+    <string name="preferences_tor_security_level_settings">Security Settings</string>
+    <string name="preferences_tor_security_level_options">Security Level</string>
 
     <!-- Description of security levels -->
     <string name="tor_security_level_standard_option">Standard</string>
