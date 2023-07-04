@@ -539,6 +539,8 @@ class DefaultSessionControlController(
     }
 
     override fun handleOpenSecurityLevelSettingsClicked() {
+        val directions = HomeFragmentDirections.actionGlobalTorSecurityLevelFragment()
+        navController.nav(R.id.homeFragment, directions)
     }
 
     override fun handleDonateClicked() {

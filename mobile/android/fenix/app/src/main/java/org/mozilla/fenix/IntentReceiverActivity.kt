@@ -6,6 +6,7 @@ package org.mozilla.fenix
 
 import android.app.Activity
 import android.content.Intent
+import android.content.Intent.ACTION_MAIN
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +27,7 @@ import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.perf.MarkersActivityLifecycleCallbacks
 import org.mozilla.fenix.perf.StartupTimeline
 import org.mozilla.fenix.shortcut.NewTabShortcutIntentProcessor
+import org.mozilla.fenix.tor.TorEvents
 
 /**
  * Processes incoming intents and sends them to the corresponding activity.
@@ -47,7 +49,23 @@ class IntentReceiverActivity : Activity() {
         // the HomeActivity.
         val intent = intent?.let { Intent(it) } ?: Intent()
         intent.sanitize().stripUnwantedFlags()
-        processIntent(intent)
+        if (intent.action == ACTION_MAIN || components.torController.isConnected) {
+            processIntent(intent)
+        } else {
+            // Wait until Tor is connected to handle intents from external apps for links, search, etc.
+            components.torController.registerTorListener(object : TorEvents {
+                override fun onTorConnected() {
+                    components.torController.unregisterTorListener(this)
+                    processIntent(intent)
+                }
+                override fun onTorConnecting() { /* no-op */ }
+                override fun onTorStopped() { /* no-op */ }
+                override fun onTorStatusUpdate(entry: String?, status: String?) { /* no-op */ }
+            })
+
+            // In the meantime, open the HomeActivity so the user can get connected.
+            processIntent(Intent())
+        }
 
         components.core.engine.profiler?.addMarker(
             MarkersActivityLifecycleCallbacks.MARKER_NAME,

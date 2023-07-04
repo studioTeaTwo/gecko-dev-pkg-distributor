@@ -298,7 +298,6 @@ class SessionControlInteractor(
     TorBootstrapInteractor,
     WallpaperInteractor {
 
-
     override fun onCollectionAddTabTapped(collection: TabCollection) {
         controller.handleCollectionAddTabTapped(collection)
     }

@@ -143,6 +143,7 @@ import org.mozilla.fenix.tabhistory.TabHistoryDialogFragment
 import org.mozilla.fenix.tabstray.TabsTrayFragment
 import org.mozilla.fenix.theme.DefaultThemeManager
 import org.mozilla.fenix.theme.ThemeManager
+import org.mozilla.fenix.tor.TorEvents
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
 import java.util.Locale
@@ -686,6 +687,24 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
      * Handles intents received when the activity is open.
      */
     final override fun onNewIntent(intent: Intent?) {
+        if (intent?.action == ACTION_MAIN || components.torController.isConnected) {
+            onNewIntentInternal(intent)
+        } else {
+            // Wait until Tor is connected to handle intents from external apps for links, search, etc.
+            components.torController.registerTorListener(object : TorEvents {
+                override fun onTorConnected() {
+                    components.torController.unregisterTorListener(this)
+                    onNewIntentInternal(intent)
+                }
+                override fun onTorConnecting() { /* no-op */ }
+                override fun onTorStopped() { /* no-op */ }
+                override fun onTorStatusUpdate(entry: String?, status: String?) { /* no-op */ }
+            })
+            return
+        }
+    }
+
+    private fun onNewIntentInternal(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let {
             handleNewIntent(it)
@@ -1298,14 +1317,17 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     /**
      *  Indicates if the user should be redirected to the [BrowserFragment] or to the [HomeFragment],
-     *  links from an external apps should always opened in the [BrowserFragment].
+     *  links from an external apps should always opened in the [BrowserFragment],
+     *  unless Tor is not yet connected.
      */
     @VisibleForTesting
     internal fun shouldStartOnHome(intent: Intent? = this.intent): Boolean {
         return components.strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
             // We only want to open on home when users tap the app,
-            // we want to ignore other cases when the app gets open by users clicking on links.
-            getSettings().shouldStartOnHome() && intent?.action == ACTION_MAIN
+            // we want to ignore other cases when the app gets open by users clicking on links,
+            // unless Tor is not yet connected.
+            getSettings().shouldStartOnHome() && (intent?.action == ACTION_MAIN ||
+                    !components.torController.isConnected)
         }
     }
 
