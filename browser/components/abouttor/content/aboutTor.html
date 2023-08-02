@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome:; object-src 'none'"
+    />
+    <title data-l10n-id="newtab-page-title"></title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="chrome://branding/content/icon32.png"
+    />
+    <!-- We need common.css to get styling for the moz-toggle. -->
+    <link rel="stylesheet" href="chrome://global/skin/in-content/common.css" />
+    <link
+      rel="stylesheet"
+      href="chrome://browser/content/abouttor/aboutTor.css"
+    />
+
+    <link rel="localization" href="browser/newtab/newtab.ftl" />
+    <link rel="localization" href="toolkit/global/tor-browser.ftl" />
+
+    <script
+      type="module"
+      src="chrome://global/content/elements/moz-toggle.mjs"
+    ></script>
+    <script src="chrome://browser/content/abouttor/aboutTor.js"></script>
+  </head>
+  <body class="onion-pattern-background">
+    <h1>
+      <img
+        id="tor-browser-logo"
+        alt=""
+        src="chrome://branding/content/about-logo.svg"
+      />
+      <span
+        id="tor-browser-home-heading-stable"
+        data-l10n-id="tor-browser-home-heading-stable"
+      ></span>
+      <span
+        id="tor-browser-home-heading-testing"
+        data-l10n-id="tor-browser-home-heading-testing"
+      ></span>
+    </h1>
+    <p id="tor-check">
+      <img
+        id="tor-check-icon"
+        alt=""
+        src="chrome://global/skin/icons/info.svg"
+      />
+      <span data-l10n-id="tor-browser-home-tor-check-warning">
+        <a
+          data-l10n-name="tor-check-link"
+          href="https://check.torproject.org/"
+          target="_blank"
+        ></a>
+      </span>
+    </p>
+    <form id="search-form" method="get" rel="noreferrer">
+      <img
+        id="dax-logo"
+        alt=""
+        src="chrome://browser/content/abouttor/dax-logo.svg"
+      />
+      <input
+        id="search-input"
+        name="q"
+        autocomplete="off"
+        type="text"
+        data-l10n-id="tor-browser-home-duck-duck-go-input"
+      />
+      <moz-toggle
+        id="onionize-toggle"
+        data-l10n-id="tor-browser-home-onionize-toggle"
+        data-l10n-attrs="label"
+      ></moz-toggle>
+    </form>
+    <p id="home-message-updated" class="home-message">
+      <img
+        class="message-emoji"
+        alt=""
+        src="chrome://browser/content/abouttor/2728-sparkles.svg"
+      />
+      <span>
+        <a data-l10n-name="update-link" target="_blank"></a>
+      </span>
+    </p>
+    <p class="home-message home-message-rotating-stable">
+      <span data-l10n-id="tor-browser-home-message-introduction"></span>
+    </p>
+    <p class="home-message home-message-rotating-stable">
+      <img
+        class="message-emoji"
+        alt=""
+        src="chrome://browser/content/abouttor/2764-red-heart.svg"
+      />
+      <span data-l10n-id="tor-browser-home-message-donate">
+        <a
+          data-l10n-name="donate-link"
+          href="https://donate.torproject.org"
+          target="_blank"
+        ></a>
+      </span>
+    </p>
+    <p class="home-message home-message-rotating-stable">
+      <img
+        class="message-emoji"
+        alt=""
+        src="chrome://browser/content/abouttor/1f4e3-megaphone.svg"
+      />
+      <span data-l10n-id="tor-browser-home-message-news">
+        <a
+          data-l10n-name="news-link"
+          href="https://newsletter.torproject.org"
+          target="_blank"
+        ></a>
+      </span>
+    </p>
+    <p class="home-message home-message-rotating-testing">
+      <img
+        class="message-emoji"
+        alt=""
+        src="chrome://browser/content/abouttor/26a1-high-voltage.svg"
+      />
+      <span data-l10n-id="tor-browser-home-message-testing">
+        <a
+          data-l10n-name="learn-more-link"
+          href="https://community.torproject.org/user-research/become-tester/"
+          target="_blank"
+        ></a>
+      </span>
+    </p>
+  </body>
+</html>
