@@ -1427,6 +1427,10 @@ var BookmarkingUI = {
       newTabURL,
       "about:home",
       "chrome://browser/content/blanktab.html",
+      // Add the "about:tor" uri. See tor-browser#41717.
+      // NOTE: "about:newtab", "about:welcome", "about:home" and
+      // "about:privatebrowsing" can also redirect to "about:tor".
+      "about:tor",
     ];
     if (PrivateBrowsingUtils.isWindowPrivate(window)) {
       newTabURLs.push("about:privatebrowsing");
