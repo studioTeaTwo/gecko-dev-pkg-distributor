@@ -105,6 +105,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
   WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
   WindowsGPOParser: "resource://gre/modules/policies/WindowsGPOParser.sys.mjs",
+  checkHomepageOverride: "resource:///modules/HomepageOverride.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
@@ -511,6 +512,24 @@ let JSWINDOWACTORS = {
     },
 
     matches: ["about:tabcrashed*"],
+  },
+
+  AboutTor: {
+    parent: {
+      esModuleURI: "resource:///actors/AboutTorParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///actors/AboutTorChild.sys.mjs",
+
+      events: {
+        DOMContentLoaded: {},
+        L10nMutationsFinished: {},
+        SubmitSearchOnionize: { wantUntrusted: true },
+        SurveyDismissed: { wantUntrusted: true },
+      },
+    },
+
+    matches: ["about:tor"],
   },
 
   // Removed AboutWelcomeShopping. tor-browser#42831.
@@ -1582,6 +1601,8 @@ BrowserGlue.prototype = {
     }
 
     lazy.ResetPBMPanel.init();
+
+    lazy.checkHomepageOverride();
 
     AboutHomeStartupCache.init();
 
