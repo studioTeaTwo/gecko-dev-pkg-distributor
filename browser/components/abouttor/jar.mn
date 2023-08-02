@@ -1,0 +1,9 @@
+browser.jar:
+  content/browser/abouttor/aboutTor.css           (content/aboutTor.css)
+  content/browser/abouttor/aboutTor.js            (content/aboutTor.js)
+  content/browser/abouttor/aboutTor.html          (content/aboutTor.html)
+  content/browser/abouttor/dax-logo.svg           (content/dax-logo.svg)
+  content/browser/abouttor/1f4e3-megaphone.svg    (content/1f4e3-megaphone.svg)
+  content/browser/abouttor/26a1-high-voltage.svg  (content/26a1-high-voltage.svg)
+  content/browser/abouttor/2728-sparkles.svg      (content/2728-sparkles.svg)
+  content/browser/abouttor/2764-red-heart.svg     (content/2764-red-heart.svg)

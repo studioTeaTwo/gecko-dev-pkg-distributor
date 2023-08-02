@@ -220,7 +220,11 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::URI_CAN_LOAD_IN_CHILD |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD},
     {"crashgpu", "about:blank", nsIAboutModule::HIDE_FROM_ABOUTABOUT},
-    {"crashextensions", "about:blank", nsIAboutModule::HIDE_FROM_ABOUTABOUT}};
+    {"crashextensions", "about:blank", nsIAboutModule::HIDE_FROM_ABOUTABOUT},
+    {"tor", "chrome://browser/content/abouttor/aboutTor.html",
+     nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
+         nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::IS_SECURE_CHROME_UI}};
 static const int kRedirTotal = mozilla::ArrayLength(kRedirMap);
 
 NS_IMETHODIMP

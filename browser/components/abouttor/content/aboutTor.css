@@ -1,0 +1,237 @@
+@import url("chrome://global/skin/tor-colors.css");
+@import url("chrome://global/skin/onion-pattern.css");
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  --form-max-width: 600px;
+  grid-template:
+    /* Start space: unfilled. */
+    ". . ." 1fr
+    "heading heading heading" auto
+    "tor-check tor-check tor-check" auto
+    ". form ." min-content
+    "message message message" auto
+    /* End space: unfilled.
+     * Reserve 150px for background image.
+     * NOTE: Since the body has "auto" height, the other "1fr" flex row will
+     * not shrink to zero, but will instead shrink to a minimum size of
+     * 75px = (150px * 1fr / 2fr) */
+    ". . ." minmax(var(--onion-pattern-height), 2fr)
+    /* NOTE: "form" will be given a maximum width of --form-max-width. */
+    / 1fr minmax(max-content, var(--form-max-width)) 1fr;
+  justify-items: center;
+  padding-inline: 20px;
+}
+
+body:not(.initialized) {
+  /* Hide the components before the page is initialized.
+   * NOTE: The layout can still be adjusted or measured in this time since we
+   * use visibility rather than `display: none`. */
+  visibility: hidden;
+}
+
+h1 {
+  grid-area: heading;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 40px;
+  margin-block-start: 0;
+  margin-block-end: 40px;
+  margin-inline: 20px;
+}
+
+#tor-browser-logo {
+  height: 80px;
+  flex: 0 0 auto;
+}
+
+body.is-testing #tor-browser-home-heading-stable {
+  display: none;
+}
+
+body:not(.is-testing) #tor-browser-home-heading-testing {
+  display: none;
+}
+
+#tor-check {
+  grid-area: tor-check;
+  max-width: var(--form-max-width);
+  box-sizing: border-box;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-inline: 23px;
+  padding-block: 11px;
+  border: 1px solid var(--in-content-box-border-color);
+  border-radius: 8px;
+  background-color: var(--in-content-box-info-background);
+  margin-block-start: 0;
+  margin-block-end: 30px;
+}
+
+body:not(.show-tor-check) #tor-check {
+  display: none;
+}
+
+#tor-check-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+.home-message:not(.shown-message) {
+  display: none;
+}
+
+.home-message {
+  grid-area: message;
+  font-weight: 400;
+  text-align: center;
+  margin-block-start: 1.6em;
+  margin-block-end: 1em;
+}
+
+.message-emoji {
+  height: 1em;
+  vertical-align: sub;
+  margin-inline-end: 0.3em;
+}
+
+#search-form {
+  grid-area: form;
+  /* Occupy the entire "form" block. */
+  justify-self: stretch;
+  background: var(--in-content-page-background);
+  display: flex;
+  align-items: stretch;
+  /* Padding between elements. */
+  --form-padding: 12px;
+  --form-border-width: 1px;
+  /* Padding between elements and the parent's border edge. */
+  --form-outer-padding: calc(var(--form-padding) - var(--form-border-width));
+  --form-radius: 7px;
+  --logo-size: 30px;
+  border-radius: calc(var(--form-radius) + var(--form-border-width));
+  border-width: var(--form-border-width);
+  border-style: solid;
+  border-color: var(--in-content-box-border-color);
+}
+
+#search-form.search-input-focus-visible {
+  outline: var(--focus-outline);
+}
+
+#dax-logo {
+  width: var(--logo-size);
+  flex: 0 0 auto;
+  align-self: center;
+  margin-inline-start: var(--form-outer-padding);
+  /* Does not occupy any layout width. */
+  margin-inline-end: calc(-1 * (var(--logo-size) + var(--form-outer-padding)))
+}
+
+#search-input {
+  flex: 1 0 auto;
+  min-width: 200px;
+  min-height: var(--logo-size);
+  box-sizing: content-box;
+  margin: 0;
+  padding-block: var(--form-outer-padding);
+  padding-inline-end: var(--form-padding);
+  padding-inline-start: calc(
+    var(--form-outer-padding) + var(--logo-size) /* logo */
+    + var(--form-padding) /* padding after logo. */
+  );
+  /* Make sure clickable area does not extend beyond the form's border. */
+  border-start-start-radius: var(--form-radius);
+  border-end-start-radius: var(--form-radius);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  /* Focus and outline styling move to the parent. */
+  background: none;
+  border: none;
+  outline: none;
+}
+
+#onionize-toggle {
+  flex: 0 0 auto;
+  font-weight: 500;
+  justify-content: center;
+  padding-block: var(--form-outer-padding);
+  padding-inline-end: var(--form-outer-padding);
+  border-start-end-radius: var(--form-radius);
+  border-end-end-radius: var(--form-radius);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  padding-inline-start: 0;
+  /* Non-clickable gap between input and toggle. */
+  margin-inline-start: 0.5em;
+}
+
+@media not ((prefers-contrast) or (forced-colors)) {
+  /* Force the page to follow the same Tor theme, regardless of
+   * prefers-color-scheme. */
+
+  /* On dark background */
+  :root {
+    background-color: #2C0449;
+    --focus-outline-color: var(--tor-focus-outline-color-dark);
+    --focus-outline: var(--focus-outline-width) solid var(--focus-outline-color);
+    --in-content-focus-outline-color: var(--focus-outline-color);
+    --in-content-focus-outline: var(--focus-outline);
+    --onion-pattern-stroke-color: #3e0663;
+    --onion-pattern-fill-color: #350556;
+  }
+
+  #tor-check {
+    background-color: #1f0333;
+    border-color: transparent;
+  }
+
+  body > :not(#search-form) {
+    /* Same as --in-content-page-color when "prefers-color-scheme: dark" */
+    color: var(--color-gray-05);
+    --link-color: var(--tor-link-color-dark);
+    --link-color-hover: var(--tor-link-color-hover-dark);
+    --link-color-active: var(--tor-link-color-active-dark);
+  }
+
+  #search-form {
+    /* Use light color for background and moz-toggle shadow root. */
+    color-scheme: light;
+    /* Same as --in-content-page-color when "prefers-color-scheme: light" */
+    color: var(--color-gray-100);
+    border-color: transparent;
+  }
+
+  #search-form.search-input-focus-visible {
+    /* Use a light-themed inner-border to contrast with the dark-themed
+     * focus outline. */
+    border-color: var(--tor-focus-outline-color-light);
+  }
+
+  #search-form.onionized-search:not(.search-input-focus-visible) {
+    box-shadow: 0 4px 40px #9400ff66, 0 4px 16px #9400ff33;
+  }
+
+  /* Light background. */
+  #search-form > * {
+    --focus-outline-color: var(--tor-focus-outline-color-light);
+    --focus-outline: var(--focus-outline-width) solid var(--focus-outline-color);
+    --in-content-focus-outline-color: var(--focus-outline-color);
+    --in-content-focus-outline: var(--focus-outline);
+    /* Variables used for --toggle- variables. */
+    --color-accent-primary: var(--tor-button-background-color-light);
+    --color-accent-primary-hover: var(--tor-button-background-color-hover-light);
+    --color-accent-primary-active: var(--tor-button-background-color-active-light);
+  }
+
+  #search-form.onionized-search #onionize-toggle {
+    color: var(--tor-link-color-light);
+  }
+}
