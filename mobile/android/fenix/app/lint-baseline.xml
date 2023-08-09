@@ -769,7 +769,7 @@
         errorLine1="    android:width=&quot;973dp&quot;"
         errorLine2="                   ~~~~~">
         <location
-            file="src/main/res/drawable/ic_notification_permission.xml"
+            file="src/main/res/drawable/mozac_lib_crash_notification.xml"
             line="7"
             column="20"/>
     </issue>
@@ -802,7 +802,7 @@
         errorLine1="    android:width=&quot;312dp&quot;"
         errorLine2="                   ~~~~~">
         <location
-            file="src/main/res/drawable/ic_onboarding_search_widget.xml"
+            file="src/main/res/drawable/mozac_lib_crash_notification.xml"
             line="7"
             column="20"/>
     </issue>
@@ -813,7 +813,7 @@
         errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; xmlns:aapt=&quot;http://schemas.android.com/aapt&quot; android:width=&quot;235dp&quot; android:height=&quot;298dp&quot; android:viewportWidth=&quot;235&quot; android:viewportHeight=&quot;298&quot;>"
         errorLine2="                                                                                                                               ~~~~~">
         <location
-            file="src/main/res/drawable/ic_onboarding_sync.xml"
+            file="src/main/res/drawable/mozac_lib_crash_notification.xml"
             line="5"
             column="128"/>
     </issue>
