@@ -34,10 +34,7 @@ import org.mozilla.fenix.home.sessioncontrol.viewholders.CollectionHeaderViewHol
 import org.mozilla.fenix.home.sessioncontrol.viewholders.CustomizeHomeButtonViewHolder
 import org.mozilla.fenix.home.sessioncontrol.viewholders.NoCollectionsMessageViewHolder
 import org.mozilla.fenix.home.sessioncontrol.viewholders.PrivateBrowsingDescriptionViewHolder
-import org.mozilla.fenix.home.sessioncontrol.viewholders.TorBootstrapPagerViewHolder
 import org.mozilla.fenix.home.sessioncontrol.viewholders.onboarding.MessageCardViewHolder
-import org.mozilla.fenix.home.sessioncontrol.viewholders.onboarding.TorOnboardingSecurityLevelViewHolder
-import org.mozilla.fenix.home.sessioncontrol.viewholders.onboarding.TorOnboardingDonateViewHolder
 import org.mozilla.fenix.home.topsites.TopSitePagerViewHolder
 import org.mozilla.fenix.home.topsites.TopSitesViewHolder
 import mozilla.components.feature.tab.collections.Tab as ComponentTab
@@ -146,9 +143,6 @@ sealed class AdapterItem(@LayoutRes val viewType: Int) {
     }
 
     object CustomizeHomeButton : AdapterItem(CustomizeHomeButtonViewHolder.LAYOUT_ID)
-
-    object TorOnboardingSecurityLevel : AdapterItem(TorOnboardingSecurityLevelViewHolder.LAYOUT_ID)
-    object TorOnboardingDonate : AdapterItem(TorOnboardingDonateViewHolder.LAYOUT_ID)
 
     object RecentTabsHeader : AdapterItem(RecentTabsHeaderViewHolder.LAYOUT_ID)
     object RecentTabItem : AdapterItem(RecentTabViewHolder.LAYOUT_ID)
@@ -308,11 +302,6 @@ class SessionControlAdapter(
                 viewLifecycleOwner = viewLifecycleOwner,
                 interactor = interactor,
             )
-            TorBootstrapPagerViewHolder.LAYOUT_ID -> TorBootstrapPagerViewHolder(
-                view,
-                components,
-                interactor
-            )
             NoCollectionsMessageViewHolder.LAYOUT_ID ->
                 NoCollectionsMessageViewHolder(
                     view,
@@ -322,15 +311,6 @@ class SessionControlAdapter(
                     interactor,
                 )
             BottomSpacerViewHolder.LAYOUT_ID -> BottomSpacerViewHolder(view)
-
-            TorOnboardingSecurityLevelViewHolder.LAYOUT_ID -> TorOnboardingSecurityLevelViewHolder(
-                view,
-                interactor
-            )
-            TorOnboardingDonateViewHolder.LAYOUT_ID -> TorOnboardingDonateViewHolder(
-                view,
-                interactor
-            )
             else -> throw IllegalStateException()
         }
     }
