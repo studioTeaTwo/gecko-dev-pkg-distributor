@@ -157,7 +157,6 @@ import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.tabstray.TabsTrayAccessPoint
 import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.fenix.tor.bootstrap.TorQuickStart
 import org.mozilla.fenix.utils.Settings.Companion.TOP_SITES_PROVIDER_MAX_THRESHOLD
 import org.mozilla.fenix.utils.allowUndo
 import org.mozilla.fenix.wallpapers.Wallpaper
@@ -258,8 +257,6 @@ class HomeFragment : Fragment() {
     private val bottomToolbarContainerIntegration = ViewBoundFeatureWrapper<BottomToolbarContainerIntegration>()
 
     private lateinit var savedLoginsLauncher: ActivityResultLauncher<Intent>
-    private val torQuickStart by lazy { TorQuickStart(requireContext()) }
-    private lateinit var currentMode: CurrentMode
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // DO NOT ADD ANYTHING ABOVE THIS getProfilerTime CALL!
@@ -302,7 +299,7 @@ class HomeFragment : Fragment() {
         // Splits by full stops or commas and puts the parts in different lines.
         // Ignoring separators at the end of the string, it is expected
         // that there are at most two parts (e.g. "Explore. Privately.").
-        val localBinding = binding;
+        val localBinding = binding
         binding.exploreprivately.text = localBinding
             .exploreprivately
             .text
@@ -432,10 +429,6 @@ class HomeFragment : Fragment() {
                 removeCollectionWithUndo = ::removeCollectionWithUndo,
                 showUndoSnackbarForTopSite = ::showUndoSnackbarForTopSite,
                 showTabTray = ::openTabsTray,
-                handleTorBootstrapConnect = ::handleTorBootstrapConnect,
-                cancelTorBootstrap = ::cancelTorBootstrap,
-                initiateTorBootstrap = ::initiateTorBootstrap,
-                openTorNetworkSettings = ::openTorNetworkSettings
             ),
             recentTabController = DefaultRecentTabsController(
                 selectTabUseCase = components.useCases.tabsUseCases.selectTab,
@@ -511,9 +504,6 @@ class HomeFragment : Fragment() {
         activity.themeManager.applyStatusBarTheme(activity)
 
         // FxNimbus.features.homescreen.recordExposure()
-
-        adjustHomeFragmentView(currentMode.getCurrentMode())
-        showSessionControlView()
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
@@ -759,6 +749,7 @@ class HomeFragment : Fragment() {
         if (browsingModeManager.mode == BrowsingMode.Private) {
             binding.root.consumeFrom(requireContext().components.appStore, viewLifecycleOwner) {
                 sessionControlView?.update(it)
+
             }
         } else {
             sessionControlView?.update(requireContext().components.appStore.state)
@@ -783,111 +774,6 @@ class HomeFragment : Fragment() {
             appBarLayoutParams.behavior = appBarBehavior
         }
         binding.homeAppBar.setExpanded(true)
-    }
-
-    // This function should be paired with showSessionControlView()
-    @SuppressWarnings("ComplexMethod", "NestedBlockDepth", "LongMethod")
-    private fun adjustHomeFragmentView(mode: Mode) {
-        binding.sessionControlRecyclerView.apply {
-                visibility = View.INVISIBLE
-        }
-
-        if (mode == Mode.Bootstrap) {
-            binding.sessionControlRecyclerView.apply {
-                setPadding(0, 0, 0, 0)
-                (layoutParams as ViewGroup.MarginLayoutParams).setMargins(0, 0, 0, 0)
-            }
-            binding.homeAppBar.apply {
-                visibility = View.GONE
-
-                // Reset this as SCROLL in case it was previously set as NO_SCROLL after bootstrap
-                children.forEach {
-                    (it.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-                        AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-                }
-            }
-            binding.onionPatternImage.apply {
-                visibility = View.GONE
-            }
-            binding.toolbarLayout.apply {
-                visibility = View.GONE
-            }
-        } else {
-            // Keep synchronized with xml layout (somehow).
-            binding.sessionControlRecyclerView.apply {
-                setPadding(
-                    SESSION_CONTROL_VIEW_PADDING,
-                    SESSION_CONTROL_VIEW_PADDING,
-                    SESSION_CONTROL_VIEW_PADDING,
-                    SESSION_CONTROL_VIEW_PADDING
-                )
-                // Default margin until it is re-set below (either set immediately or after Layout)
-                (layoutParams as ViewGroup.MarginLayoutParams).setMargins(
-                    0,
-                    0,
-                    0,
-                    DEFAULT_ONBOARDING_FINISH_MARGIN
-                )
-            }
-            binding.toolbarLayout.apply {
-                visibility = View.VISIBLE
-                // If the Layout rendering pass was completed, then we have a |height| value,
-                // if it wasn't completed then we have 0.
-                if (height == 0) {
-                    // Set the bottom margin after the toolbar height is defined during Layout
-                    doOnLayout {
-                        val toolbarLayoutHeight = binding.toolbarLayout.height
-                        binding.sessionControlRecyclerView.apply {
-                            (layoutParams as ViewGroup.MarginLayoutParams).setMargins(
-                                0,
-                                0,
-                                0,
-                                toolbarLayoutHeight - SESSION_CONTROL_VIEW_PADDING
-                            )
-                        }
-                    }
-                } else {
-                    binding.sessionControlRecyclerView.apply {
-                        (layoutParams as ViewGroup.MarginLayoutParams).setMargins(
-                            0,
-                            0,
-                            0,
-                            height - SESSION_CONTROL_VIEW_PADDING
-                        )
-                    }
-                }
-            }
-            // Hide the onion pattern during Onboarding, too.
-            // With new onboarding HomeFragment is only reached once onboarding is complete
-            binding.onionPatternImage.apply {
-                visibility = if (currentMode.getCurrentMode() != Mode.Bootstrap) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
-
-            }
-            binding.homeAppBar.apply {
-                visibility = View.VISIBLE
-
-                children.forEach {
-                    (it.layoutParams as AppBarLayout.LayoutParams).scrollFlags =
-                        if (currentMode.getCurrentMode() != Mode.Bootstrap) {
-                            AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
-                        } else {
-                            AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-                        }
-
-                }
-            }
-        }
-    }
-
-    // This function should be paired with adjustHomeFragmentView()
-    private fun showSessionControlView() {
-        binding.sessionControlRecyclerView.apply {
-                visibility = View.VISIBLE
-        }
     }
 
     @Suppress("LongMethod", "ComplexMethod")
@@ -1180,14 +1066,6 @@ class HomeFragment : Fragment() {
             requireComponents.reviewPromptController.promptReview(requireActivity())
         }
     }
-       
-    private fun dispatchModeChanges(mode: Mode) {
-        requireComponents.appStore.dispatch(AppAction.ModeChange(mode))
-
-        adjustHomeFragmentView(mode)
-        updateSessionControlView()
-        showSessionControlView()
-    }
 
     @VisibleForTesting
     internal fun removeCollectionWithUndo(tabCollection: TabCollection) {
@@ -1210,22 +1088,11 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        currentMode.unregisterTorListener()
-    }
-
     override fun onResume() {
         super.onResume()
         if (browsingModeManager.mode == BrowsingMode.Private) {
             activity?.window?.setBackgroundDrawableResource(R.drawable.private_home_background_gradient)
         }
-
-        // fenix#40176: Ensure the Home fragment is rendered correctly when we resume.
-        val mode = currentMode.getCurrentMode()
-        adjustHomeFragmentView(mode)
-        updateSessionControlView()
-        showSessionControlView()
 
         hideToolbar()
 
@@ -1490,25 +1357,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun handleTorBootstrapConnect() {
-        requireComponents.torController.onTorConnecting()
-    }
-
-    private fun cancelTorBootstrap() {
-        requireComponents.torController.stopTor()
-    }
-
-    private fun initiateTorBootstrap(withDebugLogging: Boolean = false) {
-        requireComponents.torController.initiateTorBootstrap(lifecycleScope, withDebugLogging)
-    }
-
-    private fun openTorNetworkSettings() {
-        val directions =
-            HomeFragmentDirections
-                .actionHomeFragmentToTorNetworkSettingsFragment()
-        findNavController().navigate(directions)
-    }
-
     companion object {
         // Used to set homeViewModel.sessionToDelete when all tabs of a browsing mode are closed
         const val ALL_NORMAL_TABS = "all_normal"
@@ -1528,9 +1376,5 @@ class HomeFragment : Fragment() {
 
         // Elevation for undo toasts
         internal const val TOAST_ELEVATION = 80f
-
-        // Layout
-        private const val DEFAULT_ONBOARDING_FINISH_MARGIN = 60
-        private const val SESSION_CONTROL_VIEW_PADDING = 16
     }
 }

@@ -129,59 +129,11 @@ interface CollectionInteractor {
     fun onRemoveCollectionsPlaceholder()
 }
 
-/**
- * Interface for onboarding related actions in the [SessionControlInteractor].
- */
-interface OnboardingInteractor {
-    /**
-     * Hides the onboarding and navigates to Search. Called when a user clicks on the "Start Browsing" button.
-     */
-    fun onStartBrowsingClicked()
-
-    /**
-     * Hides the onboarding and navigates to Settings. Called when a user clicks on the "Open settings" button.
-     */
-    fun onOpenSettingsClicked()
-
-    /**
-     * Opens a custom tab to privacy notice url. Called when a user clicks on the "read our privacy notice" button.
-     */
-    fun onDonateClicked()
-}
-
 interface CustomizeHomeIteractor {
     /**
      * Opens the customize home settings page.
      */
     fun openCustomizeHomePage()
-}
-
-interface TorBootstrapInteractor {
-    /**
-     * Initiates Tor bootstrapping. Called when a user clicks on the "Connect" button.
-     */
-    fun onTorBootstrapConnectClicked()
-
-    /**
-     * Initiates Tor bootstrapping. Called when a user clicks on the "Connect" button.
-     */
-    fun onTorStartBootstrapping()
-
-    /**
-     * Stop Tor bootstrapping. Called when a user clicks on the "settings" cog/button.
-     */
-    fun onTorStopBootstrapping()
-
-    /**
-     * Initiates Tor bootstrapping with debug logging. Called when bootstrapping fails with
-     * the control.txt file not existing.
-     */
-    fun onTorStartDebugBootstrapping()
-
-    /**
-     * Open Tor Network Settings preference screen
-     */
-    fun onTorBootstrapNetworkSettingsClicked()
 }
 
 /**
@@ -295,7 +247,6 @@ class SessionControlInteractor(
     PocketStoriesInteractor,
     PrivateBrowsingInteractor,
     SearchSelectorInteractor,
-    TorBootstrapInteractor,
     WallpaperInteractor {
 
     override fun onCollectionAddTabTapped(collection: TabCollection) {
@@ -356,15 +307,6 @@ class SessionControlInteractor(
 
     override fun showWallpapersOnboardingDialog(state: WallpaperState): Boolean {
         return controller.handleShowWallpapersOnboardingDialog(state)
-    }
-
-    // TODO: Do these still work, if not overrides, cus parent class dropped, are they wired in still?
-    fun onOpenSettingsClicked() {
-        controller.handleOpenSettingsClicked()
-    }
-
-    fun onDonateClicked() {
-        controller.handleDonateClicked()
     }
 
     override fun onToggleCollectionExpanded(collection: TabCollection, expand: Boolean) {
@@ -499,25 +441,5 @@ class SessionControlInteractor(
 
     override fun onMenuItemTapped(item: SearchSelectorMenu.Item) {
         searchSelectorController.handleMenuItemTapped(item)
-    }
-
-    override fun onTorBootstrapConnectClicked() {
-        controller.handleTorBootstrapConnectClicked()
-    }
-
-    override fun onTorStopBootstrapping() {
-        controller.handleTorStopBootstrapping()
-    }
-
-    override fun onTorStartBootstrapping() {
-        controller.handleTorStartBootstrapping()
-    }
-
-    override fun onTorStartDebugBootstrapping() {
-        controller.handleTorStartDebugBootstrapping()
-    }
-
-    override fun onTorBootstrapNetworkSettingsClicked() {
-        controller.handleTorNetworkSettingsClicked()
     }
 }

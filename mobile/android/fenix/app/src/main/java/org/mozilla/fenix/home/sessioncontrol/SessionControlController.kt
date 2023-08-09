@@ -136,21 +136,6 @@ interface SessionControlController {
     fun handleTopSiteLongClicked(topSite: TopSite)
 
     /**
-     * @see [OnboardingInteractor.onOpenSettingsClicked]
-     */
-    fun handleOpenSettingsClicked()
-
-    /**
-     * @see [OnboardingInteractor.onOpenSecurityLevelSettingsClicked]
-     */
-    fun handleOpenSecurityLevelSettingsClicked()
-
-    /**
-     * @see [OnboardingInteractor.onDonateClicked]
-     */
-    fun handleDonateClicked()
-
-    /**
      * @see [CollectionInteractor.onToggleCollectionExpanded]
      */
     fun handleToggleCollectionExpanded(collection: TabCollection, expand: Boolean)
@@ -189,31 +174,6 @@ interface SessionControlController {
      * @see [SessionControlInteractor.reportSessionMetrics]
      */
     fun handleReportSessionMetrics(state: AppState)
-
-    /**
-     * @see [TorBootstrapInteractor.onTorBootstrapConnectClicked]
-     */
-    fun handleTorBootstrapConnectClicked()
-
-    /**
-     * @see [TorBootstrapInteractor.onTorStopBootstrapping]
-     */
-    fun handleTorStopBootstrapping()
-
-    /**
-     * @see [TorBootstrapInteractor.onTorStartBootstrapping]
-     */
-    fun handleTorStartBootstrapping()
-
-    /**
-     * @see [TorBootstrapInteractor.onTorStartDebugBootstrapping]
-     */
-    fun handleTorStartDebugBootstrapping()
-
-    /**
-     * @see [TorBootstrapInteractor.onTorBootstrapNetworkSettingsClicked]
-     */
-    fun handleTorNetworkSettingsClicked()
 }
 
 @Suppress("TooManyFunctions", "LargeClass", "LongParameterList")
@@ -235,10 +195,6 @@ class DefaultSessionControlController(
     private val removeCollectionWithUndo: (tabCollection: TabCollection) -> Unit,
     private val showUndoSnackbarForTopSite: (topSite: TopSite) -> Unit,
     private val showTabTray: () -> Unit,
-    private val handleTorBootstrapConnect: () -> Unit,
-    private val initiateTorBootstrap: (Boolean) -> Unit,
-    private val cancelTorBootstrap: () -> Unit,
-    private val openTorNetworkSettings: () -> Unit
 ) : SessionControlController {
 
     override fun handleCollectionAddTabTapped(collection: TabCollection) {
@@ -532,25 +488,6 @@ class DefaultSessionControlController(
             }
         }
     }
-
-    override fun handleOpenSettingsClicked() {
-        val directions = HomeFragmentDirections.actionGlobalPrivateBrowsingFragment()
-        navController.nav(R.id.homeFragment, directions)
-    }
-
-    override fun handleOpenSecurityLevelSettingsClicked() {
-        val directions = HomeFragmentDirections.actionGlobalTorSecurityLevelFragment()
-        navController.nav(R.id.homeFragment, directions)
-    }
-
-    override fun handleDonateClicked() {
-        activity.openToBrowserAndLoad(
-            searchTermOrURL = SupportUtils.DONATE_URL,
-            newTab = true,
-            from = BrowserDirection.FromHome
-        )
-    }
-
     override fun handleToggleCollectionExpanded(collection: TabCollection, expand: Boolean) {
         appStore.dispatch(AppAction.CollectionExpanded(collection, expand))
     }
@@ -621,25 +558,5 @@ class DefaultSessionControlController(
         }
 
         HomeBookmarks.bookmarksCount.set(state.bookmarks.size.toLong())
-    }
-
-    override fun handleTorBootstrapConnectClicked() {
-        handleTorBootstrapConnect()
-    }
-
-    override fun handleTorStopBootstrapping() {
-        cancelTorBootstrap()
-    }
-
-    override fun handleTorStartBootstrapping() {
-        initiateTorBootstrap(false)
-    }
-
-    override fun handleTorStartDebugBootstrapping() {
-        initiateTorBootstrap(true)
-    }
-
-    override fun handleTorNetworkSettingsClicked() {
-        openTorNetworkSettings()
     }
 }
