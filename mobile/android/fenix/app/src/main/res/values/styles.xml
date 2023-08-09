@@ -325,7 +325,6 @@
         <item name="fenixWordmarkText">@drawable/ic_wordmark_text_private</item>
         <item name="fenixWordmarkLogo">@drawable/ic_wordmark_logo</item>
         <item name="homeBackground">@drawable/private_home_background_gradient</item>
-        <item name="torBootstrapBackground">@drawable/tor_bootstrap_background_gradient</item>
         <item name="bottomBarBackground">@drawable/private_home_bottom_bar_background_gradient</item>
         <item name="bottomBarBackgroundTop">@drawable/private_home_bottom_bar_background_gradient_top</item>
         <item name="mozac_ic_private_mode_circle_fill_background_color">@color/photonWhite</item>
