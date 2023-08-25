@@ -162,11 +162,10 @@ object TorBrowserFeatures {
             override fun onTorStopped() {
             }
 
-                @SuppressWarnings("EmptyFunctionBlock")
-                override fun onTorStatusUpdate(entry: String?, status: String?) {
-                }
-            })
-        }
+            @SuppressWarnings("EmptyFunctionBlock")
+            override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) {
+            }
+        })
     }
 
 

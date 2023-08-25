@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 interface TorEvents {
     fun onTorConnecting()
     fun onTorConnected()
-    fun onTorStatusUpdate(entry: String?, status: String?)
+    fun onTorStatusUpdate(entry: String?, status: String?, progress: Double? = 0.0)
     fun onTorStopped()
 }
 class TorError(
@@ -18,6 +18,10 @@ class TorError(
     var phase: String,
     var reason: String,
 ) { }
+
+interface TorLogs {
+    fun onLog(type: String?, message: String?)
+}
 
 internal enum class TorStatus(val status: String) {
     OFF("OFF"),
@@ -42,13 +46,16 @@ interface TorController: TorEvents {
 
     override fun onTorConnecting()
     override fun onTorConnected()
-    override fun onTorStatusUpdate(entry: String?, status: String?)
+    override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?)
     override fun onTorStopped()
 
     fun getLastErrorState() : TorError?
 
     fun registerTorListener(l: TorEvents)
     fun unregisterTorListener(l: TorEvents)
+
+    fun registerTorLogListener(l: TorLogs)
+    fun unregisterTorLogListener(l: TorLogs)
 
     fun initiateTorBootstrap(lifecycleScope: LifecycleCoroutineScope? = null, withDebugLogging: Boolean = false)
     fun stopTor()

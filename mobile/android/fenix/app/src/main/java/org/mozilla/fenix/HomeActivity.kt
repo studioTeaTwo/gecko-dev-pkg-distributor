@@ -32,6 +32,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -318,6 +319,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             it.start()
         }
 
+        /*
         if (settings().shouldShowOnboarding(
                 hasUserBeenOnboarded = components.fenixOnboarding.userHasBeenOnboarded(),
                 isLauncherIntent = intent.toSafeIntent().isLauncherIntent,
@@ -328,6 +330,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 navHost.navController.navigate(NavGraphDirections.actionGlobalOnboarding())
             }
         } else {
+         */
             lifecycleScope.launch(IO) {
                 // showFullscreenMessageIfNeeded(applicationContext)
             }
@@ -348,7 +351,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 navHost.navController.navigate(NavGraphDirections.actionGlobalHomeOnboardingDialog())
             }
             */
-        }
+        //}
 
         Performance.processIntentIfPerformanceTest(intent, this)
 
@@ -699,7 +702,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 }
                 override fun onTorConnecting() { /* no-op */ }
                 override fun onTorStopped() { /* no-op */ }
-                override fun onTorStatusUpdate(entry: String?, status: String?) { /* no-op */ }
+                override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) { /* no-op */ }
             })
             return
         }
@@ -1225,11 +1228,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     @VisibleForTesting
     internal fun navigateToHome(navController: NavController) {
-        if (this is ExternalAppBrowserActivity) {
-            return
-        }
+//        if (this is ExternalAppBrowserActivity) {
+//            return
+//        }
 
-        navController.navigate(NavGraphDirections.actionStartupHome())
+        navHost.navController.navigate(NavGraphDirections.actionStartupTorbootstrap())
     }
 
     final override fun attachBaseContext(base: Context) {

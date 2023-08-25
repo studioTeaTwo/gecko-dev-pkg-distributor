@@ -60,7 +60,7 @@ class IntentReceiverActivity : Activity() {
                 }
                 override fun onTorConnecting() { /* no-op */ }
                 override fun onTorStopped() { /* no-op */ }
-                override fun onTorStatusUpdate(entry: String?, status: String?) { /* no-op */ }
+                override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) { /* no-op */ }
             })
 
             // In the meantime, open the HomeActivity so the user can get connected.
