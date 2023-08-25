@@ -8,6 +8,7 @@ import mozilla.components.browser.engine.gecko.GeckoEngine
 import org.mozilla.fenix.ext.components
 import org.mozilla.geckoview.TorIntegrationAndroid
 import org.mozilla.geckoview.TorIntegrationAndroid.BootstrapStateChangeListener
+import org.mozilla.geckoview.TorIntegrationAndroid.TorLogListener
 import org.mozilla.geckoview.TorSettings
 import org.mozilla.geckoview.TorSettings.BridgeBuiltinType
 import org.mozilla.geckoview.TorSettings.BridgeSource
@@ -46,11 +47,12 @@ internal enum class TorConnectState(val state: String) {
 
 class TorControllerGV(
     private val context: Context,
-) : TorController, TorEvents, BootstrapStateChangeListener {
+) : TorController, TorEvents, BootstrapStateChangeListener, TorLogListener {
 
     private val TAG = "TorControllerGV"
 
     private var torListeners = mutableListOf<TorEvents>()
+    private var torLogListeners = mutableListOf<TorLogs>()
 
     internal var lastKnownStatus = TorConnectState.Initial
     internal var lastKnownError: TorError? = null
@@ -66,6 +68,17 @@ class TorControllerGV(
     override val isRestarting get() = isTorRestarting
     override val isBootstrapped get() = isTorBootstrapped
     override val isConnected get() = (lastKnownStatus.isStarted() && !isTorRestarting)
+
+    override var quickstart: Boolean
+        get() {
+            return getTorSettings()?.quickstart ?: false
+        }
+        set(value) {
+            getTorSettings()?.let {
+                it.quickstart = value
+                getTorIntegration().setSettings(it, true, true)
+            }
+        }
 
     private fun getTorIntegration(): TorIntegrationAndroid {
         return (context.components.core.engine as GeckoEngine).getTorIntegrationController()
@@ -164,10 +177,12 @@ class TorControllerGV(
 
     override fun start() {
         getTorIntegration().registerBootstrapStateChangeListener(this)
+        getTorIntegration().registerLogListener(this)
     }
 
     override fun stop() {
         getTorIntegration().unregisterBootstrapStateChangeListener(this)
+        getTorIntegration().unregisterLogListener(this)
     }
 
     // TorEvents
@@ -185,9 +200,9 @@ class TorControllerGV(
     }
 
     // TorEvents
-    override fun onTorStatusUpdate(entry: String?, status: String?) {
+    override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) {
         synchronized(torListeners) {
-            torListeners.toList().forEach { it.onTorStatusUpdate(entry, status) }
+            torListeners.toList().forEach { it.onTorStatusUpdate(entry, status, progress) }
         }
     }
 
@@ -195,6 +210,13 @@ class TorControllerGV(
     override fun onTorStopped() {
         synchronized(torListeners) {
             torListeners.toList().forEach { it.onTorStopped() }
+        }
+    }
+
+    override fun onLog(type: String?, message: String?) {
+        synchronized(torLogListeners) {
+            entries.add(Pair(type, message))
+            torLogListeners.toList().forEach { it.onLog(type, message) }
         }
     }
 
@@ -213,6 +235,23 @@ class TorControllerGV(
                 return
             }
             torListeners.remove(l)
+        }
+    }
+
+    override fun registerTorLogListener(l: TorLogs) {
+        synchronized(torLogListeners) {
+            if (torLogListeners.contains(l)) {
+                return
+            }
+            torLogListeners.add(l)
+        }
+    }
+    override fun unregisterTorLogListener(l: TorLogs) {
+        synchronized(torLogListeners) {
+            if (!torLogListeners.contains(l)) {
+                return
+            }
+            torLogListeners.remove(l)
         }
     }
 
@@ -256,7 +295,7 @@ class TorControllerGV(
     // and state for firefox-android (designed for tor-android-service)
     //   fun onTorConnecting()
     //   fun onTorConnected()
-    //   fun onTorStatusUpdate(entry: String?, status: String?)
+    //   fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?)
     //   fun onTorStopped()
 
     // TorEventsBootstrapStateChangeListener
@@ -278,7 +317,7 @@ class TorControllerGV(
             if (isTorRestarting) {
                 initiateTorBootstrap()
             } else {
-                onTorStopped()
+                setTorStopped()
             }
         }
 
@@ -302,7 +341,6 @@ class TorControllerGV(
             onTorConnecting()
 
         }
-        entries.add(Pair("", lastKnownStatus.toTorStatus().status))
         onTorStatusUpdate("", lastKnownStatus.toTorStatus().status, progress)
     }
 

@@ -99,6 +99,7 @@
 
     <androidx.preference.PreferenceCategory
         android:title="@string/preferences_category_privacy_security"
+        android:key="@string/pref_key_privacy"
         android:layout="@layout/preference_category_no_icon_style">
 
         <androidx.preference.Preference
@@ -122,11 +123,6 @@
             app:iconSpaceReserved="false"
             app:isPreferenceVisible="false"
             android:title="@string/preferences_cookie_banner_reduction_private_mode" />
-
-        <androidx.preference.Preference
-            android:key="@string/pref_key_tor_network_settings"
-            app:iconSpaceReserved="false"
-            android:title="@string/preferences_tor_network_settings" />
 
         <androidx.preference.Preference
             android:key="@string/pref_key_tracking_protection_settings"
@@ -162,6 +158,41 @@
 
     </androidx.preference.PreferenceCategory>
 
+    <!-- title="@string/preferences_category_advanced"
+         key="@string/pref_key_advanced"-->
+    <PreferenceCategory
+        android:title="@string/preferences_tor_connection_settings_title"
+        android:key="@string/pref_key_connection"
+        android:layout="@layout/preference_category_no_icon_style">
+
+        <Preference
+            android:key="@string/pref_key_tor_network_settings_explanation"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_network_settings_explanation" />
+
+        <Preference
+            android:key="@string/pref_key_tor_network_settings_bridge_config"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_network_settings_bridge_config"
+            android:summary="@string/preferences_tor_network_settings_bridge_config_description" />
+
+        <Preference
+            android:key="@string/pref_key_use_new_bootstrap"
+            app:iconSpaceReserved="false"
+            android:title="Enable beta connection features" />
+
+        <Preference
+            android:key="@string/pref_key_tor_logs"
+            app:iconSpaceReserved="false"
+            android:title="@string/preferences_tor_logs"
+            android:summary="@string/preferences_tor_logs_description" />
+
+        <!-- Auto connect -->
+
+        <!-- Tor Logs -->
+
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/preferences_category_advanced"
         android:key="@string/pref_key_advanced"
@@ -187,12 +218,12 @@
             android:key="@string/pref_key_override_amo_collection"
             app:iconSpaceReserved="false"
             android:title="@string/preferences_customize_extension_collection" />
-
+        <!--
         <androidx.preference.Preference
             android:key="@string/pref_key_open_links_in_apps"
             android:title="@string/preferences_open_links_in_apps"
             app:iconSpaceReserved="false" />
-
+        -->
         <androidx.preference.SwitchPreference
             android:defaultValue="false"
             android:key="@string/pref_key_external_download_manager"

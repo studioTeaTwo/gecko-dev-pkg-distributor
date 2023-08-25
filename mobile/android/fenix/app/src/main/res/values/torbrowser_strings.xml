@@ -33,6 +33,7 @@
 
     <string name="library_new_circuit">New circuit</string>
 
+    <string name="preferences_tor_connection_settings_title">Connection</string>
     <string name="preferences_tor_network_settings">Tor Network</string>
     <string name="preferences_tor_network_settings_explanation">Tor Browser routes your traffic over the Tor Network, run by thousands of volunteers around the world.</string>
     <string name="preferences_tor_network_settings_bridge_config">Config Bridge</string>
@@ -59,6 +60,8 @@
     <string name="preferences_tor_network_settings_connected">Connected</string>
     <string name="preferences_tor_network_settings_restarting">Restarting</string>
     <string name="preferences_tor_network_settings_bridges_enabled">Bridges are enabled: %s</string>
+    <string name="preferences_tor_logs">Tor Logs</string>
+    <string name="preferences_tor_logs_description">View and copy your Tor logs</string>
 
     <!-- Preference title for security level settings -->
     <string name="preferences_tor_security_level_settings">Security Settings</string>
