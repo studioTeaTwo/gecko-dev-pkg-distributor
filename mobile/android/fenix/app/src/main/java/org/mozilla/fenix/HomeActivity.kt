@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix
 
+import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.app.PendingIntent
 import android.content.Context
@@ -32,6 +33,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -143,6 +145,7 @@ import org.mozilla.fenix.tabhistory.TabHistoryDialogFragment
 import org.mozilla.fenix.tabstray.TabsTrayFragment
 import org.mozilla.fenix.theme.DefaultThemeManager
 import org.mozilla.fenix.theme.ThemeManager
+import org.mozilla.fenix.tor.TorEvents
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
 import java.util.Locale
@@ -314,6 +317,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             it.start()
         }
 
+        /*
         if (settings().shouldShowOnboarding(
                 hasUserBeenOnboarded = components.fenixOnboarding.userHasBeenOnboarded(),
                 isLauncherIntent = intent.toSafeIntent().isLauncherIntent,
@@ -324,6 +328,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 navHost.navController.navigate(NavGraphDirections.actionGlobalOnboarding())
             }
         } else {
+         */
             lifecycleScope.launch(IO) {
                 // showFullscreenMessageIfNeeded(applicationContext)
             }
@@ -344,7 +349,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 navHost.navController.navigate(NavGraphDirections.actionGlobalHomeOnboardingDialog())
             }
             */
-        }
+        //}
 
         Performance.processIntentIfPerformanceTest(intent, this)
 
@@ -672,7 +677,26 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     /**
      * Handles intents received when the activity is open.
      */
+    @SuppressLint("MissingSuperCall") // super.onNewIntent is called in [onNewIntentInternal(intent)]
     final override fun onNewIntent(intent: Intent?) {
+        if (intent?.action == ACTION_MAIN || components.torController.isConnected) {
+            onNewIntentInternal(intent)
+        } else {
+            // Wait until Tor is connected to handle intents from external apps for links, search, etc.
+            components.torController.registerTorListener(object : TorEvents {
+                override fun onTorConnected() {
+                    components.torController.unregisterTorListener(this)
+                    onNewIntentInternal(intent)
+                }
+                override fun onTorConnecting() { /* no-op */ }
+                override fun onTorStopped() { /* no-op */ }
+                override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) { /* no-op */ }
+            })
+            return
+        }
+    }
+
+    private fun onNewIntentInternal(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let {
             handleNewIntent(it)
@@ -1191,11 +1215,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     @VisibleForTesting
     internal fun navigateToHome(navController: NavController) {
-        if (this is ExternalAppBrowserActivity) {
-            return
-        }
+        //if (this is ExternalAppBrowserActivity) {
+        //    return
+        //}
 
-        navController.navigate(NavGraphDirections.actionStartupHome())
+        navHost.navController.navigate(NavGraphDirections.actionStartupTorbootstrap())
     }
 
     final override fun attachBaseContext(base: Context) {
@@ -1284,14 +1308,17 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     /**
      *  Indicates if the user should be redirected to the [BrowserFragment] or to the [HomeFragment],
-     *  links from an external apps should always opened in the [BrowserFragment].
+     *  links from an external apps should always opened in the [BrowserFragment],
+     *  unless Tor is not yet connected.
      */
     @VisibleForTesting
     internal fun shouldStartOnHome(intent: Intent? = this.intent): Boolean {
         return components.strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
             // We only want to open on home when users tap the app,
-            // we want to ignore other cases when the app gets open by users clicking on links.
-            getSettings().shouldStartOnHome() && intent?.action == ACTION_MAIN
+            // we want to ignore other cases when the app gets open by users clicking on links,
+            // unless Tor is not yet connected.
+            getSettings().shouldStartOnHome() && (intent?.action == ACTION_MAIN ||
+                    !components.torController.isConnected)
         }
     }
 
