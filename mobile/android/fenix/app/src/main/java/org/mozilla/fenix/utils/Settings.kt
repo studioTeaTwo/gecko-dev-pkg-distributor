@@ -624,6 +624,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     /**
      * Get the display string for the current open links in apps setting
      */
+    /*
     fun getOpenLinksInAppsString(): String =
         when (openLinksInExternalApp) {
             appContext.getString(R.string.pref_key_open_links_in_apps_always) -> {
@@ -640,6 +641,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
                 appContext.getString(R.string.preferences_open_links_in_apps_never)
             }
         }
+     */
 
     var shouldUseDarkTheme by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_dark_theme),
@@ -1361,26 +1363,31 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     /**
      * Check to see if we should open the link in an external app
      */
+    @Suppress("UNUSED_PARAMETER")
     fun shouldOpenLinksInApp(isCustomTab: Boolean = false): Boolean {
-        return when (openLinksInExternalApp) {
-            appContext.getString(R.string.pref_key_open_links_in_apps_always) -> true
-            appContext.getString(R.string.pref_key_open_links_in_apps_ask) -> true
+        return false
+        //return when (openLinksInExternalApp) {
+            // appContext.getString(R.string.pref_key_open_links_in_apps_always) -> true
+            // appContext.getString(R.string.pref_key_open_links_in_apps_ask) -> true
             /* Some applications will not work if custom tab never open links in apps, return true if it's custom tab */
-            appContext.getString(R.string.pref_key_open_links_in_apps_never) -> isCustomTab
-            else -> false
-        }
+            // appContext.getString(R.string.pref_key_open_links_in_apps_never) -> isCustomTab
+            //else -> false
+        //}
     }
 
     /**
      * Check to see if we need to prompt the user if the link can be opened in an external app
      */
     fun shouldPromptOpenLinksInApp(): Boolean {
+        return true
+        /*
         return when (openLinksInExternalApp) {
             appContext.getString(R.string.pref_key_open_links_in_apps_always) -> false
             appContext.getString(R.string.pref_key_open_links_in_apps_ask) -> true
             appContext.getString(R.string.pref_key_open_links_in_apps_never) -> true
             else -> true
         }
+        */
     }
 
     var openLinksInExternalApp by stringPreference(
