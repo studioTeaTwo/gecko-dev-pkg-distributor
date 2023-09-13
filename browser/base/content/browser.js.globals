@@ -281,5 +281,6 @@
   "gTorConnectUrlbarButton",
   "gTorConnectTitlebarStatus",
   "OnionAuthPrompt",
-  "OnionLocationParent"
+  "OnionLocationParent",
+  "TorUIUtils"
 ]

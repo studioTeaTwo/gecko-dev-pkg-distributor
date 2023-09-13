@@ -87,6 +87,7 @@ ChromeUtils.defineESModuleGetters(this, {
   TorConnect: "resource://gre/modules/TorConnect.sys.mjs",
   TorConnectState: "resource://gre/modules/TorConnect.sys.mjs",
   TorConnectTopics: "resource://gre/modules/TorConnect.sys.mjs",
+  TorUIUtils: "resource:///modules/TorUIUtils.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
   UITour: "resource:///modules/UITour.sys.mjs",
   UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
