@@ -129,6 +129,7 @@ EXTRA_JS_MODULES += [
     "SelectionChangedMenulist.sys.mjs",
     "SiteDataManager.sys.mjs",
     "SitePermissions.sys.mjs",
+    "TorUIUtils.sys.mjs",
     "TransientPrefs.sys.mjs",
     "URILoadingHelper.sys.mjs",
     "webrtcUI.sys.mjs",
