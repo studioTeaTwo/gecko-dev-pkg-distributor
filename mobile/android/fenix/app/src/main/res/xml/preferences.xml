@@ -54,10 +54,10 @@
             android:key="@string/pref_key_tabs"
             android:title="@string/preferences_tabs" />
 
-        <androidx.preference.Preference
-            app:iconSpaceReserved="false"
-            android:key="@string/pref_key_home"
-            android:title="@string/preferences_home_2" />
+<!--        <androidx.preference.Preference-->
+<!--            app:iconSpaceReserved="false"-->
+<!--            android:key="@string/pref_key_home"-->
+<!--            android:title="@string/preferences_home_2" />-->
 
         <androidx.preference.Preference
             android:key="@string/pref_key_customize"

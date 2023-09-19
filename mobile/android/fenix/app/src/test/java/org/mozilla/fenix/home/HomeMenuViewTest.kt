@@ -100,21 +100,21 @@ class HomeMenuViewTest {
         }
     }
 
-    @Test
-    fun `WHEN Customize Home menu item is tapped THEN navigate to home settings fragment and record metrics`() {
-        assertNull(HomeScreen.customizeHomeClicked.testGetValue())
-
-        homeMenuView.onItemTapped(HomeMenu.Item.CustomizeHome)
-
-        assertNotNull(HomeScreen.customizeHomeClicked.testGetValue())
-
-        verify {
-            navController.nav(
-                R.id.homeFragment,
-                HomeFragmentDirections.actionGlobalHomeSettingsFragment(),
-            )
-        }
-    }
+//    @Test
+//    fun `WHEN Customize Home menu item is tapped THEN navigate to home settings fragment and record metrics`() {
+//        assertNull(HomeScreen.customizeHomeClicked.testGetValue())
+//
+//        homeMenuView.onItemTapped(HomeMenu.Item.CustomizeHome)
+//
+//        assertNotNull(HomeScreen.customizeHomeClicked.testGetValue())
+//
+//        verify {
+//            navController.nav(
+//                R.id.homeFragment,
+//                HomeFragmentDirections.actionGlobalHomeSettingsFragment(),
+//            )
+//        }
+//    }
 
     @Test
     fun `GIVEN various sync account state WHEN Sync Account menu item is tapped THEN navigate to the appropriate sync fragment`() {

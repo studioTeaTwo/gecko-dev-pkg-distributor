@@ -52,9 +52,9 @@ sealed class ProtectionsAction : Action {
      *
      * @property url to report.
      */
-    data class RequestReportSiteDomain(
-        val url: String,
-    ) : ProtectionsAction()
+//    data class RequestReportSiteDomain(
+//        val url: String,
+//    ) : ProtectionsAction()
 
     /**
      * Indicates that cookie banner handling mode has been updated.
@@ -167,10 +167,10 @@ enum class CookieBannerUIMode(
      * REQUEST_UNSUPPORTED_SITE_SUBMITTED - The user submitted a request
      * for adding support for cookie banner handling for the domain.
      */
-    REQUEST_UNSUPPORTED_SITE_SUBMITTED(
-        R.string.reduce_cookie_banner_unsupported_site_request_submitted_2,
-        R.drawable.ic_cookies_disabled,
-    ),
+//    REQUEST_UNSUPPORTED_SITE_SUBMITTED(
+//        R.string.reduce_cookie_banner_unsupported_site_request_submitted_2,
+//        R.drawable.ic_cookies_disabled,
+//    ),
 
     /**
      HIDE - All the cookie banner handling in the tracking panel is hidden.
@@ -243,9 +243,9 @@ fun protectionsStateReducer(
         is ProtectionsAction.ToggleCookieBannerHandlingProtectionEnabled -> state.copy(
             cookieBannerUIMode = action.cookieBannerUIMode,
         )
-        is ProtectionsAction.RequestReportSiteDomain -> state.copy(
-            url = action.url,
-        )
+//        is ProtectionsAction.RequestReportSiteDomain -> state.copy(
+//            url = action.url,
+//        )
         is ProtectionsAction.UpdateCookieBannerMode -> state.copy(
             cookieBannerUIMode = action.cookieBannerUIMode,
         )
