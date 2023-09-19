@@ -63,7 +63,7 @@ class SupportUtilsTest {
         )
         assertEquals(
             "https://www.torproject.org/releases/",
-            SupportUtils.getTorReleasePageUrl()
+            SupportUtils.WHATS_NEW_URL
         )
     }
 

@@ -121,14 +121,14 @@ class HomeMenuView(
                     HomeFragmentDirections.actionGlobalSettingsFragment(),
                 )
             }
-            HomeMenu.Item.CustomizeHome -> {
-                HomeScreen.customizeHomeClicked.record(NoExtras())
-
-                navController.nav(
-                    R.id.homeFragment,
-                    HomeFragmentDirections.actionGlobalHomeSettingsFragment(),
-                )
-            }
+//            HomeMenu.Item.CustomizeHome -> {
+//                HomeScreen.customizeHomeClicked.record(NoExtras())
+//
+//                navController.nav(
+//                    R.id.homeFragment,
+//                    HomeFragmentDirections.actionGlobalHomeSettingsFragment(),
+//                )
+//            }
             is HomeMenu.Item.SyncAccount -> {
                 navController.nav(
                     R.id.homeFragment,

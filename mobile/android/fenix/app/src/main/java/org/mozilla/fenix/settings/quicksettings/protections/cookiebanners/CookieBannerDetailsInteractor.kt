@@ -21,7 +21,7 @@ interface CookieBannerDetailsInteractor {
     /**
      * Called whenever the user press request support site domain.
      */
-    fun handleRequestSiteSupportPressed()
+//    fun handleRequestSiteSupportPressed()
 }
 
 /**
@@ -45,7 +45,7 @@ class DefaultCookieBannerDetailsInteractor(
         controller.handleTogglePressed(vale)
     }
 
-    override fun handleRequestSiteSupportPressed() {
-        controller.handleRequestSiteSupportPressed()
-    }
+//    override fun handleRequestSiteSupportPressed() {
+//        controller.handleRequestSiteSupportPressed()
+//    }
 }

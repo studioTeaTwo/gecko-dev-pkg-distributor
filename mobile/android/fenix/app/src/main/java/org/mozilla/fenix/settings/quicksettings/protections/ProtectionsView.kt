@@ -33,7 +33,7 @@ import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.databinding.QuicksettingsProtectionsPanelBinding
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
-import org.mozilla.fenix.trackingprotection.CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED
+//import org.mozilla.fenix.trackingprotection.CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode.SITE_NOT_SUPPORTED
 import org.mozilla.fenix.trackingprotection.ProtectionsState
 import org.mozilla.fenix.utils.Settings
@@ -59,39 +59,45 @@ class ProtectionsView(
      * Allows changing what this View displays.
      */
     fun update(state: ProtectionsState) {
-        bindTrackingProtectionInfo(state.isTrackingProtectionEnabled)
+//        Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//        bindTrackingProtectionInfo(state.isTrackingProtectionEnabled)
         bindCookieBannerProtection(state.cookieBannerUIMode)
-        binding.trackingProtectionSwitch.isVisible = settings.shouldUseTrackingProtection
+//        Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//        binding.trackingProtectionSwitch.isVisible = settings.shouldUseTrackingProtection
         val isPrivateSession = state.tab?.content?.private == true
         binding.cookieBannerItem.isVisible = isPrivateSession && shouldShowCookieBanner &&
             state.cookieBannerUIMode != CookieBannerUIMode.HIDE
 
-        binding.trackingProtectionDetails.setOnClickListener {
-            interactor.onTrackingProtectionDetailsClicked()
-        }
-        updateDividerVisibility()
+//        Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//        binding.trackingProtectionDetails.setOnClickListener {
+//            interactor.onTrackingProtectionDetailsClicked()
+//        }
+//        updateDividerVisibility()
     }
 
-    private fun updateDividerVisibility() {
-        trackingProtectionDivider.isVisible = !(
-            !binding.trackingProtectionSwitch.isVisible &&
-                !binding.trackingProtectionDetails.isVisible &&
-                !binding.cookieBannerItem.isVisible
-            )
-    }
+//    Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//    private fun updateDividerVisibility() {
+//        trackingProtectionDivider.isVisible = !(
+//            !binding.trackingProtectionSwitch.isVisible &&
+//                !binding.trackingProtectionDetails.isVisible &&
+//                !binding.cookieBannerItem.isVisible
+//            )
+//    }
 
-    @VisibleForTesting
-    internal fun updateDetailsSection(show: Boolean) {
-        binding.trackingProtectionDetails.isVisible = show
-        updateDividerVisibility()
-    }
+//    Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//    @VisibleForTesting
+//    internal fun updateDetailsSection(show: Boolean) {
+//        binding.trackingProtectionDetails.isVisible = show
+//        updateDividerVisibility()
+//    }
 
-    private fun bindTrackingProtectionInfo(isTrackingProtectionEnabled: Boolean) {
-        binding.trackingProtectionSwitch.isChecked = isTrackingProtectionEnabled
-        binding.trackingProtectionSwitch.setOnCheckedChangeListener { _, isChecked ->
-            interactor.onTrackingProtectionToggled(isChecked)
-        }
-    }
+//        Removed as part of Bug_42115: Enhanced Tracking Protection can still be enabled
+//    private fun bindTrackingProtectionInfo(isTrackingProtectionEnabled: Boolean) {
+//        binding.trackingProtectionSwitch.isChecked = isTrackingProtectionEnabled
+//        binding.trackingProtectionSwitch.setOnCheckedChangeListener { _, isChecked ->
+//            interactor.onTrackingProtectionToggled(isChecked)
+//        }
+//    }
 
     @VisibleForTesting
     internal val binding = QuicksettingsProtectionsPanelBinding.inflate(
@@ -111,7 +117,7 @@ class ProtectionsView(
             setContent {
                 FirefoxTheme {
                     if (cookieBannerMode in listOf(
-                            REQUEST_UNSUPPORTED_SITE_SUBMITTED,
+//                            REQUEST_UNSUPPORTED_SITE_SUBMITTED,
                             SITE_NOT_SUPPORTED,
                         )
                     ) {
