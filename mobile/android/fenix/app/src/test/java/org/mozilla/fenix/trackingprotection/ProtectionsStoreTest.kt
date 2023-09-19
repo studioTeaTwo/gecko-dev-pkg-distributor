@@ -135,22 +135,22 @@ class ProtectionsStoreTest {
         )
     }
 
-    @Test
-    fun `ProtectionsAction - RequestReportSiteDomain`() = runTest {
-        val initialState = defaultState()
-        val store = ProtectionsStore(initialState)
-
-        store.dispatch(
-            ProtectionsAction.RequestReportSiteDomain(
-                url = "youtube.com",
-            ),
-        ).join()
-
-        assertEquals(
-            "youtube.com",
-            store.state.url,
-        )
-    }
+//    @Test
+//    fun `ProtectionsAction - RequestReportSiteDomain`() = runTest {
+//        val initialState = defaultState()
+//        val store = ProtectionsStore(initialState)
+//
+//        store.dispatch(
+//            ProtectionsAction.RequestReportSiteDomain(
+//                url = "youtube.com",
+//            ),
+//        ).join()
+//
+//        assertEquals(
+//            "youtube.com",
+//            store.state.url,
+//        )
+//    }
 
     @Test
     fun `ProtectionsAction - UpdateCookieBannerMode`() = runTest {

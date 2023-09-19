@@ -63,7 +63,7 @@ class HomeMenu(
         object ManageAccountAndDevices : Item()
         object WhatsNew : Item()
         object Help : Item()
-        object CustomizeHome : Item()
+//        object CustomizeHome : Item()
         object Settings : Item()
         object Quit : Item()
         object ReconnectSync : Item()
@@ -190,14 +190,14 @@ class HomeMenu(
             onItemTapped.invoke(Item.Help)
         }
 
-        val customizeHomeItem = BrowserMenuImageText(
-            context.getString(R.string.browser_menu_customize_home_1),
-            R.drawable.ic_customize,
-            primaryTextColor,
-        ) {
-            onItemTapped.invoke(Item.CustomizeHome)
-            AppMenu.customizeHomepage.record(NoExtras())
-        }
+//        val customizeHomeItem = BrowserMenuImageText(
+//            context.getString(R.string.browser_menu_customize_home_1),
+//            R.drawable.ic_customize,
+//            primaryTextColor,
+//        ) {
+//            onItemTapped.invoke(Item.CustomizeHome)
+//            AppMenu.customizeHomepage.record(NoExtras())
+//        }
 
         // Use nimbus to set the icon and title.
         // val nimbusValidation = FxNimbus.features.nimbusValidation.value()
@@ -240,7 +240,7 @@ class HomeMenu(
             BrowserMenuDivider(),
             whatsNewItem,
             helpItem,
-            customizeHomeItem,
+//            customizeHomeItem,
             settingsItem,
             quitItem
         ).also { items ->

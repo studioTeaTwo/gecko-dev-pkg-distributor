@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
@@ -311,9 +312,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 SettingsFragmentDirections.actionSettingsFragmentToTabsSettingsFragment()
             }
 
-            resources.getString(R.string.pref_key_home) -> {
-                SettingsFragmentDirections.actionSettingsFragmentToHomeSettingsFragment()
-            }
+//            resources.getString(R.string.pref_key_home) -> {
+//                SettingsFragmentDirections.actionSettingsFragmentToHomeSettingsFragment()
+//            }
 
             resources.getString(R.string.pref_key_customize) -> {
                 SettingsFragmentDirections.actionSettingsFragmentToCustomizationFragment()
@@ -512,7 +513,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             requirePreference<DefaultBrowserPreference>(R.string.pref_key_make_default_browser)
 
         requirePreference<Preference>(R.string.pref_key_allow_screenshots_in_private_mode).apply {
-            onPreferenceChangeListener = SharedPreferenceUpdater()
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+                override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                    if (newValue == false) {
+                        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
+                    return super.onPreferenceChange(preference, newValue)
+                }
+            }
         }
 
         if (!Config.channel.isReleased) {
@@ -707,20 +717,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @VisibleForTesting
     internal fun setupHomepagePreference() {
-        with(requirePreference<Preference>(R.string.pref_key_home)) {
-            summary = when {
-                context.settings().alwaysOpenTheHomepageWhenOpeningTheApp ->
-                    getString(R.string.opening_screen_homepage_summary)
-
-                context.settings().openHomepageAfterFourHoursOfInactivity ->
-                    getString(R.string.opening_screen_after_four_hours_of_inactivity_summary)
-
-                context.settings().alwaysOpenTheLastTabWhenOpeningTheApp ->
-                    getString(R.string.opening_screen_last_tab_summary)
-
-                else -> null
-            }
-        }
+//        with(requirePreference<Preference>(R.string.pref_key_home)) {
+//            summary = when {
+//                context.settings().alwaysOpenTheHomepageWhenOpeningTheApp ->
+//                    getString(R.string.opening_screen_homepage_summary)
+//
+//                context.settings().openHomepageAfterFourHoursOfInactivity ->
+//                    getString(R.string.opening_screen_after_four_hours_of_inactivity_summary)
+//
+//                context.settings().alwaysOpenTheLastTabWhenOpeningTheApp ->
+//                    getString(R.string.opening_screen_last_tab_summary)
+//
+//                else -> null
+//            }
+//        }
     }
 
     @VisibleForTesting

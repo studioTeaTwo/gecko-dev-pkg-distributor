@@ -80,6 +80,7 @@ import mozilla.components.support.utils.BrowsersCache
 import mozilla.components.support.utils.ManufacturerCodes
 import mozilla.components.support.utils.SafeIntent
 import mozilla.components.support.utils.TorUtils
+import mozilla.components.support.utils.ext.getParcelableExtraCompat
 import mozilla.components.support.utils.toSafeIntent
 import mozilla.components.support.webextensions.WebExtensionPopupObserver
 import mozilla.telemetry.glean.private.NoExtras
@@ -608,7 +609,9 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
         val currentTabUrl = components.core.store.state.selectedTab?.content?.url
-        outContent?.webUri = currentTabUrl?.let { Uri.parse(it) }
+        if (components.core.store.state.selectedTab?.content?.private == false) {
+            outContent?.webUri = currentTabUrl?.let { Uri.parse(it) }
+        }
     }
 
     @CallSuper
@@ -722,7 +725,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             return
         }
 
-        val startIntent = intent.getParcelableExtra(TorUtils.TORBROWSER_START_ACTIVITY_PROMPT, PendingIntent::class.java); //  getParcelableExtra<PendingIntent>(TorUtils.TORBROWSER_START_ACTIVITY_PROMPT)
+        val startIntent = intent.getParcelableExtraCompat(TorUtils.TORBROWSER_START_ACTIVITY_PROMPT, PendingIntent::class.java)
         if (startIntent != null) {
             if (startIntent.creatorPackage == applicationContext.packageName) {
                 val dialog = getOrCreateDialog()
