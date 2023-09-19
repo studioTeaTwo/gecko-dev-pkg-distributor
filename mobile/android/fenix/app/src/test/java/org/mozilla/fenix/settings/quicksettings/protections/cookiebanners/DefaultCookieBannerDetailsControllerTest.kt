@@ -220,43 +220,43 @@ internal class DefaultCookieBannerDetailsControllerTest {
             }
         }
 
-    @Test
-    fun `GIVEN cookie banner mode is site not supported WHEN handleRequestSiteSupportPressed THEN request report site domain`() =
-        runTestOnMain {
-            val store = BrowserStore(
-                BrowserState(
-                    customTabs = listOf(
-                        createCustomTab(
-                            url = "https://www.mozilla.org",
-                            id = "mozilla",
-                        ),
-                    ),
-                ),
-            )
-            every { testContext.components.core.store } returns store
-            coEvery { controller.getTabDomain(any()) } returns "mozilla.org"
-            every { protectionsStore.dispatch(any()) } returns mockk()
-
-            controller.handleRequestSiteSupportPressed()
-
-            assertNotNull(CookieBanners.reportDomainSiteButton.testGetValue())
-            Pings.cookieBannerReportSite.testBeforeNextSubmit {
-                assertNotNull(CookieBanners.reportSiteDomain.testGetValue())
-                assertEquals("mozilla.org", CookieBanners.reportSiteDomain.testGetValue())
-            }
-            advanceUntilIdle()
-            coVerifyOrder {
-                protectionsStore.dispatch(
-                    ProtectionsAction.RequestReportSiteDomain(
-                        "mozilla.org",
-                    ),
-                )
-                protectionsStore.dispatch(
-                    ProtectionsAction.UpdateCookieBannerMode(
-                        cookieBannerUIMode = CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED,
-                    ),
-                )
-                cookieBannersStorage.saveSiteDomain("mozilla.org")
-            }
-        }
+//    @Test
+//    fun `GIVEN cookie banner mode is site not supported WHEN handleRequestSiteSupportPressed THEN request report site domain`() =
+//        runTestOnMain {
+//            val store = BrowserStore(
+//                BrowserState(
+//                    customTabs = listOf(
+//                        createCustomTab(
+//                            url = "https://www.mozilla.org",
+//                            id = "mozilla",
+//                        ),
+//                    ),
+//                ),
+//            )
+//            every { testContext.components.core.store } returns store
+//            coEvery { controller.getTabDomain(any()) } returns "mozilla.org"
+//            every { protectionsStore.dispatch(any()) } returns mockk()
+//
+//            controller.handleRequestSiteSupportPressed()
+//
+//            assertNotNull(CookieBanners.reportDomainSiteButton.testGetValue())
+//            Pings.cookieBannerReportSite.testBeforeNextSubmit {
+//                assertNotNull(CookieBanners.reportSiteDomain.testGetValue())
+//                assertEquals("mozilla.org", CookieBanners.reportSiteDomain.testGetValue())
+//            }
+//            advanceUntilIdle()
+//            coVerifyOrder {
+//                protectionsStore.dispatch(
+//                    ProtectionsAction.RequestReportSiteDomain(
+//                        "mozilla.org",
+//                    ),
+//                )
+//                protectionsStore.dispatch(
+//                    ProtectionsAction.UpdateCookieBannerMode(
+//                        cookieBannerUIMode = CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED,
+//                    ),
+//                )
+//                cookieBannersStorage.saveSiteDomain("mozilla.org")
+//            }
+//        }
 }

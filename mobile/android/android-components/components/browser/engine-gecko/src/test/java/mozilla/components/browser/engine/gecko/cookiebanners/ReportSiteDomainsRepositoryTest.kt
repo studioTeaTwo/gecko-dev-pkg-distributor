@@ -23,52 +23,52 @@ import org.junit.runner.RunWith
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class ReportSiteDomainsRepositoryTest {
-
-    companion object {
-        const val TEST_DATASTORE_NAME = "test_data_store"
-    }
-
-    private lateinit var testDataStore: DataStore<Preferences>
-
-    private lateinit var reportSiteDomainsRepository: ReportSiteDomainsRepository
-
-    @Before
-    fun setUp() {
-        testDataStore = PreferenceDataStoreFactory.create(
-            produceFile = { testContext.preferencesDataStoreFile(TEST_DATASTORE_NAME) },
-        )
-        reportSiteDomainsRepository = ReportSiteDomainsRepository(testDataStore)
-    }
-
-    @After
-    fun cleanUp() = runTest { testDataStore.edit { it.clear() } }
-
-    @Test
-    fun `GIVEN site domain url WHEN site domain url is not saved THEN is side domain reported return false`() =
-        runTest {
-            assertFalse(reportSiteDomainsRepository.isSiteDomainReported("mozilla.org"))
-        }
-
-    @Test
-    fun `GIVEN site domain url WHEN site domain url is saved THEN is side domain reported return true`() =
-        runTest {
-            val siteDomainReported = "mozilla.org"
-
-            reportSiteDomainsRepository.saveSiteDomain(siteDomainReported)
-
-            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(siteDomainReported))
-        }
-
-    @Test
-    fun `GIVEN site domain urls WHEN site domain urls are saved THEN is side domain reported return true for each one`() =
-        runTest {
-            val mozillaSiteDomainReported = "mozilla.org"
-            val youtubeSiteDomainReported = "youtube.com"
-
-            reportSiteDomainsRepository.saveSiteDomain(mozillaSiteDomainReported)
-            reportSiteDomainsRepository.saveSiteDomain(youtubeSiteDomainReported)
-
-            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(mozillaSiteDomainReported))
-            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(youtubeSiteDomainReported))
-        }
+//
+//    companion object {
+//        const val TEST_DATASTORE_NAME = "test_data_store"
+//    }
+//
+//    private lateinit var testDataStore: DataStore<Preferences>
+//
+//    private lateinit var reportSiteDomainsRepository: ReportSiteDomainsRepository
+//
+//    @Before
+//    fun setUp() {
+//        testDataStore = PreferenceDataStoreFactory.create(
+//            produceFile = { testContext.preferencesDataStoreFile(TEST_DATASTORE_NAME) },
+//        )
+//        reportSiteDomainsRepository = ReportSiteDomainsRepository(testDataStore)
+//    }
+//
+//    @After
+//    fun cleanUp() = runTest { testDataStore.edit { it.clear() } }
+//
+//    @Test
+//    fun `GIVEN site domain url WHEN site domain url is not saved THEN is side domain reported return false`() =
+//        runTest {
+//            assertFalse(reportSiteDomainsRepository.isSiteDomainReported("mozilla.org"))
+//        }
+//
+//    @Test
+//    fun `GIVEN site domain url WHEN site domain url is saved THEN is side domain reported return true`() =
+//        runTest {
+//            val siteDomainReported = "mozilla.org"
+//
+//            reportSiteDomainsRepository.saveSiteDomain(siteDomainReported)
+//
+//            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(siteDomainReported))
+//        }
+//
+//    @Test
+//    fun `GIVEN site domain urls WHEN site domain urls are saved THEN is side domain reported return true for each one`() =
+//        runTest {
+//            val mozillaSiteDomainReported = "mozilla.org"
+//            val youtubeSiteDomainReported = "youtube.com"
+//
+//            reportSiteDomainsRepository.saveSiteDomain(mozillaSiteDomainReported)
+//            reportSiteDomainsRepository.saveSiteDomain(youtubeSiteDomainReported)
+//
+//            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(mozillaSiteDomainReported))
+//            assertTrue(reportSiteDomainsRepository.isSiteDomainReported(youtubeSiteDomainReported))
+//        }
 }

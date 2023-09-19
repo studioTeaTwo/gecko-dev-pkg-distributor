@@ -60,7 +60,7 @@ class CookieBannerHandlingDetailsView(
         when (state.cookieBannerUIMode) {
             CookieBannerUIMode.ENABLE -> setUiForExceptionMode(state)
             CookieBannerUIMode.DISABLE -> setUiForExceptionMode(state)
-            CookieBannerUIMode.SITE_NOT_SUPPORTED -> setUiForReportSiteMode()
+//            CookieBannerUIMode.SITE_NOT_SUPPORTED -> setUiForReportSiteMode()
             else -> {}
         }
     }
@@ -70,19 +70,19 @@ class CookieBannerHandlingDetailsView(
         bindSwitch(state.cookieBannerUIMode)
     }
 
-    private fun setUiForReportSiteMode() {
-        binding.cancelButton.visibility = View.VISIBLE
-        binding.requestSupport.visibility = View.VISIBLE
-        binding.cookieBannerSwitch.visibility = View.GONE
-        binding.requestSupport.setOnClickListener {
-            interactor.handleRequestSiteSupportPressed()
-            onDismiss.invoke()
-        }
-        binding.cancelButton.setOnClickListener {
-            CookieBanners.reportSiteCancelButton.record(NoExtras())
-            interactor.onBackPressed()
-        }
-    }
+//    private fun setUiForReportSiteMode() {
+//        binding.cancelButton.visibility = View.VISIBLE
+//        binding.requestSupport.visibility = View.VISIBLE
+//        binding.cookieBannerSwitch.visibility = View.GONE
+//        binding.requestSupport.setOnClickListener {
+//            interactor.handleRequestSiteSupportPressed()
+//            onDismiss.invoke()
+//        }
+//        binding.cancelButton.setOnClickListener {
+//            CookieBanners.reportSiteCancelButton.record(NoExtras())
+//            interactor.onBackPressed()
+//        }
+//    }
 
     @VisibleForTesting
     internal fun bindTitle(url: String, state: CookieBannerUIMode) {
