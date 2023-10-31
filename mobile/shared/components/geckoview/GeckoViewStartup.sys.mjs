@@ -12,6 +12,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
   PdfJs: "resource://pdf.js/PdfJs.sys.mjs",
   RFPHelper: "resource://gre/modules/RFPHelper.sys.mjs",
+  TorAndroidIntegration: "resource://gre/modules/TorAndroidIntegration.sys.mjs",
   TorDomainIsolator: "resource://gre/modules/TorDomainIsolator.sys.mjs",
 });
 
@@ -262,6 +263,7 @@ export class GeckoViewStartup {
 
         this.#migratePreferences();
 
+        lazy.TorAndroidIntegration.init();
         lazy.TorDomainIsolator.init();
 
         Services.obs.addObserver(this, "browser-idle-startup-tasks-finished");
