@@ -120,3 +120,4 @@ pref("torbrowser.bootstrap.log_level", "Info");
 pref("browser.torsettings.log_level", "Warn");
 pref("browser.tordomainisolator.loglevel", "Warn");
 pref("browser.torcircuitpanel.loglevel", "Log");
+pref("browser.tor_android.log_level", "Info");
