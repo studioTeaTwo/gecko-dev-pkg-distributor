@@ -212,6 +212,7 @@ EXTRA_JS_MODULES += [
     "Sqlite.sys.mjs",
     "SubDialog.sys.mjs",
     "Timer.sys.mjs",
+    "TorAndroidIntegration.sys.mjs",
     "TorConnect.sys.mjs",
     "TorSettings.sys.mjs",
     "TorStrings.sys.mjs",

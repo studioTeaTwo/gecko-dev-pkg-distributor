@@ -2601,6 +2601,24 @@ public class GeckoSession {
   }
 
   /**
+   * Try to get last circuit used in this session, if possible.
+   *
+   * @return The circuit information as a {@link GeckoResult} object.
+   */
+  @AnyThread
+  public @NonNull GeckoResult<GeckoBundle> getTorCircuit() {
+    return mEventDispatcher.queryBundle("GeckoView:GetTorCircuit");
+  }
+
+  /**
+   * Change the circuit for this session.
+   */
+  @UiThread
+  public void newTorCircuit() {
+    mEventDispatcher.dispatch("GeckoView:NewTorCircuit", null);
+  }
+
+  /**
    * Set this GeckoSession as active or inactive, which represents if the session is currently
    * visible or not. Setting a GeckoSession to inactive will significantly reduce its memory
    * footprint, but should only be done if the GeckoSession is not currently visible. Note that a
