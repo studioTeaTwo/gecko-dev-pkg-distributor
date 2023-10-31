@@ -8,6 +8,7 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   isProductURL: "chrome://global/content/shopping/ShoppingProduct.mjs",
   ShoppingProduct: "chrome://global/content/shopping/ShoppingProduct.mjs",
+  TorDomainIsolator: "resource://gre/modules/TorDomainIsolator.sys.mjs",
 });
 
 export class GeckoViewContent extends GeckoViewModule {
@@ -38,6 +39,8 @@ export class GeckoViewContent extends GeckoViewModule {
       "GeckoView:UpdateInitData",
       "GeckoView:ZoomToInput",
       "GeckoView:IsPdfJs",
+      "GeckoView:GetTorCircuit",
+      "GeckoView:NewTorCircuit",
     ]);
   }
 
@@ -308,6 +311,12 @@ export class GeckoViewContent extends GeckoViewModule {
       case "GeckoView:HasCookieBannerRuleForBrowsingContextTree":
         this._hasCookieBannerRuleForBrowsingContextTree(aCallback);
         break;
+      case "GeckoView:GetTorCircuit":
+        this._getTorCircuit(aCallback);
+        break;
+      case "GeckoView:NewTorCircuit":
+        this._newTorCircuit(aCallback);
+        break;
     }
   }
 
@@ -416,6 +425,25 @@ export class GeckoViewContent extends GeckoViewModule {
         break;
       }
     }
+  }
+
+  _getTorCircuit(aCallback) {
+    if (this.browser && aCallback) {
+      const domain = lazy.TorDomainIsolator.getDomainForBrowser(this.browser);
+      const nodes = lazy.TorDomainIsolator.getCircuit(
+        this.browser,
+        domain,
+        this.browser.contentPrincipal.originAttributes.userContextId
+      );
+      aCallback?.onSuccess({ domain, nodes });
+    } else {
+      aCallback?.onSuccess(null);
+    }
+  }
+
+  _newTorCircuit(aCallback) {
+    lazy.TorDomainIsolator.newCircuitForBrowser(this.browser);
+    aCallback?.onSuccess();
   }
 
   async _containsFormData(aCallback) {
