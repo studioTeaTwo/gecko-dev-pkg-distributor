@@ -134,7 +134,7 @@ class AboutFragment : Fragment(), AboutPageListener {
             AboutPageItem(
                 AboutItem.ExternalLink(
                     WHATS_NEW,
-                    SupportUtils.WHATS_NEW_URL,
+                    SupportUtils.getTorWhatsNewUrl(),
                 ),
                 // Note: Fenix only has release notes for 'Release' versions, NOT 'Beta' & 'Nightly'.
                 getString(R.string.about_whats_new, getString(R.string.firefox)),
