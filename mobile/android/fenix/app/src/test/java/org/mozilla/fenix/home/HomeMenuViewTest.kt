@@ -216,7 +216,7 @@ class HomeMenuViewTest {
             WhatsNew.userViewedWhatsNew(testContext)
 
             homeActivity.openToBrowserAndLoad(
-                searchTermOrURL = SupportUtils.WHATS_NEW_URL,
+                searchTermOrURL = SupportUtils.getTorWhatsNewUrl(),
                 newTab = true,
                 from = BrowserDirection.FromHome,
             )

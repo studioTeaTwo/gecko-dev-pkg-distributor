@@ -25,10 +25,10 @@ class SupportUtilsTest {
             "https://support.mozilla.org/1/mobile/20/Android/fr/tracking-protection-firefox-android",
             SupportUtils.getSumoURLForTopic(mockContext("2 0"), SupportUtils.SumoTopic.TRACKING_PROTECTION, Locale("fr")),
         )
-        assertEquals(
-            "https://www.mozilla.org/firefox/android/notes",
-            SupportUtils.WHATS_NEW_URL,
-        )
+//        assertEquals(
+//            "https://www.mozilla.org/firefox/android/notes",
+//            SupportUtils.WHATS_NEW_URL,
+//        )
     }
 
     @Test
@@ -63,7 +63,7 @@ class SupportUtilsTest {
         )
         assertEquals(
             "https://www.torproject.org/releases/",
-            SupportUtils.WHATS_NEW_URL
+            SupportUtils.getTorWhatsNewUrl()
         )
     }
 
