@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.WindowManager
 import android.widget.Toast
@@ -51,6 +52,7 @@ import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.ReleaseChannel
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.databinding.AmoCollectionOverrideDialogBinding
 import org.mozilla.fenix.ext.application
@@ -61,6 +63,7 @@ import org.mozilla.fenix.ext.openSetDefaultBrowserOption
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
+import org.mozilla.fenix.gecko.GeckoProvider
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.ProfilerViewModel
 import org.mozilla.fenix.settings.account.AccountUiView
@@ -69,6 +72,7 @@ import org.mozilla.fenix.tor.SecurityLevel
 import org.mozilla.fenix.tor.TorBridgeTransportConfig
 import org.mozilla.fenix.tor.TorEvents
 import org.mozilla.fenix.utils.Settings
+import org.mozilla.geckoview.BuildConfig
 import kotlin.system.exitProcess
 import org.mozilla.fenix.GleanMetrics.Settings as SettingsMetrics
 
@@ -768,13 +772,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        requirePreference<Preference>(R.string.pref_key_use_new_bootstrap).apply {
+        requirePreference<QuickStartPreference>(R.string.pref_key_quick_start).apply {
             setOnPreferenceClickListener {
-                val directions =
-                    SettingsFragmentDirections.actionSettingsFragmentToBetaConnectionFeaturesFragment()
-                requireView().findNavController().navigate(directions)
+                context.components.torController.quickstart = !context.components.torController.quickstart
+                updateSwitch()
                 true
             }
+        }
+
+        requirePreference<Preference>(R.string.pref_key_use_html_connection_ui).apply {
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {}
+            isVisible = Config.channel != ReleaseChannel.Release
         }
 
         requirePreference<Preference>(R.string.pref_key_tor_logs).apply {

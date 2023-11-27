@@ -145,6 +145,7 @@ import org.mozilla.fenix.tabhistory.TabHistoryDialogFragment
 import org.mozilla.fenix.tabstray.TabsTrayFragment
 import org.mozilla.fenix.theme.DefaultThemeManager
 import org.mozilla.fenix.theme.ThemeManager
+import org.mozilla.fenix.tor.TorConnectionAssistFragmentDirections
 import org.mozilla.fenix.tor.TorEvents
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
@@ -153,6 +154,7 @@ import java.util.Locale
 import androidx.navigation.fragment.findNavController
 import mozilla.components.browser.engine.gecko.GeckoEngine
 import mozilla.components.browser.state.selector.findCustomTab
+import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.geckoview.TorIntegrationAndroid
 
 /**
@@ -1252,19 +1254,15 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorIn
 //            return
 //        }
 
-        if (settings().useNewBootstrap) {
-            if (settings().useNewBootstrapNativeUi) {
-                navController.navigate(NavGraphDirections.actionStartupTorConnectionAssist())
-            } else {
-                navController.navigate(NavGraphDirections.actionStartupHome())
-                openToBrowserAndLoad(
-                    searchTermOrURL = "about:torconnect",
-                    newTab = true,
-                    from = BrowserDirection.FromHome,
-                )
-            }
+        if (!settings().useHtmlConnectionUi) {
+            navController.navigate(NavGraphDirections.actionStartupTorConnectionAssist())
         } else {
-            navController.navigate(NavGraphDirections.actionStartupTorbootstrap())
+            navController.navigate(NavGraphDirections.actionStartupHome())
+            openToBrowserAndLoad(
+                searchTermOrURL = "about:torconnect",
+                newTab = true,
+                from = BrowserDirection.FromHome,
+            )
         }
     }
 

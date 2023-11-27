@@ -53,6 +53,7 @@ import org.mozilla.fenix.settings.wallpaper.WallpaperSettingsFragmentDirections
 import org.mozilla.fenix.share.AddNewDeviceFragmentDirections
 import org.mozilla.fenix.shopping.ReviewQualityCheckFragmentDirections
 import org.mozilla.fenix.tabstray.TabsTrayFragmentDirections
+import org.mozilla.fenix.tor.TorConnectionAssistFragmentDirections
 import org.mozilla.fenix.trackingprotection.TrackingProtectionPanelDialogFragmentDirections
 import org.mozilla.fenix.translations.TranslationsDialogFragmentDirections
 import org.mozilla.fenix.translations.preferences.downloadlanguages.DownloadLanguagesPreferenceFragmentDirections
@@ -330,6 +331,9 @@ private fun getHomeNavDirections(
 
     BrowserDirection.FromDownloadLanguagesPreferenceFragment ->
         DownloadLanguagesPreferenceFragmentDirections.actionGlobalBrowser()
+
+    BrowserDirection.FromTorConnectionAssistFragment ->
+        TorConnectionAssistFragmentDirections.actionGlobalBrowser()
 }
 
 const val REQUEST_CODE_BROWSER_ROLE = 1

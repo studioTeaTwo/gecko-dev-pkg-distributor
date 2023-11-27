@@ -2107,18 +2107,8 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         featureFlag = FxNimbus.features.toolbarRedesign.value().enabled,
     )
 
-    var useNewBootstrap by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_use_new_bootstrap),
-        default = true,
-    )
-
-    var useNewBootstrapNativeUi by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_use_new_bootstrap_with_android_native),
-        default = true,
-    )
-
-    var useNewBootstrapHtmlUi by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_use_new_bootstrap_with_html),
-        default = false
+    var useHtmlConnectionUi by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_use_html_connection_ui),
+        default = false,
     )
 }

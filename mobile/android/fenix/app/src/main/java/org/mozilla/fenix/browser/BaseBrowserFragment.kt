@@ -1582,12 +1582,7 @@ abstract class BaseBrowserFragment :
     private fun handleBetaHtmlTorConnect() {
         val currentTab = getCurrentTab() ?: return
         if (currentTab.content.url == "about:torconnect") {
-            if (!requireActivity().settings().useNewBootstrap) {
-                requireContext().components.useCases.tabsUseCases.removeTab(currentTab.id)
-                (requireActivity() as HomeActivity).navHost.navController.navigate(
-                    NavGraphDirections.actionStartupTorbootstrap(),
-                )
-            } else if (!requireActivity().settings().useNewBootstrapHtmlUi) {
+            if (!requireActivity().settings().useHtmlConnectionUi) {
                 requireContext().components.useCases.tabsUseCases.removeTab(currentTab.id)
                 (requireActivity() as HomeActivity).navigateToHome(findNavController())
             } else {

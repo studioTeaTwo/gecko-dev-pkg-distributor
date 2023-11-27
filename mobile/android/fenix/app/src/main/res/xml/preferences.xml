@@ -176,10 +176,18 @@
             android:title="@string/preferences_tor_network_settings_bridge_config"
             android:summary="@string/preferences_tor_network_settings_bridge_config_description" />
 
-        <Preference
-            android:key="@string/pref_key_use_new_bootstrap"
-            app:iconSpaceReserved="false"
-            android:title="Enable beta connection features" />
+        <org.mozilla.fenix.tor.QuickStartPreference
+            android:key="@string/pref_key_quick_start"
+            android:summary="@string/connection_assist_always_connect_automatically_toggle_description"
+            android:title="@string/tor_bootstrap_quick_start_label"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/pref_key_use_html_connection_ui"
+            android:summary="Recommended only for debugging"
+            android:title="Enable HTML connection UI"
+            app:iconSpaceReserved="false" />
 
         <Preference
             android:key="@string/pref_key_tor_logs"
