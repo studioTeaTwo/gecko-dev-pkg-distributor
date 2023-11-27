@@ -377,4 +377,9 @@
 
     <!-- Private Mode mask icon circle fill colors -->
     <color name="mozac_ui_private_mode_circle_fill" tools:ignore="UnusedResources">@color/photonPurple60</color>
+
+    <!-- Connection Assist -->
+    <color name="connect_button_purple">#9059FF</color>
+    <color name="configure_connection_button_white">#E1E0E7</color>
+    <color name="warning_yellow">#FFA436</color>
 </resources>

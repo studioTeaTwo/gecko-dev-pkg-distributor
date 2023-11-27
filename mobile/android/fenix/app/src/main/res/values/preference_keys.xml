@@ -16,6 +16,7 @@
     <string name="pref_key_accessibility_font_scale" translatable="false">pref_key_accessibility_font_scale</string>
     <string name="pref_key_privacy" translatable="false">pref_key_privacy</string>
     <string name="pref_key_connection" translatable="false">pref_key_connection</string>
+    <string name="pref_key_quick_start" translatable="false">pref_key_quick_start</string>
     <string name="pref_key_accessibility_force_enable_zoom" translatable="false">pref_key_accessibility_force_enable_zoom</string>
     <string name="pref_key_advanced" translatable="false">pref_key_advanced</string>
     <string name="pref_key_language" translatable="false">pref_key_language</string>
@@ -414,10 +415,8 @@
 
     <string name="pref_key_tor_network_settings_explanation" translatable="false">pref_key_tor_network_settings_explanation</string>
     <string name="pref_key_tor_network_settings_bridge_config" translatable="false">pref_key_tor_network_settings_bridge_config</string>
-    <string name="pref_key_use_new_bootstrap" translatable="false">pref_key_use_new_bootstrap</string>
     <string name="pref_key_tor_logs" translatable="false">pref_key_tor_logs</string>
-    <string name="pref_key_use_new_bootstrap_with_android_native" translatable="false">pref_key_use_new_bootstrap_with_android_native</string>
-    <string name="pref_key_use_new_bootstrap_with_html" translatable="false">pref_key_use_new_bootstrap_with_html</string>
+    <string name="pref_key_use_html_connection_ui" translatable="false">pref_key_use_html_connection_ui</string> <!-- Changing the pref_key should reset it to off for users that had it enabled   -->
     <string name="pref_key_tor_network_settings_bridge_config_explanation" translatable="false">pref_key_tor_network_settings_bridge_config_explanation</string>
     <string name="pref_key_tor_network_settings_bridge_config_toggle" translatable="false">pref_key_tor_network_settings_bridge_config_toggle</string>
     <string name="pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4" translatable="false">pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4</string>
