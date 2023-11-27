@@ -231,7 +231,7 @@ class Components(private val context: Context) {
 
     val fxSuggest by lazyMonitored { FxSuggest(context) }
 
-    val torController by lazyMonitored { if (settings.useNewBootstrap) TorControllerGV(context) else TorControllerTAS(context) }
+    val torController by lazyMonitored { TorControllerGV(context) }
 }
 
 /**
