@@ -72,8 +72,8 @@ class AboutTorConnect {
       connect: "button#connectButton",
       tryBridge: "button#tryBridgeButton",
       locationDropdownLabel: "#locationDropdownLabel",
-      locationDropdown: "form#locationDropdown",
-      locationDropdownSelect: "form#locationDropdown select",
+      locationDropdown: "#locationDropdown",
+      locationDropdownSelect: "#locationDropdown select",
     },
   });
 
@@ -720,6 +720,9 @@ class AboutTorConnect {
   }
 
   initElements(direction) {
+    const isAndroid = navigator.userAgent.includes("Android");
+    document.body.classList.toggle("android", isAndroid);
+
     document.documentElement.setAttribute("dir", direction);
 
     this.elements.connectToTorLink.addEventListener("click", () => {
