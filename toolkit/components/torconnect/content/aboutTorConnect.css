@@ -10,6 +10,11 @@
   --onion-color: var(--card-outline-color);
 }
 
+html {
+  width: 100%;
+  height: 100%;
+}
+
 #breadcrumbs {
   display: flex;
   align-items: center;
@@ -271,4 +276,144 @@ body.aboutTorConnect .title:is(.assist, .final) {
 body.aboutTorConnect .title.location {
   background-image: url("chrome://global/content/torconnect/connection-location.svg");
   stroke: var(--in-content-warning-icon-color);
+}
+
+/* Android-specific CSS, to be removed when we use only the native UI. */
+:root {
+  --android-dark-accents-buttons: #9059FF;
+  --android-dark-background-secondary: #E1E0E7;
+  --android-dark-text-primary: #FBFBFE;
+  --android-light-text-primary: #15141A;
+}
+
+[hidden=true] {
+  display: none !important;
+}
+
+body.android {
+  --onion-color: var(--android-dark-text-primary);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 24px !important;
+  color: var(--onion-color);
+  background: linear-gradient(194deg, #692E9D -0.93%, #393270 48.91%);
+  font: menu;
+  font-size: 14px;
+  display: flex;
+}
+
+.android #connectPageContainer {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.android #breadcrumbs {
+  display: none;
+}
+
+.android #text-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.android .title {
+  background-position: left 0;
+  background-repeat: no-repeat;
+  background-size: 40px;
+  padding-top: 64px;
+  font-size: 22px;
+  line-height: 28px;
+}
+
+.android h1 {
+  font-weight: normal;
+  font-size: 100%;
+  margin: 0 0 16px 0;
+}
+
+.android p {
+  margin: 0;
+  padding-bottom: 8px;
+  line-height: 20px;
+}
+
+.android #quickstartContainer {
+  margin-top: 24px;
+}
+
+.android .button-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.android #locationDropdown {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.android select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--android-dark-text-primary);
+  color: var(--android-dark-text-primary);
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+}
+
+.android #buttonPadding {
+  flex: 1;
+}
+
+body:not(.android) #connectButtonContainer {
+  /* Use the .button-container context */
+  display: contents;
+}
+
+.android #connectButtonContainer {
+  width: 100%;
+  padding-bottom: 18px;
+  display: grid;
+}
+
+/* Be sure not to match the togglee */
+.android #connectButtonContainer button {
+  display: block;
+  width: 100%;
+  margin: 4px 0;
+  padding: 11px 30px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+}
+
+.android #connectButton, .android #tryBridgeButton, .android #configureButton.primary {
+  color: var(--android-dark-text-primary);
+  background-color: var(--android-dark-accents-buttons);
+}
+
+.android #configureButton {
+  order: 1;
+}
+
+.android #restartButton {
+  order: 2;
+}
+
+.android #restartButton, .android #cancelButton, .android #configureButton {
+  color: var(--android-light-text-primary);
+  background-color: var(--android-dark-background-secondary);
+}
+
+.android .onion-pattern-container {
+  display: none;
 }

@@ -6,6 +6,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src chrome:; object-src 'none'"
     />
+    <meta name="viewport" content="width=device-width" />
     <link
       rel="stylesheet"
       href="chrome://global/content/torconnect/aboutTorConnect.css"
@@ -64,24 +65,27 @@
           <moz-toggle id="quickstartToggle" label-align-after=""></moz-toggle>
         </div>
 
-        <div id="connectButtonContainer" class="button-container">
-          <button id="restartButton" hidden="true"></button>
-          <button id="configureButton" hidden="true"></button>
-          <button id="cancelButton" hidden="true"></button>
-          <button
-            id="connectButton"
-            hidden="true"
-            class="tor-button"
-          ></button>
+        <div class="button-container">
           <label id="locationDropdownLabel" for="countries"></label>
           <form id="locationDropdown" hidden="true">
             <select id="countries"></select>
           </form>
-          <button
-            id="tryBridgeButton"
-            hidden="true"
-            class="tor-button"
-          ></button>
+          <span id="buttonPadding"></span>
+          <span id="connectButtonContainer">
+            <button id="restartButton" hidden="true"></button>
+            <button id="configureButton" hidden="true"></button>
+            <button id="cancelButton" hidden="true"></button>
+            <button
+              id="connectButton"
+              hidden="true"
+              class="tor-button"
+            ></button>
+            <button
+              id="tryBridgeButton"
+              hidden="true"
+              class="tor-button"
+            ></button>
+          </span>
         </div>
       </div>
     </div>
