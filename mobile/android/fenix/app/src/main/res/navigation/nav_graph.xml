@@ -16,6 +16,18 @@
         app:popUpToInclusive="true" />
 
     <action
+        android:id="@+id/action_startup_tor_connection_assist"
+        app:destination="@+id/torConnectionAssistFragment"
+        app:popUpTo="@id/startupFragment"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_connect_to_tor_before_opening_links"
+        app:destination="@+id/torConnectionAssistFragment"
+        app:popUpTo="@id/torConnectionAssistFragment"
+        app:popUpToInclusive="true"/>
+
+    <action
         android:id="@+id/action_global_home"
         app:destination="@id/homeFragment"
         app:popUpTo="@id/homeFragment"
@@ -224,6 +236,31 @@
         <action
             android:id="@+id/action_homeFragment_to_loginsListFragment"
             app:destination="@id/savedLogins"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/torConnectionAssistFragment"
+        android:name="org.mozilla.fenix.tor.TorConnectionAssistFragment"
+        tools:layout="@layout/fragment_tor_connection_assist">
+        <action
+            android:id="@+id/action_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/torConnectionAssistFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_torConnectionAssistFragment_to_SettingsFragment"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_torConnectionAssistFragment_to_TorConnectionSettings"
+            app:destination="@id/settingsFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -713,6 +750,13 @@
         <action
             android:id="@+id/action_settingsFragment_to_syncDebugFragment"
             app:destination="@id/syncDebugFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_settingsFragment_to_TorConnectionAssistFragment"
+            app:destination="@id/torConnectionAssistFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"

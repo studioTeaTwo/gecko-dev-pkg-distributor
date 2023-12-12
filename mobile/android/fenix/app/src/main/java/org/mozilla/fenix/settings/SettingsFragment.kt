@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
@@ -23,6 +24,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -38,6 +40,7 @@ import mozilla.components.concept.sync.OAuthAccount
 import mozilla.components.concept.sync.Profile
 import mozilla.components.feature.addons.ui.AddonFilePicker
 import mozilla.components.service.glean.private.NoExtras
+import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.ktx.android.view.showKeyboard
 import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.BrowserDirection
@@ -71,7 +74,7 @@ import kotlin.system.exitProcess
 import org.mozilla.fenix.GleanMetrics.Settings as SettingsMetrics
 
 @Suppress("LargeClass", "TooManyFunctions")
-class SettingsFragment : PreferenceFragmentCompat() {
+class SettingsFragment : PreferenceFragmentCompat(), UserInteractionHandler {
 
     private val args by navArgs<SettingsFragmentArgs>()
     private lateinit var accountUiView: AccountUiView
@@ -314,9 +317,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 SettingsFragmentDirections.actionSettingsFragmentToTabsSettingsFragment()
             }
 
-            resources.getString(R.string.pref_key_home) -> {
-                SettingsFragmentDirections.actionSettingsFragmentToHomeSettingsFragment()
-            }
+//            resources.getString(R.string.pref_key_home) -> {
+//                SettingsFragmentDirections.actionSettingsFragmentToHomeSettingsFragment()
+//            }
 
             resources.getString(R.string.pref_key_customize) -> {
                 SettingsFragmentDirections.actionSettingsFragmentToCustomizationFragment()
@@ -515,7 +518,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             requirePreference<DefaultBrowserPreference>(R.string.pref_key_make_default_browser)
 
         requirePreference<Preference>(R.string.pref_key_allow_screenshots_in_private_mode).apply {
-            onPreferenceChangeListener = SharedPreferenceUpdater()
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+                override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                    if (newValue == false) {
+                        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
+                    return super.onPreferenceChange(preference, newValue)
+                }
+            }
         }
 
         if (!Config.channel.isReleased) {
@@ -710,20 +722,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @VisibleForTesting
     internal fun setupHomepagePreference() {
-        with(requirePreference<Preference>(R.string.pref_key_home)) {
-            summary = when {
-                context.settings().alwaysOpenTheHomepageWhenOpeningTheApp ->
-                    getString(R.string.opening_screen_homepage_summary)
-
-                context.settings().openHomepageAfterFourHoursOfInactivity ->
-                    getString(R.string.opening_screen_after_four_hours_of_inactivity_summary)
-
-                context.settings().alwaysOpenTheLastTabWhenOpeningTheApp ->
-                    getString(R.string.opening_screen_last_tab_summary)
-
-                else -> null
-            }
-        }
+//        with(requirePreference<Preference>(R.string.pref_key_home)) {
+//            summary = when {
+//                context.settings().alwaysOpenTheHomepageWhenOpeningTheApp ->
+//                    getString(R.string.opening_screen_homepage_summary)
+//
+//                context.settings().openHomepageAfterFourHoursOfInactivity ->
+//                    getString(R.string.opening_screen_after_four_hours_of_inactivity_summary)
+//
+//                context.settings().alwaysOpenTheLastTabWhenOpeningTheApp ->
+//                    getString(R.string.opening_screen_last_tab_summary)
+//
+//                else -> null
+//            }
+//        }
     }
 
     @VisibleForTesting
@@ -882,5 +894,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
         private const val SCROLL_INDICATOR_DELAY = 10L
         private const val FXA_SYNC_OVERRIDE_EXIT_DELAY = 2000L
         private const val AMO_COLLECTION_OVERRIDE_EXIT_DELAY = 3000L
+    }
+
+    override fun onBackPressed(): Boolean {
+        // If tor is already bootstrapped, skip going back to [TorConnectionAssistFragment] and instead go directly to [HomeFragment]
+        if (requireComponents.torController.isBootstrapped) {
+            val navController = findNavController()
+            if (navController.previousBackStackEntry?.destination?.id == R.id.torConnectionAssistFragment) {
+                navController.navigate(
+                    SettingsFragmentDirections.actionGlobalHomeFragment(),
+                )
+                return true
+            }
+        }
+        return false
     }
 }
