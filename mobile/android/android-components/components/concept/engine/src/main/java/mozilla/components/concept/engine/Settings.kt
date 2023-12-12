@@ -311,7 +311,6 @@ data class DefaultSettings(
     override var emailTrackerBlockingPrivateBrowsing: Boolean = false,
     override var torSecurityLevel: Int = 4,
     override var spoofEnglish: Boolean = false,
-    override var prioritizeOnions: Boolean = false,
 ) : Settings()
 
 class UnsupportedSetting<T> {

@@ -159,6 +159,7 @@ class Core(
             emailTrackerBlockingPrivateBrowsing = false,
             torSecurityLevel = context.settings().torSecurityLevel().intRepresentation,
             spoofEnglish = context.settings().spoofEnglish,
+            useNewBootstrap = context.settings().useNewBootstrap,
         )
 
         GeckoEngine(

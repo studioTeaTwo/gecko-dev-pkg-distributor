@@ -150,6 +150,11 @@ import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
 import java.util.Locale
 
+import androidx.navigation.fragment.findNavController
+import mozilla.components.browser.engine.gecko.GeckoEngine
+import mozilla.components.browser.state.selector.findCustomTab
+import org.mozilla.geckoview.TorIntegrationAndroid
+
 /**
  * The main activity of the application. The application is primarily a single Activity (this one)
  * with fragments switching out to display different views. The most important views shown here are the:
@@ -157,7 +162,7 @@ import java.util.Locale
  * - browser screen
  */
 @SuppressWarnings("TooManyFunctions", "LargeClass", "LongMethod")
-open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
+open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorIntegrationAndroid.BootstrapStateChangeListener {
     private lateinit var binding: ActivityHomeBinding
     lateinit var themeManager: ThemeManager
     lateinit var browsingModeManager: BrowsingModeManager
@@ -445,6 +450,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
         components.notificationsDelegate.bindToActivity(this)
 
+        val engine = components.core.engine
+        if (engine is GeckoEngine) {
+            val torIntegration = engine.getTorIntegrationController()
+            torIntegration.registerBootstrapStateChangeListener(this)
+        }
+
         StartupTimeline.onActivityCreateEndHome(this) // DO NOT MOVE ANYTHING BELOW HERE.
     }
 
@@ -645,6 +656,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             // and not only the top Activity/Task. Therefore we kill the
             // underlying Application, as well.
             (application as FenixApplication).terminate()
+        }
+
+        val engine = components.core.engine
+        if (engine is GeckoEngine) {
+            val torIntegration = engine.getTorIntegrationController()
+            torIntegration.unregisterBootstrapStateChangeListener(this)
         }
     }
 
@@ -1235,7 +1252,20 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 //            return
 //        }
 
-        navHost.navController.navigate(NavGraphDirections.actionStartupTorbootstrap())
+        if (settings().useNewBootstrap) {
+            if (settings().useNewBootstrapNativeUi) {
+                navController.navigate(NavGraphDirections.actionStartupTorConnectionAssist())
+            } else {
+                navController.navigate(NavGraphDirections.actionStartupHome())
+                openToBrowserAndLoad(
+                    searchTermOrURL = "about:torconnect",
+                    newTab = true,
+                    from = BrowserDirection.FromHome,
+                )
+            }
+        } else {
+            navController.navigate(NavGraphDirections.actionStartupTorbootstrap())
+        }
     }
 
     final override fun attachBaseContext(base: Context) {
@@ -1401,5 +1431,16 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         // PWA must have been used within last 30 days to be considered "recently used" for the
         // telemetry purposes.
         private const val PWA_RECENTLY_USED_THRESHOLD = DateUtils.DAY_IN_MILLIS * 30L
+    }
+
+    override fun onBootstrapStateChange(state: String) = Unit
+    override fun onBootstrapProgress(progress: Double, hasWarnings: Boolean) = Unit
+    override fun onBootstrapComplete() {
+        components.useCases.tabsUseCases.removeAllTabs()
+        navHost.navController.navigate(NavGraphDirections.actionStartupHome())
+    }
+    override fun onBootstrapError(code: String?, message: String?, phase: String?, reason: String?) = Unit
+    override fun onSettingsRequested() {
+        navHost.navController.navigate(NavGraphDirections.actionGlobalSettingsFragment())
     }
 }

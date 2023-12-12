@@ -22,6 +22,12 @@
         app:popUpToInclusive="true" />
 
     <action
+        android:id="@+id/action_startup_tor_connection_assist"
+        app:destination="@+id/torConnectionAssistFragment"
+        app:popUpTo="@id/startupFragment"
+        app:popUpToInclusive="true" />
+
+    <action
         android:id="@+id/action_global_home"
         app:destination="@id/homeFragment"
         app:popUpTo="@id/homeFragment"
