@@ -213,6 +213,7 @@ class HomeMenuView(
                         isDisplayedWithBrowserToolbar = false,
                     ),
                 )
+                homeActivity.shutDown()
             }
             HomeMenu.Item.ReconnectSync -> {
                 navController.nav(

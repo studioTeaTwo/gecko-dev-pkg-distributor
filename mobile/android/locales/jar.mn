@@ -52,6 +52,8 @@ relativesrcdir toolkit/locales:
   toolkit/about                                    (%toolkit/about/*Compat.ftl)
 #about:webrtc
   toolkit/about                                    (%toolkit/about/*Webrtc.ftl)
+#country/region names (used by TorConnect; see tor-browser#43633)
+  toolkit/intl/regionNames.ftl                     (%toolkit/intl/regionNames.ftl)
 #endif
 # Do not add files below the endif. Reviewers, expand more context above
 # for comments.

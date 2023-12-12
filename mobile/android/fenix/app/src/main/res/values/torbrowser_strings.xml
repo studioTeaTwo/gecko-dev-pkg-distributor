@@ -78,7 +78,9 @@
     <!-- Connection assist. -->
     <string name="connection_assist_unblock_the_internet_in_country_or_region">Unblock the internet in:</string>
     <!-- Connection assist. -->
-    <string name="connection_assist_share_my_location_country_or_region">Share my location</string>
+    <string name="connection_assist_automatic_country_detection">Automatic</string>
+    <!-- Connection assist, -->
+    <string name="connection_assist_select_country_or_region">Select country or region</string>
     <!-- Connection assist. -->
     <string name="connection_assist_try_a_bridge_button">Try a bridge</string>
 
@@ -122,5 +124,7 @@
     <string name="connection_assist_connect_to_tor_before_opening_links">Connect to Tor before opening links</string>
     <!-- Connection assist. Confirmation button for a shown "Snackbar" (special popup notification). -->
     <string name="connection_assist_connect_to_tor_before_opening_links_confirmation">CONNECT</string>
+    <!-- Connection assist. Content Description for back button. Button will start the connection assist process again -->
+    <string name="connection_assist_back_button_content_description_start_again">Start again</string>
 
 </resources>
