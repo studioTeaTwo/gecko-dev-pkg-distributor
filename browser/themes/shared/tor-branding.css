@@ -1,0 +1,13 @@
+.letterboxing {
+  --letterboxing-bgcolor: var(--color-grey-light-20, #F0F0F4);
+  --letterboxing-gradient-color1: rgba(0, 219, 222, 0.02);
+  --letterboxing-gradient-color2: rgba(252, 0, 255, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+  .letterboxing {
+    --letterboxing-bgcolor: var(--color-grey-dark-10, #52525E);
+    --letterboxing-gradient-color1: rgba(0, 219, 222, 0.06);
+    --letterboxing-gradient-color2: rgba(252, 0, 255, 0.06);
+  }
+}
