@@ -44,11 +44,12 @@ fun MicroSurveyHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_firefox),
-            contentDescription = null, // todo update to string res once a11y strings are available.
-            modifier = Modifier.size(24.dp),
-        )
+//      Removed as part of tor-browser#42386
+//        Image(
+//            painter = painterResource(R.drawable.ic_firefox),
+//            contentDescription = null, // todo update to string res once a11y strings are available.
+//            modifier = Modifier.size(24.dp),
+//        )
 
         Spacer(modifier = Modifier.width(8.dp))
 
