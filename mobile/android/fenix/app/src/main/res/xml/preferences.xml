@@ -27,11 +27,11 @@
         android:layout="@layout/preference_category_no_icon_style">
 
         <org.mozilla.fenix.settings.account.AccountPreference
-            android:icon="@drawable/ic_account"
+            android:icon="@drawable/mozac_lib_crash_notification"
             android:key="@string/pref_key_account" />
 
         <org.mozilla.fenix.settings.account.AccountAuthErrorPreference
-            android:icon="@drawable/ic_account_warning"
+            android:icon="@drawable/mozac_lib_crash_notification"
             android:key="@string/pref_key_account_auth_error" />
     </androidx.preference.PreferenceCategory>
 

@@ -23,7 +23,7 @@ fun createBaseNotification(
     onDismiss: PendingIntent? = null,
 ): Notification {
     return NotificationCompat.Builder(context, channelId)
-        .setSmallIcon(R.drawable.ic_status_logo)
+        .setSmallIcon(R.drawable.mozac_lib_crash_notification)
         .setContentTitle(title)
         .setContentText(text)
         .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)

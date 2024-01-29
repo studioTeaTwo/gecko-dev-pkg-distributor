@@ -69,7 +69,9 @@ fun UpgradeOnboarding(
         OnboardingPage(
             pageState = when (onboardingState) {
                 UpgradeOnboardingState.Welcome -> OnboardingPageState(
-                    imageRes = R.drawable.ic_onboarding_welcome,
+                    // Removed to reduce APK size as part of https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42386
+                    // Set to something else to make the compiler happy
+                    imageRes = R.drawable.mozac_lib_crash_notification,
                     title = stringResource(id = R.string.onboarding_home_welcome_title_2),
                     description = stringResource(id = R.string.onboarding_home_welcome_description),
                     primaryButton = Action(
@@ -88,8 +90,9 @@ fun UpgradeOnboarding(
                     },
                 )
                 UpgradeOnboardingState.SyncSignIn -> OnboardingPageState(
-                    imageRes = R.drawable.ic_onboarding_sync,
-                    title = stringResource(id = R.string.onboarding_home_sync_title_3),
+                    // Removed to reduce APK size as part of https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42386
+                    // Set to something else to make the compiler happy
+                    imageRes = R.drawable.mozac_lib_crash_notification,                    title = stringResource(id = R.string.onboarding_home_sync_title_3),
                     description = stringResource(id = R.string.onboarding_home_sync_description),
                     primaryButton = Action(
                         text = stringResource(id = R.string.onboarding_home_sign_in_button),
