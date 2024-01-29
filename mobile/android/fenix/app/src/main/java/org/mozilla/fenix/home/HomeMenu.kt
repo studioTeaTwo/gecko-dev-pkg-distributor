@@ -82,7 +82,7 @@ class HomeMenu(
     private val reconnectToSyncItem by lazy {
         BrowserMenuHighlightableItem(
             context.getString(R.string.sync_reconnect),
-            R.drawable.ic_sync_disconnected,
+            R.drawable.mozac_lib_crash_notification,
             iconTintColorResource = syncDisconnectedColor,
             textColorResource = primaryTextColor,
             highlight = BrowserMenuHighlight.HighPriority(

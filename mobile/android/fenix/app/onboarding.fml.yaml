@@ -26,7 +26,7 @@ features:
               title: juno_onboarding_default_browser_title_nimbus_2
               ordering: 10
               body: juno_onboarding_default_browser_description_nimbus_3
-              image-res: ic_onboarding_welcome
+              image-res: mozac_lib_crash_notification
               primary-button-label: juno_onboarding_default_browser_positive_button
               secondary-button-label: juno_onboarding_default_browser_negative_button
 
@@ -34,7 +34,7 @@ features:
               card-type: add-search-widget
               title: juno_onboarding_add_search_widget_title
               body: juno_onboarding_add_search_widget_description
-              image-res: ic_onboarding_search_widget
+              image-res: mozac_lib_crash_notification
               ordering: 15
               primary-button-label: juno_onboarding_add_search_widget_positive_button
               secondary-button-label: juno_onboarding_add_search_widget_negative_button
@@ -43,7 +43,7 @@ features:
               card-type: sync-sign-in
               title: juno_onboarding_sign_in_title_2
               body: juno_onboarding_sign_in_description_2
-              image-res: ic_onboarding_sync
+              image-res: mozac_lib_crash_notification
               ordering: 20
               primary-button-label: juno_onboarding_sign_in_positive_button
               secondary-button-label: juno_onboarding_sign_in_negative_button
@@ -52,7 +52,7 @@ features:
               card-type: notification-permission
               title: juno_onboarding_enable_notifications_title_nimbus_2
               body: juno_onboarding_enable_notifications_description_nimbus_2
-              image-res: ic_notification_permission
+              image-res: mozac_lib_crash_notification
               ordering: 30
               primary-button-label: juno_onboarding_enable_notifications_positive_button
               secondary-button-label: juno_onboarding_enable_notifications_negative_button
@@ -85,7 +85,7 @@ objects:
         type: Image
         description: The resource id of the image to be displayed.
         # This should never be defaulted.
-        default: ic_onboarding_welcome
+        default: mozac_lib_crash_notification
       ordering:
         type: Int
         description: Used to sequence the cards.

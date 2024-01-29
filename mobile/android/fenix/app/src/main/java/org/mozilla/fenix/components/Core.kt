@@ -357,7 +357,7 @@ class Core(
                 context,
                 engine,
                 icons,
-                R.drawable.ic_status_logo,
+                R.drawable.mozac_lib_crash_notification,
                 permissionStorage.permissionsStorage,
                 IntentReceiverActivity::class.java,
                 notificationsDelegate = context.components.notificationsDelegate,
