@@ -367,7 +367,7 @@ open class DefaultToolbarMenu(
             primaryTextColor()
         },
         highlight = BrowserMenuHighlight.HighPriority(
-            endImageResource = R.drawable.ic_sync_disconnected,
+            endImageResource = R.drawable.mozac_lib_crash_notification,
             backgroundTint = context.getColorFromAttr(R.attr.syncDisconnectedBackground),
             canPropagate = false,
         ),

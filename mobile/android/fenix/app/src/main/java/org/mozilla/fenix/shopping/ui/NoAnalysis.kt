@@ -111,7 +111,9 @@ private fun ReviewQualityNoAnalysisCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Image(
-            painter = painterResource(id = R.drawable.shopping_no_analysis),
+            // Removed to reduce APK size as part of https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42386
+            // Set to something else to make the compiler happy
+            painter = painterResource(id = R.drawable.mozac_lib_crash_notification),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()

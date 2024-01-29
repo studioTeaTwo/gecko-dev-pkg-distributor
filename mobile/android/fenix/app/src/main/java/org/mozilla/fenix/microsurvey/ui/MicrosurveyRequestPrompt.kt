@@ -58,11 +58,12 @@ private fun Header(
     Row(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_firefox),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
+//        Removed as part of tor-browser#42386
+//        Image(
+//            painter = painterResource(R.drawable.ic_firefox),
+//            contentDescription = null,
+//            modifier = Modifier.size(24.dp),
+//        )
 
         Spacer(modifier = Modifier.width(8.dp))
 

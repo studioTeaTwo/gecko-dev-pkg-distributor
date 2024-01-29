@@ -26,7 +26,7 @@ import org.mozilla.fenix.ext.components
  */
 class BrowserMenuSignIn(
     @ColorRes private val textColorResource: Int,
-    @DrawableRes imageResource: Int = R.drawable.ic_signed_out,
+    @DrawableRes imageResource: Int = R.drawable.mozac_lib_crash_notification,
     listener: () -> Unit = {},
 ) : BrowserMenuImageText(
     String(),

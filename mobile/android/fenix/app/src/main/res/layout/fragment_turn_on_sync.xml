@@ -39,8 +39,9 @@
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_sign_in"
-            app:srcCompat="@drawable/ic_scan" />
+            app:layout_constraintTop_toBottomOf="@id/title_sign_in" />
+        <!--Removed as part of tor-browser#42386-->
+        <!--app:srcCompat="@drawable/ic_scan"-->
 
         <TextView
             android:id="@+id/signInInstructions"

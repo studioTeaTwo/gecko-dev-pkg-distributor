@@ -390,7 +390,7 @@ private fun FaviconImage(painter: Painter) {
 @Composable
 private fun TopSiteFavicon(url: String, imageUrl: String? = null) {
     when (url) {
-        SupportUtils.POCKET_TRENDING_URL -> FaviconImage(painterResource(R.drawable.ic_pocket))
+        SupportUtils.POCKET_TRENDING_URL -> FaviconImage(painterResource(R.drawable.mozac_lib_crash_notification))
         SupportUtils.BAIDU_URL -> FaviconImage(painterResource(R.drawable.ic_baidu))
         SupportUtils.JD_URL -> FaviconImage(painterResource(R.drawable.ic_jd))
         SupportUtils.PDD_URL -> FaviconImage(painterResource(R.drawable.ic_pdd))

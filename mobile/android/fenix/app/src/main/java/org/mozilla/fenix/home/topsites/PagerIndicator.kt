@@ -41,7 +41,7 @@ class PagerIndicator : LinearLayout {
             val isLast = i == size - 1
             addView(
                 View(context).apply {
-                    setBackgroundResource(R.drawable.pager_dot)
+                    setBackgroundResource(R.drawable.mozac_lib_crash_notification)
                     isSelected = i == selectedIndex
                 },
                 LayoutParams(dpToPx(DOT_SIZE_IN_DP), dpToPx(DOT_SIZE_IN_DP)).apply {

@@ -189,7 +189,9 @@ private fun OnboardingPagePreview() {
     FirefoxTheme {
         OnboardingPage(
             pageState = OnboardingPageState(
-                imageRes = R.drawable.ic_notification_permission,
+                // Removed to reduce APK size as part of https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42386
+                // Set to something else to make the compiler happy
+                imageRes = R.drawable.mozac_lib_crash_notification,
                 title = stringResource(
                     id = R.string.onboarding_home_enable_notifications_title,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),

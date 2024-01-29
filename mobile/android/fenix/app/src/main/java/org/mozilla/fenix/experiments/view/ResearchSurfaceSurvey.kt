@@ -119,10 +119,11 @@ fun ResearchSurfaceSurvey(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_firefox),
-                        contentDescription = null,
-                    )
+//                    Removed as part of tor-browser#42386
+//                    Image(
+//                        painter = painterResource(R.drawable.ic_firefox),
+//                        contentDescription = null,
+//                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = messageText,

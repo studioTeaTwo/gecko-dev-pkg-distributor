@@ -437,7 +437,7 @@ fun PoweredByPocketHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.pocket_vector),
+                painter = painterResource(id = R.drawable.mozac_lib_crash_notification),
                 contentDescription = null,
                 // Apply the red tint in code. Otherwise the image is black and white.
                 tint = Color(0xFFEF4056),

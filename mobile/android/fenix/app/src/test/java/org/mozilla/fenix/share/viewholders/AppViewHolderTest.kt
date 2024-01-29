@@ -39,7 +39,7 @@ class AppViewHolderTest {
     fun `bind app share option`() {
         val app = AppShareOption(
             name = "Pocket",
-            icon = getDrawable(testContext, R.drawable.ic_pocket)!!,
+            icon = getDrawable(testContext, R.drawable.mozac_lib_crash_notification)!!,
             packageName = "com.mozilla.pocket",
             activityName = "MainActivity",
         )
@@ -53,7 +53,7 @@ class AppViewHolderTest {
     fun `trigger interactor if application is bound`() {
         val app = AppShareOption(
             name = "Pocket",
-            icon = getDrawable(testContext, R.drawable.ic_pocket)!!,
+            icon = getDrawable(testContext, R.drawable.mozac_lib_crash_notification)!!,
             packageName = "com.mozilla.pocket",
             activityName = "MainActivity",
         )

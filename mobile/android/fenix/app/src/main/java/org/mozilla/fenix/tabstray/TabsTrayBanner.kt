@@ -263,7 +263,7 @@ private fun TabPageBanner(
                             .testTag(TabsTrayTestTag.syncedTabsPageButton),
                         icon = {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_synced_tabs),
+                                painter = painterResource(id = R.drawable.mozac_lib_crash_notification),
                                 contentDescription = stringResource(id = R.string.tabs_header_synced_tabs_title),
                             )
                         },
