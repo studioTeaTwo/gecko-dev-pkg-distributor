@@ -6,7 +6,8 @@
     <style name="DialogStyleNormal" parent="DialogStyleDark"/>
 
     <style name="NormalTheme" parent="NormalThemeBase" >
-        <item name="fenixWordmarkText">@drawable/ic_wordmark_text_private</item>
+<!--        Removed as part of tor-browser#42386-->
+<!--        <item name="fenixWordmarkText">@drawable/ic_wordmark_text_private</item>-->
     </style>
 
 </resources>

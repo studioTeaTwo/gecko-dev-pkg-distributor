@@ -112,7 +112,7 @@ class NotificationManager(private val context: Context) {
             val extras = bundleOf(TOTAL_TABS_CLOSED_EXTRA to totalCount)
             addExtras(extras)
 
-            setSmallIcon(R.drawable.ic_status_logo)
+            setSmallIcon(R.drawable.mozac_lib_crash_notification)
             setWhen(System.currentTimeMillis())
             setAutoCancel(true)
             setDefaults(Notification.DEFAULT_VIBRATE or Notification.DEFAULT_SOUND)
@@ -145,7 +145,7 @@ class NotificationManager(private val context: Context) {
                 PendingIntent.getActivity(context, 0, intent, showReceivedTabsIntentFlags)
 
             val builder = NotificationCompat.Builder(context, RECEIVE_TABS_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_status_logo)
+                .setSmallIcon(R.drawable.mozac_lib_crash_notification)
                 .setSendTabTitle(context, device, tab)
                 .setWhen(System.currentTimeMillis())
                 .setContentText(tab.url)
