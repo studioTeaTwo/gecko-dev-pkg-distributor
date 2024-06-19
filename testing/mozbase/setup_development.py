@@ -267,23 +267,28 @@ def main(args=sys.argv[1:]):
         os.environ.get("PATH", "").strip(os.path.pathsep),
     )
 
+    current_file_path = os.path.abspath(__file__)
+    topobjdir = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
+    mach = str(os.path.join(topobjdir, "mach"))
+
     # install non-mozbase dependencies
     # these need to be installed separately and the --no-deps flag
     # subsequently used due to a bug in setuptools; see
     # https://bugzilla.mozilla.org/show_bug.cgi?id=759836
     pypi_deps = dict([(i, j) for i, j in alldeps.items() if i not in unrolled])
     for package, version in pypi_deps.items():
-        # easy_install should be available since we rely on setuptools
-        call(["easy_install", version])
+        # Originally, Mozilla used easy_install here.
+        # That tool is deprecated, therefore we swich to pip.
+        call([sys.executable, mach, "python", "-m", "pip", "install", version])
 
     # install packages required for unit testing
     for package in test_packages:
-        call(["easy_install", package])
+        call([sys.executable, mach, "python", "-m", "pip", "install", package])
 
     # install extra non-mozbase packages if desired
     if options.extra:
         for package in extra_packages:
-            call(["easy_install", package])
+            call([sys.executable, mach, "python", "-m", "pip", "install", package])
 
 
 if __name__ == "__main__":

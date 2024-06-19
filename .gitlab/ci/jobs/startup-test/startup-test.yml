@@ -1,0 +1,63 @@
+# startup-test-windows:
+#   extends: .with-local-repo-pwsh
+#   variables:
+#     LOCAL_REPO_PATH: "C:\\Users\\windoes\\tor-browser.git"
+#   stage: startup-test
+#   interruptible: true
+#   parallel:
+#     matrix:
+#       - BROWSER: ["tor", "mullvad"]
+#   tags:
+#     - x86-win11
+#   script:
+#     - ./mach python testing/mozbase/setup_development.py
+#     - ./mach python .gitlab/ci/jobs/startup-test/startup-test.py --platform windows --arch x86_64 --browser $BROWSER
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "schedule"
+
+# startup-test-macos:
+#   extends: .with-local-repo-bash
+#   variables:
+#     LOCAL_REPO_PATH: "/Users/gitlab-runner/tor-browser.git"
+#   stage: startup-test
+#   interruptible: true
+#   parallel:
+#     matrix:
+#       - BROWSER: ["tor", "mullvad"]
+#   tags:
+#     -  x86-macos
+#   script:
+#     - ./mach python testing/mozbase/setup_development.py
+#     - ./mach python .gitlab/ci/jobs/startup-test/startup-test.py --platform macos --arch x86_64 --browser $BROWSER
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "schedule"
+
+startup-test-linux:
+  extends: .with-local-repo-bash
+  image: $IMAGE_PATH
+  stage: startup-test
+  interruptible: true
+  parallel:
+    matrix:
+      - BROWSER: ["tor", "mullvad"]
+  tags:
+    -  firefox
+  script:
+    - Xvfb :99 -screen 0 1400x900x24 &
+    - export DISPLAY=:99
+    - ./mach python testing/mozbase/setup_development.py
+    - ./mach python .gitlab/ci/jobs/startup-test/startup-test.py --platform linux --arch x86_64 --browser $BROWSER
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+startup-test-android:
+  extends: .with-local-repo-bash
+  image: $IMAGE_PATH
+  stage: startup-test
+  interruptible: true
+  tags:
+    -  firefox
+  script:
+    - ./mach python .gitlab/ci/jobs/startup-test/startup-test-android.py --devices "Samsung Galaxy S23-13.0, Samsung Galaxy S8-7.0" --tests org.mozilla.fenix.LaunchTest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

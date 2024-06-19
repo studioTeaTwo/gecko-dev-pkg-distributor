@@ -13,7 +13,70 @@
     - if: ($TRANSLATION_FILES != "" && $FORCE_UPDATE_TRANSLATIONS == "true")
   variables:
     COMBINED_FILES_JSON: "combined-translation-files.json"
-    TRANSLATION_FILES: ''
+    TRANSLATION_FILES: '[
+      {
+        "name": "brand.ftl",
+        "where": ["browser/branding/tb-release", "toolkit/torbutton"],
+        "branding": {
+          "versions": [
+            {
+              "name": "Alpha",
+              "suffix": "_alpha",
+              "where": ["browser/branding/tb-alpha"]
+            },
+            {
+              "name": "Nightly",
+              "suffix": "_nightly",
+              "where": ["browser/branding/tb-nightly"]
+            }
+          ],
+          "ids": [
+            "-brand-short-name",
+            "-brand-full-name"
+          ]
+        },
+        "branch": "tor-browser",
+        "directory": "branding"
+      },
+      {
+        "name": "brand.properties",
+        "where": ["browser/branding/tb-release", "toolkit/torbutton"],
+        "branding": {
+          "versions": [
+            {
+              "name": "Alpha",
+              "suffix": "_alpha",
+              "where": ["browser/branding/tb-alpha"]
+            },
+            {
+              "name": "Nightly",
+              "suffix": "_nightly",
+              "where": ["browser/branding/tb-nightly"]
+            }
+          ],
+          "ids": [
+            "brandShortName",
+            "brandFullName"
+          ]
+        },
+        "branch": "tor-browser"
+      },
+      { "name": "tor-browser.ftl", "branch": "tor-browser" },
+      { "name": "aboutTBUpdate.dtd", "branch": "tor-browser" },
+      { "name": "torbutton.dtd", "branch": "tor-browser" },
+      { "name": "onionLocation.properties", "branch": "tor-browser" },
+      { "name": "settings.properties", "branch": "tor-browser" },
+      { "name": "torbutton.properties", "branch": "tor-browser" },
+      { "name": "torConnect.properties", "branch": "tor-browser" },
+      { "name": "torlauncher.properties", "branch": "tor-browser" },
+      { "name": "base-browser.ftl", "branch": "base-browser" },
+      {
+        "name": "torbrowser_strings.xml",
+        "branch": "fenix-torbrowserstringsxml",
+        "exclude-legacy": true
+      }
+    ]'
+    TRANSLATION_INCLUDE_LEGACY: "true"
 
 
 combine-en-US-translations:

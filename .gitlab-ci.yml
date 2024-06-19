@@ -1,5 +1,7 @@
 stages:
+  - update-container-images
   - lint
+  - startup-test
   - update-translations
 
 variables:
@@ -9,4 +11,6 @@ variables:
 include:
   - local: '.gitlab/ci/mixins.yml'
   - local: '.gitlab/ci/jobs/lint/lint.yml'
+  - local: '.gitlab/ci/jobs/startup-test/startup-test.yml'
+  - local: '.gitlab/ci/jobs/update-containers.yml'
   - local: '.gitlab/ci/jobs/update-translations.yml'

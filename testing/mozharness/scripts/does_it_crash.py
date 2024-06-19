@@ -112,6 +112,13 @@ class DoesItCrash(BaseScript):
         for retry in range(3):
             if is_win:
                 proc.send_signal(signal.CTRL_BREAK_EVENT)
+
+                # Manually kill all processes we spawned,
+                # not sure why this is required, but without it we hang forever.
+                process_name = self.config["thing_to_run"].split("/")[-1]
+                subprocess.run(
+                    ["taskkill", "/T", "/F", "/IM", process_name], check=True
+                )
             else:
                 os.killpg(proc.pid, signal.SIGKILL)
             try:

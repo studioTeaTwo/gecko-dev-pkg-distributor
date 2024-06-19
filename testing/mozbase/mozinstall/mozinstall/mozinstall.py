@@ -352,7 +352,8 @@ def _install_exe(src, dest):
 
     # possibly gets around UAC in vista (still need to run as administrator)
     os.environ["__compat_layer"] = "RunAsInvoker"
-    cmd = '"%s" /extractdir=%s' % (src, os.path.realpath(dest))
+    cmd = '"%s" /S /D=%s' % (src, os.path.realpath(dest))
+    # cmd = '"%s" /extractdir=%s' % (src, os.path.realpath(dest))
 
     subprocess.check_call(cmd)
 
