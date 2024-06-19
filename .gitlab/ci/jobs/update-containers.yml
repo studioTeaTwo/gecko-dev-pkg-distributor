@@ -1,0 +1,16 @@
+build-base-image:
+  stage: update-container-images
+  interruptible: true
+  image: containers.torproject.org/tpo/tpa/base-images/podman:bookworm
+  script:
+    - export TAG="${CI_REGISTRY_IMAGE}/base:latest"
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman build --layers=false $IMAGE -t ${TAG} -f .gitlab/ci/containers/base/Containerfile .
+    - |
+      echo -e "\e[33mPushing new image to registry as ${TAG}\e[0m"
+      podman push ${TAG}
+  rules:
+    - if: ($CI_COMMIT_BRANCH && $CI_COMMIT_REF_PROTECTED == 'true' && $CI_PROJECT_NAMESPACE == 'tpo/applications' && $CI_PIPELINE_SOURCE == 'push')
+      changes:
+          - '.gitlab/ci/containers/base/Containerfile'
+          - '.gitlab-ci.yml'
