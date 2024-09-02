@@ -1,0 +1,26 @@
+{
+  "name": "DuckDuckGo (.onion)",
+  "description": "Duck Duck Go Onion",
+  "manifest_version": 2,
+  "version": "1.0",
+  "applications": {
+    "gecko": {
+      "id": "ddg-onion@search.mozilla.org"
+    }
+  },
+  "hidden": true,
+  "icons": {
+    "16": "favicon.ico"
+  },
+  "web_accessible_resources": ["favicon.ico"],
+  "chrome_settings_overrides": {
+    "search_provider": {
+      "name": "DuckDuckGo (.onion)",
+      "search_url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion",
+      "search_form": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/?q={searchTerms}",
+      "search_url_get_params": "q={searchTerms}",
+      "suggest_url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ac/",
+      "suggest_url_get_params": "q={searchTerms}&type=list"
+    }
+  }
+}
