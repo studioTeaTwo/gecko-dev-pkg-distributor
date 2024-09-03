@@ -700,3 +700,23 @@ onion-site-saved-keys-dialog-remove-button = Remove
 onion-site-saved-keys-dialog-remove-all-button = Remove all
 onion-site-saved-keys-dialog-fetch-keys-error-message = Unable to retrieve keys from Tor
 onion-site-saved-keys-dialog-remove-keys-error-message = Unable to remove key
+
+## Year end campaign 2024.
+
+# In English the "SPEAK" is in all-capitals. If your locale does not use capitals, or all-capitals does not work, you may ignore this.
+yec-2024-introduction-0 = You have a right to SPEAK without uninvited listeners.
+# In English the "BROWSE" is in all-capitals. If your locale does not use capitals, or all-capitals does not work, you may ignore this.
+yec-2024-introduction-1 = You have a right to BROWSE without being watched.
+# In English the "SEARCH" is in all-capitals. If your locale does not use capitals, or all-capitals does not work, you may ignore this.
+yec-2024-introduction-2 = You have a right to SEARCH without being followed.
+
+yec-2024-please-donate = Join the thousands of Tor supporters building an internet powered by privacy. Make a donation today.
+
+# The end date should match the end of the year 2024.
+# The "$300,000" should be localised: it should be shown as USD (United States dollar) currency, but you may use numbers and formatting appropriate to your locale.
+yec-2024-matched-donation = Through December 31, your gift will be matched, up to $300,000!
+
+yec-2024-donate-button = Donate now
+# Here "Close" is a verb, referring to closing the banner.
+yec-2024-close-button =
+    .title = Close
