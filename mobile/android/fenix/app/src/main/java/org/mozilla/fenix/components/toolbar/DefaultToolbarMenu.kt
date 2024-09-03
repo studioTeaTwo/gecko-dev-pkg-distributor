@@ -211,6 +211,14 @@ open class DefaultToolbarMenu(
         onItemTapped.invoke(ToolbarMenu.Item.NewTab)
     }
 
+    private val newCircuitItem = BrowserMenuImageText(
+        context.getString(R.string.library_new_circuit),
+        R.drawable.new_circuit,
+        primaryTextColor(),
+    ) {
+        onItemTapped.invoke(ToolbarMenu.Item.NewTorCircuit)
+    }
+
     private val historyItem = BrowserMenuImageText(
         context.getString(R.string.library_history),
         R.drawable.ic_history,
@@ -408,6 +416,8 @@ open class DefaultToolbarMenu(
             listOfNotNull(
                 if (shouldUseBottomToolbar || !shouldShowMenuToolbar) null else menuToolbar,
                 newTabItem,
+                BrowserMenuDivider(),
+                newCircuitItem,
                 BrowserMenuDivider(),
                 bookmarksItem,
                 if (context.settings().shouldDisableNormalMode) null else historyItem,
