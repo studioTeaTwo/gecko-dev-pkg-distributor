@@ -235,3 +235,297 @@ body:not(.show-tor-check) #tor-check {
     color: var(--tor-link-color-light);
   }
 }
+
+/* YEC 2024.
+ * See tor-browser#43098 */
+body:not([yec-2024-message-number]) #yec-2024-banner {
+  display: none;
+}
+
+body {
+  --yec-heading-font-size: 32px;
+}
+
+body[yec-2024-message-number] h1 {
+  /* Text of heading is still available to screen readers, but it does not
+   * contribute visually to the page or the body grid layout. */
+  position: absolute;
+  clip-path: inset(50%);
+}
+
+body:not([yec-2024-message-number="0"]) .yec-2024-message-0 {
+  display: none;
+}
+
+body:not([yec-2024-message-number="1"]) .yec-2024-message-1 {
+  display: none;
+}
+
+body:not([yec-2024-message-number="2"]) .yec-2024-message-2 {
+  display: none;
+}
+
+#yec-2024-banner {
+  grid-area: heading;
+  border-radius: 8px;
+  border: 1px solid var(--in-content-box-border-color);
+  display: grid;
+  grid-template:
+    "yec-heading yec-image" auto
+    "yec-body yec-image" auto
+    "yec-matching yec-image" auto
+    "yec-donate yec-image" min-content
+    / 1fr min-content;
+  --yec-image-background: #1f0333;
+  /* Remove 1px from padding for border. */
+  padding-block: 55px 55px;
+  padding-inline: 47px 47px;
+  box-sizing: border-box;
+  max-width: 850px;
+  margin-block-end: 40px;
+  /* Position for the close button. */
+  position: relative;
+  gap: 0 24px;
+}
+
+.yec-2024-image {
+  grid-area: yec-image;
+  align-self: center;
+  /* Center horizontally for small width layout. */
+  justify-self: center;
+  /* background color and border radius only stands out when using a high
+   * contrast theme. */
+  -moz-context-properties: fill;
+  fill: var(--yec-image-background);
+  border-radius: 8px;
+  height: 216px;
+  border: 1px solid transparent;
+  /* Remove border from layout size. */
+  margin: -1px;
+}
+
+.yec-2024-heading {
+  grid-area: yec-heading;
+  margin-block: 0 32px;
+  /* We want to draw a background block of color behind the text in the child
+   * <span> element. If this was en-US only text, we could just set a fixed
+   * line-height that works. However, this can cause problems for some scripts,
+   * like Burmese, where the normal line height is larger.
+   * Instead, in javascript we measure the "normal" line height of the
+   * .yec-2024-heading element using a copy .yec-2024-heading-measure element.
+   * The line height is recorded in `--yec-heading-line-height` and we set the
+   * line-height using this value, plus the amount of padding we would like. */
+  --yec-heading-block-padding: calc(0.1 * var(--yec-heading-font-size));
+  --yec-heading-inline-padding: calc(0.25 * var(--yec-heading-font-size));
+  margin-inline: calc(-1 * var(--yec-heading-inline-padding));
+  line-height: calc(var(--yec-heading-line-height) + 4 * var(--yec-heading-block-padding));
+}
+
+.yec-2024-heading,
+.yec-2024-heading-measure {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: var(--yec-heading-font-size);
+  font-weight: 700;
+}
+
+/* Element used to measure the line height for .yec-2024-heading.
+ * Not visually shown, but should mimic the font size of the corresponding
+ * .yec-2024-heading. */
+.yec-2024-heading-measure {
+  position: absolute;
+  visibility: hidden;
+  /* Measure a single line height. */
+  white-space: nowrap;
+}
+
+.yec-2024-heading > * {
+  /* Paint a block of color behind the text.
+   * NOTE: For some scripts, like Burmese, the background of the inline element
+   * is smaller than the actual script height.
+   * So in javascript we measure the difference as `--yec-heading-gap-top` and
+   * `--yec-heading-gap-bottom` and add this to the block padding, so that the
+   * padding matches the highest and lowest points of the script. */
+  border-radius: 2px;
+  background: transparent;
+  padding-inline: var(--yec-heading-inline-padding);
+  padding-block-start: calc(
+    var(--yec-heading-gap-top)
+    + var(--yec-heading-block-padding)
+  );
+  padding-block-end: calc(
+    var(--yec-heading-gap-bottom)
+    + var(--yec-heading-block-padding)
+  );
+  /* Each line has the padding applied separately. */
+  box-decoration-break: clone;
+}
+
+#yec-2024-body {
+  grid-area: yec-body;
+  margin-block: 0 8px;
+}
+
+#yec-2024-matching {
+  grid-area: yec-matching;
+  font-weight: 600;
+  margin-block: 0 32px;
+}
+
+#yec-2024-body, #yec-2024-matching {
+  font-size: 1.2em;
+}
+
+#yec-2024-donate-link {
+  grid-area: yec-donate;
+  justify-self: start;
+  font-weight: 700;
+  /* Style like a button. */
+  color: var(--in-content-button-text-color);
+  border: 1px solid var(--in-content-button-border-color);
+  border-radius: 4px;
+  background-color: var(--in-content-button-background);
+  padding-block: 12px;
+  padding-inline: 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#yec-2024-donate-link > * {
+  flex: 0 0 auto;
+}
+
+#yec-2024-donate-link:hover {
+  background-color: var(--in-content-button-background-hover);
+  color: var(--in-content-button-text-color-hover);
+  border-color: var(--in-content-button-border-color-hover);
+}
+
+#yec-2024-donate-link:hover:active {
+  background-color: var(--in-content-button-background-active);
+  color: var(--in-content-button-text-color-active);
+  border-color: var(--in-content-button-border-color-active);
+}
+
+#yec-2024-close {
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-end: 16px;
+  padding: 8px;
+  min-width: auto;
+  min-height: auto;
+  width: 16px;
+  height: 16px;
+  box-sizing: content-box;
+  /* Transparent background when neither hover nor active. */
+  background-color: transparent;
+  border-color: transparent;
+}
+
+#yec-2024-close:hover {
+  background-color: var(--in-content-button-background-hover);
+  border-color: var(--in-content-button-border-color-hover);
+}
+
+#yec-2024-close:hover:active {
+  background-color: var(--in-content-button-background-active);
+  border-color: var(--in-content-button-border-color-active);
+}
+
+.yec-2024-icon {
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+@media (max-width: 768px) {
+  body {
+    --yec-heading-font-size: 1.45rem;
+  }
+
+  /* Small width layout. */
+  #yec-2024-banner {
+    grid-template:
+      "yec-image" min-content
+      "yec-heading" auto
+      "yec-body" auto
+      "yec-matching" auto
+      "yec-donate" min-content
+      / 1fr;
+    padding: 31px;
+    /* Match max-width of the form. */
+    max-width: 600px;
+    margin-block-end: 32px;
+  }
+
+  .yec-2024-image {
+    height: 168px;
+  }
+
+  .yec-2024-heading {
+    margin-block: 16px 24px;
+    text-align: center;
+    /* stylelint-disable-next-line property-no-unknown */
+    text-wrap-style: balance;
+  }
+
+  #yec-2024-body, #yec-2024-matching {
+    font-size: 1.05em;
+  }
+
+  #yec-2024-donate-link {
+    justify-self: center;
+  }
+}
+
+@media ((prefers-contrast) or (forced-colors)) and (prefers-color-scheme: dark) {
+  .yec-2024-image {
+    /* Give the dark image a light border to separate from background. */
+    border-color: var(--in-content-box-border-color);
+  }
+}
+
+@media not ((prefers-contrast) or (forced-colors)) {
+  #yec-2024-banner {
+    background-color: var(--yec-image-background);
+    border-color: transparent;
+    --acorn-yellow-40: #ffbd4f;
+    --acorn-yellow-50: #ffa436;
+    --acorn-yellow-60: #e27f2e;
+  }
+
+  .yec-2024-heading {
+    color: var(--color-gray-100);
+  }
+
+  .yec-2024-heading.yec-2024-message-0 > * {
+    /* YEC purple */
+    background: #d898fa;
+  }
+
+  .yec-2024-heading.yec-2024-message-1 > * {
+    /* YEC green */
+    background: #c1ed75;
+  }
+
+  .yec-2024-heading.yec-2024-message-2 > * {
+    /* YEC red */
+    background: #ff6a75;
+  }
+
+  #yec-2024-donate-link {
+    --in-content-button-text-color: var(--color-gray-100);
+    --in-content-button-text-color-hover: var(--color-gray-100);
+    --in-content-button-text-color-active: var(--color-gray-100);
+    --in-content-button-background: var(--acorn-yellow-40);
+    --in-content-button-background-hover: var(--acorn-yellow-50);
+    --in-content-button-background-active: var(--acorn-yellow-60);
+  }
+
+  #yec-2024-close {
+    /* Rules for #yec-2024-close */
+    --in-content-button-text-color: var(--color-gray-05);
+    --in-content-button-text-color-hover: var(--color-gray-05);
+    --in-content-button-text-color-active: var(--color-gray-05);
+  }
+}

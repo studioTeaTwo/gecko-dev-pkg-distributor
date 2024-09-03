@@ -190,3 +190,123 @@ window.addEventListener("InitialData", event => {
   SearchWidget.setOnionizeState(!!searchOnionize);
   MessageArea.setMessageData(messageData, !!isStable, !!torConnectEnabled);
 });
+
+// YEC 2024 (year end campaign).
+// See tor-browser#42072
+const YecWidget = {
+  _initialized: false,
+  _locale: null,
+
+  /**
+   * Initialize the widget.
+   */
+  init() {
+    this._initialized = true;
+
+    document.getElementById("yec-2024-close").addEventListener("click", () => {
+      dispatchEvent(new CustomEvent("YECHidden", { bubbles: true }));
+      this.messageNumber = null;
+    });
+
+    // Create mimics of the .yec-2024-heading elements to measure a single line
+    // and pass on the measurements to be used in CSS.
+    for (const heading of document.querySelectorAll(".yec-2024-heading")) {
+      const measureEl = heading.cloneNode(true);
+      measureEl.classList.add("yec-2024-heading-measure");
+      // Remove classes that would style or hide the mimic.
+      measureEl.classList.remove(
+        "yec-2024-heading",
+        "yec-2024-message-0",
+        "yec-2024-message-1",
+        "yec-2024-message-2"
+      );
+      measureEl.setAttribute("aria-hidden", "true");
+
+      const sizeObserver = new ResizeObserver(() => {
+        // The parent block rect measures the space that the single line
+        // occupies.
+        const blockRect = measureEl.getBoundingClientRect();
+        // The child span measures the space that the inline element occupies.
+        // I.e. the space that would be coloured if we set a `background`. This
+        // may be smaller than the parent block, and not center-aligned if the
+        // text content contains certain non-ascii characters. E.g. Burmese.
+        const inlineRect = measureEl.firstElementChild.getBoundingClientRect();
+        heading.style.setProperty(
+          "--yec-heading-line-height",
+          `${blockRect.height}px`
+        );
+        heading.style.setProperty(
+          "--yec-heading-gap-top",
+          `${inlineRect.top - blockRect.top}px`
+        );
+        heading.style.setProperty(
+          "--yec-heading-gap-bottom",
+          `${blockRect.bottom - inlineRect.bottom}px`
+        );
+      });
+      sizeObserver.observe(measureEl);
+      document.body.append(measureEl);
+    }
+
+    this._updateDonateLocale();
+  },
+
+  _messageNumber: null,
+
+  /**
+   * The version of the YEC message to show, or null if no version should be
+   * shown.
+   *
+   * @type {?integer}
+   */
+  get messageNumber() {
+    return this._messageNumber;
+  },
+
+  set messageNumber(number) {
+    this._messageNumber = number;
+    this._updateShown();
+  },
+
+  _updateShown() {
+    if (!this._initialized) {
+      return;
+    }
+
+    if (this.messageNumber === null) {
+      document.body.removeAttribute("yec-2024-message-number");
+    } else {
+      document.body.setAttribute("yec-2024-message-number", this.messageNumber);
+    }
+  },
+
+  _updateDonateLocale() {
+    if (!this._initialized) {
+      return;
+    }
+    const donateLink = document.getElementById("yec-2024-donate-link");
+    const base = "https://www.torproject.org/donate";
+    // TODO: Updated link for YEC (using _locale?).
+    donateLink.href = base;
+  },
+
+  /**
+   * Set the locale to use for the donation link.
+   *
+   * @param {string} locale - The new locale, as BCP47.
+   */
+  setDonateLocale(locale) {
+    this._locale = locale;
+    this._updateDonateLocale();
+  },
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  YecWidget.init();
+});
+
+window.addEventListener("InitialData", event => {
+  const { appLocale, yecMessageNumber } = event.detail;
+  YecWidget.messageNumber = yecMessageNumber;
+  YecWidget.setDonateLocale(appLocale);
+});
