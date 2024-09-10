@@ -42,6 +42,8 @@
   skin/classic/global/notification.css                     (../../shared/notification.css)
   skin/classic/global/numberinput.css                      (../../shared/numberinput.css)
   skin/classic/global/offlineSupportPages.css              (../../shared/offlineSupportPages.css)
+  skin/classic/global/onion-pattern.css                    (../../shared/onion-pattern.css)
+  skin/classic/global/onion-pattern.svg                    (../../shared/onion-pattern.svg)
   skin/classic/global/popup.css                            (../../shared/popup.css)
   skin/classic/global/popupnotification.css                (../../shared/popupnotification.css)
   skin/classic/global/splitter.css                         (../../shared/splitter.css)

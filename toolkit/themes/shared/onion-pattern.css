@@ -1,0 +1,18 @@
+:root {
+  /* color-grey-light-20, color-grey-dark-40 */
+  --onion-pattern-stroke-color: light-dark(#f0f0f4, #3a3944);
+  /* color-grey-light-10, color-grey-dark-60 */
+  --onion-pattern-fill-color: light-dark(#f9f9fb, #2b2a33);
+  --onion-pattern-height: 150px;
+}
+
+.onion-pattern-background {
+  -moz-context-properties: stroke, fill;
+  stroke: var(--onion-pattern-stroke-color);
+  fill: var(--onion-pattern-fill-color);
+  background:
+    local
+    url("chrome://global/skin/onion-pattern.svg")
+    center bottom
+    repeat-x;
+}
