@@ -149,4 +149,26 @@
     <string name="connection_assist_final_error_troubleshoot_connection_link">troubleshooting your connection</string>
     <!-- Connection assist. -->
     <string name="connection_assist_final_error_learn_more_link">Learn more</string>
+
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_right_to_speak">You have a right to SPEAK without uninvited listeners.</string>
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_right_to_BROWSE">You have a right to BROWSE without being watched.</string>
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_right_to_SEARCH">You have a right to SEARCH without being followed.</string>
+
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_donation_encouragement">Join the thousands of Tor supporters building an internet powered by privacy. Make a donation today.</string>
+
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_donation_match_text">Through December 31, your gift will be matched, up to $300,000!</string>
+
+    <!-- 2024 YEC. %1$s is the app name "Tor Browser". Since this will only ever show on release, it will always be "Tor Browser" (and not "Tor Browser Alpha" for instance) -->
+    <string name="YEC_2024_tor_browser_for_android_will_always_be_free_no_donation_required">%1$s for Android will always be free to use—no donation is required to use this app.</string>
+
+    <!-- 2024 YEC. Accessible name for the "X" button. -->
+    <string name="YEC_2024_close">Close</string>
+
+    <!-- 2024 YEC. -->
+    <string name="YEC_2024_donate_now">Donate now</string>
 </resources>
