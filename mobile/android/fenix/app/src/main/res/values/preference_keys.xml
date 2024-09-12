@@ -431,4 +431,5 @@
     <string name="pref_key_tor_network_settings_bridges_enabled">pref_key_tor_network_settings_bridges_enabled</string>
 
     <string name="pref_key_spoof_english" translatable="false">pref_key_spoof_english</string>
+    <string name="pref_key_yec_style_index" translatable="false">pref_key_yec_style_index</string>
 </resources>

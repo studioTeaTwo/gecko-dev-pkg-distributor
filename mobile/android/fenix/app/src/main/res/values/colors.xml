@@ -382,4 +382,10 @@
     <color name="connect_button_purple">#9059FF</color>
     <color name="configure_connection_button_white">#E1E0E7</color>
     <color name="warning_yellow">#FFA436</color>
+    
+    <!-- 2024 YEC -->
+    <color name="YEC_2024_speak_purple">#D898FA</color>
+    <color name="YEC_2024_browse_green">#C1ED75</color>
+    <color name="YEC_2024_search_red">#FF6A75</color>
+
 </resources>

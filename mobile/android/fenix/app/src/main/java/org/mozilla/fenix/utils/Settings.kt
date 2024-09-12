@@ -339,6 +339,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = false
     )
 
+    var yecStyleIndex by intPreference(
+        appContext.getPreferenceKey(R.string.pref_key_yec_style_index),
+        default = 0
+    )
+
     var defaultSearchEngineName by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_search_engine),
         default = "",

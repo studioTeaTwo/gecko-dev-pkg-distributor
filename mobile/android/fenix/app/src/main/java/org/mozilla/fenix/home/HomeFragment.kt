@@ -16,23 +16,58 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -87,6 +122,7 @@ import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
+import mozilla.components.support.locale.LocaleManager
 import mozilla.components.support.utils.ext.isLandscape
 import mozilla.components.ui.colors.PhotonColors
 import org.mozilla.fenix.BrowserDirection
@@ -155,6 +191,8 @@ import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.MarkersFragmentLifecycleCallbacks
 import org.mozilla.fenix.search.toolbar.DefaultSearchSelectorController
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
+import org.mozilla.fenix.settings.SupportUtils
+import org.mozilla.fenix.settings.advanced.getSelectedLocale
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.tabstray.TabsTrayAccessPoint
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -513,6 +551,8 @@ class HomeFragment : Fragment(), UserInteractionHandler {
 
         activity.themeManager.applyStatusBarTheme(activity)
 
+        setDonationScreen()
+
         // FxNimbus.features.homescreen.recordExposure()
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
@@ -522,6 +562,19 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             "HomeFragment.onCreateView",
         )
         return binding.root
+    }
+
+    private fun setDonationScreen() {
+        if (homeViewModel.shouldShowDonationScreen()) {
+            binding.exploreprivately.visibility = View.GONE
+            binding.onionPatternImage.visibility = View.GONE
+            binding.composeYec2024.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    DonationScreen()
+                }
+            }
+        }
     }
 
     private fun reinitializeNavBar() {
@@ -1401,5 +1454,312 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     override fun onBackPressed(): Boolean {
         requireActivity().finish()
         return true
+    }
+
+    @Composable
+    fun DonationScreen() {
+        BoxWithConstraints(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            val alternateLayout = this.maxWidth >= 500.dp
+
+            YecLayout(
+                alternateLayout,
+                maxWidth = this.maxWidth,
+                getYecStyle(),
+                modifier = Modifier
+                    .padding(top = 55.dp, bottom = 56.dp),
+            )
+        }
+    }
+
+    @Composable
+    private fun YecLayout(
+        alternateLayout: Boolean,
+        maxWidth: Dp,
+        yecStyle: YecStyle,
+        modifier: Modifier
+    ) {
+        Column(
+            modifier = modifier
+                .padding(horizontal = 22.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(getVariableWidth(maxWidth)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            PurpleYecBox(alternateLayout, yecStyle, horizontalPadding = 16.dp)
+            AlwaysFreeText()
+        }
+    }
+
+    private fun getVariableWidth(width: Dp): Float = (500.dp / width).coerceIn(0.75f, 1.0f)
+
+    @Composable
+    private fun PurpleYecBox(
+        alternateLayout: Boolean,
+        yecStyle: YecStyle,
+        horizontalPadding: Dp,
+    ) {
+        Box(
+            modifier = Modifier.background(PhotonColors.Ink90, shape = RoundedCornerShape(8.dp)),
+        ) {
+            ExitIcon()
+            DynamicYecContent(alternateLayout, yecStyle, horizontalPadding)
+        }
+    }
+
+    @Composable
+    private fun AlwaysFreeText() {
+        Text(
+            text = getString(
+                R.string.YEC_2024_tor_browser_for_android_will_always_be_free_no_donation_required,
+                getString(R.string.app_name),
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            color = Color(0xFFFBFBFE),
+            fontSize = 12.5.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 18.75.sp,
+        )
+    }
+
+    @Composable
+    private fun ExitIcon() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            IconButton(
+                onClick = {
+                    binding.exploreprivately.visibility = View.VISIBLE
+                    binding.onionPatternImage.visibility = View.VISIBLE
+                    binding.composeYec2024.visibility = View.GONE
+                    homeViewModel.yecDismissed = true
+                },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_close),
+                    tint = Color(
+                        getColor(
+                            requireContext(),
+                            R.color.photonWhite,
+                        ),
+                    ),
+                    contentDescription = getString(R.string.YEC_2024_close),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(8.dp)
+                        .scale(0.65f),
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun DynamicYecContent(
+        alternateLayout: Boolean,
+        yecStyle: YecStyle,
+        horizontalPadding: Dp,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.fillMaxWidth(fraction = if (alternateLayout) .70f else 1f),
+                horizontalAlignment = if (alternateLayout) Alignment.Start else Alignment.CenterHorizontally,
+            ) {
+                if (!alternateLayout) {
+                    IlloYecImage(yecStyle, false, horizontalPadding)
+                }
+
+                YecRightsText(yecStyle, alternateLayout, horizontalPadding)
+
+                DonationEncouragementText(alternateLayout, horizontalPadding)
+
+                DonationMatchText(alternateLayout, horizontalPadding)
+
+                DonateNowButton(alternateLayout, horizontalPadding)
+            }
+            if (alternateLayout) {
+                IlloYecImage(yecStyle, true, horizontalPadding)
+            }
+        }
+    }
+
+    @Composable
+    private fun IlloYecImage(yecStyle: YecStyle, alternateLayout: Boolean, horizontalPadding: Dp) {
+        Image(
+            painter = painterResource(id = yecStyle.illo),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = if (alternateLayout) 0.dp else 41.dp,
+                    bottom = if (alternateLayout) 0.dp else 25.dp,
+                    end = if (alternateLayout) horizontalPadding else 0.dp,
+                ),
+        )
+    }
+
+    @Composable
+    private fun YecRightsText(
+        yecStyle: YecStyle,
+        alternateLayout: Boolean,
+        horizontalPadding: Dp,
+    ) {
+        var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+
+        Text(
+            text = getString(yecStyle.text),
+            color = PhotonColors.Ink90,
+            textAlign = if (alternateLayout) TextAlign.Left else TextAlign.Center,
+            fontFamily = FontFamily(Font(R.font.spacegrotesk_bold, FontWeight.Bold)),
+            fontSize = 18.sp,
+            lineHeight = 30.sp,
+            onTextLayout = { textLayoutResult = it },
+            modifier = Modifier
+                .padding(
+                    top = if (alternateLayout) 24.dp else 0.dp,
+                    start = horizontalPadding,
+                    end = if (alternateLayout) 0.dp else horizontalPadding,
+                    bottom = if (alternateLayout) 8.dp else 16.dp,
+                )
+                .drawBehind {
+                    textLayoutResult?.let { result ->
+                        for (i in 0 until result.lineCount) {
+                            val endOfLineSpacing = 4.dp
+
+                            val lineTop = result.getLineTop(i)
+                            val lineBottom = result.getLineBottom(i)
+                            val lineLeft = result.getLineLeft(i) - endOfLineSpacing.toPx()
+                            val lineRight = result.getLineRight(i) + endOfLineSpacing.toPx()
+
+                            drawRoundRect(
+                                color = Color(getColor(requireContext(), yecStyle.color)),
+                                topLeft = Offset(
+                                    lineLeft,
+                                    lineTop + 2.dp.toPx(),
+                                ),
+                                size = Size(
+                                    lineRight - lineLeft,
+                                    lineBottom - lineTop - 4.dp.toPx(),
+                                ),
+                                cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx()),
+                            )
+                        }
+                    }
+                },
+        )
+    }
+
+    @Composable
+    private fun DonationEncouragementText(alternateLayout: Boolean, horizontalPadding: Dp) {
+        Text(
+            text = getString(R.string.YEC_2024_donation_encouragement),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = horizontalPadding,
+                    end = if (alternateLayout) 0.dp else horizontalPadding,
+                    bottom = if (alternateLayout) 8.dp else 16.dp,
+                ),
+            color = Color(0xFFFBFBFE),
+            textAlign = TextAlign.Left,
+        )
+    }
+
+    @Composable
+    private fun DonationMatchText(alternateLayout: Boolean, horizontalPadding: Dp) {
+        Text(
+            text = getString(R.string.YEC_2024_donation_match_text),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = horizontalPadding,
+                    end = if (alternateLayout) horizontalPadding else 0.dp,
+                    bottom = 16.dp,
+                ),
+            color = Color(0xFFFBFBFE),
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Left,
+        )
+    }
+
+    @Composable
+    private fun DonateNowButton(alternateLayout: Boolean, horizontalPadding: Dp) {
+        var locale = LocaleManager.getSelectedLocale(requireContext()).language
+        if (locale.isNotEmpty()) {
+            locale += '-'
+        }
+        Button(
+            onClick = {
+                (activity as HomeActivity).openToBrowserAndLoad(
+                    searchTermOrURL = "https://www.torproject.org/donate/donate-${locale}mobile-yec2024",
+                    newTab = true,
+                    from = BrowserDirection.FromHome,
+                )
+            },
+            modifier = Modifier
+                .padding(bottom = if (alternateLayout) 24.dp else 40.dp)
+                .padding(horizontal = horizontalPadding),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(
+                    0xFFFFBD4F,
+                ),
+            ),
+            shape = RoundedCornerShape(4.dp),
+        ) {
+            Text(
+                text = getString(R.string.YEC_2024_donate_now),
+                color = PhotonColors.DarkGrey80,
+                modifier = Modifier.padding(
+                    horizontal = if (alternateLayout) 6.dp else 8.dp,
+                    vertical = if (alternateLayout) 3.dp else 6.dp,
+                ),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.sp,
+            )
+            Icon(
+                painter = painterResource(R.drawable.heart),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+
+    private fun getYecStyle(): YecStyle {
+        if (homeViewModel.firstYecLoad) {
+            homeViewModel.firstYecLoad = false
+            homeViewModel.yecStyleIndex = requireContext().settings().yecStyleIndex
+            requireContext().settings().yecStyleIndex =
+                (requireContext().settings().yecStyleIndex + 1) % 3
+        }
+        return YecStyle.entries[homeViewModel.yecStyleIndex]
+    }
+
+    enum class YecStyle(
+        @DrawableRes val illo: Int,
+        @StringRes val text: Int,
+        @ColorRes val color: Int,
+    ) {
+        PurpleSpeak(
+            illo = R.drawable.illo_purple_speak,
+            text = R.string.YEC_2024_right_to_speak,
+            color = R.color.YEC_2024_speak_purple,
+        ),
+        GreenBrowse(
+            illo = R.drawable.illo_green_browse,
+            text = R.string.YEC_2024_right_to_BROWSE,
+            color = R.color.YEC_2024_browse_green,
+        ),
+        RedSearch(
+            illo = R.drawable.illo_red_search,
+            text = R.string.YEC_2024_right_to_SEARCH,
+            color = R.color.YEC_2024_search_red,
+        )
     }
 }
