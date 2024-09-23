@@ -4,25 +4,36 @@
 Useful tools for working on tor-browser repository.
 """
 
-import sys
-import termios
-import os
-import atexit
-import tempfile
-import subprocess
-import re
-import json
-import urllib.request
 import argparse
+import atexit
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import termios
+import urllib.request
+
 import argcomplete
 
 GIT_PATH = "/usr/bin/git"
-UPSTREAM_URLS = [
-    "https://gitlab.torproject.org/tpo/applications/tor-browser.git",
-    "git@gitlab.torproject.org:tpo/applications/tor-browser.git",
-]
+UPSTREAM_URLS = {
+    "tor-browser": [
+        "https://gitlab.torproject.org/tpo/applications/tor-browser.git",
+        "git@gitlab.torproject.org:tpo/applications/tor-browser.git",
+    ],
+    "mullvad-browser": [
+        "https://gitlab.torproject.org/tpo/applications/mullvad-browser.git",
+        "git@gitlab.torproject.org:tpo/applications/mullvad-browser.git",
+    ],
+}
 FIXUP_PREPROCESSOR_EDITOR = "git-rebase-fixup-preprocessor"
 USER_EDITOR_ENV_NAME = "GIT_REBASE_FIXUP_PREPROCESSOR_USER_EDITOR"
+
+
+class TbDevException(Exception):
+    pass
 
 
 def git_run(args, check=True, env=None):
@@ -34,16 +45,22 @@ def git_run(args, check=True, env=None):
         for key, value in env.items():
             tmp_env[key] = value
         env = tmp_env
-    subprocess.run([GIT_PATH, *args], check=check, env=env)
+    try:
+        subprocess.run([GIT_PATH, *args], check=check, env=env)
+    except subprocess.CalledProcessError as err:
+        raise TbDevException(str(err)) from err
 
 
 def git_get(args):
     """
     Run a git command with each non-empty line returned in a list.
     """
-    git_process = subprocess.run(
-        [GIT_PATH, *args], text=True, stdout=subprocess.PIPE, check=True
-    )
+    try:
+        git_process = subprocess.run(
+            [GIT_PATH, *args], text=True, stdout=subprocess.PIPE, check=True
+        )
+    except subprocess.CalledProcessError as err:
+        raise TbDevException(str(err)) from err
     return [line for line in git_process.stdout.split("\n") if line]
 
 
@@ -57,35 +74,68 @@ def get_local_root():
     global local_root
     if local_root is None:
         try:
-            # Make sure we have a matching remote in this git repository. Should raise Exception if we don't.
-            get_upstream_name()
-            git_root = git_get(["rev-parse", "--show-toplevel"])[0]
-        except Exception:
-            git_root = None
-        if git_root is None:
+            # Make sure we have a matching remote in this git repository.
+            if get_upstream_details()["is-browser-repo"]:
+                local_root = git_get(["rev-parse", "--show-toplevel"])[0]
+            else:
+                local_root = ""
+        except TbDevException:
             local_root = ""
-        else:
-            local_root = git_root
     return local_root
 
 
-upstream_name = None
+def determine_upstream_details():
+    """
+    Determine details about the upstream.
+    """
+    remote_urls = {
+        remote: git_get(["remote", "get-url", remote])[0]
+        for remote in git_get(["remote"])
+    }
+
+    matches = {
+        remote: repo
+        for repo, url_list in UPSTREAM_URLS.items()
+        for url in url_list
+        for remote, fetch_url in remote_urls.items()
+        if fetch_url == url
+    }
+
+    is_browser_repo = len(matches) > 0
+    details = {"is-browser-repo": is_browser_repo}
+
+    origin_remote_repo = matches.get("origin", None)
+    upstream_remote_repo = matches.get("upstream", None)
+
+    if origin_remote_repo is not None:
+        if upstream_remote_repo is None:
+            details["remote"] = "origin"
+            details["repo-name"] = origin_remote_repo
+        # Else, both "upstream" and "origin" point to a remote repo. Not clear
+        # which should be used.
+    elif upstream_remote_repo is not None:
+        details["remote"] = "upstream"
+        details["repo-name"] = upstream_remote_repo
+    elif len(matches) == 1:
+        remote = next(iter(matches.keys()))
+        details["remote"] = remote
+        details["repo-name"] = matches[remote]
+    # Else, the upstream is ambiguous.
+
+    return details
 
 
-def get_upstream_name():
+cached_upstream_details = None
+
+
+def get_upstream_details():
     """
-    Get the name of the upstream remote.
+    Get details about the upstream repository.
     """
-    global upstream_name
-    if upstream_name is None:
-        for remote in git_get(["remote"]):
-            fetch_url = git_get(["remote", "get-url", remote])[0]
-            if fetch_url in UPSTREAM_URLS:
-                upstream_name = remote
-                break
-        if upstream_name is None:
-            raise Exception("No upstream remote found.")
-    return upstream_name
+    global cached_upstream_details
+    if cached_upstream_details is None:
+        cached_upstream_details = determine_upstream_details()
+    return cached_upstream_details
 
 
 class Reference:
@@ -139,7 +189,7 @@ def get_nearest_ref(ref_type, name_start, search_from):
             if commit == ref.commit:
                 return ref
 
-    raise Exception(f"No {name_start} commit found in the last 1000 commits")
+    raise TbDevException(f"No {name_start} commit found in the last 1000 commits")
 
 
 def get_firefox_ref(search_from):
@@ -167,7 +217,7 @@ def get_upstream_basis_commit(search_from):
     upstream_firefox = get_firefox_ref(upstream_branch).commit
     search_firefox = get_firefox_ref(search_from).commit
     if upstream_firefox != search_firefox:
-        raise Exception(
+        raise TbDevException(
             f"Upstream of {search_from} has a different FIREFOX base. "
             "You might want to set the upstream tracking branch to a new value."
         )
@@ -210,12 +260,15 @@ def get_gitlab_default():
     """
     Get the name of the default branch on gitlab.
     """
-    query = """
-      query {
-        project(fullPath: "tpo/applications/tor-browser") {
-          repository { rootRef }
-        }
-      }
+    repo_name = get_upstream_details().get("repo-name", None)
+    if repo_name is None:
+        raise TbDevException("Cannot determine the repository name")
+    query = f"""
+      query {{
+        project(fullPath: "tpo/applications/{repo_name}") {{
+          repository {{ rootRef }}
+        }}
+      }}
     """
     request_data = {"query": re.sub(r"\s+", "", query)}
     gitlab_request = urllib.request.Request(
@@ -231,7 +284,7 @@ def get_gitlab_default():
         return json.load(response)["data"]["project"]["repository"]["rootRef"]
 
 
-def within_tor_browser_root():
+def within_browser_root():
     """
     Whether we are with the tor browser root.
     """
@@ -279,7 +332,7 @@ def show_files_containing(args):
     try:
         regex = re.compile(args.regex)
     except re.error as err:
-        raise Exception(f"{args.regex} is not a valid python regex") from err
+        raise TbDevException(f"{args.regex} is not a valid python regex") from err
 
     file_list = get_changed_files(get_firefox_ref("HEAD").commit)
 
@@ -428,7 +481,7 @@ def auto_fixup(_args):
 
     staged_files = get_changed_files("HEAD", staged=True)
     if staged_files:
-        raise Exception(f"Have already staged files: {staged_files}")
+        raise TbDevException(f"Have already staged files: {staged_files}")
 
     fixups = {}
     for filename in get_changed_files("HEAD"):
@@ -475,7 +528,9 @@ def show_default(_args):
     Print the default branch name from gitlab.
     """
     default_branch = get_gitlab_default()
-    upstream = get_upstream_name()
+    upstream = get_upstream_details().get("remote", None)
+    if upstream is None:
+        raise TbDevException("Cannot determine the upstream remote")
     print(f"{upstream}/{default_branch}")
 
 
@@ -484,10 +539,20 @@ def branch_from_default(args):
     Fetch the default gitlab branch from upstream and create a new local branch.
     """
     default_branch = get_gitlab_default()
-    upstream = get_upstream_name()
+    upstream = get_upstream_details().get("remote", None)
+    if upstream is None:
+        raise TbDevException("Cannot determine the upstream remote")
 
     git_run(["fetch", upstream, default_branch])
-    git_run(["switch", "--create", args.branchname, "--track", f"{upstream}/{default_branch}"])
+    git_run(
+        [
+            "switch",
+            "--create",
+            args.branchname,
+            "--track",
+            f"{upstream}/{default_branch}",
+        ]
+    )
 
 
 def move_to_default(args):
@@ -504,17 +569,21 @@ def move_to_default(args):
         try:
             branch_name = git_get(["branch", "--show-current"])[0]
         except IndexError:
-            raise Exception("No current branch")
+            raise TbDevException("No current branch")
 
     current_upstream_branch = get_upstream_tracking_branch(branch_name)
     default_branch = get_gitlab_default()
-    upstream = get_upstream_name()
+    upstream = get_upstream_details().get("remote", None)
+    if upstream is None:
+        raise TbDevException("Cannot determine the upstream remote")
 
     git_run(["fetch", upstream, default_branch])
 
     new_upstream_branch = f"{upstream}/{default_branch}"
     if current_upstream_branch == new_upstream_branch:
-        print(f"{branch_name} is already set to track the default branch {new_upstream_branch}.")
+        print(
+            f"{branch_name} is already set to track the default branch {new_upstream_branch}."
+        )
         return
 
     # We want to avoid checking out the old branch because this can cause
@@ -560,7 +629,7 @@ def show_diff_diff(args):
     """
     config_res = git_get(["config", "--get", "diff.tool"])
     if not config_res:
-        raise Exception("No diff.tool configured for git")
+        raise TbDevException("No diff.tool configured for git")
     diff_tool = config_res[0]
 
     # Filter out parts of the diff we expect to be different.
@@ -590,13 +659,13 @@ def show_diff_diff(args):
                 lines_match = lines_regex.match(line)
                 if lines_match:
                     # Fake data that will match.
-                    file.write("@@ ?,? ?,? @@" + lines_match.group('rest'))
+                    file.write("@@ ?,? ?,? @@" + lines_match.group("rest"))
                     continue
                 file.write(line)
 
         status = diff_process.poll()
         if status != 0:
-            raise Exception(f"git diff exited with status {status}")
+            raise TbDevException(f"git diff exited with status {status}")
 
         return file_name
 
@@ -614,7 +683,7 @@ def branch_complete(prefix, parsed_args, **kwargs):
     """
     Complete the argument with a branch name.
     """
-    if not within_tor_browser_root():
+    if not within_browser_root():
         return []
     try:
         branches = [ref.name for ref in get_refs("head", "")]
@@ -738,8 +807,11 @@ for name, details in {
 
 argcomplete.autocomplete(parser)
 
-if not within_tor_browser_root():
-    raise Exception("Must be within a tor-browser directory")
-parsed_args = parser.parse_args()
+try:
+    if not within_browser_root():
+        raise TbDevException("Must be within a browser directory")
+    parsed_args = parser.parse_args()
 
-parsed_args.func(parsed_args)
+    parsed_args.func(parsed_args)
+except TbDevException as err:
+    print(f"\x1b[1m{err}\x1b[0m", file=sys.stderr)
