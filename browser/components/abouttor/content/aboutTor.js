@@ -286,8 +286,9 @@ const YecWidget = {
     }
     const donateLink = document.getElementById("yec-2024-donate-link");
     const base = "https://www.torproject.org/donate";
-    // TODO: Updated link for YEC (using _locale?).
-    donateLink.href = base;
+    donateLink.href = this._locale
+      ? `${base}/donate-${this._locale}-yec2024`
+      : base;
   },
 
   /**
