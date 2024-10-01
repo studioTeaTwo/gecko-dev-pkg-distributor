@@ -169,6 +169,11 @@ public class CrashReporter {
       @NonNull final File minidumpFile,
       @NonNull final JSONObject extras)
       throws IOException, URISyntaxException {
+    // tb-42660: makeing a NOP
+    if (true) {
+      return GeckoResult.fromValue("0");
+    }
+    
     Log.d(LOGTAG, "Sending crash report: " + minidumpFile.getPath());
 
     HttpURLConnection conn = null;
