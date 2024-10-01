@@ -5,15 +5,21 @@
 package org.mozilla.fenix.components
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import mozilla.components.service.nimbus.NimbusApi
 import mozilla.components.service.nimbus.NimbusDisabled
 import mozilla.components.service.nimbus.messaging.FxNimbusMessaging
 import mozilla.components.service.nimbus.messaging.Message
+import mozilla.components.service.nimbus.messaging.Message.Metadata
+import mozilla.components.service.nimbus.messaging.MessageData
 import mozilla.components.service.nimbus.messaging.MessageMetadataStorage
+import mozilla.components.service.nimbus.messaging.MessageSurfaceId
 import mozilla.components.service.nimbus.messaging.NimbusMessagingController
 import mozilla.components.service.nimbus.messaging.NimbusMessagingControllerInterface
 import mozilla.components.service.nimbus.messaging.NimbusMessagingStorage
 import mozilla.components.service.nimbus.messaging.OnDiskMessageMetadataStorage
+import mozilla.components.service.nimbus.messaging.StyleData
 import org.mozilla.experiments.nimbus.NimbusEventStore
 import org.mozilla.experiments.nimbus.NimbusMessagingHelperInterface
 import org.mozilla.experiments.nimbus.NullNimbus
@@ -91,7 +97,7 @@ class NimbusComponents(private val context: Context) {
      * from the Nimbus Messaging component.
      */
     val messaging: NimbusMessagingControllerInterface by lazyMonitored {
-        NimbusMessagingController(
+        NullNimbusMessagingController(
             messagingStorage = messagingStorage,
             deepLinkScheme = BuildConfig.DEEP_LINK_SCHEME,
         )
@@ -126,4 +132,111 @@ class NullMessageMetadataStorage(): MessageMetadataStorage {
     override suspend fun updateMetadata(metadata: Message.Metadata) {
         // noop
     }
+}
+
+class NullNimbusMessagingController(
+    messagingStorage: NimbusMessagingStorage,
+    deepLinkScheme: String,
+) : NimbusMessagingController(messagingStorage, deepLinkScheme) {
+
+    private val nullMessage: Message = Message(
+        id = "",
+        data = MessageData(),
+        action = "",
+        style = StyleData(),
+        triggerIfAll = listOf(),
+        excludeIfAny = listOf(),
+        metadata = Metadata(""),
+    )
+
+    override suspend fun onMessageDisplayed(displayedMessage: Message, bootIdentifier: String?): Message {
+        return nullMessage
+    }
+
+    /**
+     * Called when a message has been dismissed by the user.
+     *
+     * Records a messageDismissed event, and records that the message
+     * has been dismissed.
+     */
+    override suspend fun onMessageDismissed(message: Message) {
+        return
+    }
+
+    /**
+     * Called when a microsurvey attached to a message has been completed by the user.
+     *
+     * @param message The message containing the microsurvey that was completed.
+     * @param answer The user's response to the microsurvey question.
+     */
+    override suspend fun onMicrosurveyCompleted(message: Message, answer: String) {
+        return
+    }
+
+    /**
+     * Called once the user has clicked on a message.
+     *
+     * This records that the message has been clicked on, but does not record a
+     * glean event. That should be done via [processMessageActionToUri].
+     */
+    override suspend fun onMessageClicked(message: Message) {
+        return
+    }
+
+    /**
+     * Create and return the relevant [Intent] for the given [Message].
+     *
+     * @param message the [Message] to create the [Intent] for.
+     * @return an [Intent] using the processed [Message].
+     */
+    override fun getIntentForMessage(message: Message) = Intent()
+
+    /**
+     * Will attempt to get the [Message] for the given [id].
+     *
+     * @param id the [Message.id] of the [Message] to try to match.
+     * @return the [Message] with a matching [id], or null if no [Message] has a matching [id].
+     */
+    override suspend fun getMessage(id: String): Message? {
+        return nullMessage
+    }
+
+    /**
+     * The [message] action needs to be examined for string substitutions
+     * and any `uuid` needs to be recorded in the Glean event.
+     *
+     * We call this `process` as it has a side effect of logging a Glean event while it
+     * creates a URI string for the message action.
+     */
+    override fun processMessageActionToUri(message: Message): Uri {
+        return Uri.EMPTY
+    }
+
+    override fun sendDismissedMessageTelemetry(messageId: String) {
+        return
+    }
+
+    override fun sendShownMessageTelemetry(messageId: String) {
+        return
+    }
+
+    override fun sendExpiredMessageTelemetry(messageId: String) {
+        return
+    }
+
+    override fun sendClickedMessageTelemetry(messageId: String, uuid: String?) {
+        return
+    }
+
+    override fun sendMicrosurveyCompletedTelemetry(messageId: String, answer: String?) {
+        return
+    }
+
+    override fun convertActionIntoDeepLinkSchemeUri(action: String): Uri = Uri.EMPTY
+
+    override suspend fun getMessages(): List<Message> = listOf()
+
+    override suspend fun getNextMessage(surfaceId: MessageSurfaceId) = nullMessage
+
+    override fun getNextMessage(surfaceId: MessageSurfaceId, messages: List<Message>) = nullMessage
 }
