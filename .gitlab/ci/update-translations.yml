@@ -28,6 +28,7 @@ combine-en-US-translations:
       base-browser:base-browser.ftl
       fenix-torbrowserstringsxml:torbrowser_strings.xml
     '
+    TRANSLATION_INCLUDE_LEGACY: "true"
   cache:
     paths:
       - .cache/pip
