@@ -29,16 +29,18 @@ import java.util.List;
 
 public class ProxySelector {
   public static URLConnection openConnectionWithProxy(final URI uri) throws IOException {
-    final java.net.ProxySelector ps = java.net.ProxySelector.getDefault();
-    Proxy proxy = Proxy.NO_PROXY;
-    if (ps != null) {
-      final List<Proxy> proxies = ps.select(uri);
-      if (proxies != null && !proxies.isEmpty()) {
-        proxy = proxies.get(0);
-      }
-    }
-
-    return uri.toURL().openConnection(proxy);
+//  tb-42660: This should not be used: it cannot safely get tor configs so would be a proxy leak risk
+    throw new IOException("openConnectionWithProxy disabled by tb-42660");
+//    final java.net.ProxySelector ps = java.net.ProxySelector.getDefault();
+//    Proxy proxy = Proxy.NO_PROXY;
+//    if (ps != null) {
+//      final List<Proxy> proxies = ps.select(uri);
+//      if (proxies != null && !proxies.isEmpty()) {
+//        proxy = proxies.get(0);
+//      }
+//    }
+//
+//    return uri.toURL().openConnection(proxy);
   }
 
   public ProxySelector() {}
