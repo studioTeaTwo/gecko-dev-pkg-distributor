@@ -6,6 +6,7 @@
         - "**/*.ftl"
         - "**/*.properties"
         - "**/*.dtd"
+        - "**/*strings.xml"
     - if: $FORCE_UPDATE_TRANSLATIONS == "true"
   variables:
     TOR_BROWSER_COMBINED_FILES_JSON: "combined-translation-files.json"
