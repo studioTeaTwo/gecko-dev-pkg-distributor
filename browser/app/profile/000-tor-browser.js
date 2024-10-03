@@ -52,9 +52,8 @@ pref("network.http.connection-retry-timeout", 0);
 // be reduced to the strictly required time).
 pref("extensions.torbutton.use_nontor_proxy", false);
 
-// tor-browser#42647: Make OS HTTP User-Agent OS spoofing configurable by pref
-// TODO: flip to false when we're happy this is not a privacy issue
-pref("privacy.resistFingerprinting.spoofOsInUserAgentHeader", true);
+// tor-browser#43170: Disable user-agent spoofing in HTTP header
+pref("privacy.resistFingerprinting.spoofOsInUserAgentHeader", false);
 
 // Browser home page:
 pref("browser.startup.homepage", "about:tor");
