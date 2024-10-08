@@ -1,4 +1,3 @@
-export MOZ_BUILD_DATE=20230710165010 # This should match the data in [firefox-android](https://gitlab.torproject.org/tpo/applications/firefox-android)/android-components/plugins/dependencies/src/main/java/Gecko.kt ~ln 12's def of the variable *version*, the date component
 export JAVA_HOME=/opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home/ # for arm64. Or JAVA_HOME=/usr/local/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home/ for x86_64.
 export ANDROID_HOME=$HOME/Library/Android/sdk # or $HOME/.mozbuild/android-sdk-macosx/
 export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/23.2.8568313 # will need to download NDK 23.2.8568313 via android studio
