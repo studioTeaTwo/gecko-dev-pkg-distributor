@@ -6,4 +6,4 @@ ARCH=$2
 source android-env.sh
 
 cd $DEV_ROOT
-MOZCONFIG=mozconfig-android-$ARCH  ./mach build
+MOZCONFIG=mozconfig-android-$ARCH ./mach build

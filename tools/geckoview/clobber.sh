@@ -7,4 +7,3 @@ source android-env.sh
 
 cd $DEV_ROOT
 MOZCONFIG=mozconfig-android-$ARCH ./mach clobber
-MOZCONFIG=mozconfig-android-all ./mach clobber
