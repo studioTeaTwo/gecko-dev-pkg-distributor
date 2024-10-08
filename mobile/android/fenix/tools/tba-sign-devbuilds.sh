@@ -2,20 +2,38 @@
 
 cd "$(dirname $(realpath "$0"))/.."
 
-if [ -z "$TOR_BROWSER_BUILD" ]; then
-	TOR_BROWSER_BUILD=../../tor-browser-build
-fi
-key="$TOR_BROWSER_BUILD/projects/browser/android-qa.keystore"
-if [ ! -f "$key" ]; then
-	echo "Please define TOR_BROWSER_BUILD with the path to tor-browser-build"
-	exit 2
+if [ -z "$APKSIGNER_ARGS" ]; then
+	if [ -z "$QA_KEY" ]; then
+		if [ -z "$TOR_BROWSER_BUILD" ]; then
+			TOR_BROWSER_BUILD=../../../../tor-browser-build
+		fi
+		QA_KEY="$TOR_BROWSER_BUILD/projects/browser/android-qa.keystore"
+	fi
+	if [ ! -f "$QA_KEY" ]; then
+		echo "The QA key has not been found."
+		echo "Please define either \$QA_KEY with its path, or \$TOR_BROWSER_BUILD with the path to tor-browser-build"
+		exit 2
+	fi
+	APKSIGNER_ARGS="--ks "$QA_KEY" --ks-key-alias androidqakey --key-pass pass:android --ks-pass pass:android"
 fi
 
-tools="$ANDROID_HOME/build-tools/31.0.0"
-apksigner="$tools/apksigner"
-zipalign="$tools/zipalign"
-if [ ! -x "$apksigner" ]; then
-	echo "apksigner not found at $apksigner. Please make sure ANDROID_HOME is defined"
+if [ -z "$ANDROID_HOME" ]; then
+	ANDROID_HOME=~/Android
+fi
+
+function find_tool() {
+	tool="$(find $ANDROID_HOME -name "$1" | head -1)"
+	if [ -z "$tool" ]; then
+		tool=$(which $1)
+	fi
+	echo $tool
+}
+
+apksigner="$(find_tool apksigner)"
+zipalign="$(find_tool zipalign)"
+if [ -z "$apksigner" -o ! -x "$apksigner" -o -z "$zipalign" -o ! -x "$zipalign" ]; then
+	echo "apksigner or zipalign not found."
+	echo "Please make sure they are on your \$PATH, or define \$ANDROID_HOME."
 	exit 3
 fi
 
@@ -40,8 +58,8 @@ sign () {
 	popd > /dev/null
 	rm -f "$aligned"
 	"$zipalign" -p 4 "$apk" "$aligned"
-	"$apksigner" sign --ks "$key" --in "$aligned" --out "$out" --ks-key-alias androidqakey --key-pass pass:android --ks-pass pass:android
-	echo "Signed $out"
+	echo "Signing $out"
+	"$apksigner" sign --in "$aligned" --out "$out" $APKSIGNER_ARGS
 }
 
 for channel in app/build/outputs/apk/fenix/*; do
