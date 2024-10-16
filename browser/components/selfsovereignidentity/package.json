@@ -1,0 +1,45 @@
+{
+  "name": "selfsovereignidentity",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "start": "npm run build && npm run watch",
+    "build": "npm-run-all build:*",
+    "build:webpack": "webpack --config webpack.config.js",
+    "build:sass": "sass content/css/main.scss content/css/main.compiled.css",
+    "watch": "npm-run-all -p watch:*",
+    "watch:webpack": "npm run build:webpack -- -w",
+    "watch:sass": "chokidar \"content/panels/**/*.scss\" -c \"npm run build:sass\"",
+    "lint": "eslint --ext .ts,.tsx,mjs ./{src,actors}",
+    "lint:fix": "eslint --fix --ext .ts,.tsx,mjs ./{src,actors}",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "chokidar-cli": "^3.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.3",
+    "sass": "^1.79.5",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.10.2",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "framer-motion": "^10.18.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0"
+  }
+}

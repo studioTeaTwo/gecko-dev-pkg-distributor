@@ -60,6 +60,7 @@ DIRS += [
     "screenshots",
     "search",
     "securitylevel",
+    "selfsovereignidentity",
     "sessionstore",
     "shell",
     "shopping",

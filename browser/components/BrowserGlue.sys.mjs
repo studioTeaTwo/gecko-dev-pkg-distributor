@@ -439,6 +439,27 @@ let JSWINDOWACTORS = {
     remoteTypes: ["privilegedabout"],
   },
 
+  AboutIdentity: {
+    parent: {
+      esModuleURI: "resource:///actors/AboutIdentityParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///actors/AboutIdentityChild.sys.mjs",
+      events: {
+        AboutIdentityCreateCredential: {},
+        AboutIdentityDeleteCredential: {},
+        AboutIdentityInit: {},
+        AboutIdentityRecordTelemetryEvent: {},
+        AboutIdentityRemoveAllCredentials: {},
+        AboutIdentityUpdateCredential: {},
+      },
+    },
+    matches: ["about:identity", "about:identity?*"],
+    allFrames: true,
+    // TODO: (ssb) review security
+    // remoteTypes: ["privilegedabout"],
+  },
+
   AboutMessagePreview: {
     parent: {
       esModuleURI: "resource:///actors/AboutMessagePreviewParent.sys.mjs",
