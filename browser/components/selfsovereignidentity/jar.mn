@@ -1,0 +1,13 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+browser.jar:
+% content selfsovereignidentity %content/selfsovereignidentity/ contentaccessible=yes
+  content/selfsovereignidentity/css (content/css/*)
+  content/selfsovereignidentity/fonts (content/fonts/*)
+  content/selfsovereignidentity/img (content/img/*)
+  content/selfsovereignidentity/selfsovereignidentity.html (content/selfsovereignidentity.html)
+  content/selfsovereignidentity/js/vendor.bundle.js (content/js/vendor.bundle.js)
+  content/selfsovereignidentity/js/main.bundle.js (content/js/main.bundle.js)
+  content/selfsovereignidentity/js/entry.js (content/js/entry.js)

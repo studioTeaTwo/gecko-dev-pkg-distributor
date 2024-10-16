@@ -69,6 +69,7 @@ DIRS += [
     "sessionstore",
     "shell",
     "shopping",
+    "ssi",
     "startup",
     "statusfilter",
     "telemetry",
