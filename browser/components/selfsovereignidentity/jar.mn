@@ -8,6 +8,5 @@ browser.jar:
   content/selfsovereignidentity/fonts (content/fonts/*)
   content/selfsovereignidentity/img (content/img/*)
   content/selfsovereignidentity/selfsovereignidentity.html (content/selfsovereignidentity.html)
-  content/selfsovereignidentity/js/vendor.bundle.js (content/js/vendor.bundle.js)
   content/selfsovereignidentity/js/main.bundle.js (content/js/main.bundle.js)
   content/selfsovereignidentity/js/entry.js (content/js/entry.js)
