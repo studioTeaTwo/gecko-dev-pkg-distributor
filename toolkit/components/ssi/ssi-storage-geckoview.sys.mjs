@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * CredentialStorage implementation for GeckoView
+ * SsiStorage implementation for GeckoView
  */
 
-import { CredentialStorage_json } from "resource://gre/modules/credential-storage-json.sys.mjs";
+import { SsiStorage_json } from "resource://gre/modules/ssi-storage-json.sys.mjs";
 
 const lazy = {};
 
@@ -14,18 +14,18 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 });
 
-export class CredentialStorage extends CredentialStorage_json {
+export class SsiStorage extends SsiStorage_json {
   static #storage = null;
 
   static create(callback) {
-    if (!CredentialStorage.#storage) {
-      CredentialStorage.#storage = new CredentialStorage();
-      CredentialStorage.#storage.initialize().then(callback);
+    if (!SsiStorage.#storage) {
+      SsiStorage.#storage = new SsiStorage();
+      SsiStorage.#storage.initialize().then(callback);
     } else if (callback) {
       callback();
     }
 
-    return CredentialStorage.#storage;
+    return SsiStorage.#storage;
   }
 
   get _crypto() {
@@ -105,7 +105,6 @@ export class CredentialStorage extends CredentialStorage_json {
       ...vanillaCredential,
       encryptedSecret: vanillaCredential.seret,
       encryptedIdentifier: vanillaCredential.identifier,
-      encryptedPassword: vanillaCredential.password,
       encryptedProperties: vanillaCredential.properties,
     };
   }
@@ -147,7 +146,7 @@ export class CredentialStorage extends CredentialStorage_json {
   }
 }
 
-ChromeUtils.defineLazyGetter(CredentialStorage.prototype, "log", () => {
-  let logger = lazy.SsiHelper.createLogger("Credential storage");
+ChromeUtils.defineLazyGetter(SsiStorage.prototype, "log", () => {
+  let logger = lazy.SsiHelper.createLogger("Ssi storage");
   return logger.log.bind(logger);
 });

@@ -7,10 +7,10 @@
  *
  * This JavaScript module exists in order to share code between the different
  * XPCOM components that constitute the Ssi Store, including implementations
- * of nsISsiStore and nsICredentialStorage.
+ * of nsISsi.
  */
 
-import { Logic } from "resource://gre/modules/SsiStore.shared.mjs";
+import { Logic } from "resource://gre/modules/Ssi.shared.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -24,7 +24,7 @@ export const SsiHelper = {
   debug: null,
 
   init() {
-    Services.telemetry.setEventRecordingEnabled("ssistore", true);
+    // Services.telemetry.setEventRecordingEnabled("ssi", true);
   },
 
   createLogger(aLogPrefix) {
@@ -61,8 +61,8 @@ export const SsiHelper = {
   checkCredentialValues(aCredential) {
     function badCharacterPresent(l, c) {
       return (
+        l.secret.includes(c) ||
         l.identifier.includes(c) ||
-        l.password.includes(c) ||
         l.properties.includes(c)
       );
     }
@@ -182,13 +182,12 @@ export const SsiHelper = {
         aNewCredentialData.primary,
         aNewCredentialData.secret,
         aNewCredentialData.identifier,
-        aNewCredentialData.password,
         aNewCredentialData.properties
       );
       newCredential.unknownFields = aNewCredentialData.unknownFields;
       newCredential.QueryInterface(Ci.nsICredentialMetaInfo);
 
-      // Automatically update metainfo when password is changed.
+      // Automatically update metainfo when secret is changed.
       if (newCredential.secret != aOldStoredCredential.secret) {
         newCredential.timeSecretChanged = Date.now();
       }
@@ -215,7 +214,6 @@ export const SsiHelper = {
           case "primary":
           case "secret":
           case "identifier":
-          case "password":
           case "properties":
           case "unknownFields":
           // nsICredentialMetaInfo (fall through)
@@ -265,9 +263,6 @@ export const SsiHelper = {
     // For credentials w/o a optional property, set to "", not null.
     if (newCredential.identifier == null) {
       throw new Error("Can't add a credential with a null identifier.");
-    }
-    if (newCredential.password == null) {
-      throw new Error("Can't add a credential with a null password.");
     }
     if (newCredential.properties == null) {
       throw new Error("Can't add a credential with a null properties.");
@@ -400,7 +395,7 @@ export const SsiHelper = {
    */
   vanillaObjectToCredential(credential) {
     let formCredential = Cc[
-      "@mozilla.org/ssi-store/credentialInfo;1"
+      "@mozilla.org/ssi/credentialInfo;1"
     ].createInstance(Ci.nsICredentialInfo);
     formCredential.init(
       credential.protocolName,
@@ -408,7 +403,6 @@ export const SsiHelper = {
       credential.primary,
       credential.secret,
       credential.identifier,
-      credential.password,
       credential.properties
     );
 
@@ -576,7 +570,7 @@ export const SsiHelper = {
     }
     Services.obs.notifyObservers(
       dataObject,
-      "ssistore-storage-changed",
+      "ssi-storage-changed",
       changeType
     );
   },

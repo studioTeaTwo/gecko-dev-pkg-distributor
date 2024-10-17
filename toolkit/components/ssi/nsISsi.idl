@@ -26,19 +26,19 @@ interface nsISsiSearchCallback : nsISupports
  * Make sure to document your interface.
  */
 [scriptable, uuid(AA131FC6-69F8-465D-B269-BF7B9ECF6388)]
-interface nsISsiStore : nsISupports {
+interface nsISsi : nsISupports {
   /**
    * This promise is resolved when initialization is complete, and is rejected
    * in case initialization failed.  This includes the initial loading of the
    * credential data as well as any migration from previous versions.
    *
-   * Calling any method of nsISsiStore before this promise is resolved
+   * Calling any method of nsISsi before this promise is resolved
    * might trigger the synchronous initialization fallback.
    */
   readonly attribute Promise initializationPromise;
 
   /**
-   * Store a new credential in the credential store.
+   * Store a new credential in the ssi store.
    *
    * @param aCredential
    *        The credential to be added.
@@ -64,7 +64,7 @@ interface nsISsiStore : nsISupports {
   Promise addCredentialAsync(in nsICredentialInfo aCredential);
 
   /**
-   * Remove a credential from the credential store.
+   * Remove a credential from the ssi store.
    *
    * @param aCredential
    *        The credential to be removed.
@@ -75,7 +75,7 @@ interface nsISsiStore : nsISupports {
   void removeCredential(in nsICredentialInfo aCredential);
 
   /**
-   * Modify an existing credential in the credential store.
+   * Modify an existing credential in the ssi store.
    *
    * @param oldCredential
    *        The credential to be modified.
@@ -102,7 +102,7 @@ interface nsISsiStore : nsISupports {
   void removeAllCredentials();
 
   /**
-   * Fetch all credentials in the credential store. An array is always returned;
+   * Fetch all credentials in the ssi store. An array is always returned;
    * if there are no credentials the array is empty. Decryption is handled in
    * one batch.
    *
@@ -160,6 +160,6 @@ interface nsISsiStore : nsISupports {
 
 %{C++
 
-#define NS_SSISTORE_CONTRACTID "@mozilla.org/ssi-store;1"
+#define NS_SSI_CONTRACTID "@mozilla.org/ssi;1"
 
 %}

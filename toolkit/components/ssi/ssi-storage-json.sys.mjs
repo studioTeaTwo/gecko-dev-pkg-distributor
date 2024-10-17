@@ -3,25 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * CredentialStorage implementation for the JSON back-end.
+ * SsiStorage implementation for the JSON back-end.
  */
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  CredentialStore: "resource://gre/modules/CredentialStore.sys.mjs",
+  SsiStore: "resource://gre/modules/SsiStore.sys.mjs",
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 });
 
-export class CredentialStorage_json {
+export class SsiStorage_json {
   constructor() {
-    this.__crypto = null; // nsISsiStoreCrypto service
+    this.__crypto = null; // nsISsiCrypto service
   }
 
   get _crypto() {
     if (!this.__crypto) {
-      this.__crypto = Cc["@mozilla.org/ssi-store/crypto/SDR;1"].getService(
-        Ci.nsISsiStoreCrypto
+      this.__crypto = Cc["@mozilla.org/ssi/crypto/SDR;1"].getService(
+        Ci.nsISsiCrypto
       );
     }
     return this.__crypto;
@@ -35,7 +35,7 @@ export class CredentialStorage_json {
 
       let profileDir = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
 
-      // Set the reference to CredentialStore synchronously.
+      // Set the reference to SsiStore synchronously.
       let jsonPath = PathUtils.join(profileDir, "ssi-credentials.json");
       let backupPath = "";
       // TODO: (ssb) review later
@@ -45,7 +45,7 @@ export class CredentialStorage_json {
       // if (loginsBackupEnabled) {
       //   backupPath = PathUtils.join(profileDir, "logins-backup.json");
       // }
-      this._store = new lazy.CredentialStore(jsonPath, backupPath);
+      this._store = new lazy.SsiStore(jsonPath, backupPath);
 
       return (async () => {
         // Load the data asynchronously.
@@ -126,7 +126,6 @@ export class CredentialStorage_json {
       primary: credentialClone.primary,
       encryptedSecret: credentialClone.secret,
       encryptedIdentifier: credentialClone.identifier,
-      encryptedPassword: credentialClone.password,
       encryptedProperties: credentialClone.properties,
       guid: credentialClone.guid,
       encType: this._crypto.defaultEncType,
@@ -176,7 +175,6 @@ export class CredentialStorage_json {
       // and return value
       resultCredential.secret = credential.secret;
       resultCredential.identifier = credential.identifier;
-      resultCredential.password = credential.password;
       resultCredential.properties = credential.properties;
 
       // Send a notification that a credential was added.
@@ -256,7 +254,6 @@ export class CredentialStorage_json {
     let [
       encSecret,
       encIdentifier,
-      encPassword,
       encProperties,
       encType,
       encUnknownFields,
@@ -269,7 +266,6 @@ export class CredentialStorage_json {
         credentialItem.primary = newCredential.primary;
         credentialItem.encryptedSecret = encSecret;
         credentialItem.encryptedIdentifier = encIdentifier;
-        credentialItem.encryptedPassword = encPassword;
         credentialItem.encryptedProperties = encProperties;
         credentialItem.guid = newCredential.guid;
         credentialItem.encType = encType;
@@ -372,7 +368,6 @@ export class CredentialStorage_json {
           case "primary":
           case "encryptedSecret":
           case "encryptedIdentifier":
-          case "encryptedPassword":
           case "encryptedProperties":
           case "guid":
           case "encType":
@@ -400,7 +395,7 @@ export class CredentialStorage_json {
       if (match(credentialItem)) {
         // Create the new nsCredentialInfo object, push to array
         let credential = Cc[
-          "@mozilla.org/ssi-store/credentialInfo;1"
+          "@mozilla.org/ssi/credentialInfo;1"
         ].createInstance(Ci.nsICredentialInfo);
         credential.init(
           credentialItem.protocolName,
@@ -408,7 +403,6 @@ export class CredentialStorage_json {
           credentialItem.primary,
           credentialItem.encryptedSecret,
           credentialItem.encryptedIdentifier,
-          credentialItem.encryptedPassword,
           credentialItem.encryptedProperties
         );
         // set nsICredentialMetaInfo values
@@ -550,8 +544,8 @@ export class CredentialStorage_json {
     }
 
     const plaintexts = credentials.reduce(
-      (memo, { secret, identifier, password, properties, unknownFields }) =>
-        memo.concat([secret, identifier, password, properties, unknownFields]),
+      (memo, { secret, identifier, properties, unknownFields }) =>
+        memo.concat([secret, identifier, properties, unknownFields]),
       []
     );
     const ciphertexts = await this._crypto.encryptMany(plaintexts);
@@ -560,15 +554,13 @@ export class CredentialStorage_json {
       const [
         encryptedSecret,
         encryptedIdentifier,
-        encryptedPassword,
         encryptedProperties,
         encryptedUnknownFields,
-      ] = ciphertexts.slice(5 * i, 5 * i + 5);
+      ] = ciphertexts.slice(4 * i, 4 * i + 4);
 
       const encryptedCredential = credential.clone();
       encryptedCredential.secret = encryptedSecret;
       encryptedCredential.identifier = encryptedIdentifier;
-      encryptedCredential.password = encryptedPassword;
       encryptedCredential.properties = encryptedProperties;
       encryptedCredential.unknownFields = encryptedUnknownFields;
 
@@ -586,16 +578,16 @@ export class CredentialStorage_json {
     }
 
     const ciphertexts = credentials.reduce(
-      (memo, { secret, identifier, password, properties, unknownFields }) =>
-        memo.concat([secret, identifier, password, properties, unknownFields]),
+      (memo, { secret, identifier, properties, unknownFields }) =>
+        memo.concat([secret, identifier, properties, unknownFields]),
       []
     );
     const plaintexts = await this._crypto.decryptMany(ciphertexts);
 
     return credentials
       .map((credential, i) => {
-        const [secret, identifier, password, properties, unknownFields] =
-          plaintexts.slice(5 * i, 5 * i + 5);
+        const [secret, identifier, properties, unknownFields] =
+          plaintexts.slice(4 * i, 4 * i + 4);
 
         // If the secret is blank it means that decryption may have
         // failed during decryptMany but we can't differentiate an empty string
@@ -622,7 +614,6 @@ export class CredentialStorage_json {
         const decryptedCredential = credential.clone();
         decryptedCredential.secret = secret;
         decryptedCredential.identifier = identifier;
-        decryptedCredential.password = password;
         decryptedCredential.properties = properties;
         decryptedCredential.unknownFields = unknownFields;
 
@@ -638,7 +629,6 @@ export class CredentialStorage_json {
   _encryptCredential(credential) {
     let encSecret = this._crypto.encrypt(credential.secret);
     let encIdentifier = this._crypto.encrypt(credential.identifier);
-    let encPassword = this._crypto.encrypt(credential.password);
     let encProperties = this._crypto.encrypt(credential.properties);
 
     // Unknown fields should be encrypted since we can't know whether new fields
@@ -652,7 +642,6 @@ export class CredentialStorage_json {
     return [
       encSecret,
       encIdentifier,
-      encPassword,
       encProperties,
       encType,
       encUnknownFields,
@@ -676,7 +665,6 @@ export class CredentialStorage_json {
       try {
         credential.secret = this._crypto.decrypt(credential.secret);
         credential.identifier = this._crypto.decrypt(credential.identifier);
-        credential.password = this._crypto.decrypt(credential.password);
         credential.properties = this._crypto.decrypt(credential.properties);
         // Verify unknownFields actually has a value
         if (credential.unknownFields) {
@@ -699,7 +687,7 @@ export class CredentialStorage_json {
   }
 }
 
-ChromeUtils.defineLazyGetter(CredentialStorage_json.prototype, "log", () => {
-  let logger = lazy.SsiHelper.createLogger("Credential storage");
+ChromeUtils.defineLazyGetter(SsiStorage_json.prototype, "log", () => {
+  let logger = lazy.SsiHelper.createLogger("Ssi storage");
   return logger.log.bind(logger);
 });

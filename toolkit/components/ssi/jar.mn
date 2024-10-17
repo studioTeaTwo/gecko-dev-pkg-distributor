@@ -3,10 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 toolkit.jar:
-%   content ssi-store %content/ssi-store/
-% resource ssi-store %ssiore/
+%   content ssi %content/ssi/
+% resource ssi %ssi/
 #ifdef ANDROID
-  ssi-store/credentialstorage.sys.mjs (./credential-storage-geckoview.sys.mjs)
+  ssi/ssistorage.sys.mjs (./ssi-storage-geckoview.sys.mjs)
 #else
-  ssi-store/credentialstorage.sys.mjs (./credential-storage-desktop.sys.mjs)
+  ssi/ssistorage.sys.mjs (./ssi-storage-desktop.sys.mjs)
 #endif

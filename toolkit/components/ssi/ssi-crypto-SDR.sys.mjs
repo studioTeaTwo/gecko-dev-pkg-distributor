@@ -8,13 +8,13 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 });
 
-export function SsiStoreCrypto_SDR() {
+export function SsiCrypto_SDR() {
   this.init();
 }
 
-SsiStoreCrypto_SDR.prototype = {
+SsiCrypto_SDR.prototype = {
   classID: Components.ID("{20AA1EF2-EA8B-4270-B81B-A872A745152F}"),
-  QueryInterface: ChromeUtils.generateQI(["nsISsiStoreCrypto"]),
+  QueryInterface: ChromeUtils.generateQI(["nsISsiCrypto"]),
 
   __decoderRing: null, // nsSecretDecoderRing service
   get _decoderRing() {
@@ -96,9 +96,9 @@ SsiStoreCrypto_SDR.prototype = {
       this._uiBusy = false;
       // If we triggered a primary password prompt, notify observers.
       if (!wasLoggedIn && this.isLoggedIn) {
-        this._notifyObservers("ssistore-crypto-credential");
+        this._notifyObservers("ssi-crypto-credential");
       } else if (canceledMP) {
-        this._notifyObservers("ssistore-crypto-credentialCanceled");
+        this._notifyObservers("ssi-crypto-credentialCanceled");
       }
     }
     return cipherText;
@@ -148,9 +148,9 @@ SsiStoreCrypto_SDR.prototype = {
       this._uiBusy = false;
       // If we triggered a primary password prompt, notify observers.
       if (!wasLoggedIn && this.isLoggedIn) {
-        this._notifyObservers("ssistore-crypto-credential");
+        this._notifyObservers("ssi-crypto-credential");
       } else if (canceledMP) {
-        this._notifyObservers("ssistore-crypto-credentialCanceled");
+        this._notifyObservers("ssi-crypto-credentialCanceled");
       }
     }
     return cipherTexts;
@@ -203,9 +203,9 @@ SsiStoreCrypto_SDR.prototype = {
       this._uiBusy = false;
       // If we triggered a primary password prompt, notify observers.
       if (!wasLoggedIn && this.isLoggedIn) {
-        this._notifyObservers("ssistore-crypto-credential");
+        this._notifyObservers("ssi-crypto-credential");
       } else if (canceledMP) {
-        this._notifyObservers("ssistore-crypto-credentialsCanceled");
+        this._notifyObservers("ssi-crypto-credentialsCanceled");
       }
     }
 
@@ -259,9 +259,9 @@ SsiStoreCrypto_SDR.prototype = {
       this._uiBusy = false;
       // If we triggered a primary password prompt, notify observers.
       if (!wasLoggedIn && this.isLoggedIn) {
-        this._notifyObservers("ssistore-crypto-credential");
+        this._notifyObservers("ssi-crypto-credential");
       } else if (canceledMP) {
-        this._notifyObservers("ssistore-crypto-credentialCanceled");
+        this._notifyObservers("ssi-crypto-credentialCanceled");
       }
     }
     return plainTexts;
@@ -289,7 +289,7 @@ SsiStoreCrypto_SDR.prototype = {
    * defaultEncType
    */
   get defaultEncType() {
-    return Ci.nsISsiStoreCrypto.ENCTYPE_SDR;
+    return Ci.nsISsiCrypto.ENCTYPE_SDR;
   },
 
   /*
@@ -299,9 +299,9 @@ SsiStoreCrypto_SDR.prototype = {
     this.log(`Prompted for a primary password, notifying for ${topic}`);
     Services.obs.notifyObservers(null, topic);
   },
-}; // end of nsSsiStoreCrypto_SDR implementation
+}; // end of nsSsiCrypto_SDR implementation
 
-ChromeUtils.defineLazyGetter(SsiStoreCrypto_SDR.prototype, "log", () => {
+ChromeUtils.defineLazyGetter(SsiCrypto_SDR.prototype, "log", () => {
   let logger = lazy.SsiHelper.createLogger("Ssi crypto");
   return logger.log.bind(logger);
 });

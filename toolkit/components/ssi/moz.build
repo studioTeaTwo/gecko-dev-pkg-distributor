@@ -18,24 +18,24 @@ if CONFIG["MOZ_BUILD_APP"] == "browser":
 XPIDL_SOURCES += [
     "nsICredentialInfo.idl",
     "nsICredentialMetaInfo.idl",
-    "nsISsiStore.idl",
-    "nsISsiStoreCrypto.idl",
+    "nsISsi.idl",
+    "nsISsiCrypto.idl",
 ]
 
-XPIDL_MODULE = "ssi-store"
+XPIDL_MODULE = "ssi"
 
 EXTRA_JS_MODULES += [
-    "credential-storage-json.sys.mjs",
     "CredentialInfo.sys.mjs",
     "ssi-crypto-SDR.sys.mjs",
+    "ssi-storage-json.sys.mjs",
+    "Ssi.shared.mjs",
+    "Ssi.sys.mjs",
     "SsiHelper.sys.mjs",
-    "SsiStore.shared.mjs",
-    "SsiStore.sys.mjs",
 ]
 
 if CONFIG["OS_TARGET"] != "Android":
     EXTRA_JS_MODULES += [
-        "CredentialStore.sys.mjs",
+        "SsiStore.sys.mjs",
     ]
 
 if CONFIG["OS_TARGET"] == "WINNT":
@@ -50,4 +50,4 @@ XPCOM_MANIFESTS += [
 JAR_MANIFESTS += ["jar.mn"]
 
 with Files("**"):
-    BUG_COMPONENT = ("Toolkit", "Ssi Store")
+    BUG_COMPONENT = ("Toolkit", "Ssi")

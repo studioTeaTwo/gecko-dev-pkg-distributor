@@ -6,7 +6,7 @@
 #include "nsISupports.idl"
 
 [scriptable, uuid(C52AEAAE-FDB5-4098-97E4-4B157D26FB27)]
-interface nsISsiStoreCrypto : nsISupports {
+interface nsISsiCrypto : nsISupports {
 
   const unsigned long ENCTYPE_BASE64 = 0; // obsolete
   const unsigned long ENCTYPE_SDR = 1;

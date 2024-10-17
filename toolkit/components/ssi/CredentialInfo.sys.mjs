@@ -26,7 +26,6 @@ nsCredentialInfo.prototype = {
   primary: null,
   secret: null,
   identifier: null,
-  password: null,
   properties: null,
   unknownFields: null,
 
@@ -36,7 +35,6 @@ nsCredentialInfo.prototype = {
     aPrimary,
     aSecret,
     aIdentifier,
-    aPassword,
     aProperties
   ) {
     this.protocolName = aProtocolName;
@@ -44,7 +42,6 @@ nsCredentialInfo.prototype = {
     this.primary = aPrimary;
     this.secret = aSecret;
     this.identifier = aIdentifier;
-    this.password = aPassword;
     this.properties = aProperties;
   },
 
@@ -59,7 +56,6 @@ nsCredentialInfo.prototype = {
       this.primary != aCredential.primary ||
       this.secret != aCredential.secret ||
       this.identifier != aCredential.identifier ||
-      this.password != aCredential.password ||
       this.properties != aCredential.properties
     ) {
       return false;
@@ -69,7 +65,7 @@ nsCredentialInfo.prototype = {
   },
 
   clone() {
-    let clone = Cc["@mozilla.org/ssi-store/credentialInfo;1"].createInstance(
+    let clone = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
       Ci.nsICredentialInfo
     );
     clone.init(
@@ -78,7 +74,6 @@ nsCredentialInfo.prototype = {
       this.primary,
       this.secret,
       this.identifier,
-      this.password,
       this.properties
     );
 
