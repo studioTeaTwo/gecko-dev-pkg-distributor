@@ -239,7 +239,7 @@ class Core(
     }
 
     val applicationSearchEngines: List<SearchEngine> by lazyMonitored {
-        listOf(
+        listOfNotNull(
             createApplicationSearchEngine(
                 id = BOOKMARKS_SEARCH_ENGINE_ID,
                 name = context.getString(R.string.library_bookmarks),
@@ -252,12 +252,16 @@ class Core(
                 url = "",
                 icon = getDrawable(context, R.drawable.ic_tabs_search)?.toBitmap()!!,
             ),
-            createApplicationSearchEngine(
-                id = HISTORY_SEARCH_ENGINE_ID,
-                name = context.getString(R.string.library_history),
-                url = "",
-                icon = getDrawable(context, R.drawable.ic_history_search)?.toBitmap()!!,
-            ),
+            if (!context.settings().shouldDisableNormalMode) {
+                createApplicationSearchEngine(
+                    id = HISTORY_SEARCH_ENGINE_ID,
+                    name = context.getString(R.string.library_history),
+                    url = "",
+                    icon = getDrawable(context, R.drawable.ic_history_search)?.toBitmap()!!,
+                )
+            } else {
+                null
+            },
         )
     }
 

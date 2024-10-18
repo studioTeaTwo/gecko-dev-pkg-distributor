@@ -34,6 +34,14 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
             rootKey,
         )
 
+        findPreference<CheckBoxPreference>(getString(R.string.pref_key_show_search_suggestions_in_private))?.apply {
+            isVisible = !context.settings().shouldDisableNormalMode
+        }
+
+        findPreference<SwitchPreference>(getString(R.string.pref_key_search_browsing_history))?.apply {
+            isVisible = !context.settings().shouldDisableNormalMode
+        }
+
 //        requirePreference<SwitchPreference>(R.string.pref_key_show_sponsored_suggestions).apply {
 //            isVisible = context.settings().enableFxSuggest
 //        }
@@ -135,7 +143,7 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
         autocompleteURLsPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
 
         searchSuggestionsPreference.setOnPreferenceClickListener {
-            if (!searchSuggestionsPreference.isChecked) {
+            if (!requireContext().settings().shouldDisableNormalMode && !searchSuggestionsPreference.isChecked) {
                 searchSuggestionsInPrivatePreference.isChecked = false
                 searchSuggestionsInPrivatePreference.callChangeListener(false)
             }
