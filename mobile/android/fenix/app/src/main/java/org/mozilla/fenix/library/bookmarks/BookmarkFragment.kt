@@ -55,6 +55,7 @@ import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.setTextColor
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.library.LibraryPageFragment
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.utils.allowUndo
@@ -178,6 +179,10 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
                     inflater.inflate(R.menu.bookmarks_select_multi_not_item, menu)
                 } else {
                     inflater.inflate(R.menu.bookmarks_select_multi, menu)
+
+                    menu.findItem(R.id.open_bookmarks_in_new_tabs_multi_select)?.apply {
+                        isVisible = !requireContext().settings().shouldDisableNormalMode
+                    }
 
                     menu.findItem(R.id.delete_bookmarks_multi_select).title =
                         SpannableString(getString(R.string.bookmark_menu_delete_button)).apply {

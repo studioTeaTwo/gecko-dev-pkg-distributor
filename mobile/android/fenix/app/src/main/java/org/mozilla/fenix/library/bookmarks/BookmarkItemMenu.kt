@@ -14,6 +14,7 @@ import mozilla.components.concept.storage.BookmarkNodeType
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.bookmarkStorage
+import org.mozilla.fenix.ext.settings
 
 class BookmarkItemMenu(
     private val context: Context,
@@ -37,6 +38,7 @@ class BookmarkItemMenu(
     @SuppressWarnings("LongMethod")
     internal suspend fun menuItems(itemType: BookmarkNodeType, itemId: String): List<TextMenuCandidate> {
         val hasAtLeastOneChild = !context.bookmarkStorage.getTree(itemId, false)?.children.isNullOrEmpty()
+        val shouldDisableNormalMode = context.settings().shouldDisableNormalMode
 
         return listOfNotNull(
             if (itemType != BookmarkNodeType.SEPARATOR) {
@@ -66,7 +68,7 @@ class BookmarkItemMenu(
             } else {
                 null
             },
-            if (itemType == BookmarkNodeType.ITEM) {
+            if (!shouldDisableNormalMode && itemType == BookmarkNodeType.ITEM) {
                 TextMenuCandidate(
                     text = context.getString(R.string.bookmark_menu_open_in_new_tab_button),
                 ) {
@@ -84,7 +86,7 @@ class BookmarkItemMenu(
             } else {
                 null
             },
-            if (hasAtLeastOneChild && itemType == BookmarkNodeType.FOLDER) {
+            if (!shouldDisableNormalMode && hasAtLeastOneChild && itemType == BookmarkNodeType.FOLDER) {
                 TextMenuCandidate(
                     text = context.getString(R.string.bookmark_menu_open_all_in_tabs_button),
                 ) {
