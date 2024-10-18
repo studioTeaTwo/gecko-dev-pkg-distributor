@@ -1295,7 +1295,15 @@ export const TorConnect = {
   // which redirect after bootstrapping
   getURIsToLoad(uriVariant) {
     const uris = this.fixupURIs(uriVariant);
-    lazy.logger.debug(`Will load after bootstrap => [${uris.join(", ")}]`);
-    return uris.map(uri => this.getRedirectURL(uri));
+    const localUriRx = /^(file:\/\/\/|moz-extension:)/;
+    lazy.logger.debug(
+      `Will load after bootstrap => [${uris
+        .filter(uri => !localUriRx.test(uri))
+        .join(", ")}]`
+    );
+
+    return uris.map(uri =>
+      localUriRx.test(uri) ? uri : this.getRedirectURL(uri)
+    );
   },
 };
