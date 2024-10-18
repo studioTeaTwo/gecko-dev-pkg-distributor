@@ -117,8 +117,7 @@ export class AboutIdentityParent extends JSWindowActorParent {
   }
 
   #deleteCredential(credentialObject) {
-    let credential =
-      lazy.SsiHelper.vanillaObjectToCredential(credentialObject)
+    let credential = lazy.SsiHelper.vanillaObjectToCredential(credentialObject)
     Services.ssi.removeCredential(credential)
   }
 
@@ -135,24 +134,25 @@ export class AboutIdentityParent extends JSWindowActorParent {
     // See bug 1614874 for Linux support.
     if (lazy.OS_AUTH_ENABLED && lazy.OSKeyStore.canReauth()) {
       messageId += "-" + AppConstants.platform
-      ;[messageText, captionText] = await lazy.AboutIdentityL10n.formatMessages([
-        {
-          id: messageId,
-        },
-        {
-          id: "about-identity-os-auth-dialog-caption",
-        },
-      ])
+      ;[messageText, captionText] = await lazy.AboutIdentityL10n.formatMessages(
+        [
+          {
+            id: messageId,
+          },
+          {
+            id: "about-identity-os-auth-dialog-caption",
+          },
+        ]
+      )
     }
 
-    let { isAuthorized, telemetryEvent } =
-      await lazy.SsiHelper.requestReauth(
-        this.browsingContext.embedderElement,
-        lazy.OS_AUTH_ENABLED,
-        AboutIdentity._authExpirationTime,
-        messageText.value,
-        captionText.value
-      )
+    let { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
+      this.browsingContext.embedderElement,
+      lazy.OS_AUTH_ENABLED,
+      AboutIdentity._authExpirationTime,
+      messageText.value,
+      captionText.value
+    )
     this.sendAsyncMessage("AboutIdentity:PrimaryPasswordResponse", {
       result: isAuthorized,
       telemetryEvent,
@@ -211,9 +211,6 @@ export class AboutIdentityParent extends JSWindowActorParent {
     if (credentialUpdates.hasOwnProperty("identifier")) {
       modifiedCredential.identifier = credentialUpdates.identifier
     }
-    if (credentialUpdates.hasOwnProperty("password")) {
-      modifiedCredential.password = credentialUpdates.password
-    }
     if (credentialUpdates.hasOwnProperty("properties")) {
       modifiedCredential.properties = credentialUpdates.properties
     }
@@ -240,7 +237,10 @@ export class AboutIdentityParent extends JSWindowActorParent {
       messageObject.existingCredentialGuid = error.data.toString()
     }
 
-    this.sendAsyncMessage("AboutIdentity:ShowCredentialItemError", messageObject)
+    this.sendAsyncMessage(
+      "AboutIdentity:ShowCredentialItemError",
+      messageObject
+    )
   }
 }
 
@@ -256,20 +256,20 @@ class AboutIdentityInternal {
     }
 
     switch (topic) {
-      case "ssistore-reload-all": {
+      case "ssi-reload-all": {
         await this.#reloadAllCredentials()
         break
       }
-      case "ssistore-crypto-credential": {
+      case "ssi-crypto-credential": {
         this.#removeNotifications(PRIMARY_PASSWORD_NOTIFICATION_ID)
         await this.#reloadAllCredentials()
         break
       }
-      case "ssistore-crypto-credentialCanceled": {
+      case "ssi-crypto-credentialCanceled": {
         this.#showPrimaryPasswordLoginNotifications()
         break
       }
-      case "ssistore-storage-changed": {
+      case "ssi-storage-changed": {
         switch (type) {
           case "addCredential": {
             await this.#addCredential(subject)
@@ -459,10 +459,10 @@ class AboutIdentityInternal {
   }
 
   #observedTopics = [
-    "ssistore-crypto-credential",
-    "ssistore-crypto-credentialCanceled",
-    "ssistore-storage-changed",
-    "ssistore-reload-all",
+    "ssi-crypto-credential",
+    "ssi-crypto-credentialCanceled",
+    "ssi-storage-changed",
+    "ssi-reload-all",
   ]
 
   addObservers() {

@@ -10,7 +10,7 @@ declare let window: Window
 
 import HomeOverlay from "./home/overlay"
 // import ssiPanelMessaging from "./messages.js";
-import './styles/main.scss'
+import "./styles/main.scss"
 
 // eslint-disable-next-line no-var
 var SSI_PANEL = function () {}

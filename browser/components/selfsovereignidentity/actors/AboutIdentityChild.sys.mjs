@@ -4,7 +4,7 @@
 
 import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs"
 
-const TELEMETRY_EVENT_CATEGORY = "ssistore"
+const TELEMETRY_EVENT_CATEGORY = "ssi"
 const TELEMETRY_MIN_MS_BETWEEN_OPEN_MANAGEMENT = 5000
 
 let gLastOpenManagementBrowserId = null

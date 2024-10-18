@@ -170,7 +170,7 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::HIDE_FROM_ABOUTABOUT},
     {"identity", "chrome://selfsovereignidentity/content/selfsovereignidentity.html",
      // TODO: (ssb) rearrange later
-     nsIAboutModule::ALLOW_SCRIPT},
+     nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::ENABLE_INDEXED_DB},
 };
 
 static nsAutoCString GetAboutModuleName(nsIURI* aURI) {

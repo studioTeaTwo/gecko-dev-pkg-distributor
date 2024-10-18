@@ -9,8 +9,7 @@ import Bitcoin from "./bitcoin"
 import Lightning from "./lightning"
 import Nostr from "./nostr"
 import ECash from "./ecash"
-
-type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
+import { MenuItem } from "../custom.type"
 
 function Home(props) {
   const [selectedMenu, setSelectedMenu] = useState<MenuItem>("nostr")
@@ -22,14 +21,14 @@ function Home(props) {
   }
 
   const switchContent = () => {
-    if (selectedMenu === "nostr") {
-      return <Nostr />
-    } else if (selectedMenu === "bitcoin") {
+    if (selectedMenu === "bitcoin") {
       return <Bitcoin />
     } else if (selectedMenu === "lightning") {
       return <Lightning />
     } else if (selectedMenu === "ecash") {
       return <ECash />
+    } else if (selectedMenu === "nostr") {
+      return <Nostr />
     }
   }
 

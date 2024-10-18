@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
+import { defineConfig, splitVendorChunkPlugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), splitVendorChunkPlugin()],
   css: {
     devSourcemap: true,
     preprocessorOptions: {
@@ -31,8 +31,9 @@ export default defineConfig({
         app: './selfsovereignidentity.html',
       },
       output: {
-        inlineDynamicImports : true,
+        // inlineDynamicImports : true,
         entryFileNames: `js/main.bundle.js`,
+        chunkFileNames: `js/vendor.bundle.js`,
         assetFileNames: function (file) {
           if (file.names && file.names[0].includes('.css')) {
             return `css/[name].[ext]`
