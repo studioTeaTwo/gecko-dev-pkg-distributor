@@ -1,0 +1,42 @@
+[
+  {
+    "namespace": "addonsSelfsovereignidentity",
+    "functions": [
+      {
+        "name": "searchCredentialsAsync",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name to search"
+          },
+          {
+            "name": "credentialName",
+            "type": "string",
+            "description": "The credential name to search"
+          },
+          {
+            "name": "primary",
+            "type": "boolean",
+            "description": "The primary flag to search"
+          },
+          {
+            "name": "guid",
+            "type": "string",
+            "description": "The guid to search"
+          }
+        ]
+      },
+      {
+        "name": "getUpdateChannel",
+        "type": "function",
+        "description": "Returns the Firefox channel (AppConstants.MOZ_UPDATE_CHANNEL)",
+        "async": true,
+        "parameters": []
+      }
+    ]
+  }
+]
+

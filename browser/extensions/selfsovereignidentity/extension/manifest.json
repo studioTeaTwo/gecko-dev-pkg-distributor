@@ -1,0 +1,45 @@
+{
+  "manifest_version": 2,
+  "name": "Add-ons Selfsovereignidentity",
+  "version": "0.0.1",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "addons-selfsovereignidentity@teatwo.dev"
+    }
+  },
+
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "<all_urls>",
+    "mozillaAddons",
+    "about:selfsovereignidentity*"
+  ],
+
+  "background": {
+    "scripts": ["backgrounds/backgrounds.bundle.js"]
+  },
+
+  "experiment_apis": {
+    "addonsSelfsovereignidentity": {
+      "schema": "experiment-apis/addonsSelfsovereignidentity.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiment-apis/addonsSelfsovereignidentity.js",
+        "events": [],
+        "paths": [["addonsSelfsovereignidentity"]]
+      }
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": [
+        "contents/contents.bundle.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": ["inpages/inpages.bundle.js"]
+}
