@@ -110,14 +110,10 @@ object SupportUtils {
     }
 
     fun getTorWhatsNewUrl(): String {
-        val fullVersionName: String = BuildConfig.VERSION_NAME // e.g. "115.2.1-beta (13.5a5)"
-        if (!fullVersionName.contains('(') || !fullVersionName.contains(')')) {
+        val versionNumber = BuildConfig.VERSION_NAME.substringBefore(' ') // e.g. "13.5a5"
+        if (versionNumber.isEmpty()) {
             return "https://blog.torproject.org/"
         }
-        val versionNumber: String = fullVersionName.substring(
-            fullVersionName.indexOf('(') + 1,
-            fullVersionName.indexOf(')'),
-        ) // e.g. "13.5a5"
         val alpha: String = if (versionNumber.contains('a')) "alpha-" else ""
         val versionNumberNoDecimals: String =
             versionNumber.split('.').joinToString("") // e.g. "135a5"
