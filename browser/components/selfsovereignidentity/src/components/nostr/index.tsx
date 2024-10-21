@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Box,
   Button,
@@ -113,6 +113,33 @@ export default function Nostr(props) {
     setNseckey("")
   }
 
+  const handleChangePrimary = useCallback((checked, item: Credential) => {
+    if (checked === true) {
+      // Set the current primary to false
+      const prevs = nostrkeys.filter((key) => key.primary)
+      for (const prev of prevs) {
+        modifyCredentialToStore({
+          ...prev,
+          primary: false,
+        })
+      }
+    } else {
+      // Set the first of the current false to primary
+      const prev = nostrkeys.find((key) => !key.primary)
+      modifyCredentialToStore({
+        ...prev,
+        primary: true,
+      })
+    }
+
+    modifyCredentialToStore({
+      ...item,
+      primary: checked,
+    })
+
+    window.location.reload() // FIXME(ssb)
+  }, [nostrkeys])
+
   const handleAllRemove = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
@@ -211,23 +238,22 @@ export default function Nostr(props) {
                     </Box>
                   </CardBody>
                   <CardFooter pt="0" justify="space-evenly">
-                    <Flex gap="2">
-                      <Switch
-                        isChecked={item.primary}
-                        onChange={(e) =>
-                          modifyCredentialToStore({
-                            ...item,
-                            primary: e.target.checked,
-                          })
-                        }
-                        alignSelf="center"
-                      />
-                      {item.primary && <Text>primary now</Text>}
-                    </Flex>
+                    {nostrkeys.length > 1 && (
+                      <Flex gap="2">
+                        <Switch
+                          isChecked={item.primary}
+                          onChange={(e) =>
+                            handleChangePrimary(e.target.checked, item)
+                          }
+                          alignSelf="center"
+                        />
+                        {item.primary && <Text>primary now</Text>}
+                      </Flex>
+                    )}
                     <Button
                       variant="ghost"
                       colorScheme="blue"
-                      onClick={() => deleteCredentialToStore(item)}
+                      onClick={() => deleteCredentialToStore(item, nostrkeys)}
                     >
                       Delete
                     </Button>

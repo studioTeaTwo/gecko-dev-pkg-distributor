@@ -14,6 +14,14 @@ function initStore() {
   )
 }
 
+function getAllCredentialsToStore() {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityGetAllCredentials", {
+      bubbles: true,
+    })
+  )
+}
+
 function addCredentialToStore(credential: Credential) {
   window.dispatchEvent(
     new CustomEvent("AboutIdentityCreateCredential", {
@@ -32,11 +40,23 @@ function modifyCredentialToStore(credential: Credential) {
   )
 }
 
-function deleteCredentialToStore(credential: Credential) {
+function deleteCredentialToStore(
+  deletedCredential: Credential,
+  credentials: Credential[]
+) {
+  if (credentials.length <= 2) {
+    if (credentials.length === 2) {
+      const leftCredential = credentials.find(
+        (credential) => credential.guid !== deletedCredential.guid
+      )
+      leftCredential.primary = true
+      modifyCredentialToStore(leftCredential)
+    }
+  }
   window.dispatchEvent(
     new CustomEvent("AboutIdentityDeleteCredential", {
       bubbles: true,
-      detail: transformToPayload(credential),
+      detail: transformToPayload(deletedCredential),
     })
   )
 }
@@ -97,15 +117,15 @@ export default function useChildActorEvent() {
   useEffect(() => {
     const [op, state] = credentialsFromStore
     if (op === "update") {
-      const newCredentials = credentials.map((credential) =>
-        credential.guid === state[0].guid ? state[0] : credential
+      setCredentials((prev) =>
+        prev.map((credential) =>
+          credential.guid === state[0].guid ? state[0] : credential
+        )
       )
-      setCredentials(newCredentials)
     } else if (op === "remove") {
-      const newCredentials = credentials.filter(
-        (credential) => credential.guid !== state[0].guid
+      setCredentials((prev) =>
+        prev.filter((credential) => credential.guid !== state[0].guid)
       )
-      setCredentials(newCredentials)
     } else if (op === "removeAll") {
       setCredentials([])
     } else {
@@ -148,6 +168,7 @@ export default function useChildActorEvent() {
   return {
     credentials,
     initStore,
+    getAllCredentialsToStore,
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,

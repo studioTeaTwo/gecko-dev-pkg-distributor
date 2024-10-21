@@ -63,6 +63,10 @@ export class AboutIdentityParent extends JSWindowActorParent {
     AboutIdentity.subscribers.add(this.browsingContext)
 
     switch (message.name) {
+      case "AboutIdentity:GetAllCredentials": {
+        this.#getAllCredentials()
+        break
+      }
       case "AboutIdentity:CreateCredential": {
         await this.#createCredential(message.data.credential)
         break
@@ -92,6 +96,11 @@ export class AboutIdentityParent extends JSWindowActorParent {
 
   get #ownerGlobal() {
     return this.browsingContext.embedderElement.ownerGlobal
+  }
+
+  async #getAllCredentials() {
+    const credentials = await AboutIdentity.getAllCredentials()
+    this.sendAsyncMessage("AboutIdentity:AllCredentials", credentials)
   }
 
   async #createCredential(newCredential) {

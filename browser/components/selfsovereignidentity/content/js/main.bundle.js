@@ -147,6 +147,13 @@ function initStore() {
     })
   );
 }
+function getAllCredentialsToStore() {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityGetAllCredentials", {
+      bubbles: true
+    })
+  );
+}
 function addCredentialToStore(credential) {
   window.dispatchEvent(
     new CustomEvent("AboutIdentityCreateCredential", {
@@ -163,11 +170,20 @@ function modifyCredentialToStore(credential) {
     })
   );
 }
-function deleteCredentialToStore(credential) {
+function deleteCredentialToStore(deletedCredential, credentials) {
+  if (credentials.length <= 2) {
+    if (credentials.length === 2) {
+      const leftCredential = credentials.find(
+        (credential) => credential.guid !== deletedCredential.guid
+      );
+      leftCredential.primary = true;
+      modifyCredentialToStore(leftCredential);
+    }
+  }
   window.dispatchEvent(
     new CustomEvent("AboutIdentityDeleteCredential", {
       bubbles: true,
-      detail: transformToPayload(credential)
+      detail: transformToPayload(deletedCredential)
     })
   );
 }
@@ -210,15 +226,15 @@ function useChildActorEvent() {
   reactExports.useEffect(() => {
     const [op, state] = credentialsFromStore;
     if (op === "update") {
-      const newCredentials = credentials.map(
-        (credential) => credential.guid === state[0].guid ? state[0] : credential
+      setCredentials(
+        (prev) => prev.map(
+          (credential) => credential.guid === state[0].guid ? state[0] : credential
+        )
       );
-      setCredentials(newCredentials);
     } else if (op === "remove") {
-      const newCredentials = credentials.filter(
-        (credential) => credential.guid !== state[0].guid
+      setCredentials(
+        (prev) => prev.filter((credential) => credential.guid !== state[0].guid)
       );
-      setCredentials(newCredentials);
     } else if (op === "removeAll") {
       setCredentials([]);
     } else {
@@ -258,6 +274,7 @@ function useChildActorEvent() {
   return {
     credentials,
     initStore,
+    getAllCredentialsToStore,
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,
@@ -357,6 +374,28 @@ function Nostr(props) {
     });
     setNseckey("");
   };
+  const handleChangePrimary = reactExports.useCallback((checked, item) => {
+    if (checked === true) {
+      const prevs = nostrkeys.filter((key) => key.primary);
+      for (const prev of prevs) {
+        modifyCredentialToStore2({
+          ...prev,
+          primary: false
+        });
+      }
+    } else {
+      const prev = nostrkeys.find((key) => !key.primary);
+      modifyCredentialToStore2({
+        ...prev,
+        primary: true
+      });
+    }
+    modifyCredentialToStore2({
+      ...item,
+      primary: checked
+    });
+    window.location.reload();
+  }, [nostrkeys]);
   const handleAllRemove = (e) => {
     e.preventDefault();
     if (!confirm("All data will be deleted. Okay?")) {
@@ -445,15 +484,12 @@ function Nostr(props) {
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { gap: "2", children: [
+                nostrkeys.length > 1 && /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { gap: "2", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Switch,
                     {
                       isChecked: item.primary,
-                      onChange: (e) => modifyCredentialToStore2({
-                        ...item,
-                        primary: e.target.checked
-                      }),
+                      onChange: (e) => handleChangePrimary(e.target.checked, item),
                       alignSelf: "center"
                     }
                   ),
@@ -464,7 +500,7 @@ function Nostr(props) {
                   {
                     variant: "ghost",
                     colorScheme: "blue",
-                    onClick: () => deleteCredentialToStore2(item),
+                    onClick: () => deleteCredentialToStore2(item, nostrkeys),
                     children: "Delete"
                   }
                 )

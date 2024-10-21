@@ -33,6 +33,10 @@ export class AboutIdentityChild extends JSWindowActorChild {
         this.#aboutIdentityInit()
         break
       }
+      case "AboutIdentityGetAllCredentials": {
+        this.#aboutIdentityGetAllCredentials()
+        break
+      }
       case "AboutIdentityCreateCredential": {
         this.#aboutIdentityCreateCredential(event.detail)
         break
@@ -94,6 +98,10 @@ export class AboutIdentityChild extends JSWindowActorChild {
         cloneFunctions: true,
       }
     )
+  }
+
+  #aboutIdentityGetAllCredentials() {
+    this.sendAsyncMessage("AboutIdentity:GetAllCredentials")
   }
 
   #aboutIdentityCreateCredential(credential) {

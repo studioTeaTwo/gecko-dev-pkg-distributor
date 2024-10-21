@@ -289,6 +289,7 @@ let JSWINDOWACTORS = {
       events: {
         AboutIdentityCreateCredential: {},
         AboutIdentityDeleteCredential: {},
+        AboutIdentityGetAllCredentials: {},
         AboutIdentityInit: {},
         AboutIdentityRecordTelemetryEvent: {},
         AboutIdentityRemoveAllCredentials: {},
