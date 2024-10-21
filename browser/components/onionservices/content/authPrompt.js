@@ -227,7 +227,7 @@ var OnionAuthPrompt = {
 
     notification.remove();
     // Success! Reload the page.
-    browser.sendMessageToActor("Browser:Reload", {}, "BrowserTab");
+    browser.reload();
   },
 
   /**
