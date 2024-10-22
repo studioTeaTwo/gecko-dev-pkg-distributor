@@ -2541,7 +2541,8 @@ var AddonManagerInternal = {
       if (installAllowed) {
         if (AppConstants.platform == "android") {
           aInstall.cancel();
-          return this.installGeckoViewWebExtension(aInstall.sourceURI);
+          this.installGeckoViewWebExtension(aInstall.sourceURI);
+          return;
         }
         startInstall("AMO");
       } else if (installPerm === Ci.nsIPermissionManager.DENY_ACTION) {

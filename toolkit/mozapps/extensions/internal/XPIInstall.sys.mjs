@@ -4476,7 +4476,10 @@ export var XPIInstall = {
     }
 
     // tor-browser#43132: short-circuit permission check on Android scriptless install from AMO
-    if (AppConstants.platform == "android" && uri.prePath == "https://addons.mozilla.org") {
+    if (
+      AppConstants.platform == "android" &&
+      uri.prePath == "https://addons.mozilla.org"
+    ) {
       return true;
     }
 
