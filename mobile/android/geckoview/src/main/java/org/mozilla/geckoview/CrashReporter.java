@@ -173,7 +173,7 @@ public class CrashReporter {
     if (true) {
       return GeckoResult.fromValue("0");
     }
-    
+
     Log.d(LOGTAG, "Sending crash report: " + minidumpFile.getPath());
 
     HttpURLConnection conn = null;
