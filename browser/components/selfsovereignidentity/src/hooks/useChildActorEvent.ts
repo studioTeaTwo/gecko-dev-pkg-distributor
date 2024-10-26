@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Credential, CredentialForPayload } from "src/custom.type"
+import { Credential, CredentialForPayload, ProtocolName } from "src/custom.type"
 
 /**
  * Send to child actor
@@ -67,6 +67,28 @@ function removeAllCredentialsToStore() {
       bubbles: true,
     })
   )
+}
+
+function onPrimaryChanged(changeSet: {
+  protocolName: ProtocolName
+  guid: string
+}) {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityPrimaryChanged", {
+      bubbles: true,
+      detail: changeSet,
+    })
+  )
+}
+
+export const dispatchEvents = {
+  initStore,
+  getAllCredentialsToStore,
+  addCredentialToStore,
+  modifyCredentialToStore,
+  deleteCredentialToStore,
+  removeAllCredentialsToStore,
+  onPrimaryChanged,
 }
 
 /**
@@ -167,11 +189,5 @@ export default function useChildActorEvent() {
 
   return {
     credentials,
-    initStore,
-    getAllCredentialsToStore,
-    addCredentialToStore,
-    modifyCredentialToStore,
-    deleteCredentialToStore,
-    removeAllCredentialsToStore,
   }
 }

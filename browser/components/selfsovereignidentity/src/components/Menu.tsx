@@ -22,7 +22,7 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
       console.log(event)
     }
     request.onsuccess = (event) => {
-      console.log(event.target.result)
+      console.log("indexedDb onsuccess:", event.target.result)
       setDb(event.target.result)
       event.target.result
         .transaction(STORE_NAME)
@@ -35,7 +35,7 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
       }
     }
     request.onupgradeneeded = (event) => {
-      console.log(event.target.result)
+      console.log("indexedDb onupgradeneeded:", event.target.result)
       setDb(event.target.result)
       event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" })
     }

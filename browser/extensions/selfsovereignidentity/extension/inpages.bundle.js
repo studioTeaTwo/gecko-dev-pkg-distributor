@@ -30,16 +30,13 @@ function init() {
     // The message listener to listen to content calls
     // After, emit events to the web apps.
     window.addEventListener("message", (event) => {
-        // if (event.source === window && event.data.action === "accountChanged") {
-        //   eventEmitter(event.data.action, event.data.scope)
-        // }
+        if (event.source === window && event.data.scope === "nostr") {
+            if (event.data.action === "accountChanged") {
+                console.log("accountChanged emit!");
+                window.dispatchEvent(new Event("nostr:accountChanged"));
+            }
+        }
     });
-}
-// Send message to the web apps
-function eventEmitter(action, scope) {
-    if (window[scope] && window[scope].emit) {
-        window[scope].emit(action);
-    }
 }
 init();
 

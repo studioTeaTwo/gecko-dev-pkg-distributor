@@ -29,7 +29,3 @@ browser.runtime.onMessage.addListener(
     }
   }
 )
-
-// Send the message to the contents
-// browser.tabs.sendMessage(tabId, message) {
-// }

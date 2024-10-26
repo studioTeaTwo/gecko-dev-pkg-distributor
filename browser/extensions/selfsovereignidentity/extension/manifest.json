@@ -14,7 +14,7 @@
     "webNavigation",
     "<all_urls>",
     "mozillaAddons",
-    "about:selfsovereignidentity*"
+    "about:identity*"
   ],
 
   "background": {

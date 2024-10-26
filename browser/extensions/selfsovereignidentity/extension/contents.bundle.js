@@ -20,12 +20,9 @@ async function init() {
     browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("content-script onMessage", request);
         // forward account changed messaged to inpage script
-        // if (request.action === "accountChanged") {
-        //   window.postMessage(
-        //     { action: "accountChanged", scope: "nostr" },
-        //     window.location.origin
-        //   )
-        // }
+        if (request.action === "nostr/accountChanged") {
+            window.postMessage({ action: "accountChanged", scope: "nostr" }, window.location.origin);
+        }
     });
     // The message listener to listen to inpage calls
     // After, those calls get passed on to the background script

@@ -36,6 +36,27 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
         async getUpdateChannel() {
           return AppConstants.MOZ_UPDATE_CHANNEL;
         },
+        // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+        onPrimaryChange: new EventManager({
+          context,
+          name: "addonsSelfsovereignidentity.onPrimaryChange",
+          register: (fire, protocolName) => {
+            const callback = (newGuidPayload) => {
+              const newGuid = newGuidPayload.data
+              fire.async(newGuid).catch(() => {}); // ignore Message Manager disconnects
+            };
+
+            let obsTopic;
+            if (protocolName === "nostr") {
+              obsTopic = "SSI_PRIMARY_KEY_CHANGED_IN_NOSTR"
+            }
+
+            Services.obs.addObserver(callback, obsTopic);
+            return () => {
+              Services.obs.removeObserver(callback, obsTopic);
+            };
+          },
+        }).api(),
         async searchCredentialsAsync(protocolName, credentialName, primary, guid) {
           const params = {}
           if (protocolName) {

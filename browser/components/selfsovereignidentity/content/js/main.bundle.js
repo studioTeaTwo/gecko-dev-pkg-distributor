@@ -71,7 +71,7 @@ function Menu(props) {
       console.log(event);
     };
     request.onsuccess = (event) => {
-      console.log(event.target.result);
+      console.log("indexedDb onsuccess:", event.target.result);
       setDb(event.target.result);
       event.target.result.transaction(STORE_NAME).objectStore(STORE_NAME).get(KEY_NAME).onsuccess = (event2) => {
         console.log(event2.target.result);
@@ -81,7 +81,7 @@ function Menu(props) {
       };
     };
     request.onupgradeneeded = (event) => {
-      console.log(event.target.result);
+      console.log("indexedDb onupgradeneeded:", event.target.result);
       setDb(event.target.result);
       event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" });
     };
@@ -194,6 +194,23 @@ function removeAllCredentialsToStore() {
     })
   );
 }
+function onPrimaryChanged(changeSet) {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityPrimaryChanged", {
+      bubbles: true,
+      detail: changeSet
+    })
+  );
+}
+const dispatchEvents = {
+  initStore,
+  getAllCredentialsToStore,
+  addCredentialToStore,
+  modifyCredentialToStore,
+  deleteCredentialToStore,
+  removeAllCredentialsToStore,
+  onPrimaryChanged
+};
 function transformToPayload(credential) {
   const newVal = { ...credential };
   newVal.properties = JSON.stringify(credential.properties);
@@ -272,25 +289,13 @@ function useChildActorEvent() {
     }
   };
   return {
-    credentials,
-    initStore,
-    getAllCredentialsToStore,
-    addCredentialToStore,
-    modifyCredentialToStore,
-    deleteCredentialToStore,
-    removeAllCredentialsToStore
+    credentials
   };
 }
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const { value, textProps, onChangeVisibility } = props;
-  const maskedValue = reactExports.useCallback(() => {
-    let val = "";
-    for (let i = 0; i < value.length; i++) {
-      val += "*";
-    }
-    return val;
-  }, [value]);
+  const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
   const handleToggole = () => {
     setVisible((prev) => !prev);
     onChangeVisibility();
@@ -325,14 +330,15 @@ const NostrTemplate = {
   }
 };
 function Nostr(props) {
+  const { credentials } = useChildActorEvent();
   const {
-    credentials,
     initStore: initStore2,
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
-    removeAllCredentialsToStore: removeAllCredentialsToStore2
-  } = useChildActorEvent();
+    removeAllCredentialsToStore: removeAllCredentialsToStore2,
+    onPrimaryChanged: onPrimaryChanged2
+  } = dispatchEvents;
   const [nseckey, setNseckey] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
   reactExports.useState("");
@@ -374,28 +380,35 @@ function Nostr(props) {
     });
     setNseckey("");
   };
-  const handleChangePrimary = reactExports.useCallback((checked, item) => {
-    if (checked === true) {
-      const prevs = nostrkeys.filter((key) => key.primary);
-      for (const prev of prevs) {
+  const handleChangePrimary = reactExports.useCallback(
+    (checked, item) => {
+      let newPrimaryGuid = "";
+      if (checked === true) {
+        const prevs = nostrkeys.filter((key) => key.primary);
+        for (const prev of prevs) {
+          modifyCredentialToStore2({
+            ...prev,
+            primary: false
+          });
+        }
+        newPrimaryGuid = item.guid;
+      } else {
+        const prev = nostrkeys.find((key) => !key.primary);
         modifyCredentialToStore2({
           ...prev,
-          primary: false
+          primary: true
         });
+        newPrimaryGuid = prev.guid;
       }
-    } else {
-      const prev = nostrkeys.find((key) => !key.primary);
       modifyCredentialToStore2({
-        ...prev,
-        primary: true
+        ...item,
+        primary: checked
       });
-    }
-    modifyCredentialToStore2({
-      ...item,
-      primary: checked
-    });
-    window.location.reload();
-  }, [nostrkeys]);
+      onPrimaryChanged2({ protocolName: "nostr", guid: newPrimaryGuid });
+      window.location.reload();
+    },
+    [nostrkeys]
+  );
   const handleAllRemove = (e) => {
     e.preventDefault();
     if (!confirm("All data will be deleted. Okay?")) {

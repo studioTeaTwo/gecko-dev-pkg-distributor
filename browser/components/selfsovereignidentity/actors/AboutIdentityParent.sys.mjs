@@ -91,6 +91,10 @@ export class AboutIdentityParent extends JSWindowActorParent {
         this.#removeAllCredentials()
         break
       }
+      case "AboutIdentity:PrimaryChanged": {
+        this.#primaryChanged(message.data.changeSet)
+        break
+      }
     }
   }
 
@@ -232,6 +236,20 @@ export class AboutIdentityParent extends JSWindowActorParent {
 
   #removeAllCredentials() {
     Services.ssi.removeAllCredentials()
+  }
+
+  #primaryChanged(changeSet) {
+    const guid = Cc["@mozilla.org/supports-string;1"].createInstance(
+      Ci.nsISupportsString
+    )
+    guid.data = changeSet.guid
+
+    switch (changeSet.protocolName) {
+      case "nostr": {
+        Services.obs.notifyObservers(guid, "SSI_PRIMARY_KEY_CHANGED_IN_NOSTR")
+        break
+      }
+    }
   }
 
   #handleCredentialStorageErrors(credential, error) {

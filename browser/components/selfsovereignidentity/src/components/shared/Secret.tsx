@@ -10,13 +10,7 @@ export default function Secret(props: {
   const [visible, setVisible] = useState(false)
   const { value, textProps, onChangeVisibility } = props
 
-  const maskedValue = useCallback(() => {
-    let val = ""
-    for (let i = 0; i < value.length; i++) {
-      val += "*"
-    }
-    return val
-  }, [value])
+  const maskedValue = useCallback(() => "*".repeat(value.length), [value])
 
   const handleToggole = () => {
     setVisible((prev) => !prev)

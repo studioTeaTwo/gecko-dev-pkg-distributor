@@ -1,6 +1,26 @@
 [
   {
     "namespace": "addonsSelfsovereignidentity",
+    "events": [
+      {
+        "name": "onPrimaryChange",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "newGuid",
+            "type": "string",
+            "description": "The new guid which changed"
+          }
+        ],
+        "extraParameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocolName to monitor"
+          }
+        ]
+      }
+    ],
     "functions": [
       {
         "name": "searchCredentialsAsync",

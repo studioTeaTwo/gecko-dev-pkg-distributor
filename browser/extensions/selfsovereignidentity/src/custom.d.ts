@@ -1,3 +1,32 @@
+// experiment api
+// refs: browser/extensions/selfsovereignidentity/experiment-apis/addonsSelfsovereignidentity.json
+declare namespace browser.addonsSelfsovereignidentity {
+  interface Credential {
+    protocolName: ProtocolName
+    credentialName: string
+    primary: boolean
+    secret: string
+    identifier: string
+    properties: object
+    guid?: string
+  }
+
+  const searchCredentialsAsync: (
+    protocolName: ProtocolName,
+    credentialName: string,
+    primary: boolean,
+    guid: string
+  ) => Credential[]
+  const onPrimaryChange: {
+    addListener: (
+      callback: (newGuid: string) => void,
+      protocolName: ProtocolName
+    ) => {}
+    rmoveListener: () => void
+    hadListener: Function
+  }
+}
+
 // Window incompatible types
 interface Window {
   nostr: object
@@ -8,40 +37,3 @@ declare var window: Window
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare type FixMe = any
-
-// experiment api
-// TODO: (ssb)
-declare namespace browser.addonsSelfsovereignidentity {
-  type searchCredentialsAsync = Function
-}
-
-type ApplicationName = "SSB"
-type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht"
-
-/**
- * Message Property
- */
-interface MessageFromBackToContent {
-  action: string
-  args: any
-}
-interface MessageFromContentToBack {
-  action: string
-  args: any
-}
-interface MessageFromContentToInpage {
-  action: string
-  scope: ProtocolName
-}
-interface MessageFromInpageToContent {
-  id
-  application: ApplicationName
-  action: `${scope}/${action}`
-  scope: ProtocolName
-  args: any
-}
-
-// on sendResponse
-interface MessageBag {
-  data: any
-}

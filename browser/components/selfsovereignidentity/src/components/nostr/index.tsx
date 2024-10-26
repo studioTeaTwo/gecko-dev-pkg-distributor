@@ -24,7 +24,9 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import useChildActorEvent from "../../hooks/useChildActorEvent"
+import useChildActorEvent, {
+  dispatchEvents,
+} from "../../hooks/useChildActorEvent"
 import { Credential } from "../../custom.type"
 import { getPublicKey, nip19 } from "nostr-tools"
 import { npubEncode } from "nostr-tools/nip19"
@@ -53,14 +55,15 @@ const NostrTemplate: NostrCredential = {
 }
 
 export default function Nostr(props) {
+  const { credentials } = useChildActorEvent()
   const {
-    credentials,
     initStore,
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,
     removeAllCredentialsToStore,
-  } = useChildActorEvent()
+    onPrimaryChanged,
+  } = dispatchEvents
 
   const [nseckey, setNseckey] = useState("")
   const [loading, setLoading] = useState(false)
@@ -113,32 +116,42 @@ export default function Nostr(props) {
     setNseckey("")
   }
 
-  const handleChangePrimary = useCallback((checked, item: Credential) => {
-    if (checked === true) {
-      // Set the current primary to false
-      const prevs = nostrkeys.filter((key) => key.primary)
-      for (const prev of prevs) {
+  const handleChangePrimary = useCallback(
+    (checked, item: Credential) => {
+      let newPrimaryGuid = ""
+
+      if (checked === true) {
+        // Set the current primary to false
+        const prevs = nostrkeys.filter((key) => key.primary)
+        for (const prev of prevs) {
+          modifyCredentialToStore({
+            ...prev,
+            primary: false,
+          })
+        }
+        newPrimaryGuid = item.guid
+      } else {
+        // Set the first of the current false to primary
+        const prev = nostrkeys.find((key) => !key.primary)
         modifyCredentialToStore({
           ...prev,
-          primary: false,
+          primary: true,
         })
+        newPrimaryGuid = prev.guid
       }
-    } else {
-      // Set the first of the current false to primary
-      const prev = nostrkeys.find((key) => !key.primary)
+
       modifyCredentialToStore({
-        ...prev,
-        primary: true,
+        ...item,
+        primary: checked,
       })
-    }
 
-    modifyCredentialToStore({
-      ...item,
-      primary: checked,
-    })
+      // Notiry to the buit-in extension
+      onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid })
 
-    window.location.reload() // FIXME(ssb)
-  }, [nostrkeys])
+      window.location.reload() // FIXME(ssb)
+    },
+    [nostrkeys]
+  )
 
   const handleAllRemove = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>

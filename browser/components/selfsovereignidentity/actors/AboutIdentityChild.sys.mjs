@@ -57,6 +57,10 @@ export class AboutIdentityChild extends JSWindowActorChild {
         this.#aboutIdentityUpdateCredential(event.detail)
         break
       }
+      case "AboutIdentityPrimaryChanged": {
+        this.#aboutIdentityPrimaryChanged(event.detail)
+        break
+      }
     }
   }
 
@@ -147,6 +151,12 @@ export class AboutIdentityChild extends JSWindowActorChild {
   #aboutIdentityUpdateCredential(credential) {
     this.sendAsyncMessage("AboutIdentity:UpdateCredential", {
       credential,
+    })
+  }
+
+  #aboutIdentityPrimaryChanged(changeSet) {
+    this.sendAsyncMessage("AboutIdentity:PrimaryChanged", {
+      changeSet,
     })
   }
 

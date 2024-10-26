@@ -294,6 +294,7 @@ let JSWINDOWACTORS = {
         AboutIdentityRecordTelemetryEvent: {},
         AboutIdentityRemoveAllCredentials: {},
         AboutIdentityUpdateCredential: {},
+        AboutIdentityPrimaryChanged: {},
       },
     },
     matches: ["about:identity", "about:identity?*"],

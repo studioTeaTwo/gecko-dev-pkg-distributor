@@ -8,6 +8,32 @@
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const state_1 = __webpack_require__(975);
+// The message listener to listen to experimental-apis calls
+// After, those calls get passed on to the content scripts.
+const callback = async (newGuid) => {
+    console.log(`Something happened: ${newGuid}`);
+    const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsAsync("nostr", "nsec", true, newGuid);
+    console.log("primary changed!", newGuid, credentials);
+    state_1.state.nostr = credentials[0].identifier || "";
+    // Send the message to the contents
+    browser.tabs
+        .query({ status: "complete", discarded: false })
+        .then((tabs) => {
+        console.log("send to tab: ", tabs);
+        for (const tab of tabs) {
+            console.log("send to tab: ", tab);
+            if (tab.url.startsWith("http")) {
+                browser.tabs
+                    .sendMessage(tab.id, {
+                    action: "nostr/accountChanged",
+                    args: { npub: state_1.state.nostr },
+                })
+                    .catch();
+            }
+        }
+    });
+};
+browser.addonsSelfsovereignidentity.onPrimaryChange.addListener(callback, "nostr");
 async function init() {
     console.log("experimental-api start...");
     const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsAsync("nostr", "nsec", true, "");
@@ -83,9 +109,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ data: state_1.state.nostr });
     }
 });
-// Send the message to the contents
-// browser.tabs.sendMessage(tabId, message) {
-// }
 
 })();
 
