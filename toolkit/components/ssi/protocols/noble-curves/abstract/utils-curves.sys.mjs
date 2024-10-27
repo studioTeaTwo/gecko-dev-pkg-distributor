@@ -45,8 +45,10 @@ export function hexToBytes(hex) {
         const j = i * 2;
         const hexByte = hex.slice(j, j + 2);
         const byte = Number.parseInt(hexByte, 16);
-        if (Number.isNaN(byte) || byte < 0)
+        if (Number.isNaN(byte) || byte < 0) {
+            console.log(hexByte)
             throw new Error('Invalid byte sequence');
+        }
         array[i] = byte;
     }
     return array;

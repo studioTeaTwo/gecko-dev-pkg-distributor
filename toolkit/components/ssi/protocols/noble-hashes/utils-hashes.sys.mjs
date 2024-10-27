@@ -5,7 +5,7 @@
 // from `crypto` to `cryptoNode`, which imports native module.
 // Makes the utils un-importable in browsers without a bundler.
 // Once node.js 18 is deprecated, we can just drop the import.
-import { crypto } from '@noble/hashes/crypto';
+import { crypto } from 'resource://gre/modules/shared/crypto.sys.mjs';
 const u8a = (a) => a instanceof Uint8Array;
 // Cast array to different type
 export const u8 = (arr) => new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);

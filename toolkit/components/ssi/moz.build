@@ -26,11 +26,28 @@ XPIDL_MODULE = "ssi"
 
 EXTRA_JS_MODULES += [
     "CredentialInfo.sys.mjs",
-    "ssi-crypto-SDR.sys.mjs",
+    "Ssi-crypto-SDR.sys.mjs",
     "ssi-storage-json.sys.mjs",
-    "Ssi.shared.mjs",
     "Ssi.sys.mjs",
     "SsiHelper.sys.mjs",
+]
+
+EXTRA_JS_MODULES.shared += [
+    "protocols/noble-curves/_shortw_utils.sys.mjs",
+    "protocols/noble-curves/abstract/curve.sys.mjs",
+    "protocols/noble-curves/abstract/hash-to-curve.sys.mjs",
+    "protocols/noble-curves/abstract/modular.sys.mjs",
+    "protocols/noble-curves/abstract/utils-curves.sys.mjs",
+    "protocols/noble-curves/abstract/weierstrass.sys.mjs",
+    "protocols/noble-curves/secp256k1.sys.mjs",
+    "protocols/noble-hashes/_assert.sys.mjs",
+    "protocols/noble-hashes/_sha2.sys.mjs",
+    "protocols/noble-hashes/crypto.sys.mjs",
+    "protocols/noble-hashes/hmac.sys.mjs",
+    "protocols/noble-hashes/sha256.sys.mjs",
+    "protocols/noble-hashes/utils-hashes.sys.mjs",
+    "protocols/noble-secp256k1/index.sys.mjs",
+    "protocols/nostr.sys.mjs",
 ]
 
 if CONFIG["OS_TARGET"] != "Android":

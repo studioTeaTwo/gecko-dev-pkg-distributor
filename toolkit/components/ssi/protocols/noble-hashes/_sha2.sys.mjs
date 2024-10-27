@@ -1,5 +1,5 @@
-import assert from './_assert.js';
-import { Hash, createView, toBytes } from './utils.js';
+import assert from 'resource://gre/modules/shared/_assert.sys.mjs';
+import { Hash, createView, toBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
 // Polyfill for Safari 14
 function setBigUint64(view, byteOffset, value, isLE) {
     if (typeof view.setBigUint64 === 'function')

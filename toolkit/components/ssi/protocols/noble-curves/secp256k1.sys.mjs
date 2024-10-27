@@ -1,11 +1,11 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha256 } from '@noble/hashes/sha256';
-import { randomBytes } from '@noble/hashes/utils';
-import { Field, mod, pow2 } from './abstract/modular.js';
-import { mapToCurveSimpleSWU } from './abstract/weierstrass.js';
-import { bytesToNumberBE, concatBytes, ensureBytes, numberToBytesBE } from './abstract/utils.js';
-import { createHasher, isogenyMap } from './abstract/hash-to-curve.js';
-import { createCurve } from './_shortw_utils.js';
+import { sha256 } from 'resource://gre/modules/shared/sha256.sys.mjs';
+import { randomBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
+import { Field, mod, pow2 } from 'resource://gre/modules/shared/modular.sys.mjs';
+import { mapToCurveSimpleSWU } from 'resource://gre/modules/shared/weierstrass.sys.mjs';
+import { bytesToNumberBE, concatBytes, ensureBytes, numberToBytesBE } from 'resource://gre/modules/shared/utils-curves.sys.mjs';
+import { createHasher, isogenyMap } from 'resource://gre/modules/shared/hash-to-curve.sys.mjs';
+import { createCurve } from 'resource://gre/modules/shared/_shortw_utils.sys.mjs';
 const secp256k1P = BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f');
 const secp256k1N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
 const _1n = BigInt(1);

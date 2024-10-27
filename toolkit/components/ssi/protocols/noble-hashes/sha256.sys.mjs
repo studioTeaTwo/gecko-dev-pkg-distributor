@@ -1,5 +1,5 @@
-import { SHA2 } from './_sha2.js';
-import { rotr, wrapConstructor } from './utils.js';
+import { SHA2 } from 'resource://gre/modules/shared/_sha2.sys.mjs';
+import { rotr, wrapConstructor } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
 // Choice: a ? b : c
 const Chi = (a, b, c) => (a & b) ^ (~a & c);
 // Majority function, true if any two inpust is true
