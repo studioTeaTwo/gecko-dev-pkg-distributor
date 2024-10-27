@@ -113,6 +113,7 @@ export default function Nostr(props) {
         seckey: bytesToHex(seckey),
       },
     })
+
     setNseckey("")
   }
 
@@ -195,8 +196,8 @@ export default function Nostr(props) {
           {nostrkeys.length === 0 && <p>No key is regisitered.</p>}
           <Grid templateColumns="repeat(4, 1fr)" gap={6}>
             {nostrkeys.map((item, i) => (
-              <GridItem key={i}>
-                <Card>
+              <GridItem key={i} overflow="hidden">
+                <Card maxW="500px">
                   <CardHeader>
                     <Heading size="md">
                       <Editable
@@ -210,6 +211,7 @@ export default function Nostr(props) {
                             },
                           })
                         }
+                        isTruncated
                       >
                         <EditablePreview />
                         <EditableInput />

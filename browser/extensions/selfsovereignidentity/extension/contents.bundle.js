@@ -9,26 +9,18 @@
 // Mediator for the extension to relay between the web apps and the background
 // refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = void 0;
 const shouldInject_1 = __webpack_require__(880);
-const availableCalls = ["nostr/getPublicKey"];
+const availableCalls = ["nostr/getPublicKey", "nostr/signEvent"];
 async function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
-    // The message listener to listen to background calls
-    // After, emit events to return the response to the inpages.
-    browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.log("content-script onMessage", request);
-        // forward account changed messaged to inpage script
-        if (request.action === "nostr/accountChanged") {
-            window.postMessage({ action: "accountChanged", scope: "nostr" }, window.location.origin);
-        }
-    });
     // The message listener to listen to inpage calls
     // After, those calls get passed on to the background script
-    // and emit events to return the response to the inpages.
+    // and emit event to return the response to the inpages.
     window.addEventListener("message", async (ev) => {
-        console.log("content-script eventListener message", ev);
+        console.info("content-script eventListener message", ev);
         // Only accept messages from the current window
         if (ev.source !== window ||
             ev.data.application !== "SSB" ||
@@ -40,21 +32,30 @@ async function init() {
                 console.error("Function not available. Is the provider enabled?");
                 return;
             }
+            // Send message to the backgrounds and emit the returned value to the inpages
             const message = {
                 action: ev.data.action,
                 args: ev.data.args,
             };
             const replyFunction = (response) => {
-                console.log("response from background", ev, response);
+                console.info("response from background", ev, response);
                 postMessage(ev, response);
             };
-            console.log("content-script sendMessage to background", message);
-            // Send message to the backgrounds and emit events to the inpages
+            console.info("content-script sendMessage to background", message);
             return browser.runtime.sendMessage(message).then(replyFunction).catch();
         }
     });
+    // The message listener to listen to background calls
+    // After, emit event to return the response to the inpages.
+    browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.info("content-script onMessage", request);
+        // forward account changed messaged to inpage script
+        if (request.action === "nostr/accountChanged") {
+            window.postMessage({ action: "accountChanged", scope: "nostr", data: request.args.data }, window.location.origin);
+        }
+    });
 }
-init();
+exports.init = init;
 // Send message to the inpages
 function postMessage(ev, response) {
     window.postMessage({
@@ -155,7 +156,7 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
-__webpack_require__(45);
+const nostr_1 = __webpack_require__(45);
 console.info("content-script working!", browser.runtime.getURL("inpages/inpages.bundle.js"));
 function loadInpageScript(url) {
     try {
@@ -175,6 +176,7 @@ function loadInpageScript(url) {
     }
 }
 loadInpageScript(browser.runtime.getURL("inpages/inpages.bundle.js"));
+(0, nostr_1.init)();
 
 })();
 

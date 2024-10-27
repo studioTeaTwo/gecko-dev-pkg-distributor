@@ -4,7 +4,7 @@
 
 /* eslint-env webextensions */
 
-import "./nostr"
+import { init as nostrInit } from "./nostr"
 
 console.info(
   "content-script working!",
@@ -26,3 +26,5 @@ function loadInpageScript(url) {
   }
 }
 loadInpageScript(browser.runtime.getURL("inpages/inpages.bundle.js"))
+
+nostrInit()

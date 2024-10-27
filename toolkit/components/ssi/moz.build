@@ -46,7 +46,6 @@ EXTRA_JS_MODULES.shared += [
     "protocols/noble-hashes/hmac.sys.mjs",
     "protocols/noble-hashes/sha256.sys.mjs",
     "protocols/noble-hashes/utils-hashes.sys.mjs",
-    "protocols/noble-secp256k1/index.sys.mjs",
     "protocols/nostr.sys.mjs",
 ]
 

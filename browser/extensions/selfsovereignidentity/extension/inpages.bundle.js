@@ -2,47 +2,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 798:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-/* eslint-env webextensions */
-const shouldInject_1 = __webpack_require__(880);
-const nostr_1 = __importDefault(__webpack_require__(368));
-console.info("inpage-script working!");
-function init() {
-    if (!(0, shouldInject_1.shouldInject)()) {
-        return;
-    }
-    if (window.nostr == null) {
-        window.nostr = new nostr_1.default();
-        console.info("inages nostr injected!", window.nostr);
-        const readyEvent = new Event("nostr:ready");
-        window.dispatchEvent(readyEvent);
-    }
-    // The message listener to listen to content calls
-    // After, emit events to the web apps.
-    window.addEventListener("message", (event) => {
-        if (event.source === window && event.data.scope === "nostr") {
-            if (event.data.action === "accountChanged") {
-                console.log("accountChanged emit!");
-                window.dispatchEvent(new Event("nostr:accountChanged"));
-            }
-        }
-    });
-}
-init();
-
-
-/***/ }),
-
 /***/ 368:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -50,14 +9,42 @@ init();
 // Interface for the web apps to call the extension
 // refs: https://github.com/nostr-protocol/nips/blob/master/07.md
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NostrProvider = exports.init = void 0;
+const shouldInject_1 = __webpack_require__(880);
 const postMessage_1 = __webpack_require__(323);
+function init() {
+    if (!(0, shouldInject_1.shouldInject)()) {
+        return;
+    }
+    // Inject
+    if (window.nostr == null) {
+        window.nostr = new NostrProvider();
+        console.info("inages nostr injected!", window.nostr);
+        const readyEvent = new Event("nostr:ready");
+        window.dispatchEvent(readyEvent);
+    }
+    // The message listener to listen to content calls
+    // After, emit event to return the reponse to the web apps.
+    window.addEventListener("message", (event) => {
+        if (event.source === window && event.data.scope === "nostr") {
+            if (event.data.action === "accountChanged") {
+                console.info("accountChanged emit!", event);
+                window.dispatchEvent(new CustomEvent("nostr:accountchanged", {
+                    detail: event.data.data,
+                }));
+            }
+        }
+    });
+}
+exports.init = init;
+// ref: https://github.com/nostr-protocol/nips/blob/master/07.md
 class NostrProvider {
     _scope = "nostr";
     getPublicKey() {
         return (0, postMessage_1.postMessage)(this._scope, "getPublicKey", undefined);
     }
     signEvent(event) {
-        return;
+        return (0, postMessage_1.postMessage)(this._scope, "signEvent", event);
     }
     nip04 = {
         encrypt(pubkey, plaintext) {
@@ -76,7 +63,7 @@ class NostrProvider {
         },
     };
 }
-exports["default"] = NostrProvider;
+exports.NostrProvider = NostrProvider;
 
 
 /***/ }),
@@ -112,7 +99,7 @@ function postMessage(scope, action, args) {
                 messageEvent.data.id !== id) {
                 return;
             }
-            console.log("debug", messageEvent.data);
+            console.info("debug", messageEvent.data);
             if (messageEvent.data.data.error) {
                 reject(new Error(messageEvent.data.data.error));
             }
@@ -222,18 +209,28 @@ exports.shouldInject = shouldInject;
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(798);
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
+(() => {
+var exports = __webpack_exports__;
+var __webpack_unused_export__;
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+__webpack_unused_export__ = ({ value: true });
+const nostr_1 = __webpack_require__(368);
+console.info("inpage-script working!");
+(0, nostr_1.init)();
+
+})();
+
 /******/ })()
 ;

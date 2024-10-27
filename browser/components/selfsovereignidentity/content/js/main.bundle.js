@@ -68,20 +68,20 @@ function Menu(props) {
   reactExports.useEffect(() => {
     const request = indexedDB.open(IDB_NAME);
     request.onerror = (event) => {
-      console.log(event);
+      console.info(event);
     };
     request.onsuccess = (event) => {
-      console.log("indexedDb onsuccess:", event.target.result);
+      console.info("indexedDb onsuccess:", event.target.result);
       setDb(event.target.result);
       event.target.result.transaction(STORE_NAME).objectStore(STORE_NAME).get(KEY_NAME).onsuccess = (event2) => {
-        console.log(event2.target.result);
-        const initialMenu = event2.target.result.value ?? "nostr";
+        console.info(event2.target.result);
+        const initialMenu = (event2.target.result && event2.target.result.value) ?? "nostr";
         setMenuPin(initialMenu);
         setMenu(initialMenu);
       };
     };
     request.onupgradeneeded = (event) => {
-      console.log("indexedDb onupgradeneeded:", event.target.result);
+      console.info("indexedDb onupgradeneeded:", event.target.result);
       setDb(event.target.result);
       event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" });
     };
@@ -92,10 +92,10 @@ function Menu(props) {
     const objectStore = transaction.objectStore(STORE_NAME);
     const request = objectStore.put({ key: KEY_NAME, value: selectedPin });
     request.onsuccess = (event) => {
-      console.log(event);
+      console.info(event);
     };
     request.onerror = (event) => {
-      console.log(event);
+      console.info(event);
     };
   };
   const buildMenu = reactExports.useCallback(() => {
@@ -242,7 +242,15 @@ function useChildActorEvent() {
   }, []);
   reactExports.useEffect(() => {
     const [op, state] = credentialsFromStore;
-    if (op === "update") {
+    if (op === "add") {
+      if (state[0].primary) {
+        onPrimaryChanged({
+          protocolName: state[0].protocolName,
+          guid: state[0].guid
+        });
+      }
+      setCredentials((prev) => [...prev, ...state]);
+    } else if (op === "update") {
       setCredentials(
         (prev) => prev.map(
           (credential) => credential.guid === state[0].guid ? state[0] : credential
@@ -444,7 +452,7 @@ function Nostr(props) {
           ] }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "No key is regisitered." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid, { templateColumns: "repeat(4, 1fr)", gap: 6, children: nostrkeys.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid, { templateColumns: "repeat(4, 1fr)", gap: 6, children: nostrkeys.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { overflow: "hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "500px", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Editable,
                 {
@@ -456,6 +464,7 @@ function Nostr(props) {
                       displayName: value
                     }
                   }),
+                  isTruncated: true,
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(EditableInput, {})

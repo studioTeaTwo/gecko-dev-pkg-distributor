@@ -11,12 +11,13 @@ declare namespace browser.addonsSelfsovereignidentity {
     guid?: string
   }
 
-  const searchCredentialsAsync: (
+  const searchCredentialsWithoutSecret: (
     protocolName: ProtocolName,
     credentialName: string,
     primary: boolean,
     guid: string
   ) => Credential[]
+  const signByNostrKey: (guid: string, serializedEvent: string) => string
   const onPrimaryChange: {
     addListener: (
       callback: (newGuid: string) => void,

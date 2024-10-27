@@ -10,8 +10,6 @@
  * of nsISsi.
  */
 
-import { Logic } from "resource://gre/modules/Ssi.shared.mjs";
-
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
@@ -596,6 +594,15 @@ export const SsiHelper = {
     guidSupportsString.data = guid;
     return Components.Exception("This credential already exists.", {
       data: guidSupportsString,
+    });
+  },
+
+  async searchCredentialsWithoutSecret(matchData) {
+    const credentials = await Services.ssi.searchCredentialsAsync(matchData)
+    return credentials.map(credential => {
+      // Exclude the secret properties
+      const {secret, properties, unknownFields, ...rest} = credential
+      return rest;
     });
   },
 };

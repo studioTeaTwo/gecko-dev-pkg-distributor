@@ -1,3 +1,6 @@
 export const state = {
-  nostr: "", // pubkey
+  nostr: {
+    guid: "",
+    npub: "",
+  },
 }

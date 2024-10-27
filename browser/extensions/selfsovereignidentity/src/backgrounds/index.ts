@@ -4,28 +4,32 @@
 
 /* eslint-env webextensions */
 
-import "./nostr"
-import { state } from "./state"
+import { init as nostrInit, doNostrAction } from "./nostr"
 
 console.info("background-script working!")
 
-// initial action to enable ssb
+// initial action to enable ssb when the webapps are loaded
 browser.webNavigation.onCompleted.addListener(() => {})
 
 // The message listener to listen to content calls
-// After, return the response to the contents.
+// After, return the result to the contents.
 browser.runtime.onMessage.addListener(
   (
     message: {
       action: string
       args: any
     },
-    sender: FixMe,
-    sendResponse: (response: MessageBag) => void
+    sender: FixMe
   ) => {
-    console.log(message, sender)
-    if (message.action === "nostr/getPublicKey") {
-      sendResponse({ data: state.nostr })
+    console.info("background received from content: ", message, sender)
+    if (message.action.includes("nostr/")) {
+      return Promise.resolve(doNostrAction(message.action, message.args)).then(
+        (data) => ({ data })
+      )
     }
+
+    return false
   }
 )
+
+nostrInit()

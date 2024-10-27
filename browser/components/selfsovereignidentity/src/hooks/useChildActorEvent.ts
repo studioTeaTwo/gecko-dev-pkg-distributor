@@ -138,7 +138,16 @@ export default function useChildActorEvent() {
 
   useEffect(() => {
     const [op, state] = credentialsFromStore
-    if (op === "update") {
+    if (op === "add") {
+      if (state[0].primary) {
+        // emit becase of the fisrt register
+        onPrimaryChanged({
+          protocolName: state[0].protocolName,
+          guid: state[0].guid,
+        })
+      }
+      setCredentials((prev) => [...prev, ...state])
+    } else if (op === "update") {
       setCredentials((prev) =>
         prev.map((credential) =>
           credential.guid === state[0].guid ? state[0] : credential

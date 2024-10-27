@@ -3,31 +3,18 @@
 
 import { shouldInject } from "../shared/shouldInject"
 
-const availableCalls = ["nostr/getPublicKey"]
+const availableCalls = ["nostr/getPublicKey", "nostr/signEvent"]
 
-async function init() {
+export async function init() {
   if (!shouldInject()) {
     return
   }
 
-  // The message listener to listen to background calls
-  // After, emit events to return the response to the inpages.
-  browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("content-script onMessage", request)
-    // forward account changed messaged to inpage script
-    if (request.action === "nostr/accountChanged") {
-      window.postMessage(
-        { action: "accountChanged", scope: "nostr" },
-        window.location.origin
-      )
-    }
-  })
-
   // The message listener to listen to inpage calls
   // After, those calls get passed on to the background script
-  // and emit events to return the response to the inpages.
+  // and emit event to return the response to the inpages.
   window.addEventListener("message", async (ev) => {
-    console.log("content-script eventListener message", ev)
+    console.info("content-script eventListener message", ev)
     // Only accept messages from the current window
     if (
       ev.source !== window ||
@@ -43,25 +30,33 @@ async function init() {
         return
       }
 
-      const message: MessageFromContentToBack = {
+      // Send message to the backgrounds and emit the returned value to the inpages
+      const message: MessageBetweenBackAndContent = {
         action: ev.data.action,
         args: ev.data.args,
       }
-
       const replyFunction = (response) => {
-        console.log("response from background", ev, response)
+        console.info("response from background", ev, response)
         postMessage(ev, response)
       }
-
-      console.log("content-script sendMessage to background", message)
-
-      // Send message to the backgrounds and emit events to the inpages
+      console.info("content-script sendMessage to background", message)
       return browser.runtime.sendMessage(message).then(replyFunction).catch()
     }
   })
-}
 
-init()
+  // The message listener to listen to background calls
+  // After, emit event to return the response to the inpages.
+  browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.info("content-script onMessage", request)
+    // forward account changed messaged to inpage script
+    if (request.action === "nostr/accountChanged") {
+      window.postMessage(
+        { action: "accountChanged", scope: "nostr", data: request.args.data },
+        window.location.origin
+      )
+    }
+  })
+}
 
 // Send message to the inpages
 function postMessage(ev, response) {

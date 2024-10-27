@@ -262,7 +262,7 @@ Ssi.prototype = {
   },
 
   /**
-   * Get a dump of all stored credentials asynchronously. Used by the ssi store UI.
+   * Get a dump of all stored credentials asynchronously. Used by the ssi UI.
    *
    * @returns {nsICredentialInfo[]} - If there are no credentials, the array is empty.
    */

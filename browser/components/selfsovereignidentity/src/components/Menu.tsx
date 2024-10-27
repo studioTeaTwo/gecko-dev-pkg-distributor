@@ -19,23 +19,25 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
   useEffect(() => {
     const request = indexedDB.open(IDB_NAME)
     request.onerror = (event) => {
-      console.log(event)
+      console.info(event)
     }
     request.onsuccess = (event) => {
-      console.log("indexedDb onsuccess:", event.target.result)
+      console.info("indexedDb onsuccess:", event.target.result)
       setDb(event.target.result)
       event.target.result
         .transaction(STORE_NAME)
         .objectStore(STORE_NAME)
         .get(KEY_NAME).onsuccess = (event) => {
-        console.log(event.target.result)
-        const initialMenu = (event.target.result.value as MenuItem) ?? "nostr"
+        console.info(event.target.result)
+        const initialMenu =
+          (event.target.result && (event.target.result.value as MenuItem)) ??
+          "nostr"
         setMenuPin(initialMenu)
         setMenu(initialMenu)
       }
     }
     request.onupgradeneeded = (event) => {
-      console.log("indexedDb onupgradeneeded:", event.target.result)
+      console.info("indexedDb onupgradeneeded:", event.target.result)
       setDb(event.target.result)
       event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" })
     }
@@ -47,10 +49,10 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
     const objectStore = transaction.objectStore(STORE_NAME)
     const request = objectStore.put({ key: KEY_NAME, value: selectedPin })
     request.onsuccess = (event) => {
-      console.log(event)
+      console.info(event)
     }
     request.onerror = (event) => {
-      console.log(event)
+      console.info(event)
     }
   }
 

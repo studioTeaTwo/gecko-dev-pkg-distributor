@@ -28,5 +28,9 @@
     "typescript": "^5.3.3",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.5.0",
+    "@scure/base": "^1.1.9"
   }
 }

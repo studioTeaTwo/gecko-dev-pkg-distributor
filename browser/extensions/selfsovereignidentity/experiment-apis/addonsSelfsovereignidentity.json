@@ -23,8 +23,9 @@
     ],
     "functions": [
       {
-        "name": "searchCredentialsAsync",
+        "name": "searchCredentialsWithoutSecret",
         "type": "function",
+        "description": "return the requested credentials without secret",
         "async": true,
         "parameters": [
           {
@@ -46,6 +47,24 @@
             "name": "guid",
             "type": "string",
             "description": "The guid to search"
+          }
+        ]
+      },
+      {
+        "name": "signByNostrKey",
+        "type": "function",
+        "description": "Pass message and return the signature by Nostr secret key",
+        "async": true,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string",
+            "description": "The message to sign"
+          },
+          {
+            "name": "guid",
+            "type": "string",
+            "description": "The guid to specify the secret key"
           }
         ]
       },

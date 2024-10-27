@@ -7,9 +7,9 @@
 /* globals ExtensionAPI, Services, XPCOMUtils */
 
 const lazy = {};
-
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
+  Nostr: "resource://gre/modules/shared/nostr.sys.mjs",
 });
 
 this.addonsSelfsovereignidentity = class extends ExtensionAPI {
@@ -57,7 +57,7 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
             };
           },
         }).api(),
-        async searchCredentialsAsync(protocolName, credentialName, primary, guid) {
+        async searchCredentialsWithoutSecret(protocolName, credentialName, primary, guid) {
           const params = {}
           if (protocolName) {
             params.protocolName = protocolName
@@ -72,27 +72,36 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
             params.guid = guid
           }
 
-          let credentials = await Services.ssi.searchCredentialsAsync(params)
+          let credentials
+          try {
+            credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret(params)
+          } catch (e) {
+            throw e
+          }
 
-          return credentials.map(lazy.SsiHelper.credentialToVanillaObject).map(credential => {
-            const newVal = {...credential}
-            newVal.properties = JSON.parse(credential.properties)
-
-            // Filter to only public-able data
+          return credentials.map(credential => {
+            // Filter only the data to need
             const filteredVal = {
               // credential info
-              protocolName: newVal.protocolName,
-              credentialName: newVal.credentialName,
-              identifier: newVal.identifier,
-              primary: newVal.primary,
+              protocolName: credential.protocolName,
+              credentialName: credential.credentialName,
+              identifier: credential.identifier,
+              primary: credential.primary,
               // meta info
-              guid: newVal.guid,
-              timeCreated: newVal.timeCreated,
-              timeLastUsed: newVal.timeLastUsed,
-              timeSecretChanged: newVal.timeSecretChanged,
+              guid: credential.guid,
             }
             return filteredVal
           })
+        },
+        async signByNostrKey(message, guid) {
+          let signature
+          try {
+            signature = await lazy.Nostr.getSignature(message, guid)
+          } catch (e) {
+            throw e
+          }
+
+          return signature
         },
       },
     };
