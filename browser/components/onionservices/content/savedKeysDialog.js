@@ -84,7 +84,7 @@ var gOnionServicesSavedKeysDialog = {
     this._removeAllButton = document.getElementById(
       "onionservices-savedkeys-removeall"
     );
-    this._removeButton.addEventListener("click", () => {
+    this._removeAllButton.addEventListener("click", () => {
       this._deleteAllKeys();
     });
 
