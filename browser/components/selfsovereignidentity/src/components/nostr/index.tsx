@@ -28,8 +28,13 @@ import useChildActorEvent, {
   dispatchEvents,
 } from "../../hooks/useChildActorEvent"
 import { Credential } from "../../custom.type"
-import { getPublicKey, nip19 } from "nostr-tools"
-import { npubEncode } from "nostr-tools/nip19"
+import {
+  decode,
+  NostrTypeGuard,
+  npubEncode,
+  nsecEncode,
+} from "nostr-tools/nip19"
+import { generateSecretKey, getPublicKey } from "nostr-tools/pure"
 import { bytesToHex } from "@noble/hashes/utils"
 import Secret from "../shared/Secret"
 
@@ -66,14 +71,15 @@ export default function Nostr(props) {
   } = dispatchEvents
 
   const [nseckey, setNseckey] = useState("")
+  const [newKey, setNewKey] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   const nostrkeys = useMemo(
     () =>
-      credentials.filter(
-        (credential) => credential.protocolName === "nostr"
-      ) as NostrCredential[],
+      credentials
+        .filter((credential) => credential.protocolName === "nostr")
+        .sort((a, b) => (b.primary ? -1 : 0)) as NostrCredential[],
     [credentials]
   )
 
@@ -84,12 +90,36 @@ export default function Nostr(props) {
     setLoading(false)
   }, [])
 
-  const handleNewKeyChange = (e) => setNseckey(e.target.value)
+  const handleGenNewKey = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault()
 
+    const seckey = generateSecretKey()
+    const nseckey = nsecEncode(seckey)
+    const pubkey = getPublicKey(seckey as Uint8Array)
+    const npubkey = npubEncode(pubkey)
+
+    addCredentialToStore({
+      ...NostrTemplate,
+      identifier: npubkey,
+      secret: nseckey,
+      primary: nostrkeys.length === 0,
+      properties: {
+        displayName: npubkey,
+        pubkey,
+        seckey: bytesToHex(seckey),
+      },
+    })
+
+    setNewKey(npubkey)
+  }
+
+  const handleNewKeyChange = (e) => setNseckey(e.target.value)
   const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault()
 
-    if (!nip19.NostrTypeGuard.isNSec(nseckey)) {
+    if (!NostrTypeGuard.isNSec(nseckey)) {
       alert("The typed key is not nsec!")
       return
     }
@@ -98,7 +128,7 @@ export default function Nostr(props) {
       return
     }
 
-    const { data: seckey } = nip19.decode(nseckey)
+    const { data: seckey } = decode(nseckey)
     const pubkey = getPublicKey(seckey as Uint8Array)
     const npubkey = npubEncode(pubkey)
 
@@ -174,23 +204,40 @@ export default function Nostr(props) {
       >
         {loading && <Spinner size="xl" />}
         <Box>
-          <FormControl>
-            <FormLabel>New Key</FormLabel>
-            <InputGroup>
-              <Input
-                placeholder="nsec key"
-                value={nseckey}
-                onChange={handleNewKeyChange}
-                maxW="500px"
-              />
-              <Button variant="outline" colorScheme="blue" onClick={handleSave}>
-                Save
+          <VStack>
+            <FormControl>
+              <FormLabel>New Key</FormLabel>
+              <Button
+                variant="outline"
+                colorScheme="blue"
+                onClick={handleGenNewKey}
+              >
+                Generate
               </Button>
-            </InputGroup>
-            <FormHelperText>
-              Your key will be stored in local separated from web apps.
-            </FormHelperText>
-          </FormControl>
+            </FormControl>
+            {newKey && <Text>{`New Key: ${newKey}`}</Text>}
+            <FormControl>
+              <FormLabel>Import</FormLabel>
+              <InputGroup>
+                <Input
+                  placeholder="nsec key"
+                  value={nseckey}
+                  onChange={handleNewKeyChange}
+                  maxW="500px"
+                />
+                <Button
+                  variant="outline"
+                  colorScheme="blue"
+                  onClick={handleSave}
+                >
+                  Save
+                </Button>
+              </InputGroup>
+              <FormHelperText>
+                Your key will be stored in local separated from web apps.
+              </FormHelperText>
+            </FormControl>
+          </VStack>
         </Box>
         <Box>
           {nostrkeys.length === 0 && <p>No key is regisitered.</p>}

@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, L as LuPinOff, a as LuPin, V as VStack, G as GiBirdTwitter, T as Text, b as LuEyeOff, c as LuEye, S as StackDivider, d as Spinner, e as Box, F as FormControl, f as FormLabel, g as InputGroup, h as Input, i as FormHelperText, k as Grid, l as GridItem, C as Card, m as CardHeader, n as Heading, E as Editable, o as EditablePreview, p as EditableInput, q as CardBody, s as CardFooter, t as Flex, u as Switch, v as nip19_exports, w as getPublicKey, x as npubEncode, y as bytesToHex, z as createRoot, A as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, L as LuPinOff, a as LuPin, V as VStack, G as GiBirdTwitter, T as Text, b as LuEyeOff, c as LuEye, S as StackDivider, d as Spinner, e as Box, F as FormControl, f as FormLabel, g as InputGroup, h as Input, i as FormHelperText, k as Grid, l as GridItem, C as Card, m as CardHeader, n as Heading, E as Editable, o as EditablePreview, p as EditableInput, q as CardBody, s as CardFooter, t as Flex, u as Switch, v as generateSecretKey, w as nsecEncode, x as getPublicKey, y as npubEncode, z as bytesToHex, N as NostrTypeGuard, A as decode, D as createRoot, J as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -348,12 +348,11 @@ function Nostr(props) {
     onPrimaryChanged: onPrimaryChanged2
   } = dispatchEvents;
   const [nseckey, setNseckey] = reactExports.useState("");
+  const [newKey, setNewKey] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
   reactExports.useState("");
   const nostrkeys = reactExports.useMemo(
-    () => credentials.filter(
-      (credential) => credential.protocolName === "nostr"
-    ),
+    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? -1 : 0),
     [credentials]
   );
   reactExports.useEffect(() => {
@@ -361,10 +360,29 @@ function Nostr(props) {
     initStore2();
     setLoading(false);
   }, []);
+  const handleGenNewKey = (e) => {
+    e.preventDefault();
+    const seckey = generateSecretKey();
+    const nseckey2 = nsecEncode(seckey);
+    const pubkey = getPublicKey(seckey);
+    const npubkey = npubEncode(pubkey);
+    addCredentialToStore2({
+      ...NostrTemplate,
+      identifier: npubkey,
+      secret: nseckey2,
+      primary: nostrkeys.length === 0,
+      properties: {
+        displayName: npubkey,
+        pubkey,
+        seckey: bytesToHex(seckey)
+      }
+    });
+    setNewKey(npubkey);
+  };
   const handleNewKeyChange = (e) => setNseckey(e.target.value);
   const handleSave = (e) => {
     e.preventDefault();
-    if (!nip19_exports.NostrTypeGuard.isNSec(nseckey)) {
+    if (!NostrTypeGuard.isNSec(nseckey)) {
       alert("The typed key is not nsec!");
       return;
     }
@@ -372,7 +390,7 @@ function Nostr(props) {
       alert("The typed key is existing!");
       return;
     }
-    const { data: seckey } = nip19_exports.decode(nseckey);
+    const { data: seckey } = decode(nseckey);
     const pubkey = getPublicKey(seckey);
     const npubkey = npubEncode(pubkey);
     addCredentialToStore2({
@@ -434,21 +452,44 @@ function Nostr(props) {
         align: "stretch",
         children: [
           loading && /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, { size: "xl" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(FormControl, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(FormLabel, { children: "New Key" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(FormControl, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(FormLabel, { children: "New Key" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Input,
+                Button,
                 {
-                  placeholder: "nsec key",
-                  value: nseckey,
-                  onChange: handleNewKeyChange,
-                  maxW: "500px"
+                  variant: "outline",
+                  colorScheme: "blue",
+                  onClick: handleGenNewKey,
+                  children: "Generate"
                 }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "outline", colorScheme: "blue", onClick: handleSave, children: "Save" })
+              )
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(FormHelperText, { children: "Your key will be stored in local separated from web apps." })
+            newKey && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: `New Key: ${newKey}` }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(FormControl, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(FormLabel, { children: "Import" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    placeholder: "nsec key",
+                    value: nseckey,
+                    onChange: handleNewKeyChange,
+                    maxW: "500px"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: handleSave,
+                    children: "Save"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(FormHelperText, { children: "Your key will be stored in local separated from web apps." })
+            ] })
           ] }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "No key is regisitered." }),
