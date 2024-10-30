@@ -24725,56 +24725,6 @@ const Flex = forwardRef(function Flex2(props, ref) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.div, { ref, __css: styles2, ...rest });
 });
 Flex.displayName = "Flex";
-const FormLabel = forwardRef(
-  function FormLabel2(passedProps, ref) {
-    const styles2 = useStyleConfig("FormLabel", passedProps);
-    const props = omitThemingProps(passedProps);
-    const {
-      className,
-      children,
-      requiredIndicator = /* @__PURE__ */ jsxRuntimeExports.jsx(RequiredIndicator, {}),
-      optionalIndicator = null,
-      ...rest
-    } = props;
-    const field = useFormControlContext();
-    const ownProps = (field == null ? void 0 : field.getLabelProps(rest, ref)) ?? { ref, ...rest };
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      chakra.label,
-      {
-        ...ownProps,
-        className: cx("chakra-form__label", props.className),
-        __css: {
-          display: "block",
-          textAlign: "start",
-          ...styles2
-        },
-        children: [
-          children,
-          (field == null ? void 0 : field.isRequired) ? requiredIndicator : optionalIndicator
-        ]
-      }
-    );
-  }
-);
-FormLabel.displayName = "FormLabel";
-const RequiredIndicator = forwardRef(
-  function RequiredIndicator2(props, ref) {
-    const field = useFormControlContext();
-    const styles2 = useFormControlStyles();
-    if (!(field == null ? void 0 : field.isRequired))
-      return null;
-    const className = cx("chakra-form__required-indicator", props.className);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      chakra.span,
-      {
-        ...field == null ? void 0 : field.getRequiredIndicatorProps(props, ref),
-        __css: styles2.requiredIndicator,
-        className
-      }
-    );
-  }
-);
-RequiredIndicator.displayName = "RequiredIndicator";
 const Grid = forwardRef(function Grid2(props, ref) {
   const {
     templateAreas,
@@ -28172,16 +28122,13 @@ var getPublicKey = i.getPublicKey;
 i.finalizeEvent;
 i.verifyEvent;
 export {
-  decode as A,
   Button as B,
   Card as C,
-  createRoot as D,
   Editable as E,
-  FormControl as F,
+  Flex as F,
   GiBirdTwitter as G,
   HStack as H,
   IconButton as I,
-  ChakraProvider as J,
   LuPinOff as L,
   NostrTypeGuard as N,
   StackDivider as S,
@@ -28190,27 +28137,27 @@ export {
   LuPin as a,
   LuEyeOff as b,
   LuEye as c,
-  Spinner as d,
-  Box as e,
-  FormLabel as f,
-  InputGroup as g,
-  Input as h,
-  FormHelperText as i,
+  Heading as d,
+  Spinner as e,
+  Box as f,
+  Grid as g,
+  GridItem as h,
+  Switch as i,
   jsxRuntimeExports as j,
-  Grid as k,
-  GridItem as l,
+  InputGroup as k,
+  Input as l,
   CardHeader as m,
-  Heading as n,
-  EditablePreview as o,
-  EditableInput as p,
-  CardBody as q,
+  EditablePreview as n,
+  EditableInput as o,
+  CardBody as p,
+  CardFooter as q,
   reactExports as r,
-  CardFooter as s,
-  Flex as t,
-  Switch as u,
-  generateSecretKey as v,
-  nsecEncode as w,
-  getPublicKey as x,
-  npubEncode as y,
-  bytesToHex$1 as z
+  generateSecretKey as s,
+  nsecEncode as t,
+  getPublicKey as u,
+  npubEncode as v,
+  bytesToHex$1 as w,
+  decode as x,
+  createRoot as y,
+  ChakraProvider as z
 };

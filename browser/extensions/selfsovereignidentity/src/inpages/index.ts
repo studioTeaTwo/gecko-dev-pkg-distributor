@@ -4,7 +4,6 @@
 
 /* eslint-env webextensions */
 
-import { shouldInject } from "../shared/shouldInject"
 import { init as nostrInit } from "./nostr"
 
 console.info("inpage-script working!")

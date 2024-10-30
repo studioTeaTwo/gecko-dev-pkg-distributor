@@ -5,6 +5,10 @@ import { state } from "./state"
 
 // Proceed calls from contents
 export const doNostrAction = async (action, args) => {
+  if (!state.nostr.enabled) {
+    return "Your setting is currently disabled. Please confirm 'browser.selfsovereignidentity.nostr.enabled' in 'about:config'."
+  }
+
   switch (action) {
     case "nostr/getPublicKey": {
       return decodeNpub(state.nostr.npub)
@@ -41,55 +45,94 @@ export async function init() {
       true,
       ""
     )
-  console.info("background init!", credentials)
-  if (credentials.length === 0) return
+  if (credentials.length > 0) {
+    state.nostr = {
+      ...state.nostr,
+      guid: credentials[0].guid,
+      npub: credentials[0].identifier,
+    }
+  }
 
+  // Get the enabled flag from the prefs.
+  const enabled = await browser.addonsSelfsovereignidentity.getPref("nostr")
   state.nostr = {
+    ...state.nostr,
+    enabled,
+  }
+
+  console.info("background init!", enabled, credentials)
+}
+
+// The message listener to listen to experimental-apis calls
+// After, those calls get passed on to the content scripts.
+const onPrimaryChangedCallback = async (newGuid: string) => {
+  const credentials =
+    await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret(
+      "nostr",
+      "nsec",
+      true,
+      newGuid
+    )
+  if (credentials.length === 0) return
+  console.info("primary changed!", newGuid, credentials)
+  state.nostr = {
+    ...state.nostr,
     guid: credentials[0].guid,
     npub: credentials[0].identifier,
   }
 
-  // The message listener to listen to experimental-apis calls
-  // After, those calls get passed on to the content scripts.
-  const onPrimaryChangeCallback = async (newGuid: string) => {
-    const credentials =
-      await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret(
-        "nostr",
-        "nsec",
-        true,
-        newGuid
-      )
-    if (credentials.length === 0) return
-    console.info("primary changed!", newGuid, credentials)
-    state.nostr = {
-      guid: credentials[0].guid,
-      npub: credentials[0].identifier,
+  // Send the message to the contents
+  if (state.nostr.enabled) {
+    const tabs = await browser.tabs.query({
+      status: "complete",
+      discarded: false,
+    })
+    const pubkey = decodeNpub(state.nostr.npub)
+    for (const tab of tabs) {
+      console.info("send to tab: ", tab)
+      if (tab.url.startsWith("http")) {
+        browser.tabs
+          .sendMessage(tab.id, {
+            action: "nostr/accountChanged",
+            args: { data: pubkey },
+          })
+          .catch()
+      }
     }
-
-    // Send the message to the contents
-
-    browser.tabs
-      .query({ status: "complete", discarded: false })
-      .then((tabs) => {
-        const pubkey = decodeNpub(state.nostr.npub)
-        for (const tab of tabs) {
-          console.info("send to tab: ", tab)
-          if (tab.url.startsWith("http")) {
-            browser.tabs
-              .sendMessage(tab.id, {
-                action: "nostr/accountChanged",
-                args: { data: pubkey },
-              })
-              .catch()
-          }
-        }
-      })
   }
-  browser.addonsSelfsovereignidentity.onPrimaryChange.addListener(
-    onPrimaryChangeCallback,
-    "nostr"
-  )
 }
+browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(
+  onPrimaryChangedCallback,
+  "nostr"
+)
+const onPrefChangedCallback = async (protocolName: ProtocolName) => {
+  console.info("pref changed!", protocolName)
+  state.nostr = {
+    ...state.nostr,
+    enabled: !state.nostr.enabled,
+  }
+
+  // Send the message to the contents
+  const tabs = await browser.tabs.query({
+    status: "complete",
+    discarded: false,
+  })
+  for (const tab of tabs) {
+    console.info("send to tab: ", tab)
+    if (tab.url.startsWith("http")) {
+      browser.tabs
+        .sendMessage(tab.id, {
+          action: "nostr/providerChanged",
+          args: { enabled: state.nostr.enabled },
+        })
+        .catch()
+    }
+  }
+}
+browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
+  onPrefChangedCallback,
+  "nostr"
+)
 
 function decodeNpub(npub) {
   const Bech32MaxSize = 5000

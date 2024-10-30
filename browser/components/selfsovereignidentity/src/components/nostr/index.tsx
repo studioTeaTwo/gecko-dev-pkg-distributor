@@ -16,6 +16,7 @@ import {
   Grid,
   GridItem,
   Heading,
+  HStack,
   Input,
   InputGroup,
   Spinner,
@@ -60,7 +61,7 @@ const NostrTemplate: NostrCredential = {
 }
 
 export default function Nostr(props) {
-  const { credentials } = useChildActorEvent()
+  const { prefs, credentials } = useChildActorEvent()
   const {
     initStore,
     addCredentialToStore,
@@ -68,6 +69,7 @@ export default function Nostr(props) {
     deleteCredentialToStore,
     removeAllCredentialsToStore,
     onPrimaryChanged,
+    onPrefChanged,
   } = dispatchEvents
 
   const [nseckey, setNseckey] = useState("")
@@ -79,7 +81,7 @@ export default function Nostr(props) {
     () =>
       credentials
         .filter((credential) => credential.protocolName === "nostr")
-        .sort((a, b) => (b.primary ? -1 : 0)) as NostrCredential[],
+        .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
     [credentials]
   )
 
@@ -89,6 +91,13 @@ export default function Nostr(props) {
     initStore()
     setLoading(false)
   }, [])
+
+  const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+
+    const checked = e.target.checked
+    onPrefChanged({ protocolName: "nostr", enabled: checked })
+  }
 
   const handleGenNewKey = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -196,7 +205,8 @@ export default function Nostr(props) {
 
   return (
     <div>
-      <h2>NIP-07</h2>
+      <Heading as="h2">NIP-07</Heading>
+      <p>Your key will be stored in local separated from web apps.</p>
       <VStack
         divider={<StackDivider borderColor="gray.200" />}
         spacing={4}
@@ -204,9 +214,21 @@ export default function Nostr(props) {
       >
         {loading && <Spinner size="xl" />}
         <Box>
-          <VStack>
-            <FormControl>
-              <FormLabel>New Key</FormLabel>
+          <Grid gridTemplateColumns={"100px 1fr"} gap={6}>
+            <GridItem>
+              <label htmlFor="enable-nostr">Enable</label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="enable-nostr"
+                isChecked={prefs.nostr}
+                onChange={handleEnable}
+              />
+            </GridItem>
+            <GridItem>
+              <label>New Key</label>
+            </GridItem>
+            <GridItem>
               <Button
                 variant="outline"
                 colorScheme="blue"
@@ -214,10 +236,12 @@ export default function Nostr(props) {
               >
                 Generate
               </Button>
-            </FormControl>
-            {newKey && <Text>{`New Key: ${newKey}`}</Text>}
-            <FormControl>
-              <FormLabel>Import</FormLabel>
+              {newKey && <Text as="mark">{newKey}</Text>}
+            </GridItem>
+            <GridItem>
+              <label>Import</label>
+            </GridItem>
+            <GridItem>
               <InputGroup>
                 <Input
                   placeholder="nsec key"
@@ -233,97 +257,96 @@ export default function Nostr(props) {
                   Save
                 </Button>
               </InputGroup>
-              <FormHelperText>
-                Your key will be stored in local separated from web apps.
-              </FormHelperText>
-            </FormControl>
-          </VStack>
+            </GridItem>
+          </Grid>
         </Box>
         <Box>
           {nostrkeys.length === 0 && <p>No key is regisitered.</p>}
-          <Grid templateColumns="repeat(4, 1fr)" gap={6}>
+          <Flex gap={6} wrap="wrap">
             {nostrkeys.map((item, i) => (
-              <GridItem key={i} overflow="hidden">
-                <Card maxW="500px">
-                  <CardHeader>
-                    <Heading size="md">
-                      <Editable
-                        defaultValue={item.properties.displayName}
-                        onSubmit={(value) =>
-                          modifyCredentialToStore({
-                            ...item,
-                            properties: {
-                              ...item.properties,
-                              displayName: value,
-                            },
-                          })
-                        }
-                        isTruncated
-                      >
-                        <EditablePreview />
-                        <EditableInput />
-                      </Editable>
-                    </Heading>
-                  </CardHeader>
-                  <CardBody>
-                    <Box>
-                      <Heading size="xs" textTransform="uppercase">
-                        Nostr Public Key
-                      </Heading>
-                      <Text fontSize="sm">{item.identifier}</Text>
-                    </Box>
-                    <Box>
-                      <Heading size="xs" textTransform="uppercase">
-                        Nostr Secret Key
-                      </Heading>
-                      <Secret
-                        value={item.secret}
-                        onChangeVisibility={() => {}}
-                        textProps={{ fontSize: "sm" }}
-                      />
-                    </Box>
-                    <Box>
-                      <Heading size="xs" textTransform="uppercase">
-                        Raw Public Key
-                      </Heading>
-                      <Text fontSize="sm">{item.properties.pubkey}</Text>
-                    </Box>
-                    <Box>
-                      <Heading size="xs" textTransform="uppercase">
-                        Raw Secret Key
-                      </Heading>
-                      <Secret
-                        value={item.properties.seckey}
-                        onChangeVisibility={() => {}}
-                        textProps={{ fontSize: "sm" }}
-                      />
-                    </Box>
-                  </CardBody>
-                  <CardFooter pt="0" justify="space-evenly">
-                    {nostrkeys.length > 1 && (
-                      <Flex gap="2">
-                        <Switch
-                          isChecked={item.primary}
-                          onChange={(e) =>
-                            handleChangePrimary(e.target.checked, item)
-                          }
-                          alignSelf="center"
-                        />
-                        {item.primary && <Text>primary now</Text>}
-                      </Flex>
-                    )}
-                    <Button
-                      variant="ghost"
-                      colorScheme="blue"
-                      onClick={() => deleteCredentialToStore(item, nostrkeys)}
+              <Card maxW="md" overflow="hidden" key={i}>
+                <CardHeader>
+                  <Heading size="md">
+                    <Editable
+                      defaultValue={item.properties.displayName}
+                      onSubmit={(value) =>
+                        modifyCredentialToStore({
+                          ...item,
+                          properties: {
+                            ...item.properties,
+                            displayName: value,
+                          },
+                        })
+                      }
+                      isTruncated
                     >
-                      Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </GridItem>
+                      <EditablePreview />
+                      <EditableInput />
+                    </Editable>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Nostr Public Key
+                    </Heading>
+                    <Text fontSize="sm" isTruncated>
+                      {item.identifier}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Nostr Secret Key
+                    </Heading>
+                    <Secret
+                      value={item.secret}
+                      onChangeVisibility={() => {}}
+                      textProps={{ fontSize: "sm", isTruncated: true }}
+                    />
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Raw Public Key
+                    </Heading>
+                    <Text fontSize="sm" isTruncated>
+                      {item.properties.pubkey}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Raw Secret Key
+                    </Heading>
+                    <Secret
+                      value={item.properties.seckey}
+                      onChangeVisibility={() => {}}
+                      textProps={{ fontSize: "sm", isTruncated: true }}
+                    />
+                  </Box>
+                </CardBody>
+                <CardFooter pt="0" justify="space-evenly">
+                  {nostrkeys.length > 1 && (
+                    <Flex gap="2">
+                      <Switch
+                        isChecked={item.primary}
+                        onChange={(e) =>
+                          handleChangePrimary(e.target.checked, item)
+                        }
+                        alignSelf="center"
+                      />
+                      {item.primary && <Text>primary now</Text>}
+                    </Flex>
+                  )}
+                  <Button
+                    variant="ghost"
+                    colorScheme="blue"
+                    onClick={() => deleteCredentialToStore(item, nostrkeys)}
+                  >
+                    Delete
+                  </Button>
+                </CardFooter>
+              </Card>
             ))}
-          </Grid>
+          </Flex>
         </Box>
         <Box>
           <Button variant="ghost" colorScheme="blue" onClick={handleAllRemove}>

@@ -16,7 +16,7 @@ export function postMessage<T>(
         window.postMessage(
           {
             id,
-            application: "SSB",
+            application: "ssb",
             action: `${scope}/${action}`,
             scope,
             args,
@@ -31,7 +31,7 @@ export function postMessage<T>(
             messageEvent.origin !== window.location.origin ||
             !messageEvent.data ||
             !messageEvent.data.response ||
-            messageEvent.data.application !== "SSB" ||
+            messageEvent.data.application !== "ssb" ||
             messageEvent.data.scope !== scope ||
             messageEvent.data.id !== id
           ) {

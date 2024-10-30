@@ -1,8 +1,16 @@
 export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
 
 /**
+ * Selfsovereignidentity prefs
+ * ref: modules/libpref/init/StaticPrefList.yaml
+ */
+export interface SelfsovereignidentityPrefs {
+  nostr: boolean // browser.selfsovereignidentity.nostr.enabled
+}
+
+/**
  * credential info base
- * ref: toolkit/components/selfsovereignidentity-store/nsICredentialInfo.idl
+ * ref: toolkit/components/ssi/nsICredentialInfo.idl
  */
 export type ProtocolName =
   | "bitcoin"

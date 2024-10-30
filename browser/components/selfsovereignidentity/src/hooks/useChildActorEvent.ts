@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react"
-import { Credential, CredentialForPayload, ProtocolName } from "src/custom.type"
+import {
+  Credential,
+  CredentialForPayload,
+  ProtocolName,
+  SelfsovereignidentityPrefs,
+} from "../custom.type"
 
 /**
  * Send to child actor
@@ -81,6 +86,18 @@ function onPrimaryChanged(changeSet: {
   )
 }
 
+function onPrefChanged(changeSet: {
+  protocolName: ProtocolName
+  enabled: boolean
+}) {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityPrefChanged", {
+      bubbles: true,
+      detail: changeSet,
+    })
+  )
+}
+
 export const dispatchEvents = {
   initStore,
   getAllCredentialsToStore,
@@ -89,6 +106,7 @@ export const dispatchEvents = {
   deleteCredentialToStore,
   removeAllCredentialsToStore,
   onPrimaryChanged,
+  onPrefChanged,
 }
 
 /**
@@ -117,6 +135,9 @@ function transformCredentialsFromStore(
 type Op = "get" | "add" | "update" | "remove" | "removeAll" | null
 
 export default function useChildActorEvent() {
+  const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
+    nostr: true,
+  })
   const [credentials, setCredentials] = useState<Credential[]>([])
   const [credentialsFromStore, setCredentialsFromStore] = useState<
     [Op, Credential[]]
@@ -193,10 +214,15 @@ export default function useChildActorEvent() {
         setCredentialsFromStore(["removeAll", []])
         break
       }
+      case "Prefs": {
+        setPrefs(event.detail.value)
+        break
+      }
     }
   }
 
   return {
+    prefs,
     credentials,
   }
 }

@@ -61,6 +61,10 @@ export class AboutIdentityChild extends JSWindowActorChild {
         this.#aboutIdentityPrimaryChanged(event.detail)
         break
       }
+      case "AboutIdentityPrefChanged": {
+        this.#aboutIdentityPrefChanged(event.detail)
+        break
+      }
     }
   }
 
@@ -102,6 +106,11 @@ export class AboutIdentityChild extends JSWindowActorChild {
         cloneFunctions: true,
       }
     )
+
+    const nostr = Services.prefs.getBoolPref(
+      "browser.selfsovereignidentity.nostr.enabled"
+    )
+    this.sendToContent("Prefs", { nostr })
   }
 
   #aboutIdentityGetAllCredentials() {
@@ -158,6 +167,16 @@ export class AboutIdentityChild extends JSWindowActorChild {
     this.sendAsyncMessage("AboutIdentity:PrimaryChanged", {
       changeSet,
     })
+  }
+
+  #aboutIdentityPrefChanged(changeSet) {
+    if (changeSet.protocolName === "nostr") {
+      Services.prefs.setBoolPref(
+        "browser.selfsovereignidentity.nostr.enabled",
+        changeSet.enabled
+      )
+      this.sendToContent("Prefs", { nostr: changeSet.enabled })
+    }
   }
 
   receiveMessage(message) {

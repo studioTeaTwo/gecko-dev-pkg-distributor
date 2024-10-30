@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, L as LuPinOff, a as LuPin, V as VStack, G as GiBirdTwitter, T as Text, b as LuEyeOff, c as LuEye, S as StackDivider, d as Spinner, e as Box, F as FormControl, f as FormLabel, g as InputGroup, h as Input, i as FormHelperText, k as Grid, l as GridItem, C as Card, m as CardHeader, n as Heading, E as Editable, o as EditablePreview, p as EditableInput, q as CardBody, s as CardFooter, t as Flex, u as Switch, v as generateSecretKey, w as nsecEncode, x as getPublicKey, y as npubEncode, z as bytesToHex, N as NostrTypeGuard, A as decode, D as createRoot, J as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, L as LuPinOff, a as LuPin, V as VStack, G as GiBirdTwitter, T as Text, b as LuEyeOff, c as LuEye, d as Heading, S as StackDivider, e as Spinner, f as Box, g as Grid, h as GridItem, i as Switch, k as InputGroup, l as Input, F as Flex, C as Card, m as CardHeader, E as Editable, n as EditablePreview, o as EditableInput, p as CardBody, q as CardFooter, s as generateSecretKey, t as nsecEncode, u as getPublicKey, v as npubEncode, w as bytesToHex, N as NostrTypeGuard, x as decode, y as createRoot, z as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -202,6 +202,14 @@ function onPrimaryChanged(changeSet) {
     })
   );
 }
+function onPrefChanged(changeSet) {
+  window.dispatchEvent(
+    new CustomEvent("AboutIdentityPrefChanged", {
+      bubbles: true,
+      detail: changeSet
+    })
+  );
+}
 const dispatchEvents = {
   initStore,
   getAllCredentialsToStore,
@@ -209,7 +217,8 @@ const dispatchEvents = {
   modifyCredentialToStore,
   deleteCredentialToStore,
   removeAllCredentialsToStore,
-  onPrimaryChanged
+  onPrimaryChanged,
+  onPrefChanged
 };
 function transformToPayload(credential) {
   const newVal = { ...credential };
@@ -226,6 +235,9 @@ function transformCredentialsFromStore(credentialForPayloads) {
   });
 }
 function useChildActorEvent() {
+  const [prefs, setPrefs] = reactExports.useState({
+    nostr: true
+  });
   const [credentials, setCredentials] = reactExports.useState([]);
   const [credentialsFromStore, setCredentialsFromStore] = reactExports.useState([null, []]);
   reactExports.useEffect(() => {
@@ -294,9 +306,14 @@ function useChildActorEvent() {
         setCredentialsFromStore(["removeAll", []]);
         break;
       }
+      case "Prefs": {
+        setPrefs(event.detail.value);
+        break;
+      }
     }
   };
   return {
+    prefs,
     credentials
   };
 }
@@ -338,21 +355,22 @@ const NostrTemplate = {
   }
 };
 function Nostr(props) {
-  const { credentials } = useChildActorEvent();
+  const { prefs, credentials } = useChildActorEvent();
   const {
     initStore: initStore2,
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
     removeAllCredentialsToStore: removeAllCredentialsToStore2,
-    onPrimaryChanged: onPrimaryChanged2
+    onPrimaryChanged: onPrimaryChanged2,
+    onPrefChanged: onPrefChanged2
   } = dispatchEvents;
   const [nseckey, setNseckey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
   reactExports.useState("");
   const nostrkeys = reactExports.useMemo(
-    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? -1 : 0),
+    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
     [credentials]
   );
   reactExports.useEffect(() => {
@@ -360,6 +378,11 @@ function Nostr(props) {
     initStore2();
     setLoading(false);
   }, []);
+  const handleEnable = (e) => {
+    e.preventDefault();
+    const checked = e.target.checked;
+    onPrefChanged2({ protocolName: "nostr", enabled: checked });
+  };
   const handleGenNewKey = (e) => {
     e.preventDefault();
     const seckey = generateSecretKey();
@@ -443,7 +466,8 @@ function Nostr(props) {
     removeAllCredentialsToStore2();
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "NIP-07" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h2", children: "NIP-07" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Your key will be stored in local separated from web apps." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       VStack,
       {
@@ -452,9 +476,18 @@ function Nostr(props) {
         align: "stretch",
         children: [
           loading && /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, { size: "xl" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(FormControl, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(FormLabel, { children: "New Key" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "enable-nostr", children: "Enable" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Switch,
+              {
+                id: "enable-nostr",
+                isChecked: prefs.nostr,
+                onChange: handleEnable
+              }
+            ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "New Key" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Button,
                 {
@@ -463,37 +496,34 @@ function Nostr(props) {
                   onClick: handleGenNewKey,
                   children: "Generate"
                 }
-              )
+              ),
+              newKey && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { as: "mark", children: newKey })
             ] }),
-            newKey && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: `New Key: ${newKey}` }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(FormControl, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(FormLabel, { children: "Import" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Input,
-                  {
-                    placeholder: "nsec key",
-                    value: nseckey,
-                    onChange: handleNewKeyChange,
-                    maxW: "500px"
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Button,
-                  {
-                    variant: "outline",
-                    colorScheme: "blue",
-                    onClick: handleSave,
-                    children: "Save"
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(FormHelperText, { children: "Your key will be stored in local separated from web apps." })
-            ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Import" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  placeholder: "nsec key",
+                  value: nseckey,
+                  onChange: handleNewKeyChange,
+                  maxW: "500px"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  variant: "outline",
+                  colorScheme: "blue",
+                  onClick: handleSave,
+                  children: "Save"
+                }
+              )
+            ] }) })
           ] }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "No key is regisitered." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid, { templateColumns: "repeat(4, 1fr)", gap: 6, children: nostrkeys.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { overflow: "hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "500px", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrkeys.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Editable,
                 {
@@ -515,7 +545,7 @@ function Nostr(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Nostr Public Key" }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: item.identifier })
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", isTruncated: true, children: item.identifier })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Nostr Secret Key" }),
@@ -525,13 +555,13 @@ function Nostr(props) {
                       value: item.secret,
                       onChangeVisibility: () => {
                       },
-                      textProps: { fontSize: "sm" }
+                      textProps: { fontSize: "sm", isTruncated: true }
                     }
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Raw Public Key" }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: item.properties.pubkey })
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", isTruncated: true, children: item.properties.pubkey })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Raw Secret Key" }),
@@ -541,7 +571,7 @@ function Nostr(props) {
                       value: item.properties.seckey,
                       onChangeVisibility: () => {
                       },
-                      textProps: { fontSize: "sm" }
+                      textProps: { fontSize: "sm", isTruncated: true }
                     }
                   )
                 ] })
@@ -568,7 +598,7 @@ function Nostr(props) {
                   }
                 )
               ] })
-            ] }) }, i)) })
+            ] }, i)) })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "ghost", colorScheme: "blue", onClick: handleAllRemove, children: "Reset" }) })
         ]

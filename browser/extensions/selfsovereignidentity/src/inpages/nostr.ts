@@ -9,19 +9,33 @@ export function init() {
     return
   }
 
-  // Inject
-  if (window.nostr == null) {
-    window.nostr = new NostrProvider()
-    console.info("inages nostr injected!", window.nostr)
-    const readyEvent = new Event("nostr:ready")
-    window.dispatchEvent(readyEvent)
-  }
+  // Injection for until browser.tabs is established in background.
+  // After the web navigation completed, this will be overrided.
+  window.nostr = new NostrProvider()
 
   // The message listener to listen to content calls
   // After, emit event to return the reponse to the web apps.
   window.addEventListener("message", (event) => {
     if (event.source === window && event.data.scope === "nostr") {
-      if (event.data.action === "accountChanged") {
+      if (
+        event.data.action === "init" ||
+        event.data.action === "providerChanged"
+      ) {
+        // TODO(ssb): It depends on the spec with other providers.
+        if (event.data.data.enabled) {
+          // Inject
+          window.nostr = new NostrProvider()
+        } else {
+          // Dispose
+          window.nostr && delete window.nostr
+        }
+        console.info(`${event.data.action} emit!`, event)
+        window.dispatchEvent(
+          new CustomEvent(`nostr:${event.data.action.toLowerCase()}`, {
+            detail: event.data.data,
+          })
+        )
+      } else if (event.data.action === "accountChanged") {
         console.info("accountChanged emit!", event)
         window.dispatchEvent(
           new CustomEvent("nostr:accountchanged", {
@@ -36,6 +50,7 @@ export function init() {
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
 export class NostrProvider {
   private _scope = "nostr"
+  private _provider = "ssb"
 
   getPublicKey() {
     return postMessage(this._scope, "getPublicKey", undefined)

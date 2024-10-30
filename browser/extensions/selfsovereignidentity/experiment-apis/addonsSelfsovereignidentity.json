@@ -3,13 +3,31 @@
     "namespace": "addonsSelfsovereignidentity",
     "events": [
       {
-        "name": "onPrimaryChange",
+        "name": "onPrimaryChanged",
         "type": "function",
         "parameters": [
           {
             "name": "newGuid",
             "type": "string",
             "description": "The new guid which changed"
+          }
+        ],
+        "extraParameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocolName to monitor"
+          }
+        ]
+      },
+      {
+        "name": "onPrefChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocolName which changed"
           }
         ],
         "extraParameters": [
@@ -69,11 +87,17 @@
         ]
       },
       {
-        "name": "getUpdateChannel",
+        "name": "getPref",
         "type": "function",
-        "description": "Returns the Firefox channel (AppConstants.MOZ_UPDATE_CHANNEL)",
-        "async": true,
-        "parameters": []
+        "description": "Get a preference's value",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name of preference"
+          }
+        ],
+        "async": true
       }
     ]
   }

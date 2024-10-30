@@ -1645,6 +1645,13 @@
   value: 512*1024
   mirror: always
 
+# Selfsovereignidentity prefs
+# Enabling to inject `window.nostr`
+- name: browser.selfsovereignidentity.nostr.enabled
+  type: bool
+  value: true
+  mirror: always
+
 # SessionStore prefs
 # Maximum number of bytes of DOMSessionStorage data we collect per origin.
 - name: browser.sessionstore.dom_storage_limit

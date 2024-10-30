@@ -18,7 +18,16 @@ declare namespace browser.addonsSelfsovereignidentity {
     guid: string
   ) => Credential[]
   const signByNostrKey: (guid: string, serializedEvent: string) => string
-  const onPrimaryChange: {
+  const getPref: (protocolName: ProtocolName) => boolean
+  const onPrimaryChanged: {
+    addListener: (
+      callback: (newGuid: string) => void,
+      protocolName: ProtocolName
+    ) => {}
+    rmoveListener: () => void
+    hadListener: Function
+  }
+  const onPrefChanged: {
     addListener: (
       callback: (newGuid: string) => void,
       protocolName: ProtocolName

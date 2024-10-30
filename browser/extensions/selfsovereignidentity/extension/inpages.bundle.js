@@ -16,18 +16,30 @@ function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
-    // Inject
-    if (window.nostr == null) {
-        window.nostr = new NostrProvider();
-        console.info("inages nostr injected!", window.nostr);
-        const readyEvent = new Event("nostr:ready");
-        window.dispatchEvent(readyEvent);
-    }
+    // Injection for until browser.tabs is established in background.
+    // After the web navigation completed, this will be overrided.
+    window.nostr = new NostrProvider();
     // The message listener to listen to content calls
     // After, emit event to return the reponse to the web apps.
     window.addEventListener("message", (event) => {
         if (event.source === window && event.data.scope === "nostr") {
-            if (event.data.action === "accountChanged") {
+            if (event.data.action === "init" ||
+                event.data.action === "providerChanged") {
+                // TODO(ssb): It depends on the spec with other providers.
+                if (event.data.data.enabled) {
+                    // Inject
+                    window.nostr = new NostrProvider();
+                }
+                else {
+                    // Dispose
+                    window.nostr && delete window.nostr;
+                }
+                console.info(`${event.data.action} emit!`, event);
+                window.dispatchEvent(new CustomEvent(`nostr:${event.data.action.toLowerCase()}`, {
+                    detail: event.data.data,
+                }));
+            }
+            else if (event.data.action === "accountChanged") {
                 console.info("accountChanged emit!", event);
                 window.dispatchEvent(new CustomEvent("nostr:accountchanged", {
                     detail: event.data.data,
@@ -40,6 +52,7 @@ exports.init = init;
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
 class NostrProvider {
     _scope = "nostr";
+    _provider = "ssb";
     getPublicKey() {
         return (0, postMessage_1.postMessage)(this._scope, "getPublicKey", undefined);
     }
@@ -83,7 +96,7 @@ function postMessage(scope, action, args) {
         // Post the request to the content script
         window.postMessage({
             id,
-            application: "SSB",
+            application: "ssb",
             action: `${scope}/${action}`,
             scope,
             args,
@@ -94,7 +107,7 @@ function postMessage(scope, action, args) {
             if (messageEvent.origin !== window.location.origin ||
                 !messageEvent.data ||
                 !messageEvent.data.response ||
-                messageEvent.data.application !== "SSB" ||
+                messageEvent.data.application !== "ssb" ||
                 messageEvent.data.scope !== scope ||
                 messageEvent.data.id !== id) {
                 return;
@@ -226,6 +239,7 @@ var __webpack_unused_export__;
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
+/* eslint-env webextensions */
 const nostr_1 = __webpack_require__(368);
 console.info("inpage-script working!");
 (0, nostr_1.init)();

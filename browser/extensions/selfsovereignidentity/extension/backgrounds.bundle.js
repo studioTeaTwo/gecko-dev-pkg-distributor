@@ -1080,6 +1080,9 @@ const base_1 = __webpack_require__(203);
 const state_1 = __webpack_require__(975);
 // Proceed calls from contents
 const doNostrAction = async (action, args) => {
+    if (!state_1.state.nostr.enabled) {
+        return "Your setting is currently disabled. Please confirm 'browser.selfsovereignidentity.nostr.enabled' in 'about:config'.";
+    }
     switch (action) {
         case "nostr/getPublicKey": {
             return decodeNpub(state_1.state.nostr.npub);
@@ -1101,45 +1104,79 @@ async function init() {
     console.info("experimental-api start...");
     // Get the existing credential from the ssi store.
     const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret("nostr", "nsec", true, "");
-    console.info("background init!", credentials);
-    if (credentials.length === 0)
-        return;
-    state_1.state.nostr = {
-        guid: credentials[0].guid,
-        npub: credentials[0].identifier,
-    };
-    // The message listener to listen to experimental-apis calls
-    // After, those calls get passed on to the content scripts.
-    const onPrimaryChangeCallback = async (newGuid) => {
-        const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret("nostr", "nsec", true, newGuid);
-        if (credentials.length === 0)
-            return;
-        console.info("primary changed!", newGuid, credentials);
+    if (credentials.length > 0) {
         state_1.state.nostr = {
+            ...state_1.state.nostr,
             guid: credentials[0].guid,
             npub: credentials[0].identifier,
         };
-        // Send the message to the contents
-        browser.tabs
-            .query({ status: "complete", discarded: false })
-            .then((tabs) => {
-            const pubkey = decodeNpub(state_1.state.nostr.npub);
-            for (const tab of tabs) {
-                console.info("send to tab: ", tab);
-                if (tab.url.startsWith("http")) {
-                    browser.tabs
-                        .sendMessage(tab.id, {
-                        action: "nostr/accountChanged",
-                        args: { data: pubkey },
-                    })
-                        .catch();
-                }
-            }
-        });
+    }
+    // Get the enabled flag from the prefs.
+    const enabled = await browser.addonsSelfsovereignidentity.getPref("nostr");
+    state_1.state.nostr = {
+        ...state_1.state.nostr,
+        enabled,
     };
-    browser.addonsSelfsovereignidentity.onPrimaryChange.addListener(onPrimaryChangeCallback, "nostr");
+    console.info("background init!", enabled, credentials);
 }
 exports.init = init;
+// The message listener to listen to experimental-apis calls
+// After, those calls get passed on to the content scripts.
+const onPrimaryChangedCallback = async (newGuid) => {
+    const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret("nostr", "nsec", true, newGuid);
+    if (credentials.length === 0)
+        return;
+    console.info("primary changed!", newGuid, credentials);
+    state_1.state.nostr = {
+        ...state_1.state.nostr,
+        guid: credentials[0].guid,
+        npub: credentials[0].identifier,
+    };
+    // Send the message to the contents
+    if (state_1.state.nostr.enabled) {
+        const tabs = await browser.tabs.query({
+            status: "complete",
+            discarded: false,
+        });
+        const pubkey = decodeNpub(state_1.state.nostr.npub);
+        for (const tab of tabs) {
+            console.info("send to tab: ", tab);
+            if (tab.url.startsWith("http")) {
+                browser.tabs
+                    .sendMessage(tab.id, {
+                    action: "nostr/accountChanged",
+                    args: { data: pubkey },
+                })
+                    .catch();
+            }
+        }
+    }
+};
+browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr");
+const onPrefChangedCallback = async (protocolName) => {
+    console.info("pref changed!", protocolName);
+    state_1.state.nostr = {
+        ...state_1.state.nostr,
+        enabled: !state_1.state.nostr.enabled,
+    };
+    // Send the message to the contents
+    const tabs = await browser.tabs.query({
+        status: "complete",
+        discarded: false,
+    });
+    for (const tab of tabs) {
+        console.info("send to tab: ", tab);
+        if (tab.url.startsWith("http")) {
+            browser.tabs
+                .sendMessage(tab.id, {
+                action: "nostr/providerChanged",
+                args: { enabled: state_1.state.nostr.enabled },
+            })
+                .catch();
+        }
+    }
+};
+browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr");
 function decodeNpub(npub) {
     const Bech32MaxSize = 5000;
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
@@ -1194,6 +1231,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.state = void 0;
 exports.state = {
     nostr: {
+        enabled: true,
         guid: "",
         npub: "",
     },
@@ -1241,9 +1279,27 @@ var __webpack_unused_export__;
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const nostr_1 = __webpack_require__(684);
+const state_1 = __webpack_require__(975);
 console.info("background-script working!");
 // initial action to enable ssb when the webapps are loaded
-browser.webNavigation.onCompleted.addListener(() => { });
+browser.webNavigation.onCompleted.addListener(async () => {
+    // Notify init to the contents
+    const tabs = await browser.tabs.query({
+        status: "complete",
+        discarded: false,
+    });
+    for (const tab of tabs) {
+        console.info("send to tab: ", tab);
+        if (tab.url.startsWith("http")) {
+            browser.tabs
+                .sendMessage(tab.id, {
+                action: "nostr/init",
+                args: { data: state_1.state.nostr.enabled },
+            })
+                .catch();
+        }
+    }
+});
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener((message, sender) => {

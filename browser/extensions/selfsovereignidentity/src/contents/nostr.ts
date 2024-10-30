@@ -18,7 +18,7 @@ export async function init() {
     // Only accept messages from the current window
     if (
       ev.source !== window ||
-      ev.data.application !== "SSB" ||
+      ev.data.application !== "ssb" ||
       ev.data.scope !== "nostr"
     ) {
       return
@@ -49,9 +49,21 @@ export async function init() {
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.info("content-script onMessage", request)
     // forward account changed messaged to inpage script
-    if (request.action === "nostr/accountChanged") {
+    if (
+      request.action === "nostr/init" ||
+      request.action === "nostr/providerChanged"
+    ) {
       window.postMessage(
-        { action: "accountChanged", scope: "nostr", data: request.args.data },
+        {
+          action: request.action === "nostr/init" ? "init" : "providerChanged",
+          scope: "nostr",
+          data: request.args,
+        },
+        window.location.origin
+      )
+    } else if (request.action === "nostr/accountChanged") {
+      window.postMessage(
+        { action: "accountChanged", scope: "nostr", data: request.args },
         window.location.origin
       )
     }
@@ -63,7 +75,7 @@ function postMessage(ev, response) {
   window.postMessage(
     {
       id: ev.data.id,
-      application: "SSB",
+      application: "ssb",
       response: true,
       data: response,
       scope: "nostr",

@@ -37,9 +37,9 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
           return AppConstants.MOZ_UPDATE_CHANNEL;
         },
         // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-        onPrimaryChange: new EventManager({
+        onPrimaryChanged: new EventManager({
           context,
-          name: "addonsSelfsovereignidentity.onPrimaryChange",
+          name: "addonsSelfsovereignidentity.onPrimaryChanged",
           register: (fire, protocolName) => {
             const callback = (newGuidPayload) => {
               const newGuid = newGuidPayload.data
@@ -54,6 +54,20 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
             Services.obs.addObserver(callback, obsTopic);
             return () => {
               Services.obs.removeObserver(callback, obsTopic);
+            };
+          },
+        }).api(),
+        onPrefChanged: new EventManager({
+          context,
+          name: "addonsSelfsovereignidentity.onPrefChanged",
+          register: (fire, protocolName) => {
+            const prefName = `browser.selfsovereignidentity.${protocolName}.enabled`;
+            const callback = () => {
+              fire.async(protocolName).catch(() => {}); // ignore Message Manager disconnects
+            };
+            Services.prefs.addObserver(prefName, callback);
+            return () => {
+              Services.prefs.removeObserver(prefName, callback);
             };
           },
         }).api(),
@@ -102,6 +116,15 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
           }
 
           return signature
+        },
+        async getPref(protocolName) {
+          try {
+            return Services.prefs.getBoolPref(
+              `browser.selfsovereignidentity.${protocolName}.enabled`
+            );
+          } catch (e) {
+            throw e
+          }
         },
       },
     };

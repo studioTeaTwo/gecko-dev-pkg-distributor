@@ -5,11 +5,29 @@
 /* eslint-env webextensions */
 
 import { init as nostrInit, doNostrAction } from "./nostr"
+import { state } from "./state"
 
 console.info("background-script working!")
 
 // initial action to enable ssb when the webapps are loaded
-browser.webNavigation.onCompleted.addListener(() => {})
+browser.webNavigation.onCompleted.addListener(async () => {
+  // Notify init to the contents
+  const tabs = await browser.tabs.query({
+    status: "complete",
+    discarded: false,
+  })
+  for (const tab of tabs) {
+    console.info("send to tab: ", tab)
+    if (tab.url.startsWith("http")) {
+      browser.tabs
+        .sendMessage(tab.id, {
+          action: "nostr/init",
+          args: { data: state.nostr.enabled },
+        })
+        .catch()
+    }
+  }
+})
 
 // The message listener to listen to content calls
 // After, return the result to the contents.

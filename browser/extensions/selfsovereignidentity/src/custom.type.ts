@@ -1,4 +1,4 @@
-type ApplicationName = "SSB"
+type ApplicationName = "ssb"
 type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht"
 
 /**

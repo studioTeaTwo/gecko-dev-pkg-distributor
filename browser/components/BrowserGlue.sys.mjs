@@ -295,6 +295,7 @@ let JSWINDOWACTORS = {
         AboutIdentityRemoveAllCredentials: {},
         AboutIdentityUpdateCredential: {},
         AboutIdentityPrimaryChanged: {},
+        AboutIdentityPrefChanged: {},
       },
     },
     matches: ["about:identity", "about:identity?*"],
