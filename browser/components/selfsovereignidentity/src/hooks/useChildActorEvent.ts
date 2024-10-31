@@ -12,8 +12,9 @@ import {
  */
 
 function initStore() {
+  console.log("event emit!")
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityInit", {
+    new CustomEvent("AboutSelfsovereignidentityInit", {
       bubbles: true,
     })
   )
@@ -21,7 +22,7 @@ function initStore() {
 
 function getAllCredentialsToStore() {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityGetAllCredentials", {
+    new CustomEvent("AboutSelfsovereignidentityGetAllCredentials", {
       bubbles: true,
     })
   )
@@ -29,7 +30,7 @@ function getAllCredentialsToStore() {
 
 function addCredentialToStore(credential: Credential) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityCreateCredential", {
+    new CustomEvent("AboutSelfsovereignidentityCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential),
     })
@@ -38,7 +39,7 @@ function addCredentialToStore(credential: Credential) {
 
 function modifyCredentialToStore(credential: Credential) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityUpdateCredential", {
+    new CustomEvent("AboutSelfsovereignidentityUpdateCredential", {
       bubbles: true,
       detail: transformToPayload(credential),
     })
@@ -59,7 +60,7 @@ function deleteCredentialToStore(
     }
   }
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityDeleteCredential", {
+    new CustomEvent("AboutSelfsovereignidentityDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential),
     })
@@ -68,7 +69,7 @@ function deleteCredentialToStore(
 
 function removeAllCredentialsToStore() {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityRemoveAllCredentials", {
+    new CustomEvent("AboutSelfsovereignidentityRemoveAllCredentials", {
       bubbles: true,
     })
   )
@@ -79,7 +80,7 @@ function onPrimaryChanged(changeSet: {
   guid: string
 }) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityPrimaryChanged", {
+    new CustomEvent("AboutSelfsovereignidentityPrimaryChanged", {
       bubbles: true,
       detail: changeSet,
     })
@@ -91,7 +92,7 @@ function onPrefChanged(changeSet: {
   enabled: boolean
 }) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityPrefChanged", {
+    new CustomEvent("AboutSelfsovereignidentityPrefChanged", {
       bubbles: true,
       detail: changeSet,
     })
@@ -146,12 +147,12 @@ export default function useChildActorEvent() {
   // Only do once
   useEffect(() => {
     window.addEventListener(
-      "AboutIdentityChromeToContent",
+      "AboutSelfsovereignidentityChromeToContent",
       receiveFromChildActor
     )
     return () => {
       window.removeEventListener(
-        "AboutIdentityChromeToContent",
+        "AboutSelfsovereignidentityChromeToContent",
         receiveFromChildActor
       )
     }

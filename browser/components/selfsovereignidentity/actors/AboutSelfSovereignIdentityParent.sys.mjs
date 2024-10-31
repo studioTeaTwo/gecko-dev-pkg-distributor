@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// _AboutIdentity is only exported for testing
+// _AboutSelfsovereignidentity is only exported for testing
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
 import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs"
 
@@ -14,7 +14,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 })
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
-  return lazy.SsiHelper.createLogger("AboutIdentityParent")
+  return lazy.SsiHelper.createLogger("AboutSelfsovereignidentityParent")
 })
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
@@ -22,15 +22,15 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "signon.management.page.os-auth.enabled",
   true
 )
-ChromeUtils.defineLazyGetter(lazy, "AboutIdentityL10n", () => {
+ChromeUtils.defineLazyGetter(lazy, "AboutSelfsovereignidentityL10n", () => {
   return new Localization(["branding/brand.ftl", "browser/aboutIdentity.ftl"])
 })
 
-const ABOUT_IDENTITY_ORIGIN = "about:identity"
+const ABOUT_IDENTITY_ORIGIN = "about:selfsovereignidentity"
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-login-required"
 
-// about:identity will always use the privileged content process,
+// about:selfsovereignidentity will always use the privileged content process,
 // even if it is disabled for other consumers such as about:newtab.
 const EXPECTED_ABOUTIDENTITY_REMOTE_TYPE = E10SUtils.PRIVILEGEDABOUT_REMOTE_TYPE
 const convertSubjectToCredential = (subject) => {
@@ -41,7 +41,7 @@ const convertSubjectToCredential = (subject) => {
   return credential
 }
 
-export class AboutIdentityParent extends JSWindowActorParent {
+export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   async receiveMessage(message) {
     if (!this.browsingContext.embedderElement) {
       return
@@ -56,43 +56,47 @@ export class AboutIdentityParent extends JSWindowActorParent {
     //   EXPECTED_ABOUTLOGINS_REMOTE_TYPE
     // ) {
     //   throw new Error(
-    //     `AboutIdentityParent: Received ${message.name} message the remote type didn't match expectations: ${this.browsingContext.embedderElement.remoteType} == ${EXPECTED_ABOUTLOGINS_REMOTE_TYPE}`
+    //     `AboutSelfsovereignidentityParent: Received ${message.name} message the remote type didn't match expectations: ${this.browsingContext.embedderElement.remoteType} == ${EXPECTED_ABOUTLOGINS_REMOTE_TYPE}`
     //   )
     // }
 
-    AboutIdentity.subscribers.add(this.browsingContext)
+    AboutSelfsovereignidentity.subscribers.add(this.browsingContext)
 
     switch (message.name) {
-      case "AboutIdentity:GetAllCredentials": {
+      case "AboutSelfsovereignidentity:GetAllCredentials": {
         this.#getAllCredentials()
         break
       }
-      case "AboutIdentity:CreateCredential": {
+      case "AboutSelfsovereignidentity:CreateCredential": {
         await this.#createCredential(message.data.credential)
         break
       }
-      case "AboutIdentity:DeleteCredential": {
+      case "AboutSelfsovereignidentity:DeleteCredential": {
         this.#deleteCredential(message.data.credential)
         break
       }
-      case "AboutIdentity:PrimaryPasswordRequest": {
+      case "AboutSelfsovereignidentity:PrimaryPasswordRequest": {
         await this.#primaryPasswordRequest(message.data)
         break
       }
-      case "AboutIdentity:Subscribe": {
+      case "AboutSelfsovereignidentity:Subscribe": {
         await this.#subscribe()
         break
       }
-      case "AboutIdentity:UpdateCredential": {
+      case "AboutSelfsovereignidentity:UpdateCredential": {
         this.#updateCredential(message.data.credential)
         break
       }
-      case "AboutIdentity:RemoveAllCredentials": {
+      case "AboutSelfsovereignidentity:RemoveAllCredentials": {
         this.#removeAllCredentials()
         break
       }
-      case "AboutIdentity:PrimaryChanged": {
+      case "AboutSelfsovereignidentity:PrimaryChanged": {
         this.#primaryChanged(message.data.changeSet)
+        break
+      }
+      case "AboutSelfsovereignidentity:PrefChanged": {
+        this.#prefChanged(message.data.changeSet)
         break
       }
     }
@@ -103,8 +107,11 @@ export class AboutIdentityParent extends JSWindowActorParent {
   }
 
   async #getAllCredentials() {
-    const credentials = await AboutIdentity.getAllCredentials()
-    this.sendAsyncMessage("AboutIdentity:AllCredentials", credentials)
+    const credentials = await AboutSelfsovereignidentity.getAllCredentials()
+    this.sendAsyncMessage(
+      "AboutSelfsovereignidentity:AllCredentials",
+      credentials
+    )
   }
 
   async #createCredential(newCredential) {
@@ -136,7 +143,9 @@ export class AboutIdentityParent extends JSWindowActorParent {
 
   async #primaryPasswordRequest(messageId) {
     if (!messageId) {
-      throw new Error("AboutIdentity:PrimaryPasswordRequest: no messageId.")
+      throw new Error(
+        "AboutSelfsovereignidentity:PrimaryPasswordRequest: no messageId."
+      )
     }
     let messageText = { value: "NOT SUPPORTED" }
     let captionText = { value: "" }
@@ -147,33 +156,36 @@ export class AboutIdentityParent extends JSWindowActorParent {
     // See bug 1614874 for Linux support.
     if (lazy.OS_AUTH_ENABLED && lazy.OSKeyStore.canReauth()) {
       messageId += "-" + AppConstants.platform
-      ;[messageText, captionText] = await lazy.AboutIdentityL10n.formatMessages(
-        [
+      ;[messageText, captionText] =
+        await lazy.AboutSelfsovereignidentityL10n.formatMessages([
           {
             id: messageId,
           },
           {
-            id: "about-identity-os-auth-dialog-caption",
+            id: "about-selfsovereignidentity-os-auth-dialog-caption",
           },
-        ]
-      )
+        ])
     }
 
     let { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
       this.browsingContext.embedderElement,
       lazy.OS_AUTH_ENABLED,
-      AboutIdentity._authExpirationTime,
+      AboutSelfsovereignidentity._authExpirationTime,
       messageText.value,
       captionText.value
     )
-    this.sendAsyncMessage("AboutIdentity:PrimaryPasswordResponse", {
-      result: isAuthorized,
-      telemetryEvent,
-    })
+    this.sendAsyncMessage(
+      "AboutSelfsovereignidentity:PrimaryPasswordResponse",
+      {
+        result: isAuthorized,
+        telemetryEvent,
+      }
+    )
     if (isAuthorized) {
-      AboutIdentity._authExpirationTime = Date.now() + AUTH_TIMEOUT_MS
+      AboutSelfsovereignidentity._authExpirationTime =
+        Date.now() + AUTH_TIMEOUT_MS
       const remaskPasswords = () => {
-        this.sendAsyncMessage("AboutIdentity:RemaskPassword")
+        this.sendAsyncMessage("AboutSelfsovereignidentity:RemaskPassword")
       }
       clearTimeout(_gPasswordRemaskTimeout)
       _gPasswordRemaskTimeout = setTimeout(remaskPasswords, AUTH_TIMEOUT_MS)
@@ -181,11 +193,11 @@ export class AboutIdentityParent extends JSWindowActorParent {
   }
 
   async #subscribe() {
-    AboutIdentity.addObservers()
+    AboutSelfsovereignidentity.addObservers()
 
-    const credentials = await AboutIdentity.getAllCredentials()
+    const credentials = await AboutSelfsovereignidentity.getAllCredentials()
     try {
-      this.sendAsyncMessage("AboutIdentity:Setup", {
+      this.sendAsyncMessage("AboutSelfsovereignidentity:Setup", {
         credentials,
         primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
         passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
@@ -197,7 +209,7 @@ export class AboutIdentityParent extends JSWindowActorParent {
 
       // The message manager may be destroyed before the replies can be sent.
       lazy.log.debug(
-        "AboutIdentity:Subscribe: exception when replying with credentials",
+        "AboutSelfsovereignidentity:Subscribe: exception when replying with credentials",
         ex
       )
     }
@@ -209,7 +221,7 @@ export class AboutIdentityParent extends JSWindowActorParent {
     })
     if (credentials.length != 1) {
       lazy.log.warn(
-        `AboutIdentity:UpdateCredential: expected to find a credential for guid: ${credentialUpdates.guid} but found ${credentials.length}`
+        `AboutSelfsovereignidentity:UpdateCredential: expected to find a credential for guid: ${credentialUpdates.guid} but found ${credentials.length}`
       )
       return
     }
@@ -252,6 +264,16 @@ export class AboutIdentityParent extends JSWindowActorParent {
     }
   }
 
+  #prefChanged(changeSet) {
+    if (changeSet.protocolName === "nostr") {
+      Services.prefs.setBoolPref(
+        "browser.selfsovereignidentity.nostr.enabled",
+        changeSet.enabled
+      )
+      this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", changeSet)
+    }
+  }
+
   #handleCredentialStorageErrors(credential, error) {
     let messageObject = {
       credential: lazy.SsiHelper.credentialToVanillaObject(credential),
@@ -265,13 +287,13 @@ export class AboutIdentityParent extends JSWindowActorParent {
     }
 
     this.sendAsyncMessage(
-      "AboutIdentity:ShowCredentialItemError",
+      "AboutSelfsovereignidentity:ShowCredentialItemError",
       messageObject
     )
   }
 }
 
-class AboutIdentityInternal {
+class AboutSelfsovereignidentityInternal {
   subscribers = new WeakSet()
   #observersAdded = false
   authExpirationTime = Number.NEGATIVE_INFINITY
@@ -325,7 +347,10 @@ class AboutIdentityInternal {
       return
     }
 
-    this.#messageSubscribers("AboutIdentity:CredentialAdded", credential)
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:CredentialAdded",
+      credential
+    )
   }
 
   async #modifyCredential(subject) {
@@ -335,7 +360,10 @@ class AboutIdentityInternal {
       return
     }
 
-    this.#messageSubscribers("AboutIdentity:CredentialModified", credential)
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:CredentialModified",
+      credential
+    )
   }
 
   #removeCredential(subject) {
@@ -343,16 +371,25 @@ class AboutIdentityInternal {
     if (!credential) {
       return
     }
-    this.#messageSubscribers("AboutIdentity:CredentialRemoved", credential)
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:CredentialRemoved",
+      credential
+    )
   }
 
   #removeAllCredentials() {
-    this.#messageSubscribers("AboutIdentity:RemoveAllCredentials", [])
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:RemoveAllCredentials",
+      []
+    )
   }
 
   async #reloadAllCredentials() {
     let credentials = await this.getAllCredentials()
-    this.#messageSubscribers("AboutIdentity:AllCredentials", credentials)
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:AllCredentials",
+      credentials
+    )
   }
 
   #showPrimaryPasswordLoginNotifications() {
@@ -360,7 +397,8 @@ class AboutIdentityInternal {
       id: PRIMARY_PASSWORD_NOTIFICATION_ID,
       priority: "PRIORITY_WARNING_MEDIUM",
       iconURL: "chrome://browser/skin/login.svg",
-      messageId: "about-identity-primary-password-notification-message",
+      messageId:
+        "about-selfsovereignidentity-primary-password-notification-message",
       buttonIds: ["master-password-reload-button"],
       onClicks: [
         function onReloadClick(browser) {
@@ -368,7 +406,9 @@ class AboutIdentityInternal {
         },
       ],
     })
-    this.#messageSubscribers("AboutIdentity:PrimaryPasswordAuthRequired")
+    this.#messageSubscribers(
+      "AboutSelfsovereignidentity:PrimaryPasswordAuthRequired"
+    )
   }
 
   #showNotifications({
@@ -455,7 +495,9 @@ class AboutIdentityInternal {
     for (let subscriber of this.#subscriberIterator()) {
       try {
         if (subscriber.currentWindowGlobal) {
-          let actor = subscriber.currentWindowGlobal.getActor("AboutIdentity")
+          let actor = subscriber.currentWindowGlobal.getActor(
+            "AboutSelfsovereignidentity"
+          )
           actor.sendAsyncMessage(name, details)
         }
       } catch (ex) {
@@ -509,5 +551,5 @@ class AboutIdentityInternal {
   }
 }
 
-let AboutIdentity = new AboutIdentityInternal()
-export var _AboutIdentity = AboutIdentity
+let AboutSelfsovereignidentity = new AboutSelfsovereignidentityInternal()
+export var _AboutSelfsovereignidentity = AboutSelfsovereignidentity

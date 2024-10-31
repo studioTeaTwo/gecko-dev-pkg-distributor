@@ -22,46 +22,49 @@ function recordTelemetryEvent(event) {
       extra
     )
   } catch (ex) {
-    console.error("AboutIdentityChild: error recording telemetry event:", ex)
+    console.error(
+      "AboutSelfsovereignidentityChild: error recording telemetry event:",
+      ex
+    )
   }
 }
 
-export class AboutIdentityChild extends JSWindowActorChild {
+export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
   handleEvent(event) {
     switch (event.type) {
-      case "AboutIdentityInit": {
+      case "AboutSelfsovereignidentityInit": {
         this.#aboutIdentityInit()
         break
       }
-      case "AboutIdentityGetAllCredentials": {
+      case "AboutSelfsovereignidentityGetAllCredentials": {
         this.#aboutIdentityGetAllCredentials()
         break
       }
-      case "AboutIdentityCreateCredential": {
+      case "AboutSelfsovereignidentityCreateCredential": {
         this.#aboutIdentityCreateCredential(event.detail)
         break
       }
-      case "AboutIdentityDeleteCredential": {
+      case "AboutSelfsovereignidentityDeleteCredential": {
         this.#aboutIdentityDeleteCredential(event.detail)
         break
       }
-      case "AboutIdentityRecordTelemetryEvent": {
+      case "AboutSelfsovereignidentityRecordTelemetryEvent": {
         this.#aboutIdentityRecordTelemetryEvent(event)
         break
       }
-      case "AboutIdentityRemoveAllCredentials": {
+      case "AboutSelfsovereignidentityRemoveAllCredentials": {
         this.#aboutIdentityRemoveAllCredentials()
         break
       }
-      case "AboutIdentityUpdateCredential": {
+      case "AboutSelfsovereignidentityUpdateCredential": {
         this.#aboutIdentityUpdateCredential(event.detail)
         break
       }
-      case "AboutIdentityPrimaryChanged": {
+      case "AboutSelfsovereignidentityPrimaryChanged": {
         this.#aboutIdentityPrimaryChanged(event.detail)
         break
       }
-      case "AboutIdentityPrefChanged": {
+      case "AboutSelfsovereignidentityPrefChanged": {
         this.#aboutIdentityPrefChanged(event.detail)
         break
       }
@@ -69,12 +72,12 @@ export class AboutIdentityChild extends JSWindowActorChild {
   }
 
   #aboutIdentityInit() {
-    this.sendAsyncMessage("AboutIdentity:Subscribe")
+    this.sendAsyncMessage("AboutSelfsovereignidentity:Subscribe")
 
     let win = this.browsingContext.window
     let waivedContent = Cu.waiveXrays(win)
     let that = this
-    let AboutIdentityUtils = {
+    let AboutSelfsovereignidentityUtils = {
       // List things to share with app through `window`
       doCredentialMatch(credentialA, credentialB) {
         return SsiHelper.doCredentialMatch(credentialA, credentialB, {})
@@ -91,7 +94,10 @@ export class AboutIdentityChild extends JSWindowActorChild {
           resolve,
         }
 
-        that.sendAsyncMessage("AboutIdentity:PrimaryPasswordRequest", messageId)
+        that.sendAsyncMessage(
+          "AboutSelfsovereignidentity:PrimaryPasswordRequest",
+          messageId
+        )
 
         return gPrimaryPasswordPromise
       },
@@ -99,8 +105,8 @@ export class AboutIdentityChild extends JSWindowActorChild {
       primaryPasswordEnabled: true,
       passwordRevealVisible: true,
     }
-    waivedContent.AboutIdentityUtils = Cu.cloneInto(
-      AboutIdentityUtils,
+    waivedContent.AboutSelfsovereignidentityUtils = Cu.cloneInto(
+      AboutSelfsovereignidentityUtils,
       waivedContent,
       {
         cloneFunctions: true,
@@ -114,17 +120,17 @@ export class AboutIdentityChild extends JSWindowActorChild {
   }
 
   #aboutIdentityGetAllCredentials() {
-    this.sendAsyncMessage("AboutIdentity:GetAllCredentials")
+    this.sendAsyncMessage("AboutSelfsovereignidentity:GetAllCredentials")
   }
 
   #aboutIdentityCreateCredential(credential) {
-    this.sendAsyncMessage("AboutIdentity:CreateCredential", {
+    this.sendAsyncMessage("AboutSelfsovereignidentity:CreateCredential", {
       credential,
     })
   }
 
   #aboutIdentityDeleteCredential(credential) {
-    this.sendAsyncMessage("AboutIdentity:DeleteCredential", {
+    this.sendAsyncMessage("AboutSelfsovereignidentity:DeleteCredential", {
       credential,
     })
   }
@@ -154,40 +160,36 @@ export class AboutIdentityChild extends JSWindowActorChild {
   }
 
   #aboutIdentityRemoveAllCredentials() {
-    this.sendAsyncMessage("AboutIdentity:RemoveAllCredentials")
+    this.sendAsyncMessage("AboutSelfsovereignidentity:RemoveAllCredentials")
   }
 
   #aboutIdentityUpdateCredential(credential) {
-    this.sendAsyncMessage("AboutIdentity:UpdateCredential", {
+    this.sendAsyncMessage("AboutSelfsovereignidentity:UpdateCredential", {
       credential,
     })
   }
 
   #aboutIdentityPrimaryChanged(changeSet) {
-    this.sendAsyncMessage("AboutIdentity:PrimaryChanged", {
+    this.sendAsyncMessage("AboutSelfsovereignidentity:PrimaryChanged", {
       changeSet,
     })
   }
 
   #aboutIdentityPrefChanged(changeSet) {
-    if (changeSet.protocolName === "nostr") {
-      Services.prefs.setBoolPref(
-        "browser.selfsovereignidentity.nostr.enabled",
-        changeSet.enabled
-      )
-      this.sendToContent("Prefs", { nostr: changeSet.enabled })
-    }
+    this.sendAsyncMessage("AboutSelfsovereignidentity:PrefChanged", {
+      changeSet,
+    })
   }
 
   receiveMessage(message) {
     switch (message.name) {
-      case "AboutIdentity:PrimaryPasswordResponse":
+      case "AboutSelfsovereignidentity:PrimaryPasswordResponse":
         this.#primaryPasswordResponse(message.data)
         break
-      case "AboutIdentity:RemaskPassword":
+      case "AboutSelfsovereignidentity:RemaskPassword":
         this.#remaskPassword(message.data)
         break
-      case "AboutIdentity:Setup":
+      case "AboutSelfsovereignidentity:Setup":
         this.#setup(message.data)
         break
       default:
@@ -207,22 +209,30 @@ export class AboutIdentityChild extends JSWindowActorChild {
   }
 
   #setup(data) {
-    let utils = Cu.waiveXrays(this.browsingContext.window).AboutIdentityUtils
+    let utils = Cu.waiveXrays(
+      this.browsingContext.window
+    ).AboutSelfsovereignidentityUtils
     utils.primaryPasswordEnabled = data.primaryPasswordEnabled
     utils.passwordRevealVisible = data.passwordRevealVisible
     this.sendToContent("Setup", data)
   }
 
   #passMessageDataToContent(message) {
-    this.sendToContent(message.name.replace("AboutIdentity:", ""), message.data)
+    this.sendToContent(
+      message.name.replace("AboutSelfsovereignidentity:", ""),
+      message.data
+    )
   }
 
   sendToContent(messageType, detail) {
     let win = this.document.defaultView
     let message = Object.assign({ messageType }, { value: detail })
-    let event = new win.CustomEvent("AboutIdentityChromeToContent", {
-      detail: Cu.cloneInto(message, win),
-    })
+    let event = new win.CustomEvent(
+      "AboutSelfsovereignidentityChromeToContent",
+      {
+        detail: Cu.cloneInto(message, win),
+      }
+    )
     win.dispatchEvent(event)
   }
 }

@@ -141,22 +141,23 @@ function Lightning(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Lightning Is the Common Language of the Bitcoin Economy"' });
 }
 function initStore() {
+  console.log("event emit!");
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityInit", {
+    new CustomEvent("AboutSelfsovereignidentityInit", {
       bubbles: true
     })
   );
 }
 function getAllCredentialsToStore() {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityGetAllCredentials", {
+    new CustomEvent("AboutSelfsovereignidentityGetAllCredentials", {
       bubbles: true
     })
   );
 }
 function addCredentialToStore(credential) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityCreateCredential", {
+    new CustomEvent("AboutSelfsovereignidentityCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential)
     })
@@ -164,7 +165,7 @@ function addCredentialToStore(credential) {
 }
 function modifyCredentialToStore(credential) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityUpdateCredential", {
+    new CustomEvent("AboutSelfsovereignidentityUpdateCredential", {
       bubbles: true,
       detail: transformToPayload(credential)
     })
@@ -181,7 +182,7 @@ function deleteCredentialToStore(deletedCredential, credentials) {
     }
   }
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityDeleteCredential", {
+    new CustomEvent("AboutSelfsovereignidentityDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential)
     })
@@ -189,14 +190,14 @@ function deleteCredentialToStore(deletedCredential, credentials) {
 }
 function removeAllCredentialsToStore() {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityRemoveAllCredentials", {
+    new CustomEvent("AboutSelfsovereignidentityRemoveAllCredentials", {
       bubbles: true
     })
   );
 }
 function onPrimaryChanged(changeSet) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityPrimaryChanged", {
+    new CustomEvent("AboutSelfsovereignidentityPrimaryChanged", {
       bubbles: true,
       detail: changeSet
     })
@@ -204,7 +205,7 @@ function onPrimaryChanged(changeSet) {
 }
 function onPrefChanged(changeSet) {
   window.dispatchEvent(
-    new CustomEvent("AboutIdentityPrefChanged", {
+    new CustomEvent("AboutSelfsovereignidentityPrefChanged", {
       bubbles: true,
       detail: changeSet
     })
@@ -242,12 +243,12 @@ function useChildActorEvent() {
   const [credentialsFromStore, setCredentialsFromStore] = reactExports.useState([null, []]);
   reactExports.useEffect(() => {
     window.addEventListener(
-      "AboutIdentityChromeToContent",
+      "AboutSelfsovereignidentityChromeToContent",
       receiveFromChildActor
     );
     return () => {
       window.removeEventListener(
-        "AboutIdentityChromeToContent",
+        "AboutSelfsovereignidentityChromeToContent",
         receiveFromChildActor
       );
     };
