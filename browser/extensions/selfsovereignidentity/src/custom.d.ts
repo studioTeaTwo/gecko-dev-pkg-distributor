@@ -39,6 +39,7 @@ declare namespace browser.addonsSelfsovereignidentity {
 
 // Window incompatible types
 interface Window {
+  ssi: WindowSSI
   nostr: object
   emit: (action: string) => void
 }

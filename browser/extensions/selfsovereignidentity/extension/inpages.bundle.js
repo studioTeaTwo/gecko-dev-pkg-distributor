@@ -154,6 +154,45 @@ exports.PromiseQueue = PromiseQueue;
 
 /***/ }),
 
+/***/ 731:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+// Interface for window.ssi prototype
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.WindowSSI = exports.init = void 0;
+function init() {
+    window.ssi = exports.WindowSSI;
+    window.addEventListener("message", (event) => {
+        if (event.source === window && event.data.scope === "nostr") {
+            if (event.data.action === "accountChanged") {
+                window.ssi.nostr.publicKey = event.data.data;
+                // NOTE: There may be no need to emit it, so that Peter Todd is not suspected of being Satoshi Nakamoto.
+                window.dispatchEvent(new Event("nostr:accountchanged"));
+            }
+        }
+    });
+}
+exports.init = init;
+exports.WindowSSI = {
+    _scope: "ssi",
+    nostr: {
+        publicKey: "",
+        generate(option) {
+            return "publickey";
+        },
+        sign(message, option) {
+            return "signature";
+        },
+        decrypt(ciphertext, option) {
+            return "plaintext";
+        },
+    },
+};
+
+
+/***/ }),
+
 /***/ 874:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -255,8 +294,10 @@ var __webpack_unused_export__;
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const logger_1 = __webpack_require__(874);
+const ssi_1 = __webpack_require__(731);
 const nostr_1 = __webpack_require__(368);
 (0, logger_1.log)("inpage-script working");
+(0, ssi_1.init)();
 (0, nostr_1.init)();
 
 })();

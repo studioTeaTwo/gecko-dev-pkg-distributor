@@ -1230,11 +1230,13 @@ function serializeEvent(event) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.state = void 0;
+// NOTE: We can hold multiple selfsovereignidentities here, just within background.
+// But don't expose them to the contents.
 exports.state = {
     nostr: {
         enabled: true,
-        guid: "",
         npub: "",
+        guid: "",
     },
 };
 
