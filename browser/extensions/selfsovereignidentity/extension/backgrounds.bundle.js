@@ -1077,6 +1077,7 @@ exports.init = exports.doNostrAction = void 0;
 const sha256_1 = __webpack_require__(623);
 const utils_1 = __webpack_require__(175);
 const base_1 = __webpack_require__(203);
+const logger_1 = __webpack_require__(874);
 const state_1 = __webpack_require__(975);
 // Proceed calls from contents
 const doNostrAction = async (action, args) => {
@@ -1101,7 +1102,7 @@ const doNostrAction = async (action, args) => {
 };
 exports.doNostrAction = doNostrAction;
 async function init() {
-    console.info("experimental-api start...");
+    (0, logger_1.log)("experimental-api start...");
     // Get the existing credential from the ssi store.
     const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret("nostr", "nsec", true, "");
     if (credentials.length > 0) {
@@ -1117,7 +1118,7 @@ async function init() {
         ...state_1.state.nostr,
         enabled,
     };
-    console.info("background init!", enabled, credentials);
+    (0, logger_1.log)("background init!", enabled, credentials);
 }
 exports.init = init;
 // The message listener to listen to experimental-apis calls
@@ -1126,7 +1127,7 @@ const onPrimaryChangedCallback = async (newGuid) => {
     const credentials = await browser.addonsSelfsovereignidentity.searchCredentialsWithoutSecret("nostr", "nsec", true, newGuid);
     if (credentials.length === 0)
         return;
-    console.info("primary changed!", newGuid, credentials);
+    (0, logger_1.log)("primary changed!", newGuid, credentials);
     state_1.state.nostr = {
         ...state_1.state.nostr,
         guid: credentials[0].guid,
@@ -1140,7 +1141,7 @@ const onPrimaryChangedCallback = async (newGuid) => {
         });
         const pubkey = decodeNpub(state_1.state.nostr.npub);
         for (const tab of tabs) {
-            console.info("send to tab: ", tab);
+            (0, logger_1.log)("send to tab", tab);
             if (tab.url.startsWith("http")) {
                 browser.tabs
                     .sendMessage(tab.id, {
@@ -1154,7 +1155,7 @@ const onPrimaryChangedCallback = async (newGuid) => {
 };
 browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr");
 const onPrefChangedCallback = async (protocolName) => {
-    console.info("pref changed!", protocolName);
+    (0, logger_1.log)("pref changed!", protocolName);
     state_1.state.nostr = {
         ...state_1.state.nostr,
         enabled: !state_1.state.nostr.enabled,
@@ -1165,7 +1166,7 @@ const onPrefChangedCallback = async (protocolName) => {
         discarded: false,
     });
     for (const tab of tabs) {
-        console.info("send to tab: ", tab);
+        (0, logger_1.log)("send to tab", tab);
         if (tab.url.startsWith("http")) {
             browser.tabs
                 .sendMessage(tab.id, {
@@ -1238,6 +1239,20 @@ exports.state = {
 };
 
 
+/***/ }),
+
+/***/ 874:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.log = void 0;
+function log(...args) {
+    console.info("ssb:", args);
+}
+exports.log = log;
+
+
 /***/ })
 
 /******/ 	});
@@ -1278,9 +1293,10 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
+const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(684);
 const state_1 = __webpack_require__(975);
-console.info("background-script working!");
+(0, logger_1.log)("background-script working");
 // initial action to enable ssb when the webapps are loaded
 browser.webNavigation.onCompleted.addListener(async () => {
     // Notify init to the contents
@@ -1289,7 +1305,7 @@ browser.webNavigation.onCompleted.addListener(async () => {
         discarded: false,
     });
     for (const tab of tabs) {
-        console.info("send to tab: ", tab);
+        (0, logger_1.log)("send to tab", tab);
         if (tab.url.startsWith("http")) {
             browser.tabs
                 .sendMessage(tab.id, {
@@ -1303,7 +1319,7 @@ browser.webNavigation.onCompleted.addListener(async () => {
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener((message, sender) => {
-    console.info("background received from content: ", message, sender);
+    (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
         return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args)).then((data) => ({ data }));
     }

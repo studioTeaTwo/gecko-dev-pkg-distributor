@@ -1,6 +1,7 @@
 // Interface for the web apps to call the extension
 // refs: https://github.com/nostr-protocol/nips/blob/master/07.md
 
+import { log } from "../shared/logger"
 import { shouldInject } from "../shared/shouldInject"
 import { postMessage } from "./postMessage"
 
@@ -29,14 +30,14 @@ export function init() {
           // Dispose
           window.nostr && delete window.nostr
         }
-        console.info(`${event.data.action} emit!`, event)
+        log(`inpage ${event.data.action} emit!`, event)
         window.dispatchEvent(
           new CustomEvent(`nostr:${event.data.action.toLowerCase()}`, {
             detail: event.data.data,
           })
         )
       } else if (event.data.action === "accountChanged") {
-        console.info("accountChanged emit!", event)
+        log("inpage accountChanged emit!", event)
         window.dispatchEvent(
           new CustomEvent("nostr:accountchanged", {
             detail: event.data.data,

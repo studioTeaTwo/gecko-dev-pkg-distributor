@@ -10,6 +10,7 @@
 // refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = void 0;
+const logger_1 = __webpack_require__(874);
 const shouldInject_1 = __webpack_require__(880);
 const availableCalls = ["nostr/getPublicKey", "nostr/signEvent"];
 async function init() {
@@ -20,7 +21,7 @@ async function init() {
     // After, those calls get passed on to the background script
     // and emit event to return the response to the inpages.
     window.addEventListener("message", async (ev) => {
-        console.info("content-script eventListener message", ev);
+        (0, logger_1.log)("content-script eventListener message", ev);
         // Only accept messages from the current window
         if (ev.source !== window ||
             ev.data.application !== "ssb" ||
@@ -38,17 +39,17 @@ async function init() {
                 args: ev.data.args,
             };
             const replyFunction = (response) => {
-                console.info("response from background", ev, response);
+                (0, logger_1.log)("response from background", ev, response);
                 postMessage(ev, response);
             };
-            console.info("content-script sendMessage to background", message);
+            (0, logger_1.log)("content-script sendMessage to background", message);
             return browser.runtime.sendMessage(message).then(replyFunction).catch();
         }
     });
     // The message listener to listen to background calls
     // After, emit event to return the response to the inpages.
     browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.info("content-script onMessage", request);
+        (0, logger_1.log)("content-script onMessage", request);
         // forward account changed messaged to inpage script
         if (request.action === "nostr/init" ||
             request.action === "nostr/providerChanged") {
@@ -74,6 +75,20 @@ function postMessage(ev, response) {
         scope: "nostr",
     }, window.location.origin);
 }
+
+
+/***/ }),
+
+/***/ 874:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.log = void 0;
+function log(...args) {
+    console.info("ssb:", args);
+}
+exports.log = log;
 
 
 /***/ }),
@@ -164,8 +179,9 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
+const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(45);
-console.info("content-script working!", browser.runtime.getURL("inpages/inpages.bundle.js"));
+(0, logger_1.log)("content-script working", browser.runtime.getURL("inpages/inpages.bundle.js"));
 function loadInpageScript(url) {
     try {
         if (!document)

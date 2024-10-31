@@ -1,6 +1,7 @@
 // Mediator for the extension to relay between the web apps and the background
 // refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
 
+import { log } from "../shared/logger"
 import { shouldInject } from "../shared/shouldInject"
 
 const availableCalls = ["nostr/getPublicKey", "nostr/signEvent"]
@@ -14,7 +15,7 @@ export async function init() {
   // After, those calls get passed on to the background script
   // and emit event to return the response to the inpages.
   window.addEventListener("message", async (ev) => {
-    console.info("content-script eventListener message", ev)
+    log("content-script eventListener message", ev)
     // Only accept messages from the current window
     if (
       ev.source !== window ||
@@ -36,10 +37,10 @@ export async function init() {
         args: ev.data.args,
       }
       const replyFunction = (response) => {
-        console.info("response from background", ev, response)
+        log("response from background", ev, response)
         postMessage(ev, response)
       }
-      console.info("content-script sendMessage to background", message)
+      log("content-script sendMessage to background", message)
       return browser.runtime.sendMessage(message).then(replyFunction).catch()
     }
   })
@@ -47,7 +48,7 @@ export async function init() {
   // The message listener to listen to background calls
   // After, emit event to return the response to the inpages.
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.info("content-script onMessage", request)
+    log("content-script onMessage", request)
     // forward account changed messaged to inpage script
     if (
       request.action === "nostr/init" ||

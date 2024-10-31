@@ -141,7 +141,6 @@ function Lightning(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Lightning Is the Common Language of the Bitcoin Economy"' });
 }
 function initStore() {
-  console.log("event emit!");
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityInit", {
       bubbles: true

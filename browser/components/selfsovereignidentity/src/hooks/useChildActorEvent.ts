@@ -12,7 +12,6 @@ import {
  */
 
 function initStore() {
-  console.log("event emit!")
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityInit", {
       bubbles: true,

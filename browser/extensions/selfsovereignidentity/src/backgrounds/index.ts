@@ -4,10 +4,11 @@
 
 /* eslint-env webextensions */
 
+import { log } from "../shared/logger"
 import { init as nostrInit, doNostrAction } from "./nostr"
 import { state } from "./state"
 
-console.info("background-script working!")
+log("background-script working")
 
 // initial action to enable ssb when the webapps are loaded
 browser.webNavigation.onCompleted.addListener(async () => {
@@ -17,7 +18,7 @@ browser.webNavigation.onCompleted.addListener(async () => {
     discarded: false,
   })
   for (const tab of tabs) {
-    console.info("send to tab: ", tab)
+    log("send to tab", tab)
     if (tab.url.startsWith("http")) {
       browser.tabs
         .sendMessage(tab.id, {
@@ -39,7 +40,7 @@ browser.runtime.onMessage.addListener(
     },
     sender: FixMe
   ) => {
-    console.info("background received from content: ", message, sender)
+    log("background received from content", message, sender)
     if (message.action.includes("nostr/")) {
       return Promise.resolve(doNostrAction(message.action, message.args)).then(
         (data) => ({ data })

@@ -38,8 +38,6 @@ export function postMessage<T>(
             return
           }
 
-          console.info("debug", messageEvent.data)
-
           if (messageEvent.data.data.error) {
             reject(new Error(messageEvent.data.data.error))
           } else {

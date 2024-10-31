@@ -4,10 +4,11 @@
 
 /* eslint-env webextensions */
 
+import { log } from "../shared/logger"
 import { init as nostrInit } from "./nostr"
 
-console.info(
-  "content-script working!",
+log(
+  "content-script working",
   browser.runtime.getURL("inpages/inpages.bundle.js")
 )
 

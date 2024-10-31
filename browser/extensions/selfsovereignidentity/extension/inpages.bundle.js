@@ -10,6 +10,7 @@
 // refs: https://github.com/nostr-protocol/nips/blob/master/07.md
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.NostrProvider = exports.init = void 0;
+const logger_1 = __webpack_require__(874);
 const shouldInject_1 = __webpack_require__(880);
 const postMessage_1 = __webpack_require__(323);
 function init() {
@@ -34,13 +35,13 @@ function init() {
                     // Dispose
                     window.nostr && delete window.nostr;
                 }
-                console.info(`${event.data.action} emit!`, event);
+                (0, logger_1.log)(`inpage ${event.data.action} emit!`, event);
                 window.dispatchEvent(new CustomEvent(`nostr:${event.data.action.toLowerCase()}`, {
                     detail: event.data.data,
                 }));
             }
             else if (event.data.action === "accountChanged") {
-                console.info("accountChanged emit!", event);
+                (0, logger_1.log)("inpage accountChanged emit!", event);
                 window.dispatchEvent(new CustomEvent("nostr:accountchanged", {
                     detail: event.data.data,
                 }));
@@ -112,7 +113,6 @@ function postMessage(scope, action, args) {
                 messageEvent.data.id !== id) {
                 return;
             }
-            console.info("debug", messageEvent.data);
             if (messageEvent.data.data.error) {
                 reject(new Error(messageEvent.data.data.error));
             }
@@ -150,6 +150,20 @@ class PromiseQueue {
     }
 }
 exports.PromiseQueue = PromiseQueue;
+
+
+/***/ }),
+
+/***/ 874:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.log = void 0;
+function log(...args) {
+    console.info("ssb:", args);
+}
+exports.log = log;
 
 
 /***/ }),
@@ -240,8 +254,9 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
+const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(368);
-console.info("inpage-script working!");
+(0, logger_1.log)("inpage-script working");
 (0, nostr_1.init)();
 
 })();

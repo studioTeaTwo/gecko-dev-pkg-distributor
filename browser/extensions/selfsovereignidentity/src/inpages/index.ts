@@ -4,8 +4,9 @@
 
 /* eslint-env webextensions */
 
+import { log } from "../shared/logger"
 import { init as nostrInit } from "./nostr"
 
-console.info("inpage-script working!")
+log("inpage-script working")
 
 nostrInit()

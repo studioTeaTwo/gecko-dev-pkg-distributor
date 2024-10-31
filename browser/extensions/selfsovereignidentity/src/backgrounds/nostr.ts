@@ -1,6 +1,7 @@
 import { sha256 } from "@noble/hashes/sha256"
 import { bytesToHex } from "@noble/hashes/utils"
 import { bech32 } from "@scure/base"
+import { log } from "../shared/logger"
 import { state } from "./state"
 
 // Proceed calls from contents
@@ -35,7 +36,7 @@ export const doNostrAction = async (action, args) => {
 }
 
 export async function init() {
-  console.info("experimental-api start...")
+  log("experimental-api start...")
 
   // Get the existing credential from the ssi store.
   const credentials =
@@ -60,7 +61,7 @@ export async function init() {
     enabled,
   }
 
-  console.info("background init!", enabled, credentials)
+  log("background init!", enabled, credentials)
 }
 
 // The message listener to listen to experimental-apis calls
@@ -74,7 +75,7 @@ const onPrimaryChangedCallback = async (newGuid: string) => {
       newGuid
     )
   if (credentials.length === 0) return
-  console.info("primary changed!", newGuid, credentials)
+  log("primary changed!", newGuid, credentials)
   state.nostr = {
     ...state.nostr,
     guid: credentials[0].guid,
@@ -89,7 +90,7 @@ const onPrimaryChangedCallback = async (newGuid: string) => {
     })
     const pubkey = decodeNpub(state.nostr.npub)
     for (const tab of tabs) {
-      console.info("send to tab: ", tab)
+      log("send to tab", tab)
       if (tab.url.startsWith("http")) {
         browser.tabs
           .sendMessage(tab.id, {
@@ -106,7 +107,7 @@ browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(
   "nostr"
 )
 const onPrefChangedCallback = async (protocolName: ProtocolName) => {
-  console.info("pref changed!", protocolName)
+  log("pref changed!", protocolName)
   state.nostr = {
     ...state.nostr,
     enabled: !state.nostr.enabled,
@@ -118,7 +119,7 @@ const onPrefChangedCallback = async (protocolName: ProtocolName) => {
     discarded: false,
   })
   for (const tab of tabs) {
-    console.info("send to tab: ", tab)
+    log("send to tab", tab)
     if (tab.url.startsWith("http")) {
       browser.tabs
         .sendMessage(tab.id, {
