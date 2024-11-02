@@ -26,7 +26,7 @@ function init() {
         if (event.source === window && event.data.scope === "nostr") {
             if (event.data.action === "init" ||
                 event.data.action === "providerChanged") {
-                // TODO(ssb): It depends on the spec with other providers.
+                // TODO(ssb): It depends on the standard spec with other providers.
                 if (event.data.data.enabled) {
                     // Inject
                     window.nostr = new NostrProvider();

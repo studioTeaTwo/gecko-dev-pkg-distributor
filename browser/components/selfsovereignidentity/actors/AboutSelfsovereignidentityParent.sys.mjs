@@ -3,7 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // _AboutSelfsovereignidentity is only exported for testing
+import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs";
+
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs"
 import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs"
 
 const lazy = {}
@@ -22,17 +25,20 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "signon.management.page.os-auth.enabled",
   true
 )
-ChromeUtils.defineLazyGetter(lazy, "AboutSelfsovereignidentityL10n", () => {
-  return new Localization(["branding/brand.ftl", "browser/aboutIdentity.ftl"])
-})
+// TODO(ssb): reconsider later
+// ChromeUtils.defineLazyGetter(lazy, "AboutSelfsovereignidentityL10n", () => {
+//   return new Localization(["branding/brand.ftl", "browser/aboutSelfsovereignidentity.ftl"])
+// })
 
-const ABOUT_IDENTITY_ORIGIN = "about:selfsovereignidentity"
+const ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN = "about:selfsovereignidentity"
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-login-required"
 
 // about:selfsovereignidentity will always use the privileged content process,
 // even if it is disabled for other consumers such as about:newtab.
-const EXPECTED_ABOUTIDENTITY_REMOTE_TYPE = E10SUtils.PRIVILEGEDABOUT_REMOTE_TYPE
+const EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE =
+  E10SUtils.PRIVILEGEDABOUT_REMOTE_TYPE
+let _gPasswordRemaskTimeout = null
 const convertSubjectToCredential = (subject) => {
   subject
     .QueryInterface(Ci.nsICredentialMetaInfo)
@@ -50,15 +56,14 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     // Only respond to messages sent from a privlegedabout process. Ideally
     // we would also check the contentPrincipal.originNoSuffix but this
     // check has been removed due to bug 1576722.
-    // TODO: (ssb) review security
-    // if (
-    //   this.browsingContext.embedderElement.remoteType !=
-    //   EXPECTED_ABOUTLOGINS_REMOTE_TYPE
-    // ) {
-    //   throw new Error(
-    //     `AboutSelfsovereignidentityParent: Received ${message.name} message the remote type didn't match expectations: ${this.browsingContext.embedderElement.remoteType} == ${EXPECTED_ABOUTLOGINS_REMOTE_TYPE}`
-    //   )
-    // }
+    if (
+      this.browsingContext.embedderElement.remoteType !=
+      EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE
+    ) {
+      throw new Error(
+        `AboutSelfsovereignidentityParent: Received ${message.name} message the remote type didn't match expectations: ${this.browsingContext.embedderElement.remoteType} == ${EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE}`
+      )
+    }
 
     AboutSelfsovereignidentity.subscribers.add(this.browsingContext)
 
@@ -115,7 +120,7 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   }
 
   async #createCredential(newCredential) {
-    // TODO: (ssb) review OS Auth later
+    // TODO(ssb): reconsider whether it needs.
     // if (!Services.policies.isAllowed("removeMasterPassword")) {
     //   if (!lazy.SsiHelper.isPrimaryPasswordSet()) {
     //     this.#ownerGlobal.openDialog(
@@ -147,7 +152,9 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
         "AboutSelfsovereignidentity:PrimaryPasswordRequest: no messageId."
       )
     }
-    let messageText = { value: "NOT SUPPORTED" }
+    // TODO(ssb): reconsider later
+    // let messageText = { value: "NOT SUPPORTED" }
+    let messageText = { value: "AUTH LOCKED" }
     let captionText = { value: "" }
 
     // This feature is only supported on Windows and macOS
@@ -156,15 +163,16 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     // See bug 1614874 for Linux support.
     if (lazy.OS_AUTH_ENABLED && lazy.OSKeyStore.canReauth()) {
       messageId += "-" + AppConstants.platform
-      ;[messageText, captionText] =
-        await lazy.AboutSelfsovereignidentityL10n.formatMessages([
-          {
-            id: messageId,
-          },
-          {
-            id: "about-selfsovereignidentity-os-auth-dialog-caption",
-          },
-        ])
+      // TODO(ssb): reconsider later
+      // [messageText, captionText] =
+      //   await lazy.AboutSelfsovereignidentityL10n.formatMessages([
+      //     {
+      //       id: messageId,
+      //     },
+      //     {
+      //       id: "about-selfsovereignidentity-os-auth-dialog-caption",
+      //     },
+      //   ])
     }
 
     let { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
@@ -479,14 +487,15 @@ class AboutSelfsovereignidentityInternal {
     )
     for (let subscriber of subscribers) {
       let browser = subscriber.embedderElement
-      // TODO: (ssb) review security
-      // if (
-      //   browser?.remoteType != EXPECTED_ABOUTIDENTITY_REMOTE_TYPE ||
-      //   browser?.contentPrincipal?.originNoSuffix != ABOUT_IDENTITY_ORIGIN
-      // ) {
-      //   this.subscribers.delete(subscriber)
-      //   continue
-      // }
+      if (
+        browser?.remoteType !=
+          EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE ||
+        browser?.contentPrincipal?.originNoSuffix !=
+          ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN
+      ) {
+        this.subscribers.delete(subscriber)
+        continue
+      }
       yield subscriber
     }
   }

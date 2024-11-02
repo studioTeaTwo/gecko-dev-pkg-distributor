@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react"
 import { HStack, IconButton, Text } from "@chakra-ui/react"
 import { LuEye, LuEyeOff } from "react-icons/lu"
+import { promptForPrimaryPassword } from "../../shared/utils"
 
 export default function Secret(props: {
   value: string
@@ -12,7 +13,17 @@ export default function Secret(props: {
 
   const maskedValue = useCallback(() => "*".repeat(value.length), [value])
 
-  const handleToggole = () => {
+  const handleToggole = async () => {
+    if (visible === false) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-reveal-password-os-auth-dialog-message"
+      )
+      if (!primaryPasswordAuth) {
+        alert("sorry!")
+        return
+      }
+    }
+
     setVisible((prev) => !prev)
     onChangeVisibility()
   }

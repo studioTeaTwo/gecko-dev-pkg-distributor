@@ -317,11 +317,28 @@ function useChildActorEvent() {
     credentials
   };
 }
+function promptForPrimaryPassword(messageId) {
+  return new Promise((resolve) => {
+    window.AboutSelfsovereignidentityUtils.promptForPrimaryPassword(
+      resolve,
+      messageId
+    );
+  });
+}
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const { value, textProps, onChangeVisibility } = props;
   const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
-  const handleToggole = () => {
+  const handleToggole = async () => {
+    if (visible === false) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-reveal-password-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        alert("sorry!");
+        return;
+      }
+    }
     setVisible((prev) => !prev);
     onChangeVisibility();
   };
@@ -467,7 +484,7 @@ function Nostr(props) {
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h2", children: "NIP-07" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Your key will be stored in local separated from web apps." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Your key will be stored in local, where separated and not been able to accessed from web apps." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       VStack,
       {

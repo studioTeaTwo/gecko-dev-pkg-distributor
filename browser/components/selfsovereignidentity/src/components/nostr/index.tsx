@@ -206,7 +206,10 @@ export default function Nostr(props) {
   return (
     <div>
       <Heading as="h2">NIP-07</Heading>
-      <p>Your key will be stored in local separated from web apps.</p>
+      <p>
+        Your key will be stored in local, where separated and not been able to
+        accessed from web apps.
+      </p>
       <VStack
         divider={<StackDivider borderColor="gray.200" />}
         spacing={4}

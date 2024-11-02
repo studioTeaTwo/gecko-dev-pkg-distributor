@@ -159,11 +159,11 @@ Ssi.prototype = {
       "SSI_NUM_SAVED_SECRETS"
     );
 
-    // TODO: (ssb) review OS Auth later
+    // TODO(ssb): consider to remove this _gatherTelemetry itself.
     // Don't try to get credentials if MP is enabled, since we don't want to show a MP prompt.
-    // if (!this.isLoggedIn) {
-    //   return;
-    // }
+    if (!this.isLoggedIn) {
+      return;
+    }
 
     let credentials = await this.getAllCredentials();
 

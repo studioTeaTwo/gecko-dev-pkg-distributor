@@ -3,7 +3,7 @@
 #include "nsISupports.idl"
 
 interface nsICredentialInfo;
-interface nsIPropertyBag; // TODO: (ssb) currently remain loginmangr. Decide whether to drop or modify.
+interface nsIPropertyBag;
 
 // `scriptable` designates that this object will be used with JavaScript
 // `uuid`       The example below uses a UUID with all Xs. Replace the Xs with

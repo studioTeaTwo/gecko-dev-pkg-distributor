@@ -38,7 +38,7 @@ export class SsiStorage_json {
       // Set the reference to SsiStore synchronously.
       let jsonPath = PathUtils.join(profileDir, "ssi-credentials.json");
       let backupPath = "";
-      // TODO: (ssb) review later
+      // TODO(ssb): reconsider whether it needs.
       // let loginsBackupEnabled = Services.prefs.getBoolPref(
       //   "signon.backup.enabled"
       // );
