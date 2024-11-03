@@ -15,6 +15,7 @@
  *       "protocolName": "bitcoin",
  *       "credentialName": "bip39",
  *       "primary": "true",
+ *       "trustedSites": [{ url: "http://localhost", permissions: { read: true, write: true, admin: true }}],
  *       "encryptedSecret": "...",
  *       "encryptedIdentifier": "...",
  *       "encryptedProperties": "...",

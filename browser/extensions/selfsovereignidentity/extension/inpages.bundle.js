@@ -110,7 +110,8 @@ function postMessage(scope, action, args) {
                 !messageEvent.data.response ||
                 messageEvent.data.application !== "ssb" ||
                 messageEvent.data.scope !== scope ||
-                messageEvent.data.id !== id) {
+                messageEvent.data.id !== id ||
+                messageEvent.data.id === "native") {
                 return;
             }
             if (messageEvent.data.data.error) {

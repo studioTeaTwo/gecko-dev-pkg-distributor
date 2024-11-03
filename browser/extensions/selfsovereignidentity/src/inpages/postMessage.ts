@@ -33,7 +33,8 @@ export function postMessage<T>(
             !messageEvent.data.response ||
             messageEvent.data.application !== "ssb" ||
             messageEvent.data.scope !== scope ||
-            messageEvent.data.id !== id
+            messageEvent.data.id !== id ||
+            messageEvent.data.id === "native"
           ) {
             return
           }

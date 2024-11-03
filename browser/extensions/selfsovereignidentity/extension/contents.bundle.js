@@ -24,6 +24,7 @@ async function init() {
         (0, logger_1.log)("content-script eventListener message", ev);
         // Only accept messages from the current window
         if (ev.source !== window ||
+            ev.data.id === "native" ||
             ev.data.application !== "ssb" ||
             ev.data.scope !== "nostr") {
             return;
@@ -35,6 +36,8 @@ async function init() {
             }
             // Send message to the backgrounds and emit the returned value to the inpages
             const message = {
+                origin: ev.origin,
+                application: ev.data.application,
                 action: ev.data.action,
                 args: ev.data.args,
             };
@@ -54,13 +57,25 @@ async function init() {
         if (request.action === "nostr/init" ||
             request.action === "nostr/providerChanged") {
             window.postMessage({
-                action: request.action === "nostr/init" ? "init" : "providerChanged",
+                id: "native",
+                application: "ssb",
+                data: {
+                    action: request.action === "nostr/init" ? "init" : "providerChanged",
+                    data: request.args,
+                },
                 scope: "nostr",
-                data: request.args,
             }, window.location.origin);
         }
         else if (request.action === "nostr/accountChanged") {
-            window.postMessage({ action: "accountChanged", scope: "nostr", data: request.args }, window.location.origin);
+            window.postMessage({
+                id: "native",
+                application: "ssb",
+                data: {
+                    action: "accountChanged",
+                    data: request.args,
+                },
+                scope: "nostr",
+            }, window.location.origin);
         }
     });
 }

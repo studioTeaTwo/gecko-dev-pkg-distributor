@@ -25,9 +25,9 @@
         "type": "function",
         "parameters": [
           {
-            "name": "protocolName",
+            "name": "prefKey",
             "type": "string",
-            "description": "The protocolName which changed"
+            "description": "The pref key name which changed"
           }
         ],
         "extraParameters": [
@@ -35,6 +35,11 @@
             "name": "protocolName",
             "type": "string",
             "description": "The protocolName to monitor"
+          },
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name to monitor"
           }
         ]
       }
@@ -87,9 +92,9 @@
         ]
       },
       {
-        "name": "getPref",
+        "name": "getPrefs",
         "type": "function",
-        "description": "Get a preference's value",
+        "description": "Get preference's values",
         "parameters": [
           {
             "name": "protocolName",

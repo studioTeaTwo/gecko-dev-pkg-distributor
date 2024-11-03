@@ -7217,6 +7217,16 @@ const memoize$2 = (fn) => {
 };
 const memoizedGet$1 = memoize$2(get$2);
 const interopDefault = (mod2) => mod2.default || mod2;
+function lazyDisclosure(options) {
+  const { wasSelected, enabled, isSelected, mode: mode2 = "unmount" } = options;
+  if (!enabled)
+    return true;
+  if (isSelected)
+    return true;
+  if (mode2 === "keepMounted" && wasSelected)
+    return true;
+  return false;
+}
 function omit(object, keysToOmit = []) {
   const clone = Object.assign({}, object);
   for (const key of keysToOmit) {
@@ -8024,7 +8034,7 @@ function useControllableState(props) {
   );
   return [value, setValue];
 }
-const useSafeLayoutEffect$1 = Boolean(globalThis == null ? void 0 : globalThis.document) ? reactExports.useLayoutEffect : reactExports.useEffect;
+const useSafeLayoutEffect$2 = Boolean(globalThis == null ? void 0 : globalThis.document) ? reactExports.useLayoutEffect : reactExports.useEffect;
 const useUpdateEffect = (effect2, deps) => {
   const renderCycleRef = reactExports.useRef(false);
   const effectCycleRef = reactExports.useRef(false);
@@ -9543,7 +9553,7 @@ function normalize$1(value, toArray) {
   if (value != null)
     return [value];
 }
-function getNextIndex(values, i2) {
+function getNextIndex$1(values, i2) {
   for (let j = i2 + 1; j < values.length; j++) {
     if (values[j] != null)
       return j;
@@ -9565,7 +9575,7 @@ function createResolver(theme2) {
     const isMultipart = !!config2.parts;
     for (let i2 = 0; i2 < len; i2++) {
       const key = breakpointUtil.details[i2];
-      const nextKey = breakpointUtil.details[getNextIndex(normalized, i2)];
+      const nextKey = breakpointUtil.details[getNextIndex$1(normalized, i2)];
       const query = toMediaQueryString(key.minW, nextKey == null ? void 0 : nextKey._minW);
       const styles2 = runIfFn$1((_a2 = config2[prop]) == null ? void 0 : _a2[normalized[i2]], props);
       if (!styles2)
@@ -15105,7 +15115,7 @@ function createLocalStorageManager(key) {
 const localStorageManager = createLocalStorageManager(STORAGE_KEY);
 const noop$1 = () => {
 };
-const useSafeLayoutEffect = isBrowser$2() ? reactExports.useLayoutEffect : reactExports.useEffect;
+const useSafeLayoutEffect$1 = isBrowser$2() ? reactExports.useLayoutEffect : reactExports.useEffect;
 function getTheme2(manager, fallback) {
   return manager.type === "cookie" && manager.ssr ? manager.get(fallback) : fallback;
 }
@@ -15145,7 +15155,7 @@ const ColorModeProvider = withEmotionCache(function ColorModeProvider2(props, ca
     },
     [colorModeManager, getSystemTheme, setClassName, setDataset]
   );
-  useSafeLayoutEffect(() => {
+  useSafeLayoutEffect$1(() => {
     if (initialColorMode === "system") {
       setResolvedColorMode(getSystemTheme());
     }
@@ -23332,7 +23342,7 @@ const DefaultPortal = (props) => {
   reactExports.useEffect(() => forceUpdate({}), []);
   const parentPortal = usePortalContext();
   const manager = usePortalManager();
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => {
     if (!tempNode)
       return;
     const doc = tempNode.ownerDocument;
@@ -23375,8 +23385,8 @@ const ContainerPortal = (props) => {
     return node2;
   }, [containerEl]);
   const [, forceUpdate] = reactExports.useState({});
-  useSafeLayoutEffect$1(() => forceUpdate({}), []);
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => forceUpdate({}), []);
+  useSafeLayoutEffect$2(() => {
     if (!portal || !host)
       return;
     host.appendChild(portal);
@@ -23458,6 +23468,204 @@ const createProvider = (providerTheme) => {
   };
 };
 const ChakraProvider = createProvider(theme);
+function sortNodes(nodes) {
+  return nodes.sort((a, b2) => {
+    const compare = a.compareDocumentPosition(b2);
+    if (compare & Node.DOCUMENT_POSITION_FOLLOWING || compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+      return -1;
+    }
+    if (compare & Node.DOCUMENT_POSITION_PRECEDING || compare & Node.DOCUMENT_POSITION_CONTAINS) {
+      return 1;
+    }
+    if (compare & Node.DOCUMENT_POSITION_DISCONNECTED || compare & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC) {
+      throw Error("Cannot sort the given nodes.");
+    } else {
+      return 0;
+    }
+  });
+}
+const isElement = (el2) => typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
+function getNextIndex(current, max, loop) {
+  let next2 = current + 1;
+  if (loop && next2 >= max)
+    next2 = 0;
+  return next2;
+}
+function getPrevIndex(current, max, loop) {
+  let next2 = current - 1;
+  if (loop && next2 < 0)
+    next2 = max;
+  return next2;
+}
+const useSafeLayoutEffect = typeof window !== "undefined" ? reactExports.useLayoutEffect : reactExports.useEffect;
+const cast = (value) => value;
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+class DescendantsManager {
+  constructor() {
+    __publicField(this, "descendants", /* @__PURE__ */ new Map());
+    __publicField(this, "register", (nodeOrOptions) => {
+      if (nodeOrOptions == null)
+        return;
+      if (isElement(nodeOrOptions)) {
+        return this.registerNode(nodeOrOptions);
+      }
+      return (node2) => {
+        this.registerNode(node2, nodeOrOptions);
+      };
+    });
+    __publicField(this, "unregister", (node2) => {
+      this.descendants.delete(node2);
+      const sorted = sortNodes(Array.from(this.descendants.keys()));
+      this.assignIndex(sorted);
+    });
+    __publicField(this, "destroy", () => {
+      this.descendants.clear();
+    });
+    __publicField(this, "assignIndex", (descendants) => {
+      this.descendants.forEach((descendant) => {
+        const index = descendants.indexOf(descendant.node);
+        descendant.index = index;
+        descendant.node.dataset["index"] = descendant.index.toString();
+      });
+    });
+    __publicField(this, "count", () => this.descendants.size);
+    __publicField(this, "enabledCount", () => this.enabledValues().length);
+    __publicField(this, "values", () => {
+      const values = Array.from(this.descendants.values());
+      return values.sort((a, b2) => a.index - b2.index);
+    });
+    __publicField(this, "enabledValues", () => {
+      return this.values().filter((descendant) => !descendant.disabled);
+    });
+    __publicField(this, "item", (index) => {
+      if (this.count() === 0)
+        return void 0;
+      return this.values()[index];
+    });
+    __publicField(this, "enabledItem", (index) => {
+      if (this.enabledCount() === 0)
+        return void 0;
+      return this.enabledValues()[index];
+    });
+    __publicField(this, "first", () => this.item(0));
+    __publicField(this, "firstEnabled", () => this.enabledItem(0));
+    __publicField(this, "last", () => this.item(this.descendants.size - 1));
+    __publicField(this, "lastEnabled", () => {
+      const lastIndex = this.enabledValues().length - 1;
+      return this.enabledItem(lastIndex);
+    });
+    __publicField(this, "indexOf", (node2) => {
+      var _a2;
+      if (!node2)
+        return -1;
+      return ((_a2 = this.descendants.get(node2)) == null ? void 0 : _a2.index) ?? -1;
+    });
+    __publicField(this, "enabledIndexOf", (node2) => {
+      if (node2 == null)
+        return -1;
+      return this.enabledValues().findIndex((i2) => i2.node.isSameNode(node2));
+    });
+    __publicField(this, "next", (index, loop = true) => {
+      const next2 = getNextIndex(index, this.count(), loop);
+      return this.item(next2);
+    });
+    __publicField(this, "nextEnabled", (index, loop = true) => {
+      const item = this.item(index);
+      if (!item)
+        return;
+      const enabledIndex = this.enabledIndexOf(item.node);
+      const nextEnabledIndex = getNextIndex(
+        enabledIndex,
+        this.enabledCount(),
+        loop
+      );
+      return this.enabledItem(nextEnabledIndex);
+    });
+    __publicField(this, "prev", (index, loop = true) => {
+      const prev2 = getPrevIndex(index, this.count() - 1, loop);
+      return this.item(prev2);
+    });
+    __publicField(this, "prevEnabled", (index, loop = true) => {
+      const item = this.item(index);
+      if (!item)
+        return;
+      const enabledIndex = this.enabledIndexOf(item.node);
+      const prevEnabledIndex = getPrevIndex(
+        enabledIndex,
+        this.enabledCount() - 1,
+        loop
+      );
+      return this.enabledItem(prevEnabledIndex);
+    });
+    __publicField(this, "registerNode", (node2, options) => {
+      if (!node2 || this.descendants.has(node2))
+        return;
+      const keys2 = Array.from(this.descendants.keys()).concat(node2);
+      const sorted = sortNodes(keys2);
+      if (options == null ? void 0 : options.disabled) {
+        options.disabled = !!options.disabled;
+      }
+      const descendant = { node: node2, index: -1, ...options };
+      this.descendants.set(node2, descendant);
+      this.assignIndex(sorted);
+    });
+  }
+}
+function createDescendantContext() {
+  const [DescendantsContextProvider, useDescendantsContext] = createContext({
+    name: "DescendantsProvider",
+    errorMessage: "useDescendantsContext must be used within DescendantsProvider"
+  });
+  const useDescendant = (options) => {
+    const descendants = useDescendantsContext();
+    const [index, setIndex] = reactExports.useState(-1);
+    const ref = reactExports.useRef(null);
+    useSafeLayoutEffect(() => {
+      return () => {
+        if (!ref.current)
+          return;
+        descendants.unregister(ref.current);
+      };
+    }, []);
+    useSafeLayoutEffect(() => {
+      if (!ref.current)
+        return;
+      const dataIndex = Number(ref.current.dataset["index"]);
+      if (index != dataIndex && !Number.isNaN(dataIndex)) {
+        setIndex(dataIndex);
+      }
+    });
+    const refCallback = options ? cast(descendants.register(options)) : cast(descendants.register);
+    return {
+      descendants,
+      index,
+      enabledIndex: descendants.enabledIndexOf(ref.current),
+      register: mergeRefs(refCallback, ref)
+    };
+  };
+  const useDescendants = () => {
+    const descendants = reactExports.useRef(new DescendantsManager());
+    useSafeLayoutEffect(() => {
+      return () => descendants.current.destroy();
+    });
+    return descendants.current;
+  };
+  return [
+    // context provider
+    DescendantsContextProvider,
+    // call this when you need to read from context
+    useDescendantsContext,
+    // descendants state information, to be called and passed to `ContextProvider`
+    useDescendants,
+    // descendant index information
+    useDescendant
+  ];
+}
 const Box = chakra("div");
 Box.displayName = "Box";
 const [ButtonGroupProvider, useButtonGroup] = createContext({
@@ -24110,7 +24318,7 @@ function useCheckbox(props = {}) {
       onChangeProp
     ]
   );
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => {
     if (inputRef.current) {
       inputRef.current.indeterminate = Boolean(isIndeterminate);
     }
@@ -24120,7 +24328,7 @@ function useCheckbox(props = {}) {
       setFocused(false);
     }
   }, [isDisabled, setFocused]);
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => {
     const el2 = inputRef.current;
     if (!(el2 == null ? void 0 : el2.form))
       return;
@@ -24150,7 +24358,7 @@ function useCheckbox(props = {}) {
     },
     [setActive]
   );
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => {
     if (!inputRef.current)
       return;
     const notInSync = inputRef.current.checked !== isChecked;
@@ -24399,7 +24607,7 @@ function useEditable(props = {}) {
     elements: [cancelButtonRef, submitButtonRef]
   });
   const isInteractive = !isEditing && !isDisabled;
-  useSafeLayoutEffect$1(() => {
+  useSafeLayoutEffect$2(() => {
     var _a2, _b2;
     if (isEditing) {
       (_a2 = inputRef.current) == null ? void 0 : _a2.focus();
@@ -24867,6 +25075,229 @@ const InputGroup = forwardRef(
   }
 );
 InputGroup.displayName = "InputGroup";
+function useEventListeners() {
+  const listeners = reactExports.useRef(/* @__PURE__ */ new Map());
+  const currentListeners = listeners.current;
+  const add2 = reactExports.useCallback((el2, type, listener, options) => {
+    listeners.current.set(listener, { type, el: el2, options });
+    el2.addEventListener(type, listener, options);
+  }, []);
+  const remove = reactExports.useCallback(
+    (el2, type, listener, options) => {
+      el2.removeEventListener(type, listener, options);
+      listeners.current.delete(listener);
+    },
+    []
+  );
+  reactExports.useEffect(
+    () => () => {
+      currentListeners.forEach((value, key) => {
+        remove(value.el, value.type, key, value.options);
+      });
+    },
+    [remove, currentListeners]
+  );
+  return { add: add2, remove };
+}
+function isValidElement(event) {
+  var _a2, _b2;
+  const target = ((_b2 = (_a2 = event.composedPath) == null ? void 0 : _a2.call(event)) == null ? void 0 : _b2[0]) ?? event.target;
+  const { tagName, isContentEditable } = target;
+  return tagName !== "INPUT" && tagName !== "TEXTAREA" && isContentEditable !== true;
+}
+function useClickable(props = {}) {
+  const {
+    ref: htmlRef,
+    isDisabled,
+    isFocusable,
+    clickOnEnter = true,
+    clickOnSpace = true,
+    onMouseDown,
+    onMouseUp,
+    onClick,
+    onKeyDown,
+    onKeyUp,
+    tabIndex: tabIndexProp,
+    onMouseOver,
+    onMouseLeave,
+    ...htmlProps
+  } = props;
+  const [isButton, setIsButton] = reactExports.useState(true);
+  const [isPressed, setIsPressed] = reactExports.useState(false);
+  const listeners = useEventListeners();
+  const refCallback = (node2) => {
+    if (!node2)
+      return;
+    if (node2.tagName !== "BUTTON") {
+      setIsButton(false);
+    }
+  };
+  const tabIndex = isButton ? tabIndexProp : tabIndexProp || 0;
+  const trulyDisabled = isDisabled && !isFocusable;
+  const handleClick = reactExports.useCallback(
+    (event) => {
+      if (isDisabled) {
+        event.stopPropagation();
+        event.preventDefault();
+        return;
+      }
+      const self2 = event.currentTarget;
+      self2.focus();
+      onClick == null ? void 0 : onClick(event);
+    },
+    [isDisabled, onClick]
+  );
+  const onDocumentKeyUp = reactExports.useCallback(
+    (e2) => {
+      if (isPressed && isValidElement(e2)) {
+        e2.preventDefault();
+        e2.stopPropagation();
+        setIsPressed(false);
+        listeners.remove(document, "keyup", onDocumentKeyUp, false);
+      }
+    },
+    [isPressed, listeners]
+  );
+  const handleKeyDown = reactExports.useCallback(
+    (event) => {
+      onKeyDown == null ? void 0 : onKeyDown(event);
+      if (isDisabled || event.defaultPrevented || event.metaKey) {
+        return;
+      }
+      if (!isValidElement(event.nativeEvent) || isButton)
+        return;
+      const shouldClickOnEnter = clickOnEnter && event.key === "Enter";
+      const shouldClickOnSpace = clickOnSpace && event.key === " ";
+      if (shouldClickOnSpace) {
+        event.preventDefault();
+        setIsPressed(true);
+      }
+      if (shouldClickOnEnter) {
+        event.preventDefault();
+        const self2 = event.currentTarget;
+        self2.click();
+      }
+      listeners.add(document, "keyup", onDocumentKeyUp, false);
+    },
+    [
+      isDisabled,
+      isButton,
+      onKeyDown,
+      clickOnEnter,
+      clickOnSpace,
+      listeners,
+      onDocumentKeyUp
+    ]
+  );
+  const handleKeyUp = reactExports.useCallback(
+    (event) => {
+      onKeyUp == null ? void 0 : onKeyUp(event);
+      if (isDisabled || event.defaultPrevented || event.metaKey)
+        return;
+      if (!isValidElement(event.nativeEvent) || isButton)
+        return;
+      const shouldClickOnSpace = clickOnSpace && event.key === " ";
+      if (shouldClickOnSpace) {
+        event.preventDefault();
+        setIsPressed(false);
+        const self2 = event.currentTarget;
+        self2.click();
+      }
+    },
+    [clickOnSpace, isButton, isDisabled, onKeyUp]
+  );
+  const onDocumentMouseUp = reactExports.useCallback(
+    (event) => {
+      if (event.button !== 0)
+        return;
+      setIsPressed(false);
+      listeners.remove(document, "mouseup", onDocumentMouseUp, false);
+    },
+    [listeners]
+  );
+  const handleMouseDown = reactExports.useCallback(
+    (event) => {
+      if (event.button !== 0)
+        return;
+      if (isDisabled) {
+        event.stopPropagation();
+        event.preventDefault();
+        return;
+      }
+      if (!isButton) {
+        setIsPressed(true);
+      }
+      const target = event.currentTarget;
+      target.focus({ preventScroll: true });
+      listeners.add(document, "mouseup", onDocumentMouseUp, false);
+      onMouseDown == null ? void 0 : onMouseDown(event);
+    },
+    [isDisabled, isButton, onMouseDown, listeners, onDocumentMouseUp]
+  );
+  const handleMouseUp = reactExports.useCallback(
+    (event) => {
+      if (event.button !== 0)
+        return;
+      if (!isButton) {
+        setIsPressed(false);
+      }
+      onMouseUp == null ? void 0 : onMouseUp(event);
+    },
+    [onMouseUp, isButton]
+  );
+  const handleMouseOver = reactExports.useCallback(
+    (event) => {
+      if (isDisabled) {
+        event.preventDefault();
+        return;
+      }
+      onMouseOver == null ? void 0 : onMouseOver(event);
+    },
+    [isDisabled, onMouseOver]
+  );
+  const handleMouseLeave = reactExports.useCallback(
+    (event) => {
+      if (isPressed) {
+        event.preventDefault();
+        setIsPressed(false);
+      }
+      onMouseLeave == null ? void 0 : onMouseLeave(event);
+    },
+    [isPressed, onMouseLeave]
+  );
+  const ref = mergeRefs(htmlRef, refCallback);
+  if (isButton) {
+    return {
+      ...htmlProps,
+      ref,
+      type: "button",
+      "aria-disabled": trulyDisabled ? void 0 : isDisabled,
+      disabled: trulyDisabled,
+      onClick: handleClick,
+      onMouseDown,
+      onMouseUp,
+      onKeyUp,
+      onKeyDown,
+      onMouseOver,
+      onMouseLeave
+    };
+  }
+  return {
+    ...htmlProps,
+    ref,
+    role: "button",
+    "data-active": dataAttr(isPressed),
+    "aria-disabled": isDisabled ? "true" : void 0,
+    tabIndex: trulyDisabled ? void 0 : tabIndex,
+    onClick: handleClick,
+    onMouseDown: handleMouseDown,
+    onMouseUp: handleMouseUp,
+    onKeyUp: handleKeyUp,
+    onKeyDown: handleKeyDown,
+    onMouseOver: handleMouseOver,
+    onMouseLeave: handleMouseLeave
+  };
+}
 const StackItem = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   chakra.div,
   {
@@ -25087,6 +25518,303 @@ const Switch = forwardRef(
   }
 );
 Switch.displayName = "Switch";
+const [
+  TabsDescendantsProvider,
+  useTabsDescendantsContext,
+  useTabsDescendants,
+  useTabsDescendant
+] = createDescendantContext();
+function useTabs(props) {
+  const {
+    defaultIndex,
+    onChange,
+    index,
+    isManual,
+    isLazy,
+    lazyBehavior = "unmount",
+    orientation = "horizontal",
+    direction: direction2 = "ltr",
+    ...htmlProps
+  } = props;
+  const [focusedIndex, setFocusedIndex] = reactExports.useState(defaultIndex ?? 0);
+  const [selectedIndex, setSelectedIndex] = useControllableState({
+    defaultValue: defaultIndex ?? 0,
+    value: index,
+    onChange
+  });
+  reactExports.useEffect(() => {
+    if (index != null) {
+      setFocusedIndex(index);
+    }
+  }, [index]);
+  const descendants = useTabsDescendants();
+  const uuid = reactExports.useId();
+  const uid = props.id ?? uuid;
+  const id2 = `tabs-${uid}`;
+  return {
+    id: id2,
+    selectedIndex,
+    focusedIndex,
+    setSelectedIndex,
+    setFocusedIndex,
+    isManual,
+    isLazy,
+    lazyBehavior,
+    orientation,
+    descendants,
+    direction: direction2,
+    htmlProps
+  };
+}
+const [TabsProvider, useTabsContext] = createContext({
+  name: "TabsContext",
+  errorMessage: "useTabsContext: `context` is undefined. Seems you forgot to wrap all tabs components within <Tabs />"
+});
+function useTabList(props) {
+  const { focusedIndex, orientation, direction: direction2 } = useTabsContext();
+  const descendants = useTabsDescendantsContext();
+  const onKeyDown = reactExports.useCallback(
+    (event) => {
+      const nextTab = () => {
+        var _a2;
+        const next2 = descendants.nextEnabled(focusedIndex);
+        if (next2)
+          (_a2 = next2.node) == null ? void 0 : _a2.focus();
+      };
+      const prevTab = () => {
+        var _a2;
+        const prev2 = descendants.prevEnabled(focusedIndex);
+        if (prev2)
+          (_a2 = prev2.node) == null ? void 0 : _a2.focus();
+      };
+      const firstTab = () => {
+        var _a2;
+        const first = descendants.firstEnabled();
+        if (first)
+          (_a2 = first.node) == null ? void 0 : _a2.focus();
+      };
+      const lastTab = () => {
+        var _a2;
+        const last = descendants.lastEnabled();
+        if (last)
+          (_a2 = last.node) == null ? void 0 : _a2.focus();
+      };
+      const isHorizontal = orientation === "horizontal";
+      const isVertical = orientation === "vertical";
+      const eventKey = event.key;
+      const ArrowStart = direction2 === "ltr" ? "ArrowLeft" : "ArrowRight";
+      const ArrowEnd = direction2 === "ltr" ? "ArrowRight" : "ArrowLeft";
+      const keyMap = {
+        [ArrowStart]: () => isHorizontal && prevTab(),
+        [ArrowEnd]: () => isHorizontal && nextTab(),
+        ArrowDown: () => isVertical && nextTab(),
+        ArrowUp: () => isVertical && prevTab(),
+        Home: firstTab,
+        End: lastTab
+      };
+      const action = keyMap[eventKey];
+      if (action) {
+        event.preventDefault();
+        action(event);
+      }
+    },
+    [descendants, focusedIndex, orientation, direction2]
+  );
+  return {
+    ...props,
+    role: "tablist",
+    "aria-orientation": orientation,
+    onKeyDown: callAllHandlers(props.onKeyDown, onKeyDown)
+  };
+}
+function useTab(props) {
+  const { isDisabled = false, isFocusable = false, ...htmlProps } = props;
+  const { setSelectedIndex, isManual, id: id2, setFocusedIndex, selectedIndex } = useTabsContext();
+  const { index, register } = useTabsDescendant({
+    disabled: isDisabled && !isFocusable
+  });
+  const isSelected = index === selectedIndex;
+  const onClick = () => {
+    setSelectedIndex(index);
+  };
+  const onFocus = () => {
+    setFocusedIndex(index);
+    const isDisabledButFocusable = isDisabled && isFocusable;
+    const shouldSelect = !isManual && !isDisabledButFocusable;
+    if (shouldSelect) {
+      setSelectedIndex(index);
+    }
+  };
+  const clickableProps = useClickable({
+    ...htmlProps,
+    ref: mergeRefs(register, props.ref),
+    isDisabled,
+    isFocusable,
+    onClick: callAllHandlers(props.onClick, onClick)
+  });
+  const type = "button";
+  return {
+    ...clickableProps,
+    id: makeTabId(id2, index),
+    role: "tab",
+    tabIndex: isSelected ? 0 : -1,
+    type,
+    "aria-selected": isSelected,
+    "aria-controls": makeTabPanelId(id2, index),
+    onFocus: isDisabled ? void 0 : callAllHandlers(props.onFocus, onFocus)
+  };
+}
+const [TabPanelProvider, useTabPanelContext] = createContext({});
+function useTabPanels(props) {
+  const context = useTabsContext();
+  const { id: id2, selectedIndex } = context;
+  const validChildren = getValidChildren(props.children);
+  const children = validChildren.map(
+    (child, index) => reactExports.createElement(
+      TabPanelProvider,
+      {
+        key: child.key ?? index,
+        value: {
+          isSelected: index === selectedIndex,
+          id: makeTabPanelId(id2, index),
+          tabId: makeTabId(id2, index),
+          selectedIndex
+        }
+      },
+      child
+    )
+  );
+  return { ...props, children };
+}
+function useTabPanel(props) {
+  const { children, ...htmlProps } = props;
+  const { isLazy, lazyBehavior } = useTabsContext();
+  const { isSelected, id: id2, tabId } = useTabPanelContext();
+  const hasBeenSelected = reactExports.useRef(false);
+  if (isSelected) {
+    hasBeenSelected.current = true;
+  }
+  const shouldRenderChildren = lazyDisclosure({
+    wasSelected: hasBeenSelected.current,
+    isSelected,
+    enabled: isLazy,
+    mode: lazyBehavior
+  });
+  return {
+    // Puts the tabpanel in the page `Tab` sequence.
+    tabIndex: 0,
+    ...htmlProps,
+    children: shouldRenderChildren ? children : null,
+    role: "tabpanel",
+    "aria-labelledby": tabId,
+    hidden: !isSelected,
+    id: id2
+  };
+}
+function makeTabId(id2, index) {
+  return `${id2}--tab-${index}`;
+}
+function makeTabPanelId(id2, index) {
+  return `${id2}--tabpanel-${index}`;
+}
+const [TabsStylesProvider, useTabsStyles] = createContext({
+  name: `TabsStylesContext`,
+  errorMessage: `useTabsStyles returned is 'undefined'. Seems you forgot to wrap the components in "<Tabs />" `
+});
+const Tabs = forwardRef(function Tabs2(props, ref) {
+  const styles2 = useMultiStyleConfig("Tabs", props);
+  const { children, className, ...rest } = omitThemingProps(props);
+  const { htmlProps, descendants, ...ctx } = useTabs(rest);
+  const context = reactExports.useMemo(() => ctx, [ctx]);
+  const { isFitted: _, ...rootProps } = htmlProps;
+  const tabsStyles = {
+    position: "relative",
+    ...styles2.root
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(TabsDescendantsProvider, { value: descendants, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TabsProvider, { value: context, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TabsStylesProvider, { value: styles2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.div,
+    {
+      className: cx("chakra-tabs", className),
+      ref,
+      ...rootProps,
+      __css: tabsStyles,
+      children
+    }
+  ) }) }) });
+});
+Tabs.displayName = "Tabs";
+const Tab = forwardRef(function Tab2(props, ref) {
+  const styles2 = useTabsStyles();
+  const tabProps = useTab({ ...props, ref });
+  const tabStyles = defineStyle({
+    outline: "0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...styles2.tab
+  });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.button,
+    {
+      ...tabProps,
+      className: cx("chakra-tabs__tab", props.className),
+      __css: tabStyles
+    }
+  );
+});
+Tab.displayName = "Tab";
+const TabList = forwardRef(
+  function TabList2(props, ref) {
+    const tablistProps = useTabList({ ...props, ref });
+    const styles2 = useTabsStyles();
+    const tablistStyles = defineStyle({
+      display: "flex",
+      ...styles2.tablist
+    });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        ...tablistProps,
+        className: cx("chakra-tabs__tablist", props.className),
+        __css: tablistStyles
+      }
+    );
+  }
+);
+TabList.displayName = "TabList";
+const TabPanel = forwardRef(
+  function TabPanel2(props, ref) {
+    const panelProps = useTabPanel({ ...props, ref });
+    const styles2 = useTabsStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        outline: "0",
+        ...panelProps,
+        className: cx("chakra-tabs__tab-panel", props.className),
+        __css: styles2.tabpanel
+      }
+    );
+  }
+);
+TabPanel.displayName = "TabPanel";
+const TabPanels = forwardRef(
+  function TabPanels2(props, ref) {
+    const panelsProps = useTabPanels(props);
+    const styles2 = useTabsStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        ...panelsProps,
+        width: "100%",
+        ref,
+        className: cx("chakra-tabs__tab-panels", props.className),
+        __css: styles2.tabpanels
+      }
+    );
+  }
+);
+TabPanels.displayName = "TabPanels";
 const Heading = forwardRef(
   function Heading2(props, ref) {
     const styles2 = useStyleConfig("Heading", props);
@@ -28122,14 +28850,19 @@ var getPublicKey = i.getPublicKey;
 i.finalizeEvent;
 i.verifyEvent;
 export {
+  npubEncode as A,
   Button as B,
   Card as C,
+  bytesToHex$1 as D,
   Editable as E,
   Flex as F,
   GiBirdTwitter as G,
   HStack as H,
   IconButton as I,
+  decode as J,
+  createRoot as K,
   LuPinOff as L,
+  ChakraProvider as M,
   NostrTypeGuard as N,
   StackDivider as S,
   Text as T,
@@ -28137,27 +28870,27 @@ export {
   LuPin as a,
   LuEyeOff as b,
   LuEye as c,
-  Heading as d,
-  Spinner as e,
-  Box as f,
-  Grid as g,
-  GridItem as h,
-  Switch as i,
+  GridItem as d,
+  Heading as e,
+  Tabs as f,
+  TabList as g,
+  Tab as h,
+  TabPanels as i,
   jsxRuntimeExports as j,
-  InputGroup as k,
-  Input as l,
-  CardHeader as m,
-  EditablePreview as n,
-  EditableInput as o,
-  CardBody as p,
-  CardFooter as q,
+  TabPanel as k,
+  Spinner as l,
+  Box as m,
+  Grid as n,
+  Switch as o,
+  InputGroup as p,
+  Input as q,
   reactExports as r,
-  generateSecretKey as s,
-  nsecEncode as t,
-  getPublicKey as u,
-  npubEncode as v,
-  bytesToHex$1 as w,
-  decode as x,
-  createRoot as y,
-  ChakraProvider as z
+  CardHeader as s,
+  EditablePreview as t,
+  EditableInput as u,
+  CardBody as v,
+  CardFooter as w,
+  generateSecretKey as x,
+  nsecEncode as y,
+  getPublicKey as z
 };

@@ -5,7 +5,10 @@ export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
 export interface SelfsovereignidentityPrefs {
-  nostr: boolean // browser.selfsovereignidentity.nostr.enabled
+  nostr: {
+    enabled: boolean // browser.selfsovereignidentity.nostr.enabled
+    trusted: boolean // browser.selfsovereignidentity.nostr.trusted
+  }
 }
 
 /**
@@ -25,10 +28,22 @@ export interface Credential {
   primary: boolean
   secret: string
   identifier: string
+  trustedSites: {
+    url: string
+    permissions: {
+      read: boolean
+      write: boolean
+      admin: boolean
+    }
+  }[]
   properties: object
   guid?: string
 }
 // Pass object type through JSON.stringify for IPC & JSONstorage
-export type CredentialForPayload = Omit<Credential, "properties"> & {
+export type CredentialForPayload = Omit<
+  Credential,
+  "properties" | "trustedSites"
+> & {
+  trustedSites: string
   properties: string
 }

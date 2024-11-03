@@ -86,15 +86,18 @@ export const SsiHelper = {
     if (!aCredential.secret || typeof aCredential.secret != "string") {
       throw new Error("secret must be non-empty strings");
     }
+    if (!aCredential.trustedSites || typeof aCredential.trustedSites != "string") {
+      throw new Error("trustedSites must be non-empty strings");
+    }
 
     // In theory these nulls should just be rolled up into the encrypted
     // values, but nsISecretDecoderRing doesn't use nsStrings, so the
     // nulls cause truncation. Check for them here just to avoid
     // unexpected round-trip surprises.
     if (
-      aCredential.protocolName.includes("\0") ||
-      aCredential.credentialName.includes("\0") ||
-      aCredential.secret.includes("\0")
+      aCredential.secret.includes("\0") ||
+      aCredential.identifier.includes("\0") ||
+      aCredential.properties.includes("\0")
     ) {
       throw new Error("credential values can't contain nulls");
     }
@@ -137,7 +140,8 @@ export const SsiHelper = {
     if (
       aCredential1.protocolName != aCredential2.protocolName ||
       aCredential1.credentialName != aCredential2.credentialName ||
-      aCredential1.secret != aCredential2.secret
+      aCredential1.secret != aCredential2.secret ||
+      aCredential1.trustedSites != aCredential2.trustedSites
     ) {
       return false;
     }
@@ -178,6 +182,7 @@ export const SsiHelper = {
         aNewCredentialData.protocolName,
         aNewCredentialData.credentialName,
         aNewCredentialData.primary,
+        aNewCredentialData.trustedSites,
         aNewCredentialData.secret,
         aNewCredentialData.identifier,
         aNewCredentialData.properties
@@ -212,6 +217,7 @@ export const SsiHelper = {
           case "primary":
           case "secret":
           case "identifier":
+          case "trustedSites":
           case "properties":
           case "unknownFields":
           // nsICredentialMetaInfo (fall through)
@@ -256,6 +262,9 @@ export const SsiHelper = {
     }
     if (newCredential.secret == null || !newCredential.secret.length) {
       throw new Error("Can't add a credential with a null or empty secret.");
+    }
+    if (newCredential.trustedSites == null || !newCredential.trustedSites.length) {
+      throw new Error("Can't add a credential with a null or empty  trustedSites.");
     }
 
     // For credentials w/o a optional property, set to "", not null.
@@ -399,6 +408,7 @@ export const SsiHelper = {
       credential.protocolName,
       credential.credentialName,
       credential.primary,
+      credential.trustedSites,
       credential.secret,
       credential.identifier,
       credential.properties

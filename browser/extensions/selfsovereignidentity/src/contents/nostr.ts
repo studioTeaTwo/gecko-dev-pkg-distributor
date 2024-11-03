@@ -19,6 +19,7 @@ export async function init() {
     // Only accept messages from the current window
     if (
       ev.source !== window ||
+      ev.data.id === "native" ||
       ev.data.application !== "ssb" ||
       ev.data.scope !== "nostr"
     ) {
@@ -33,6 +34,8 @@ export async function init() {
 
       // Send message to the backgrounds and emit the returned value to the inpages
       const message: MessageBetweenBackAndContent = {
+        origin: ev.origin,
+        application: ev.data.application,
         action: ev.data.action,
         args: ev.data.args,
       }
@@ -56,15 +59,28 @@ export async function init() {
     ) {
       window.postMessage(
         {
-          action: request.action === "nostr/init" ? "init" : "providerChanged",
+          id: "native",
+          application: "ssb",
+          data: {
+            action:
+              request.action === "nostr/init" ? "init" : "providerChanged",
+            data: request.args,
+          },
           scope: "nostr",
-          data: request.args,
         },
         window.location.origin
       )
     } else if (request.action === "nostr/accountChanged") {
       window.postMessage(
-        { action: "accountChanged", scope: "nostr", data: request.args },
+        {
+          id: "native",
+          application: "ssb",
+          data: {
+            action: "accountChanged",
+            data: request.args,
+          },
+          scope: "nostr",
+        },
         window.location.origin
       )
     }

@@ -7,6 +7,7 @@ declare namespace browser.addonsSelfsovereignidentity {
     primary: boolean
     secret: string
     identifier: string
+    trustedSites: object[]
     properties: object
     guid?: string
   }
@@ -18,7 +19,10 @@ declare namespace browser.addonsSelfsovereignidentity {
     guid: string
   ) => Credential[]
   const signByNostrKey: (guid: string, serializedEvent: string) => string
-  const getPref: (protocolName: ProtocolName) => boolean
+  const getPrefs: (protocolName: ProtocolName) => {
+    enabled: boolean
+    trusted: boolean
+  }
   const onPrimaryChanged: {
     addListener: (
       callback: (newGuid: string) => void,
@@ -29,8 +33,9 @@ declare namespace browser.addonsSelfsovereignidentity {
   }
   const onPrefChanged: {
     addListener: (
-      callback: (newGuid: string) => void,
-      protocolName: ProtocolName
+      callback: (prefKey: string) => void,
+      protocolName: ProtocolName,
+      prefKey: string
     ) => {}
     rmoveListener: () => void
     hadListener: Function

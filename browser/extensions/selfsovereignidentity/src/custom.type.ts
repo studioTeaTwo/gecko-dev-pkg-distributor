@@ -7,10 +7,12 @@ type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht"
 interface MessageBetweenBackAndContent {
   action: string
   args: any
+  origin: string
+  application: string
 }
 interface MessageBetweenContentAndInpage {
   id
-  application: ApplicationName
+  application: string
   action: `${ProtocolName}/action`
   scope: ProtocolName
   args: any

@@ -1646,8 +1646,15 @@
   mirror: always
 
 # Selfsovereignidentity prefs
+#
 # Enabling to inject `window.nostr`
 - name: browser.selfsovereignidentity.nostr.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Trusting only registered sites
+- name: browser.selfsovereignidentity.nostr.trusted
   type: bool
   value: true
   mirror: always

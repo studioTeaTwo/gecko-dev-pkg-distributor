@@ -60,10 +60,10 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
         onPrefChanged: new EventManager({
           context,
           name: "addonsSelfsovereignidentity.onPrefChanged",
-          register: (fire, protocolName) => {
-            const prefName = `browser.selfsovereignidentity.${protocolName}.enabled`;
+          register: (fire, protocolName, prefKey) => {
+            const prefName = `browser.selfsovereignidentity.${protocolName}.${prefKey}`;
             const callback = () => {
-              fire.async(protocolName).catch(() => {}); // ignore Message Manager disconnects
+              fire.async(prefKey).catch(() => {}); // ignore Message Manager disconnects
             };
             Services.prefs.addObserver(prefName, callback);
             return () => {
@@ -101,6 +101,7 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
               credentialName: credential.credentialName,
               identifier: credential.identifier,
               primary: credential.primary,
+              trustedSites: JSON.parse(credential.trustedSites),
               // meta info
               guid: credential.guid,
             }
@@ -117,11 +118,18 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
 
           return signature
         },
-        async getPref(protocolName) {
+        async getPrefs(protocolName) {
           try {
-            return Services.prefs.getBoolPref(
+            const enabled = Services.prefs.getBoolPref(
               `browser.selfsovereignidentity.${protocolName}.enabled`
             );
+            const trusted = Services.prefs.getBoolPref(
+              `browser.selfsovereignidentity.${protocolName}.trusted`
+            );
+            return {
+              enabled,
+              trusted,
+            }
           } catch (e) {
             throw e
           }

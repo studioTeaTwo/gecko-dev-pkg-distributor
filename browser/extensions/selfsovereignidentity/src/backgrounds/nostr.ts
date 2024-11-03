@@ -4,10 +4,21 @@ import { bech32 } from "@scure/base"
 import { log } from "../shared/logger"
 import { state } from "./state"
 
+// NOTE(ssb): Currently firefox does not support externally_connectable.
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
+const SafeProtocols = ["http", "moz-extension"]
+
 // Proceed calls from contents
-export const doNostrAction = async (action, args) => {
-  if (!state.nostr.enabled) {
-    return "Your setting is currently disabled. Please confirm 'browser.selfsovereignidentity.nostr.enabled' in 'about:config'."
+export const doNostrAction = async (origin, application, action, args) => {
+  if (!state.nostr.enabled && application === "ssb") {
+    throw new Error(
+      "window.nostr are not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'."
+    )
+  }
+  if (!trusted(origin)) {
+    throw new Error(
+      "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'."
+    )
   }
 
   switch (action) {
@@ -49,20 +60,35 @@ export async function init() {
   if (credentials.length > 0) {
     state.nostr = {
       ...state.nostr,
-      guid: credentials[0].guid,
       npub: credentials[0].identifier,
+      trustedSites: credentials[0].trustedSites,
+      guid: credentials[0].guid,
     }
   }
 
-  // Get the enabled flag from the prefs.
-  const enabled = await browser.addonsSelfsovereignidentity.getPref("nostr")
+  // Get setting values from the prefs.
+  const prefs = await browser.addonsSelfsovereignidentity.getPrefs("nostr")
   state.nostr = {
     ...state.nostr,
-    enabled,
+    enabled: prefs.enabled,
+    trusted: prefs.trusted,
   }
 
-  log("background init!", enabled, credentials)
+  log("background init!", prefs, credentials)
 }
+
+// initial action when the webapps are loaded
+browser.webNavigation.onCompleted.addListener(async () => {
+  // Notify init to the contents
+  const tabs = await browser.tabs.query({
+    status: "complete",
+    discarded: false,
+  })
+  for (const tab of tabs) {
+    log("send to tab", tab)
+    sendTab(tab, "nostr/init", state.nostr.enabled)
+  }
+})
 
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
@@ -91,14 +117,7 @@ const onPrimaryChangedCallback = async (newGuid: string) => {
     const pubkey = decodeNpub(state.nostr.npub)
     for (const tab of tabs) {
       log("send to tab", tab)
-      if (tab.url.startsWith("http")) {
-        browser.tabs
-          .sendMessage(tab.id, {
-            action: "nostr/accountChanged",
-            args: { data: pubkey },
-          })
-          .catch()
-      }
+      sendTab(tab, "nostr/accountChanged", pubkey)
     }
   }
 }
@@ -106,12 +125,9 @@ browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(
   onPrimaryChangedCallback,
   "nostr"
 )
-const onPrefChangedCallback = async (protocolName: ProtocolName) => {
-  log("pref changed!", protocolName)
-  state.nostr = {
-    ...state.nostr,
-    enabled: !state.nostr.enabled,
-  }
+const onPrefChangedCallback = async (prefKey: string) => {
+  log("pref changed!", prefKey)
+  state.nostr[prefKey] = !state.nostr[prefKey]
 
   // Send the message to the contents
   const tabs = await browser.tabs.query({
@@ -120,20 +136,58 @@ const onPrefChangedCallback = async (protocolName: ProtocolName) => {
   })
   for (const tab of tabs) {
     log("send to tab", tab)
-    if (tab.url.startsWith("http")) {
-      browser.tabs
-        .sendMessage(tab.id, {
-          action: "nostr/providerChanged",
-          args: { enabled: state.nostr.enabled },
-        })
-        .catch()
-    }
+    sendTab(tab, "nostr/providerChanged", state.nostr.enabled)
   }
 }
 browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
   onPrefChangedCallback,
-  "nostr"
+  "nostr",
+  "enabled"
 )
+browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
+  onPrefChangedCallback,
+  "nostr",
+  "trusted"
+)
+
+/**
+ * Internal Utils
+ *
+ */
+
+function sendTab(tab, action, data) {
+  if (!trusted(tab.url)) {
+    if (!SafeProtocols.some((protocol) => tab.url.startsWith(protocol))) return
+    browser.tabs
+      .sendMessage(tab.id, {
+        action,
+        args: {
+          error:
+            "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.",
+        },
+      })
+      .catch()
+    return
+  }
+
+  browser.tabs
+    .sendMessage(tab.id, {
+      action,
+      args: { data },
+    })
+    .catch()
+}
+
+function trusted(tabUrl: string): boolean {
+  // Return true unconditionally
+  if (!state.nostr.trusted) return true
+
+  if (!SafeProtocols.some((protocol) => tabUrl.startsWith(protocol)))
+    return false
+
+  // FIXME(ssb): improve the match method, such as supporting glob.
+  return state.nostr.trustedSites.some((site) => tabUrl.includes(site.url))
+}
 
 function decodeNpub(npub) {
   const Bech32MaxSize = 5000

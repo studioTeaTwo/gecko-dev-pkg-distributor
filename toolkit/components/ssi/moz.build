@@ -26,7 +26,7 @@ XPIDL_MODULE = "ssi"
 
 EXTRA_JS_MODULES += [
     "CredentialInfo.sys.mjs",
-    "Ssi-crypto-SDR.sys.mjs",
+    "ssi-crypto-SDR.sys.mjs",
     "ssi-storage-json.sys.mjs",
     "Ssi.sys.mjs",
     "SsiHelper.sys.mjs",

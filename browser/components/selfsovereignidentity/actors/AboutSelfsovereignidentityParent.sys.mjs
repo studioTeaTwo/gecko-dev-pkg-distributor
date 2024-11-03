@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // _AboutSelfsovereignidentity is only exported for testing
-import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs";
+import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs"
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs"
@@ -244,6 +244,9 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     if (credentialUpdates.hasOwnProperty("identifier")) {
       modifiedCredential.identifier = credentialUpdates.identifier
     }
+    if (credentialUpdates.hasOwnProperty("trustedSites")) {
+      modifiedCredential.trustedSites = credentialUpdates.trustedSites
+    }
     if (credentialUpdates.hasOwnProperty("properties")) {
       modifiedCredential.properties = credentialUpdates.properties
     }
@@ -274,10 +277,19 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
 
   #prefChanged(changeSet) {
     if (changeSet.protocolName === "nostr") {
-      Services.prefs.setBoolPref(
-        "browser.selfsovereignidentity.nostr.enabled",
-        changeSet.enabled
-      )
+      if (changeSet.hasOwnProperty("enabled")) {
+        Services.prefs.setBoolPref(
+          "browser.selfsovereignidentity.nostr.enabled",
+          changeSet.enabled
+        )
+      }
+      if (changeSet.hasOwnProperty("trusted")) {
+        Services.prefs.setBoolPref(
+          "browser.selfsovereignidentity.nostr.trusted",
+          changeSet.trusted
+        )
+      }
+
       this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", changeSet)
     }
   }

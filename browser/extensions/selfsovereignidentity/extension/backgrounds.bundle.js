@@ -1079,10 +1079,16 @@ const utils_1 = __webpack_require__(175);
 const base_1 = __webpack_require__(203);
 const logger_1 = __webpack_require__(874);
 const state_1 = __webpack_require__(975);
+// NOTE(ssb): Currently firefox does not support externally_connectable.
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
+const SafeProtocols = ["http", "moz-extension"];
 // Proceed calls from contents
-const doNostrAction = async (action, args) => {
-    if (!state_1.state.nostr.enabled) {
-        return "Your setting is currently disabled. Please confirm 'browser.selfsovereignidentity.nostr.enabled' in 'about:config'.";
+const doNostrAction = async (origin, application, action, args) => {
+    if (!state_1.state.nostr.enabled && application === "ssb") {
+        throw new Error("window.nostr are not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.");
+    }
+    if (!trusted(origin)) {
+        throw new Error("This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.");
     }
     switch (action) {
         case "nostr/getPublicKey": {
@@ -1108,19 +1114,33 @@ async function init() {
     if (credentials.length > 0) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
-            guid: credentials[0].guid,
             npub: credentials[0].identifier,
+            trustedSites: credentials[0].trustedSites,
+            guid: credentials[0].guid,
         };
     }
-    // Get the enabled flag from the prefs.
-    const enabled = await browser.addonsSelfsovereignidentity.getPref("nostr");
+    // Get setting values from the prefs.
+    const prefs = await browser.addonsSelfsovereignidentity.getPrefs("nostr");
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        enabled,
+        enabled: prefs.enabled,
+        trusted: prefs.trusted,
     };
-    (0, logger_1.log)("background init!", enabled, credentials);
+    (0, logger_1.log)("background init!", prefs, credentials);
 }
 exports.init = init;
+// initial action when the webapps are loaded
+browser.webNavigation.onCompleted.addListener(async () => {
+    // Notify init to the contents
+    const tabs = await browser.tabs.query({
+        status: "complete",
+        discarded: false,
+    });
+    for (const tab of tabs) {
+        (0, logger_1.log)("send to tab", tab);
+        sendTab(tab, "nostr/init", state_1.state.nostr.enabled);
+    }
+});
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async (newGuid) => {
@@ -1142,24 +1162,14 @@ const onPrimaryChangedCallback = async (newGuid) => {
         const pubkey = decodeNpub(state_1.state.nostr.npub);
         for (const tab of tabs) {
             (0, logger_1.log)("send to tab", tab);
-            if (tab.url.startsWith("http")) {
-                browser.tabs
-                    .sendMessage(tab.id, {
-                    action: "nostr/accountChanged",
-                    args: { data: pubkey },
-                })
-                    .catch();
-            }
+            sendTab(tab, "nostr/accountChanged", pubkey);
         }
     }
 };
 browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr");
-const onPrefChangedCallback = async (protocolName) => {
-    (0, logger_1.log)("pref changed!", protocolName);
-    state_1.state.nostr = {
-        ...state_1.state.nostr,
-        enabled: !state_1.state.nostr.enabled,
-    };
+const onPrefChangedCallback = async (prefKey) => {
+    (0, logger_1.log)("pref changed!", prefKey);
+    state_1.state.nostr[prefKey] = !state_1.state.nostr[prefKey];
     // Send the message to the contents
     const tabs = await browser.tabs.query({
         status: "complete",
@@ -1167,17 +1177,45 @@ const onPrefChangedCallback = async (protocolName) => {
     });
     for (const tab of tabs) {
         (0, logger_1.log)("send to tab", tab);
-        if (tab.url.startsWith("http")) {
-            browser.tabs
-                .sendMessage(tab.id, {
-                action: "nostr/providerChanged",
-                args: { enabled: state_1.state.nostr.enabled },
-            })
-                .catch();
-        }
+        sendTab(tab, "nostr/providerChanged", state_1.state.nostr.enabled);
     }
 };
-browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr");
+browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr", "enabled");
+browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr", "trusted");
+/**
+ * Internal Utils
+ *
+ */
+function sendTab(tab, action, data) {
+    if (!trusted(tab.url)) {
+        if (!SafeProtocols.some((protocol) => tab.url.startsWith(protocol)))
+            return;
+        browser.tabs
+            .sendMessage(tab.id, {
+            action,
+            args: {
+                error: "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.",
+            },
+        })
+            .catch();
+        return;
+    }
+    browser.tabs
+        .sendMessage(tab.id, {
+        action,
+        args: { data },
+    })
+        .catch();
+}
+function trusted(tabUrl) {
+    // Return true unconditionally
+    if (!state_1.state.nostr.trusted)
+        return true;
+    if (!SafeProtocols.some((protocol) => tabUrl.startsWith(protocol)))
+        return false;
+    // FIXME(ssb): improve the match method, such as supporting glob.
+    return state_1.state.nostr.trustedSites.some((site) => tabUrl.includes(site.url));
+}
 function decodeNpub(npub) {
     const Bech32MaxSize = 5000;
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
@@ -1231,11 +1269,13 @@ function serializeEvent(event) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.state = void 0;
 // NOTE: We can hold multiple selfsovereignidentities here, just within background.
-// But don't expose them to the contents.
+// But don't expose them to the contents, so that Peter Todd is not suspected of being Satoshi Nakamoto.
 exports.state = {
     nostr: {
         enabled: true,
         npub: "",
+        trusted: true,
+        trustedSites: [],
         guid: "",
     },
 };
@@ -1297,33 +1337,16 @@ __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(684);
-const state_1 = __webpack_require__(975);
+__webpack_require__(684);
 (0, logger_1.log)("background-script working");
-// initial action to enable ssb when the webapps are loaded
-browser.webNavigation.onCompleted.addListener(async () => {
-    // Notify init to the contents
-    const tabs = await browser.tabs.query({
-        status: "complete",
-        discarded: false,
-    });
-    for (const tab of tabs) {
-        (0, logger_1.log)("send to tab", tab);
-        if (tab.url.startsWith("http")) {
-            browser.tabs
-                .sendMessage(tab.id, {
-                action: "nostr/init",
-                args: { data: state_1.state.nostr.enabled },
-            })
-                .catch();
-        }
-    }
-});
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args)).then((data) => ({ data }));
+        return Promise.resolve((0, nostr_1.doNostrAction)(message.origin, message.application, message.action, message.args))
+            .then((data) => ({ data }))
+            .catch((error) => ({ error }));
     }
     return false;
 });

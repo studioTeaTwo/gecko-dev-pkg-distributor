@@ -88,7 +88,8 @@ function onPrimaryChanged(changeSet: {
 
 function onPrefChanged(changeSet: {
   protocolName: ProtocolName
-  enabled: boolean
+  enabled?: boolean
+  trusted?: boolean
 }) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityPrefChanged", {
@@ -116,6 +117,7 @@ export const dispatchEvents = {
 
 function transformToPayload(credential: Credential) {
   const newVal = { ...credential } as unknown as CredentialForPayload
+  newVal.trustedSites = JSON.stringify(credential.trustedSites)
   newVal.properties = JSON.stringify(credential.properties)
   return newVal
 }
@@ -124,9 +126,13 @@ function transformCredentialsFromStore(
   credentialForPayloads: CredentialForPayload[]
 ) {
   return credentialForPayloads.map((credential) => {
+    const trustedSites = JSON.parse(
+      credential.trustedSites.replace(/^''$/g, '"')
+    )
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'))
     return {
       ...credential,
+      trustedSites,
       properties,
     }
   })
@@ -136,7 +142,10 @@ type Op = "get" | "add" | "update" | "remove" | "removeAll" | null
 
 export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
-    nostr: true,
+    nostr: {
+      enabled: true,
+      trusted: true,
+    },
   })
   const [credentials, setCredentials] = useState<Credential[]>([])
   const [credentialsFromStore, setCredentialsFromStore] = useState<
@@ -215,7 +224,9 @@ export default function useChildActorEvent() {
         break
       }
       case "Prefs": {
-        setPrefs(event.detail.value)
+        if (event.detail.value.protocolName === "nostr") {
+          setPrefs((prev) => ({ ...prev, nostr: event.detail.value }))
+        }
         break
       }
     }

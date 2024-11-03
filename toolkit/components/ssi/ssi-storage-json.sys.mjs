@@ -124,6 +124,7 @@ export class SsiStorage_json {
       protocolName: credentialClone.protocolName,
       credentialName: credentialClone.credentialName,
       primary: credentialClone.primary,
+      trustedSites: credentialClone.trustedSites,
       encryptedSecret: credentialClone.secret,
       encryptedIdentifier: credentialClone.identifier,
       encryptedProperties: credentialClone.properties,
@@ -264,6 +265,7 @@ export class SsiStorage_json {
         credentialItem.protocolName = newCredential.protocolName;
         credentialItem.credentialName = newCredential.credentialName;
         credentialItem.primary = newCredential.primary;
+        credentialItem.trustedSites = newCredential.trustedSites;
         credentialItem.encryptedSecret = encSecret;
         credentialItem.encryptedIdentifier = encIdentifier;
         credentialItem.encryptedProperties = encProperties;
@@ -366,6 +368,7 @@ export class SsiStorage_json {
           case "credentialName":
           case "id":
           case "primary":
+          case "trustedSites":
           case "encryptedSecret":
           case "encryptedIdentifier":
           case "encryptedProperties":
@@ -401,6 +404,7 @@ export class SsiStorage_json {
           credentialItem.protocolName,
           credentialItem.credentialName,
           credentialItem.primary,
+          credentialItem.trustedSites,
           credentialItem.encryptedSecret,
           credentialItem.encryptedIdentifier,
           credentialItem.encryptedProperties

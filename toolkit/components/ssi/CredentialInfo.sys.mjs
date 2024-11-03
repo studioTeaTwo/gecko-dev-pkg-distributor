@@ -24,6 +24,7 @@ nsCredentialInfo.prototype = {
   protocolName: null,
   credentialName: null,
   primary: null,
+  trustedSites: null,
   secret: null,
   identifier: null,
   properties: null,
@@ -33,6 +34,7 @@ nsCredentialInfo.prototype = {
     aProtocolName,
     aCredentialName,
     aPrimary,
+    aTrustedSites,
     aSecret,
     aIdentifier,
     aProperties
@@ -40,6 +42,7 @@ nsCredentialInfo.prototype = {
     this.protocolName = aProtocolName;
     this.credentialName = aCredentialName;
     this.primary = aPrimary;
+    this.trustedSites = aTrustedSites;
     this.secret = aSecret;
     this.identifier = aIdentifier;
     this.properties = aProperties;
@@ -54,6 +57,7 @@ nsCredentialInfo.prototype = {
       this.protocolName != aCredential.protocolName ||
       this.credentialName != aCredential.credentialName ||
       this.primary != aCredential.primary ||
+      this.trustedSites != aCredential.trustedSites ||
       this.secret != aCredential.secret ||
       this.identifier != aCredential.identifier ||
       this.properties != aCredential.properties
@@ -72,6 +76,7 @@ nsCredentialInfo.prototype = {
       this.protocolName,
       this.credentialName,
       this.primary,
+      this.trustedSites,
       this.secret,
       this.identifier,
       this.properties
