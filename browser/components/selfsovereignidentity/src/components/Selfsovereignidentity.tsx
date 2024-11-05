@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { Box, Grid, GridItem } from "@chakra-ui/react"
 import Menu from "./Menu"
 import Bitcoin from "./bitcoin"
@@ -11,7 +11,7 @@ import Nostr from "./nostr"
 import ECash from "./ecash"
 import { MenuItem } from "../custom.type"
 
-function Home(props) {
+function Selfsovereignidentity(props) {
   const [selectedMenu, setSelectedMenu] = useState<MenuItem>("nostr")
 
   useEffect(() => {}, [])
@@ -44,4 +44,4 @@ function Home(props) {
   )
 }
 
-export default Home
+export default Selfsovereignidentity

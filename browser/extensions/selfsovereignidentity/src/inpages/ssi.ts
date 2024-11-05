@@ -1,32 +1,96 @@
 // Interface for window.ssi prototype
+import { postMessage } from "./postMessage"
 
 export function init() {
-  window.ssi = WindowSSI
+  // It envisions browser-native API, so the object is persisted.
+  window.ssi = Object.freeze(WindowSSI)
 
   window.addEventListener("message", (event) => {
-    if (event.source === window && event.data.scope === "nostr") {
-      if (event.data.action === "accountChanged") {
-        window.ssi.nostr.publicKey = event.data.data
-        // NOTE: There may be no need to emit it, so that Peter Todd is not suspected of being Satoshi Nakamoto.
-        window.dispatchEvent(new Event("nostr:accountchanged"))
+    if (event.source !== window || event.data.id !== "native") {
+      return
+    }
+
+    const action = event.data.action
+    const data = event.data.data.data
+    if (event.data.scope === "nostr") {
+      if (action === "providerChanged") {
+        window.ssi.nostr.dispatchEvent(
+          new Event("providerChanged", {
+            bubbles: false,
+            composed: true,
+          })
+        )
+      } else if (action === "accountChanged") {
+        window.ssi.nostr.dispatchEvent(
+          new CustomEvent(action, {
+            detail: data,
+            bubbles: false,
+            composed: true,
+          })
+        )
       }
     }
   })
 }
 
-export const WindowSSI = {
+export const WindowSSI: WindowSSI = {
   _scope: "ssi",
+  _proxy: new EventTarget(),
 
-  nostr: {
-    publicKey: "",
+  nostr: Object.freeze({
     generate(option) {
-      return "publickey"
+      return Promise.resolve("publickey")
+    },
+    getPublicKey(option) {
+      console.log("ssi getpubkey")
+      return postMessage("nostr", "getPublicKey", undefined)
     },
     sign(message, option) {
-      return "signature"
+      return postMessage("nostr", option.type, message)
     },
     decrypt(ciphertext, option) {
-      return "plaintext"
+      return Promise.resolve("plaintext")
     },
+
+    // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+    // ref: https://github.com/nostr-protocol/nips/pull/1174
+    messageBoard: {},
+
+    _proxy: new EventTarget(),
+    dispatchEvent(event) {
+      return WindowSSI.nostr._proxy.dispatchEvent(event)
+    },
+    addEventListener(
+      type: string,
+      callback: EventListenerOrEventListenerObject | null,
+      options?: AddEventListenerOptions | boolean
+    ) {
+      return WindowSSI.nostr._proxy.addEventListener(type, callback, options)
+    },
+    removeEventListener(
+      type: string,
+      callback: EventListenerOrEventListenerObject | null,
+      options?: EventListenerOptions | boolean
+    ) {
+      return WindowSSI.nostr._proxy.removeEventListener(type, callback, options)
+    },
+  }),
+
+  dispatchEvent(event: Event) {
+    return WindowSSI._proxy.dispatchEvent(event)
+  },
+  addEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: AddEventListenerOptions | boolean
+  ) {
+    return WindowSSI._proxy.addEventListener(type, callback, options)
+  },
+  removeEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: EventListenerOptions | boolean
+  ) {
+    return WindowSSI._proxy.removeEventListener(type, callback, options)
   },
 }

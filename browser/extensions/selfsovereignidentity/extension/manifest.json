@@ -10,6 +10,7 @@
   },
 
   "permissions": [
+    "activeTab",
     "tabs",
     "webNavigation",
     "<all_urls>",
@@ -36,9 +37,8 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": [
-        "contents/contents.bundle.js"
-      ]
+      "run_at": "document_start",
+      "js": ["contents/contents.bundle.js"]
     }
   ],
   "web_accessible_resources": ["inpages/inpages.bundle.js"]

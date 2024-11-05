@@ -116,10 +116,19 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
     const nostr = {
       protocolName: "nostr",
       enabled: Services.prefs.getBoolPref(
-        "browser.selfsovereignidentity.nostr.enabled"
+        "selfsovereignidentity.nostr.enabled"
       ),
-      trusted: Services.prefs.getBoolPref(
-        "browser.selfsovereignidentity.nostr.trusted"
+      usedPrimarypassword: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.primarypassword.toWebsite.enabled"
+      ),
+      usedTrustedSites: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.trustedSites.enabled"
+      ),
+      usedBuiltInNip07: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.builtInNip07.enabled"
+      ),
+      usedAccountChanged: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.event.accountChanged.enabled"
       ),
     }
     this.sendToContent("Prefs", nostr)

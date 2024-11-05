@@ -8,7 +8,7 @@ It does not contain any logic for saving or communication with the extension or 
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { ChakraProvider } from "@chakra-ui/react"
-import Home from "../components/Home"
+import Selfsovereignidentity from "../components/Selfsovereignidentity"
 
 // eslint-disable-next-line no-var
 var HomeOverlay = function () {
@@ -28,7 +28,7 @@ HomeOverlay.prototype = {
     const root = createRoot(container)
     root.render(
       <ChakraProvider>
-        <Home />
+        <Selfsovereignidentity />
       </ChakraProvider>
     )
 

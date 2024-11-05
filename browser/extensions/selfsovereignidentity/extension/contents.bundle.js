@@ -100,6 +100,8 @@ function postMessage(ev, response) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.log = void 0;
+// NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
+// TODO(ssb): review those on inpages and contents
 function log(...args) {
     console.info("ssb:", args);
 }

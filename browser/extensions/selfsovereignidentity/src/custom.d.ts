@@ -12,17 +12,35 @@ declare namespace browser.addonsSelfsovereignidentity {
     guid?: string
   }
 
+  /**
+   * Selfsovereignidentity prefs
+   * ref: modules/libpref/init/StaticPrefList.yaml
+   */
+  interface SelfsovereignidentityDefaultPrefs {
+    enabled: boolean // selfsovereignidentity.[protocolName].enabled
+    usedPrimarypassword: boolean // selfsovereignidentity.[protocolName].primarypassword.toWebsite.enabled
+    usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
+    usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+  }
+  interface SelfsovereignidentityPrefs {
+    nostr: {
+      usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
+    } & SelfsovereignidentityDefaultPrefs
+  }
+
   const searchCredentialsWithoutSecret: (
     protocolName: ProtocolName,
     credentialName: string,
     primary: boolean,
     guid: string
-  ) => Credential[]
-  const signByNostrKey: (guid: string, serializedEvent: string) => string
-  const getPrefs: (protocolName: ProtocolName) => {
-    enabled: boolean
-    trusted: boolean
-  }
+  ) => Credential[] | null
+  const signByNostrKey: (guid: string, serializedEvent: string) => string | null
+  const getPrefs: (
+    protocolName: ProtocolName
+  ) => Omit<
+    SelfsovereignidentityPrefs[keyof SelfsovereignidentityPrefs],
+    "usedPrimarypassword"
+  > | null
   const onPrimaryChanged: {
     addListener: (
       callback: (newGuid: string) => void,
@@ -42,10 +60,44 @@ declare namespace browser.addonsSelfsovereignidentity {
   }
 }
 
+declare namespace browser.tabExtras {
+  const getWebcompatInfo = {}
+}
+
+type PublicKey = string
+type Signature = any
+type PlainText = string
+interface WindowSSI extends EventTarget {
+  _scope: "ssi"
+  _proxy: EventTarget
+  
+  readonly nostr: {
+    _proxy: EventTarget
+    generate: (option?) => Promise<PublicKey>
+    getPublicKey: (option?) => Promise<PublicKey>
+    sign: (message: string, option?) => Promise<Signature>
+    decrypt: (ciphertext: string, option?) => Promise<PlainText>
+    messageBoard?: {}
+  } & EventTarget
+}
+interface WindowNostr {
+  getPublicKey: () => Promise<string>
+  signEvent: (event: EventTemplate) => Promise<NostrEvent>
+  getRelays?: () => Promise<RelayRecord>
+  nip04?: {
+    encrypt(pubkey: string, plaintext: string): Promise<string>
+    decrypt(pubkey: string, ciphertext: string): Promise<string>
+  }
+  nip44?: {
+    encrypt(pubkey: string, plaintext: string): Promise<string>
+    decrypt(pubkey: string, ciphertext: string): Promise<string>
+  }
+}
 // Window incompatible types
 interface Window {
-  ssi: WindowSSI
-  nostr: object
+  ssi: Readonly<WindowSSI>
+  nostr: WindowNostr & EventTarget
+  nip07Loaded: { [provider: string]: boolean }[]
   emit: (action: string) => void
 }
 // eslint-disable-next-line no-var

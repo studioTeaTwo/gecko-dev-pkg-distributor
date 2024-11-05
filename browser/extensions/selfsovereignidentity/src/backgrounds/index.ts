@@ -17,12 +17,7 @@ browser.runtime.onMessage.addListener(
     log("background received from content", message, sender)
     if (message.action.includes("nostr/")) {
       return Promise.resolve(
-        doNostrAction(
-          message.origin,
-          message.application,
-          message.action,
-          message.args
-        )
+        doNostrAction(message.origin, message.action, message.args)
       )
         .then((data) => ({ data }))
         .catch((error) => ({ error }))

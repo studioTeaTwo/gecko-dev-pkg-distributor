@@ -19,29 +19,17 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
 
     return {
       addonsSelfsovereignidentity: {
-        // If you are checking for 'nightly', also check for 'nightly-try'.
-        //
-        // Otherwise, just use the standard builds, but be aware of the many
-        // non-standard options that also exist (as of August 2018).
-        //
-        // Standard builds:
-        //   'esr' - ESR channel
-        //   'release' - release channel
-        //   'beta' - beta channel
-        //   'nightly' - nightly channel
-        // Non-standard / deprecated builds:
-        //   'aurora' - deprecated aurora channel (still observed in dxr)
-        //   'default' - local builds from source
-        //   'nightly-try' - nightly Try builds (QA may occasionally need to test with these)
-        async getUpdateChannel() {
-          return AppConstants.MOZ_UPDATE_CHANNEL;
-        },
         // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         onPrimaryChanged: new EventManager({
           context,
           name: "addonsSelfsovereignidentity.onPrimaryChanged",
           register: (fire, protocolName) => {
             const callback = (newGuidPayload) => {
+              // Check permission
+              const enabled = Services.prefs.getBoolPref(`selfsovereignidentity.${protocolName}.enabled`)
+              const usedAccountChanged = Services.prefs.getBoolPref(`selfsovereignidentity.${protocolName}.event.accountChanged.enabled`)
+              if (!enabled || !usedAccountChanged) return;
+
               const newGuid = newGuidPayload.data
               fire.async(newGuid).catch(() => {}); // ignore Message Manager disconnects
             };
@@ -61,8 +49,14 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
           context,
           name: "addonsSelfsovereignidentity.onPrefChanged",
           register: (fire, protocolName, prefKey) => {
+            // TODO(ssb): filter only what permits
             const prefName = `browser.selfsovereignidentity.${protocolName}.${prefKey}`;
+
             const callback = () => {
+              // Check permission
+              const enabled = Services.prefs.getBoolPref(`selfsovereignidentity.${protocolName}.enabled`)
+              if (prefName !== "enabled" && !enabled ) return;
+
               fire.async(prefKey).catch(() => {}); // ignore Message Manager disconnects
             };
             Services.prefs.addObserver(prefName, callback);
@@ -72,6 +66,10 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
           },
         }).api(),
         async searchCredentialsWithoutSecret(protocolName, credentialName, primary, guid) {
+          // Check permission
+          const enabled = Services.prefs.getBoolPref(`selfsovereignidentity.${protocolName}.enabled`)
+          if (!enabled) return null;
+
           const params = {}
           if (protocolName) {
             params.protocolName = protocolName
@@ -108,33 +106,50 @@ this.addonsSelfsovereignidentity = class extends ExtensionAPI {
             return filteredVal
           })
         },
+        async getPrefs(protocolName) {
+          // Check permission
+          const enabled = Services.prefs.getBoolPref(`selfsovereignidentity.${protocolName}.enabled`)
+          if (!enabled) return null;
+
+          let prefs;
+          try {
+            if (protocolName === "nostr") {
+              prefs = {
+                "enabled": enabled,
+                "trustedSites.enabled": Services.prefs.getBoolPref(
+                  "selfsovereignidentity.nostr.trustedSites.enabled"
+                ),
+                "builtInNip07.enabled": Services.prefs.getBoolPref(
+                  "selfsovereignidentity.nostr.builtInNip07.enabled"
+                ),
+                "event.accountChanged.enabled": Services.prefs.getBoolPref(
+                  "selfsovereignidentity.nostr.event.accountChanged.enabled"
+                ),
+              }
+            }
+            return prefs
+          } catch (e) {
+            throw e
+          }
+        },
+        /**
+        * Nostr only
+        */
         async signByNostrKey(message, guid) {
+          // Check permission
+          const enabled = Services.prefs.getBoolPref("selfsovereignidentity.nostr.enabled")
+          if (!enabled) return null;
+  
           let signature
           try {
             signature = await lazy.Nostr.getSignature(message, guid)
           } catch (e) {
             throw e
           }
-
+  
           return signature
         },
-        async getPrefs(protocolName) {
-          try {
-            const enabled = Services.prefs.getBoolPref(
-              `browser.selfsovereignidentity.${protocolName}.enabled`
-            );
-            const trusted = Services.prefs.getBoolPref(
-              `browser.selfsovereignidentity.${protocolName}.trusted`
-            );
-            return {
-              enabled,
-              trusted,
-            }
-          } catch (e) {
-            throw e
-          }
-        },
-      },
+      }
     };
   }
 };

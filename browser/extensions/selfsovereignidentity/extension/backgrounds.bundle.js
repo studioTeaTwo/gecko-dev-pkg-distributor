@@ -1081,21 +1081,34 @@ const logger_1 = __webpack_require__(874);
 const state_1 = __webpack_require__(975);
 // NOTE(ssb): Currently firefox does not support externally_connectable.
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
-const SafeProtocols = ["http", "moz-extension"];
+const SafeProtocols = ["http", "https", "moz-extension"];
+const MapBetweenPrefAndState = {
+    enabled: "enabled",
+    usedTrustedSites: "trustedSites.enabled",
+    usedBuiltInNip07: "builtInNip07.enabled",
+    usedAccountChanged: "event.accountChanged.enabled",
+};
+const ERR_MSG_NOT_ENABLED = "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.";
+const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
+const ERR_MSG_NOT_TRUSTED = "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 // Proceed calls from contents
-const doNostrAction = async (origin, application, action, args) => {
-    if (!state_1.state.nostr.enabled && application === "ssb") {
-        throw new Error("window.nostr are not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.");
+const doNostrAction = async (origin, action, args) => {
+    // TODO(ssi): whether to care about onlyssi
+    if (!state_1.state.nostr.prefs.enabled) {
+        throw new Error(ERR_MSG_NOT_ENABLED);
+    }
+    if (!supported(origin)) {
+        throw new Error(ERR_MSG_NOT_SUPPORTED);
     }
     if (!trusted(origin)) {
-        throw new Error("This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.");
+        throw new Error(ERR_MSG_NOT_TRUSTED);
     }
     switch (action) {
         case "nostr/getPublicKey": {
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
-            const event = args;
+            const event = JSON.parse(args);
             event.pubkey = decodeNpub(state_1.state.nostr.npub);
             // Sign
             const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
@@ -1120,27 +1133,30 @@ async function init() {
         };
     }
     // Get setting values from the prefs.
-    const prefs = await browser.addonsSelfsovereignidentity.getPrefs("nostr");
+    const results = await browser.addonsSelfsovereignidentity.getPrefs("nostr");
+    const prefs = {};
+    Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
+        prefs[state] = results[pref];
+    });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        enabled: prefs.enabled,
-        trusted: prefs.trusted,
+        prefs,
     };
-    (0, logger_1.log)("background init!", prefs, credentials);
+    (0, logger_1.log)("nostr inited in background", prefs, credentials);
 }
 exports.init = init;
-// initial action when the webapps are loaded
-browser.webNavigation.onCompleted.addListener(async () => {
+// initial action while the webapps are loading
+browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
+    (0, logger_1.log)("nostr init to tab", state_1.state.nostr.prefs.enabled && supported(detail.url) && trusted(detail.url));
     // Notify init to the contents
-    const tabs = await browser.tabs.query({
-        status: "complete",
-        discarded: false,
-    });
-    for (const tab of tabs) {
-        (0, logger_1.log)("send to tab", tab);
-        sendTab(tab, "nostr/init", state_1.state.nostr.enabled);
-    }
-});
+    const tab = await browser.tabs.get(detail.tabId);
+    (0, logger_1.log)("send to tab", tab);
+    const injecting = state_1.state.nostr.prefs.enabled &&
+        state_1.state.nostr.prefs.usedBuiltInNip07 &&
+        supported(detail.url) &&
+        trusted(detail.url);
+    sendTab(tab, "nostr/init", injecting);
+}, { url: [{ schemes: SafeProtocols }] });
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async (newGuid) => {
@@ -1154,7 +1170,7 @@ const onPrimaryChangedCallback = async (newGuid) => {
         npub: credentials[0].identifier,
     };
     // Send the message to the contents
-    if (state_1.state.nostr.enabled) {
+    if (state_1.state.nostr.prefs.enabled && state_1.state.nostr.prefs.usedAccountChanged) {
         const tabs = await browser.tabs.query({
             status: "complete",
             discarded: false,
@@ -1169,7 +1185,10 @@ const onPrimaryChangedCallback = async (newGuid) => {
 browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr");
 const onPrefChangedCallback = async (prefKey) => {
     (0, logger_1.log)("pref changed!", prefKey);
-    state_1.state.nostr[prefKey] = !state_1.state.nostr[prefKey];
+    const stateName = Object.entries(MapBetweenPrefAndState)
+        .find(([state, pref]) => pref === prefKey)
+        .map(([state, pref]) => state)[0];
+    state_1.state.nostr[stateName] = !state_1.state.nostr[stateName];
     // Send the message to the contents
     const tabs = await browser.tabs.query({
         status: "complete",
@@ -1177,25 +1196,29 @@ const onPrefChangedCallback = async (prefKey) => {
     });
     for (const tab of tabs) {
         (0, logger_1.log)("send to tab", tab);
-        sendTab(tab, "nostr/providerChanged", state_1.state.nostr.enabled);
+        if (["enabled", "onlyssi"].includes(prefKey)) {
+            const injecting = prefKey === "enabled" ? state_1.state.nostr[prefKey] : !state_1.state.nostr[prefKey];
+            sendTab(tab, "nostr/providerChanged", injecting);
+        }
     }
 };
-browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr", "enabled");
-browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr", "trusted");
+for (const prefKey of Object.values(MapBetweenPrefAndState)) {
+    browser.addonsSelfsovereignidentity.onPrefChanged.addListener(onPrefChangedCallback, "nostr", prefKey);
+}
 /**
  * Internal Utils
  *
  */
 function sendTab(tab, action, data) {
+    if (!supported(tab.url)) {
+        // browser origin event is not sent anything
+        return;
+    }
     if (!trusted(tab.url)) {
-        if (!SafeProtocols.some((protocol) => tab.url.startsWith(protocol)))
-            return;
         browser.tabs
             .sendMessage(tab.id, {
             action,
-            args: {
-                error: "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.",
-            },
+            args: { error: ERR_MSG_NOT_TRUSTED },
         })
             .catch();
         return;
@@ -1207,13 +1230,15 @@ function sendTab(tab, action, data) {
     })
         .catch();
 }
+function supported(tabUrl) {
+    return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol));
+}
+// TODO(ssb): move to experimental API.
 function trusted(tabUrl) {
     // Return true unconditionally
-    if (!state_1.state.nostr.trusted)
+    if (!state_1.state.nostr.prefs.usedTrustedSites)
         return true;
-    if (!SafeProtocols.some((protocol) => tabUrl.startsWith(protocol)))
-        return false;
-    // FIXME(ssb): improve the match method, such as supporting glob.
+    // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
     return state_1.state.nostr.trustedSites.some((site) => tabUrl.includes(site.url));
 }
 function decodeNpub(npub) {
@@ -1272,11 +1297,16 @@ exports.state = void 0;
 // But don't expose them to the contents, so that Peter Todd is not suspected of being Satoshi Nakamoto.
 exports.state = {
     nostr: {
-        enabled: true,
         npub: "",
-        trusted: true,
-        trustedSites: [],
         guid: "",
+        trustedSites: [],
+        prefs: {
+            enabled: true,
+            usedPrimarypassword: true,
+            usedTrustedSites: false, // TODO(ssb): move to experimental API.
+            usedBuiltInNip07: true,
+            usedAccountChanged: true,
+        },
     },
 };
 
@@ -1289,6 +1319,8 @@ exports.state = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.log = void 0;
+// NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
+// TODO(ssb): review those on inpages and contents
 function log(...args) {
     console.info("ssb:", args);
 }
@@ -1344,7 +1376,7 @@ __webpack_require__(684);
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.origin, message.application, message.action, message.args))
+        return Promise.resolve((0, nostr_1.doNostrAction)(message.origin, message.action, message.args))
             .then((data) => ({ data }))
             .catch((error) => ({ error }));
     }

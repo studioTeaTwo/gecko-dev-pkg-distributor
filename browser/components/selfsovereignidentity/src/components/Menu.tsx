@@ -19,10 +19,9 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
   useEffect(() => {
     const request = indexedDB.open(IDB_NAME)
     request.onerror = (event) => {
-      console.info(event)
+      console.error(event)
     }
     request.onsuccess = (event) => {
-      console.info("indexedDb onsuccess:", event.target.result)
       setDb(event.target.result)
       event.target.result
         .transaction(STORE_NAME)
@@ -37,7 +36,6 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
       }
     }
     request.onupgradeneeded = (event) => {
-      console.info("indexedDb onupgradeneeded:", event.target.result)
       setDb(event.target.result)
       event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" })
     }
@@ -48,18 +46,16 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
     const transaction = db.transaction([STORE_NAME], "readwrite")
     const objectStore = transaction.objectStore(STORE_NAME)
     const request = objectStore.put({ key: KEY_NAME, value: selectedPin })
-    request.onsuccess = (event) => {
-      console.info(event)
-    }
+    request.onsuccess = (event) => {}
     request.onerror = (event) => {
-      console.info(event)
+      console.error(event)
     }
   }
 
   const buildMenu = useCallback(() => {
     const list: { name: MenuItem; icon: JSX.Element }[] = [
-      { name: "nostr", icon: <GiBirdTwitter /> },
       { name: "bitcoin", icon: <BitcoinIcon /> },
+      { name: "nostr", icon: <GiBirdTwitter /> },
       // { name: 'lightning', icon: <MdElectricBolt />},
       // { name: 'ecash', icon: null},
     ]

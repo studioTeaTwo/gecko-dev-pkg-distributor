@@ -103,6 +103,19 @@
           }
         ],
         "async": true
+      },
+      {
+        "name": "gainPermission",
+        "type": "function",
+        "description": "Check whether to have a permission to the requsting web app",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name of target"
+          }
+        ],
+        "async": true
       }
     ]
   }

@@ -279,14 +279,32 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     if (changeSet.protocolName === "nostr") {
       if (changeSet.hasOwnProperty("enabled")) {
         Services.prefs.setBoolPref(
-          "browser.selfsovereignidentity.nostr.enabled",
+          "selfsovereignidentity.nostr.enabled",
           changeSet.enabled
         )
       }
-      if (changeSet.hasOwnProperty("trusted")) {
+      if (changeSet.hasOwnProperty("usedPrimarypassword")) {
         Services.prefs.setBoolPref(
-          "browser.selfsovereignidentity.nostr.trusted",
-          changeSet.trusted
+          "selfsovereignidentity.nostr.primarypassword.toWebsite.enabled",
+          changeSet.usedPrimarypassword
+        )
+      }
+      if (changeSet.hasOwnProperty("usedTrustedSites")) {
+        Services.prefs.setBoolPref(
+          "selfsovereignidentity.nostr.trustedSites.enabled",
+          changeSet.usedTrustedSites
+        )
+      }
+      if (changeSet.hasOwnProperty("usedBuiltInNip07")) {
+        Services.prefs.setBoolPref(
+          "selfsovereignidentity.nostr.builtInNip07.enabled",
+          changeSet.usedBuiltInNip07
+        )
+      }
+      if (changeSet.hasOwnProperty("usedAccountChanged")) {
+        Services.prefs.setBoolPref(
+          "selfsovereignidentity.nostr.event.accountChanged.enabled",
+          changeSet.usedAccountChanged
         )
       }
 

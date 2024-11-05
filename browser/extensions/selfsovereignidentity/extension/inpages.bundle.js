@@ -12,38 +12,45 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.NostrProvider = exports.init = void 0;
 const logger_1 = __webpack_require__(874);
 const shouldInject_1 = __webpack_require__(880);
-const postMessage_1 = __webpack_require__(323);
 function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
-    // Injection for until browser.tabs is established in background.
-    // After the web navigation completed, this will be overrided.
-    window.nostr = new NostrProvider();
     // The message listener to listen to content calls
     // After, emit event to return the reponse to the web apps.
     window.addEventListener("message", (event) => {
-        if (event.source === window && event.data.scope === "nostr") {
-            if (event.data.action === "init" ||
-                event.data.action === "providerChanged") {
+        if (event.source !== window || event.data.id !== "native") {
+            return;
+        }
+        const action = event.data.data.action;
+        const data = event.data.data.data;
+        if (event.data.scope === "nostr") {
+            if (action === "init" || action === "providerChanged") {
                 // TODO(ssb): It depends on the standard spec with other providers.
-                if (event.data.data.enabled) {
+                if (data) {
                     // Inject
                     window.nostr = new NostrProvider();
+                    window.nip07Loaded = Array.isArray(window.nip07Loaded)
+                        ? window.nip07Loaded.concat({ ssb: true })
+                        : [{ ssb: true }];
                 }
                 else {
                     // Dispose
                     window.nostr && delete window.nostr;
+                    window.nip07Loaded = Array.isArray(window.nip07Loaded)
+                        ? window.nip07Loaded.concat({ ssb: false })
+                        : [{ ssb: false }];
                 }
-                (0, logger_1.log)(`inpage ${event.data.action} emit!`, event);
-                window.dispatchEvent(new CustomEvent(`nostr:${event.data.action.toLowerCase()}`, {
-                    detail: event.data.data,
+                (0, logger_1.log)(`inpage ${action} emit`, event);
+                window.dispatchEvent(new CustomEvent(`nostr:${action.toLowerCase()}`, {
+                    detail: data,
                 }));
             }
-            else if (event.data.action === "accountChanged") {
-                (0, logger_1.log)("inpage accountChanged emit!", event);
-                window.dispatchEvent(new CustomEvent("nostr:accountchanged", {
-                    detail: event.data.data,
+            else if (action === "accountChanged") {
+                (0, logger_1.log)(`inpage accountChanged emit`, event);
+                window.nostr.dispatchEvent(new CustomEvent(action, {
+                    detail: data,
+                    bubbles: false,
                 }));
             }
         }
@@ -54,11 +61,16 @@ exports.init = init;
 class NostrProvider {
     _scope = "nostr";
     _provider = "ssb";
-    getPublicKey() {
-        return (0, postMessage_1.postMessage)(this._scope, "getPublicKey", undefined);
+    #proxy;
+    constructor() {
+        this.#proxy = new EventTarget();
+        this.#proxy.proxied = this;
     }
-    signEvent(event) {
-        return (0, postMessage_1.postMessage)(this._scope, "signEvent", event);
+    getPublicKey() {
+        return window.ssi.nostr.getPublicKey();
+    }
+    async signEvent(event) {
+        return window.ssi.nostr.sign(JSON.stringify(event), { type: "signEvent" });
     }
     nip04 = {
         encrypt(pubkey, plaintext) {
@@ -76,6 +88,15 @@ class NostrProvider {
             return;
         },
     };
+    dispatchEvent(...args) {
+        return this.#proxy.dispatchEvent(...args);
+    }
+    addEventListener(...args) {
+        return this.#proxy.addEventListener(...args);
+    }
+    removeEventListener(...args) {
+        return this.#proxy.removeEventListener(...args);
+    }
 }
 exports.NostrProvider = NostrProvider;
 
@@ -156,20 +177,35 @@ exports.PromiseQueue = PromiseQueue;
 /***/ }),
 
 /***/ 731:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
-// Interface for window.ssi prototype
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.WindowSSI = exports.init = void 0;
+// Interface for window.ssi prototype
+const postMessage_1 = __webpack_require__(323);
 function init() {
-    window.ssi = exports.WindowSSI;
+    // It envisions browser-native API, so the object is persisted.
+    window.ssi = Object.freeze(exports.WindowSSI);
     window.addEventListener("message", (event) => {
-        if (event.source === window && event.data.scope === "nostr") {
-            if (event.data.action === "accountChanged") {
-                window.ssi.nostr.publicKey = event.data.data;
-                // NOTE: There may be no need to emit it, so that Peter Todd is not suspected of being Satoshi Nakamoto.
-                window.dispatchEvent(new Event("nostr:accountchanged"));
+        if (event.source !== window || event.data.id !== "native") {
+            return;
+        }
+        const action = event.data.action;
+        const data = event.data.data.data;
+        if (event.data.scope === "nostr") {
+            if (action === "providerChanged") {
+                window.ssi.nostr.dispatchEvent(new Event("providerChanged", {
+                    bubbles: false,
+                    composed: true,
+                }));
+            }
+            else if (action === "accountChanged") {
+                window.ssi.nostr.dispatchEvent(new CustomEvent(action, {
+                    detail: data,
+                    bubbles: false,
+                    composed: true,
+                }));
             }
         }
     });
@@ -177,17 +213,43 @@ function init() {
 exports.init = init;
 exports.WindowSSI = {
     _scope: "ssi",
-    nostr: {
-        publicKey: "",
+    _proxy: new EventTarget(),
+    nostr: Object.freeze({
         generate(option) {
-            return "publickey";
+            return Promise.resolve("publickey");
+        },
+        getPublicKey(option) {
+            console.log("ssi getpubkey");
+            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", undefined);
         },
         sign(message, option) {
-            return "signature";
+            return (0, postMessage_1.postMessage)("nostr", option.type, message);
         },
         decrypt(ciphertext, option) {
-            return "plaintext";
+            return Promise.resolve("plaintext");
         },
+        // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+        // ref: https://github.com/nostr-protocol/nips/pull/1174
+        messageBoard: {},
+        _proxy: new EventTarget(),
+        dispatchEvent(event) {
+            return exports.WindowSSI.nostr._proxy.dispatchEvent(event);
+        },
+        addEventListener(type, callback, options) {
+            return exports.WindowSSI.nostr._proxy.addEventListener(type, callback, options);
+        },
+        removeEventListener(type, callback, options) {
+            return exports.WindowSSI.nostr._proxy.removeEventListener(type, callback, options);
+        },
+    }),
+    dispatchEvent(event) {
+        return exports.WindowSSI._proxy.dispatchEvent(event);
+    },
+    addEventListener(type, callback, options) {
+        return exports.WindowSSI._proxy.addEventListener(type, callback, options);
+    },
+    removeEventListener(type, callback, options) {
+        return exports.WindowSSI._proxy.removeEventListener(type, callback, options);
     },
 };
 
@@ -200,6 +262,8 @@ exports.WindowSSI = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.log = void 0;
+// NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
+// TODO(ssb): review those on inpages and contents
 function log(...args) {
     console.info("ssb:", args);
 }

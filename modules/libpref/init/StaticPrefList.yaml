@@ -1645,20 +1645,6 @@
   value: 512*1024
   mirror: always
 
-# Selfsovereignidentity prefs
-#
-# Enabling to inject `window.nostr`
-- name: browser.selfsovereignidentity.nostr.enabled
-  type: bool
-  value: true
-  mirror: always
-
-# Trusting only registered sites
-- name: browser.selfsovereignidentity.nostr.trusted
-  type: bool
-  value: true
-  mirror: always
-
 # SessionStore prefs
 # Maximum number of bytes of DOMSessionStorage data we collect per origin.
 - name: browser.sessionstore.dom_storage_limit
@@ -15321,6 +15307,40 @@
 
 - name: security.tls13.aes_256_gcm_sha384
   type: RelaxedAtomicBool
+  value: true
+  mirror: always
+
+#---------------------------------------------------------------------------
+# Prefs starting with "selfsovereignidentity."
+#---------------------------------------------------------------------------
+
+# Enabling to use keys of Nostr
+- name: selfsovereignidentity.nostr.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Whether to use primary password to calls from websites.
+- name: selfsovereignidentity.nostr.primarypassword.toWebsite.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Trusting only registered sites
+- name: selfsovereignidentity.nostr.trustedSites.enabled
+  type: bool
+  value: false
+  mirror: always
+
+# Injecting `window.nostr` by built-in NIP-07
+- name: selfsovereignidentity.nostr.builtInNip07.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Permitting to emit `accountChanged` event
+- name: selfsovereignidentity.nostr.event.accountChanged.enabled
+  type: bool
   value: true
   mirror: always
 

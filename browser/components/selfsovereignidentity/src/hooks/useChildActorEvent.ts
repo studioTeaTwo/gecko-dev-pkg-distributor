@@ -3,6 +3,7 @@ import {
   Credential,
   CredentialForPayload,
   ProtocolName,
+  SelfsovereignidentityDefaultPrefs,
   SelfsovereignidentityPrefs,
 } from "../custom.type"
 
@@ -86,11 +87,11 @@ function onPrimaryChanged(changeSet: {
   )
 }
 
-function onPrefChanged(changeSet: {
-  protocolName: ProtocolName
-  enabled?: boolean
-  trusted?: boolean
-}) {
+function onPrefChanged(
+  changeSet: {
+    protocolName: ProtocolName
+  } & Partial<SelfsovereignidentityPrefs["nostr"]>
+) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityPrefChanged", {
       bubbles: true,
@@ -144,7 +145,10 @@ export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
     nostr: {
       enabled: true,
-      trusted: true,
+      usedPrimarypassword: true,
+      usedTrustedSites: false,
+      usedBuiltInNip07: true,
+      usedAccountChanged: true,
     },
   })
   const [credentials, setCredentials] = useState<Credential[]>([])
@@ -225,7 +229,10 @@ export default function useChildActorEvent() {
       }
       case "Prefs": {
         if (event.detail.value.protocolName === "nostr") {
-          setPrefs((prev) => ({ ...prev, nostr: event.detail.value }))
+          setPrefs((prev) => ({
+            ...prev,
+            nostr: { ...prev.nostr, ...event.detail.value },
+          }))
         }
         break
       }

@@ -4,11 +4,16 @@ export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
  * Selfsovereignidentity prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
+export interface SelfsovereignidentityDefaultPrefs {
+  enabled: boolean // selfsovereignidentity.[protocolName].enabled
+  usedPrimarypassword: boolean // selfsovereignidentity.[protocolName].primarypassword.toWebsite.enabled
+  usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
+  usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+}
 export interface SelfsovereignidentityPrefs {
   nostr: {
-    enabled: boolean // browser.selfsovereignidentity.nostr.enabled
-    trusted: boolean // browser.selfsovereignidentity.nostr.trusted
-  }
+    usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
+  } & SelfsovereignidentityDefaultPrefs
 }
 
 /**

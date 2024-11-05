@@ -66,7 +66,7 @@ const NostrTemplate: NostrCredential = {
     displayName: "",
   },
 }
-const SafeProtocols = ["http", "moz-extension"]
+const SafeProtocols = ["http", "https", "moz-extension"]
 const DefaultTrustedSites = [
   {
     url: "http://localhost",
@@ -219,11 +219,11 @@ export default function Nostr(props) {
     removeAllCredentialsToStore()
   }
 
-  const handleTrust = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsedTrustedSites = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
 
     const checked = e.target.checked
-    onPrefChanged({ protocolName: "nostr", trusted: checked })
+    onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked })
   }
 
   const handleNewSiteChange = (e) => setNewSite(e.target.value)
@@ -307,6 +307,29 @@ export default function Nostr(props) {
     )
   }, [nostrkeys])
 
+  const handleUsedBuiltInNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+
+    const checked = e.target.checked
+    onPrefChanged({ protocolName: "nostr", usedBuiltInNip07: checked })
+  }
+
+  const handleUsedPrimarypassword = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault()
+
+    const checked = e.target.checked
+    onPrefChanged({ protocolName: "nostr", usedPrimarypassword: checked })
+  }
+
+  const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+
+    const checked = e.target.checked
+    onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked })
+  }
+
   return (
     <div>
       <Heading as="h2">NIP-07</Heading>
@@ -316,8 +339,9 @@ export default function Nostr(props) {
       </p>
       <Tabs variant="enclosed">
         <TabList>
-          <Tab>General</Tab>
+          <Tab>Keys</Tab>
           <Tab>Trusted Sites</Tab>
+          <Tab>More</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -330,11 +354,11 @@ export default function Nostr(props) {
               <Box>
                 <Grid gridTemplateColumns={"100px 1fr"} gap={6}>
                   <GridItem>
-                    <label htmlFor="enable-nostr">Enable</label>
+                    <label htmlFor="nostr-pref-enabled">Enable</label>
                   </GridItem>
                   <GridItem>
                     <Switch
-                      id="enable-nostr"
+                      id="nostr-pref-enabled"
                       isChecked={prefs.nostr.enabled}
                       onChange={handleEnable}
                     />
@@ -489,13 +513,13 @@ export default function Nostr(props) {
               <HStack>
                 <Grid gridTemplateColumns={"100px 1fr"} gap={6}>
                   <GridItem>
-                    <label htmlFor="trust-nostr">Enable</label>
+                    <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
                   </GridItem>
                   <GridItem>
                     <Switch
-                      id="trust-nostr"
-                      isChecked={prefs.nostr.trusted}
-                      onChange={handleTrust}
+                      id="nostr-pref-usedTrustedSites"
+                      isChecked={prefs.nostr.usedTrustedSites}
+                      onChange={handleUsedTrustedSites}
                     />
                   </GridItem>
                   <GridItem>
@@ -530,6 +554,55 @@ export default function Nostr(props) {
                   {getTrustedSites()}
                 </Grid>
               </Box>
+            </VStack>
+          </TabPanel>
+          <TabPanel>
+            <VStack
+              divider={<StackDivider borderColor="gray.200" />}
+              spacing={4}
+              align="stretch"
+            >
+              <HStack>
+                <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedBuiltInNip07">
+                      {"Use built-in NIP-07"}
+                    </label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedBuiltInNip07"
+                      isChecked={prefs.nostr.usedBuiltInNip07}
+                      onChange={handleUsedBuiltInNip07}
+                    />
+                  </GridItem>
+                  {/* TODO(ssb): authenticate on built-in extension */}
+                  {/* <GridItem>
+                    <label htmlFor="nostr-pref-usedPrimarypassword">
+                      {"Use primary password to Web apps"}
+                    </label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedPrimarypassword"
+                      isChecked={prefs.nostr.usedPrimarypassword}
+                      onChange={handleUsedPrimarypassword}
+                    />
+                  </GridItem> */}
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedAccountChanged">
+                      {'Notify "Account Changed" to Web apps'}
+                    </label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedAccountChanged"
+                      isChecked={prefs.nostr.usedAccountChanged}
+                      onChange={handleUsedAccountChanged}
+                    />
+                  </GridItem>
+                </Grid>
+              </HStack>
             </VStack>
           </TabPanel>
         </TabPanels>

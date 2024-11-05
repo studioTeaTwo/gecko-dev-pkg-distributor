@@ -6,19 +6,32 @@ import { state } from "./state"
 
 // NOTE(ssb): Currently firefox does not support externally_connectable.
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
-const SafeProtocols = ["http", "moz-extension"]
+const SafeProtocols = ["http", "https", "moz-extension"]
+
+const MapBetweenPrefAndState = {
+  enabled: "enabled",
+  usedTrustedSites: "trustedSites.enabled",
+  usedBuiltInNip07: "builtInNip07.enabled",
+  usedAccountChanged: "event.accountChanged.enabled",
+}
+
+const ERR_MSG_NOT_ENABLED =
+  "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'."
+const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`
+const ERR_MSG_NOT_TRUSTED =
+  "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'."
 
 // Proceed calls from contents
-export const doNostrAction = async (origin, application, action, args) => {
-  if (!state.nostr.enabled && application === "ssb") {
-    throw new Error(
-      "window.nostr are not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'."
-    )
+export const doNostrAction = async (origin, action, args) => {
+  // TODO(ssi): whether to care about onlyssi
+  if (!state.nostr.prefs.enabled) {
+    throw new Error(ERR_MSG_NOT_ENABLED)
+  }
+  if (!supported(origin)) {
+    throw new Error(ERR_MSG_NOT_SUPPORTED)
   }
   if (!trusted(origin)) {
-    throw new Error(
-      "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'."
-    )
+    throw new Error(ERR_MSG_NOT_TRUSTED)
   }
 
   switch (action) {
@@ -26,7 +39,7 @@ export const doNostrAction = async (origin, application, action, args) => {
       return decodeNpub(state.nostr.npub)
     }
     case "nostr/signEvent": {
-      const event = args
+      const event = JSON.parse(args)
       event.pubkey = decodeNpub(state.nostr.npub)
 
       // Sign
@@ -67,28 +80,38 @@ export async function init() {
   }
 
   // Get setting values from the prefs.
-  const prefs = await browser.addonsSelfsovereignidentity.getPrefs("nostr")
+  const results = await browser.addonsSelfsovereignidentity.getPrefs("nostr")
+  const prefs = {} as FixMe
+  Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
+    prefs[state] = results[pref]
+  })
   state.nostr = {
     ...state.nostr,
-    enabled: prefs.enabled,
-    trusted: prefs.trusted,
+    prefs,
   }
 
-  log("background init!", prefs, credentials)
+  log("nostr inited in background", prefs, credentials)
 }
 
-// initial action when the webapps are loaded
-browser.webNavigation.onCompleted.addListener(async () => {
-  // Notify init to the contents
-  const tabs = await browser.tabs.query({
-    status: "complete",
-    discarded: false,
-  })
-  for (const tab of tabs) {
+// initial action while the webapps are loading
+browser.webNavigation.onDOMContentLoaded.addListener(
+  async (detail) => {
+    log(
+      "nostr init to tab",
+      state.nostr.prefs.enabled && supported(detail.url) && trusted(detail.url)
+    )
+    // Notify init to the contents
+    const tab = await browser.tabs.get(detail.tabId)
     log("send to tab", tab)
-    sendTab(tab, "nostr/init", state.nostr.enabled)
-  }
-})
+    const injecting =
+      state.nostr.prefs.enabled &&
+      state.nostr.prefs.usedBuiltInNip07 &&
+      supported(detail.url) &&
+      trusted(detail.url)
+    sendTab(tab, "nostr/init", injecting)
+  },
+  { url: [{ schemes: SafeProtocols }] }
+)
 
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
@@ -109,7 +132,7 @@ const onPrimaryChangedCallback = async (newGuid: string) => {
   }
 
   // Send the message to the contents
-  if (state.nostr.enabled) {
+  if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
       status: "complete",
       discarded: false,
@@ -127,7 +150,10 @@ browser.addonsSelfsovereignidentity.onPrimaryChanged.addListener(
 )
 const onPrefChangedCallback = async (prefKey: string) => {
   log("pref changed!", prefKey)
-  state.nostr[prefKey] = !state.nostr[prefKey]
+  const stateName = Object.entries(MapBetweenPrefAndState)
+    .find(([state, pref]) => pref === prefKey)
+    .map(([state, pref]) => state)[0]
+  state.nostr[stateName] = !state.nostr[stateName]
 
   // Send the message to the contents
   const tabs = await browser.tabs.query({
@@ -136,19 +162,20 @@ const onPrefChangedCallback = async (prefKey: string) => {
   })
   for (const tab of tabs) {
     log("send to tab", tab)
-    sendTab(tab, "nostr/providerChanged", state.nostr.enabled)
+    if (["enabled", "onlyssi"].includes(prefKey)) {
+      const injecting =
+        prefKey === "enabled" ? state.nostr[prefKey] : !state.nostr[prefKey]
+      sendTab(tab, "nostr/providerChanged", injecting)
+    }
   }
 }
-browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
-  onPrefChangedCallback,
-  "nostr",
-  "enabled"
-)
-browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
-  onPrefChangedCallback,
-  "nostr",
-  "trusted"
-)
+for (const prefKey of Object.values(MapBetweenPrefAndState)) {
+  browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
+    onPrefChangedCallback,
+    "nostr",
+    prefKey
+  )
+}
 
 /**
  * Internal Utils
@@ -156,15 +183,15 @@ browser.addonsSelfsovereignidentity.onPrefChanged.addListener(
  */
 
 function sendTab(tab, action, data) {
+  if (!supported(tab.url)) {
+    // browser origin event is not sent anything
+    return
+  }
   if (!trusted(tab.url)) {
-    if (!SafeProtocols.some((protocol) => tab.url.startsWith(protocol))) return
     browser.tabs
       .sendMessage(tab.id, {
         action,
-        args: {
-          error:
-            "This application are not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.",
-        },
+        args: { error: ERR_MSG_NOT_TRUSTED },
       })
       .catch()
     return
@@ -178,14 +205,16 @@ function sendTab(tab, action, data) {
     .catch()
 }
 
+function supported(tabUrl: string): boolean {
+  return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol))
+}
+
+// TODO(ssb): move to experimental API.
 function trusted(tabUrl: string): boolean {
   // Return true unconditionally
-  if (!state.nostr.trusted) return true
+  if (!state.nostr.prefs.usedTrustedSites) return true
 
-  if (!SafeProtocols.some((protocol) => tabUrl.startsWith(protocol)))
-    return false
-
-  // FIXME(ssb): improve the match method, such as supporting glob.
+  // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
   return state.nostr.trustedSites.some((site) => tabUrl.includes(site.url))
 }
 
