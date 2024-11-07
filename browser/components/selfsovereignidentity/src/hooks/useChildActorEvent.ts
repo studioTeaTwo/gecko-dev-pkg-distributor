@@ -145,7 +145,8 @@ export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
     nostr: {
       enabled: true,
-      usedPrimarypassword: true,
+      usedPrimarypasswordToSettings: true,
+      usedPrimarypasswordToApps: true,
       usedTrustedSites: false,
       usedBuiltInNip07: true,
       usedAccountChanged: true,

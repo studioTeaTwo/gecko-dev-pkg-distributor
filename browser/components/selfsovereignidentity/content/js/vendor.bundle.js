@@ -6991,8 +6991,23 @@ var m$1 = reactDomExports;
   createRoot = m$1.createRoot;
   m$1.hydrateRoot;
 }
+function isHTMLElement(el2) {
+  return el2 != null && typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
+}
 function isBrowser$2() {
   return Boolean(globalThis == null ? void 0 : globalThis.document);
+}
+function isHiddenElement(element) {
+  if (element.parentElement && isHiddenElement(element.parentElement))
+    return true;
+  return element.hidden;
+}
+function isContentEditableElement(element) {
+  const value = element.getAttribute("contenteditable");
+  return value !== "false" && value != null;
+}
+function isDisabledElement(element) {
+  return Boolean(element.getAttribute("disabled")) === true || Boolean(element.getAttribute("aria-disabled")) === true;
 }
 function assignAfter(target, ...sources) {
   if (target == null) {
@@ -7187,6 +7202,52 @@ function createContext(options = {}) {
   return [Context.Provider, useContext$1, Context];
 }
 const cx = (...classNames2) => classNames2.filter(Boolean).join(" ");
+const hasTabIndex = (element) => element.hasAttribute("tabindex");
+function isFocusable(element) {
+  if (!isHTMLElement(element) || isHiddenElement(element) || isDisabledElement(element)) {
+    return false;
+  }
+  const { localName } = element;
+  const focusableTags = ["input", "select", "textarea", "button"];
+  if (focusableTags.indexOf(localName) >= 0)
+    return true;
+  const others2 = {
+    a: () => element.hasAttribute("href"),
+    audio: () => element.hasAttribute("controls"),
+    video: () => element.hasAttribute("controls")
+  };
+  if (localName in others2) {
+    return others2[localName]();
+  }
+  if (isContentEditableElement(element))
+    return true;
+  return hasTabIndex(element);
+}
+const focusableElList = [
+  "input:not(:disabled):not([disabled])",
+  "select:not(:disabled):not([disabled])",
+  "textarea:not(:disabled):not([disabled])",
+  "embed",
+  "iframe",
+  "object",
+  "a[href]",
+  "area[href]",
+  "button:not(:disabled):not([disabled])",
+  "[tabindex]",
+  "audio[controls]",
+  "video[controls]",
+  "*[tabindex]:not([aria-disabled])",
+  "*[contenteditable]"
+];
+const focusableElSelector = focusableElList.join();
+const isVisible = (el2) => el2.offsetWidth > 0 && el2.offsetHeight > 0;
+function getAllFocusable(container2) {
+  const focusableEls = Array.from(
+    container2.querySelectorAll(focusableElSelector)
+  );
+  focusableEls.unshift(container2);
+  return focusableEls.filter((el2) => isFocusable(el2) && isVisible(el2));
+}
 function get$2(obj, path, fallback, index) {
   const key = typeof path === "string" ? path.split(".") : [path];
   for (index = 0; index < key.length; index += 1) {
@@ -7980,7 +8041,7 @@ lodash_mergewith.exports;
 })(lodash_mergewith, lodash_mergewith.exports);
 var lodash_mergewithExports = lodash_mergewith.exports;
 const mergeWith = /* @__PURE__ */ getDefaultExportFromCjs(lodash_mergewithExports);
-function useCallbackRef(callback, deps = []) {
+function useCallbackRef$1(callback, deps = []) {
   const callbackRef = reactExports.useRef(callback);
   reactExports.useEffect(() => {
     callbackRef.current = callback;
@@ -7991,7 +8052,7 @@ function useCallbackRef(callback, deps = []) {
   }, deps);
 }
 function useEventListener(target, event, handler, options) {
-  const listener = useCallbackRef(handler);
+  const listener = useCallbackRef$1(handler);
   reactExports.useEffect(() => {
     const node2 = typeof target === "function" ? target() : target ?? document;
     if (!handler || !node2)
@@ -8013,12 +8074,12 @@ function useControllableState(props) {
     onChange,
     shouldUpdate = (prev2, next2) => prev2 !== next2
   } = props;
-  const onChangeProp = useCallbackRef(onChange);
-  const shouldUpdateProp = useCallbackRef(shouldUpdate);
+  const onChangeProp = useCallbackRef$1(onChange);
+  const shouldUpdateProp = useCallbackRef$1(shouldUpdate);
   const [uncontrolledState, setUncontrolledState] = reactExports.useState(defaultValue);
   const controlled = valueProp !== void 0;
   const value = controlled ? valueProp : uncontrolledState;
-  const setValue = useCallbackRef(
+  const setValue = useCallbackRef$1(
     (next2) => {
       const setter = next2;
       const nextValue = typeof next2 === "function" ? setter(value) : next2;
@@ -8087,7 +8148,7 @@ function useFocusOnPointerDown(props) {
     }
   });
 }
-function assignRef(ref, value) {
+function assignRef$1(ref, value) {
   if (ref == null)
     return;
   if (typeof ref === "function") {
@@ -8103,15 +8164,15 @@ function assignRef(ref, value) {
 function mergeRefs(...refs) {
   return (node2) => {
     refs.forEach((ref) => {
-      assignRef(ref, node2);
+      assignRef$1(ref, node2);
     });
   };
 }
-function useMergeRefs(...refs) {
+function useMergeRefs$1(...refs) {
   return reactExports.useMemo(() => mergeRefs(...refs), refs);
 }
 function useTimeout(callback, delay2) {
-  const fn = useCallbackRef(callback);
+  const fn = useCallbackRef$1(callback);
   reactExports.useEffect(() => {
     if (delay2 == null)
       return void 0;
@@ -9545,11 +9606,11 @@ function createMultiStyleConfigHelpers(parts) {
     }
   };
 }
-function normalize$1(value, toArray) {
+function normalize$1(value, toArray2) {
   if (Array.isArray(value))
     return value;
   if (isObject(value))
-    return toArray(value);
+    return toArray2(value);
   if (value != null)
     return [value];
 }
@@ -10518,7 +10579,7 @@ const variantSolid$3 = definePartsStyle$o((props) => {
     }
   };
 });
-const variants$b = {
+const variants$e = {
   subtle: variantSubtle$1,
   "left-accent": variantLeftAccent,
   "top-accent": variantTopAccent,
@@ -10526,7 +10587,7 @@ const variants$b = {
 };
 const alertTheme = defineMultiStyleConfig$o({
   baseStyle: baseStyle$E,
-  variants: variants$b,
+  variants: variants$e,
   defaultProps: {
     variant: "subtle",
     colorScheme: "blue"
@@ -10737,14 +10798,14 @@ const variantOutline$2 = defineStyle((props) => {
     [vars.shadow.variable]: `inset 0 0 0px 1px ${vars.color.reference}`
   };
 });
-const variants$a = {
+const variants$d = {
   solid: variantSolid$2,
   subtle: variantSubtle,
   outline: variantOutline$2
 };
 const badgeTheme = defineStyleConfig({
   baseStyle: baseStyle$C,
-  variants: variants$a,
+  variants: variants$d,
   defaultProps: {
     variant: "subtle",
     colorScheme: "gray"
@@ -10907,7 +10968,7 @@ const variantUnstyled$2 = defineStyle({
   m: "0",
   p: "0"
 });
-const variants$9 = {
+const variants$c = {
   ghost: variantGhost,
   outline: variantOutline$1,
   solid: variantSolid$1,
@@ -10942,7 +11003,7 @@ const sizes$k = {
 };
 const buttonTheme = defineStyleConfig({
   baseStyle: baseStyle$A,
-  variants: variants$9,
+  variants: variants$c,
   sizes: sizes$k,
   defaultProps: {
     variant: "solid",
@@ -10998,7 +11059,7 @@ const sizes$j = {
     }
   })
 };
-const variants$8 = {
+const variants$b = {
   elevated: definePartsStyle$l({
     container: {
       [$shadow$3.variable]: "shadows.base",
@@ -11032,7 +11093,7 @@ const variants$8 = {
 };
 const cardTheme = defineMultiStyleConfig$l({
   baseStyle: baseStyle$z,
-  variants: variants$8,
+  variants: variants$b,
   sizes: sizes$j,
   defaultProps: {
     variant: "elevated",
@@ -11176,7 +11237,7 @@ const closeButtonTheme = defineStyleConfig({
     size: "md"
   }
 });
-const { variants: variants$7, defaultProps } = badgeTheme;
+const { variants: variants$a, defaultProps } = badgeTheme;
 const baseStyle$w = defineStyle({
   fontFamily: "mono",
   fontSize: "sm",
@@ -11188,7 +11249,7 @@ const baseStyle$w = defineStyle({
 });
 const codeTheme = defineStyleConfig({
   baseStyle: baseStyle$w,
-  variants: variants$7,
+  variants: variants$a,
   defaultProps
 });
 const baseStyle$v = defineStyle({
@@ -11210,13 +11271,13 @@ const variantSolid = defineStyle({
 const variantDashed = defineStyle({
   borderStyle: "dashed"
 });
-const variants$6 = {
+const variants$9 = {
   solid: variantSolid,
   dashed: variantDashed
 };
 const dividerTheme = defineStyleConfig({
   baseStyle: baseStyle$u,
-  variants: variants$6,
+  variants: variants$9,
   defaultProps: {
     variant: "solid"
   }
@@ -11643,7 +11704,7 @@ const variantUnstyled$1 = definePartsStyle$f({
     height: "auto"
   }
 });
-const variants$5 = {
+const variants$8 = {
   outline: variantOutline,
   filled: variantFilled,
   flushed: variantFlushed,
@@ -11652,7 +11713,7 @@ const variants$5 = {
 const inputTheme = defineMultiStyleConfig$f({
   baseStyle: baseStyle$n,
   sizes: sizes$e,
-  variants: variants$5,
+  variants: variants$8,
   defaultProps: {
     size: "md",
     variant: "outline"
@@ -12077,7 +12138,7 @@ const sizes$b = {
     borderRadius: "sm"
   })
 };
-const variants$4 = {
+const variants$7 = {
   outline: defineStyle(
     (props) => {
       var _a2, _b2;
@@ -12101,7 +12162,7 @@ const variants$4 = {
 const pinInputTheme = defineStyleConfig({
   baseStyle: baseStyle$g,
   sizes: sizes$b,
-  variants: variants$4,
+  variants: variants$7,
   defaultProps: inputTheme.defaultProps
 });
 const { defineMultiStyleConfig: defineMultiStyleConfig$a, definePartsStyle: definePartsStyle$a } = createMultiStyleConfigHelpers(popoverAnatomy.keys);
@@ -12925,7 +12986,7 @@ const variantStripe = definePartsStyle$2((props) => {
     }
   };
 });
-const variants$3 = {
+const variants$6 = {
   simple: variantSimple,
   striped: variantStripe,
   unstyled: defineStyle({})
@@ -12989,7 +13050,7 @@ const sizes$3 = {
 };
 const tableTheme = defineMultiStyleConfig$2({
   baseStyle: baseStyle$4,
-  variants: variants$3,
+  variants: variants$6,
   sizes: sizes$3,
   defaultProps: {
     variant: "simple",
@@ -13203,7 +13264,7 @@ const variantSolidRounded = definePartsStyle$1((props) => {
   };
 });
 const variantUnstyled = definePartsStyle$1({});
-const variants$2 = {
+const variants$5 = {
   line: variantLine,
   enclosed: variantEnclosed,
   "enclosed-colored": variantEnclosedColored,
@@ -13214,7 +13275,7 @@ const variants$2 = {
 const tabsTheme = defineMultiStyleConfig$1({
   baseStyle: baseStyle$3,
   sizes: sizes$2,
-  variants: variants$2,
+  variants: variants$5,
   defaultProps: {
     size: "md",
     variant: "line",
@@ -13311,7 +13372,7 @@ const sizes$1 = {
     }
   })
 };
-const variants$1 = {
+const variants$4 = {
   subtle: definePartsStyle((props) => {
     var _a2;
     return {
@@ -13332,7 +13393,7 @@ const variants$1 = {
   })
 };
 const tagTheme = defineMultiStyleConfig({
-  variants: variants$1,
+  variants: variants$4,
   baseStyle: baseStyle$2,
   sizes: sizes$1,
   defaultProps: {
@@ -13348,7 +13409,7 @@ const baseStyle$1 = defineStyle({
   lineHeight: "short",
   verticalAlign: "top"
 });
-const variants = {
+const variants$3 = {
   outline: defineStyle(
     (props) => {
       var _a2;
@@ -13378,7 +13439,7 @@ const sizes = {
 const textareaTheme = defineStyleConfig({
   baseStyle: baseStyle$1,
   sizes,
-  variants,
+  variants: variants$3,
   defaultProps: {
     size: "md",
     variant: "outline"
@@ -14000,9 +14061,9 @@ function identifier(index) {
   return slice(index, position);
 }
 function compile(value) {
-  return dealloc(parse("", null, null, null, [""], value = alloc(value), 0, [0], value));
+  return dealloc(parse$1("", null, null, null, [""], value = alloc(value), 0, [0], value));
 }
-function parse(value, root, parent, rule, rules, rulesets, pseudo, points, declarations) {
+function parse$1(value, root, parent, rule, rules, rulesets, pseudo, points, declarations) {
   var index = 0;
   var offset = 0;
   var length2 = pseudo;
@@ -14070,17 +14131,17 @@ function parse(value, root, parent, rule, rules, rulesets, pseudo, points, decla
             append(reference = ruleset(characters2, root, parent, index, offset, rules, points, type, props = [], children = [], length2), rulesets);
             if (character2 === 123)
               if (offset === 0)
-                parse(characters2, root, reference, reference, props, rulesets, length2, points, children);
+                parse$1(characters2, root, reference, reference, props, rulesets, length2, points, children);
               else
                 switch (atrule === 99 && charat(characters2, 3) === 110 ? 100 : atrule) {
                   case 100:
                   case 108:
                   case 109:
                   case 115:
-                    parse(value, reference, reference, rule && append(ruleset(value, reference, reference, 0, 0, rules, points, type, rules, props = [], length2), children), rules, children, length2, points, rule ? props : children);
+                    parse$1(value, reference, reference, rule && append(ruleset(value, reference, reference, 0, 0, rules, points, type, rules, props = [], length2), children), rules, children, length2, points, rule ? props : children);
                     break;
                   default:
-                    parse(characters2, reference, reference, reference, [""], children, 0, points, children);
+                    parse$1(characters2, reference, reference, reference, [""], children, 0, points, children);
                 }
         }
         index = offset = property = 0, variable = ampersand = 1, type = characters2 = "", length2 = pseudo;
@@ -15602,7 +15663,7 @@ const MotionConfigContext = reactExports.createContext({
 const MotionContext = reactExports.createContext({});
 const PresenceContext = reactExports.createContext(null);
 const isBrowser = typeof document !== "undefined";
-const useIsomorphicLayoutEffect = isBrowser ? reactExports.useLayoutEffect : reactExports.useEffect;
+const useIsomorphicLayoutEffect$1 = isBrowser ? reactExports.useLayoutEffect : reactExports.useEffect;
 const LazyContext = reactExports.createContext({ strict: false });
 const camelToDash = (str) => str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 const optimizedAppearDataId = "framerAppearId";
@@ -15629,7 +15690,7 @@ function useVisualElement(Component, visualState, props, createVisualElement) {
     visualElement && visualElement.update(props, presenceContext);
   });
   const wantsHandoff = reactExports.useRef(Boolean(props[optimizedAppearDataAttribute] && !window.HandoffComplete));
-  useIsomorphicLayoutEffect(() => {
+  useIsomorphicLayoutEffect$1(() => {
     if (!visualElement)
       return;
     visualElement.render();
@@ -16335,15 +16396,15 @@ function scrapeMotionValuesFromProps(props, prevProps) {
   }
   return newValues;
 }
-function resolveVariantFromProps(props, definition, custom, currentValues = {}, currentVelocity = {}) {
+function resolveVariantFromProps(props, definition, custom, currentValues2 = {}, currentVelocity = {}) {
   if (typeof definition === "function") {
-    definition = definition(custom !== void 0 ? custom : props.custom, currentValues, currentVelocity);
+    definition = definition(custom !== void 0 ? custom : props.custom, currentValues2, currentVelocity);
   }
   if (typeof definition === "string") {
     definition = props.variants && props.variants[definition];
   }
   if (typeof definition === "function") {
-    definition = definition(custom !== void 0 ? custom : props.custom, currentValues, currentVelocity);
+    definition = definition(custom !== void 0 ? custom : props.custom, currentValues2, currentVelocity);
   }
   return definition;
 }
@@ -22019,7 +22080,7 @@ const preloadedFeatures = {
 const motion = /* @__PURE__ */ createMotionProxy((Component, config2) => createDomMotionConfig(Component, config2, preloadedFeatures, createDomVisualElement));
 function useIsMounted() {
   const isMounted = reactExports.useRef(false);
-  useIsomorphicLayoutEffect(() => {
+  useIsomorphicLayoutEffect$1(() => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
@@ -22160,7 +22221,7 @@ const AnimatePresence = ({ children, custom, initial = true, onExitComplete, exi
   const presentChildren = reactExports.useRef(childrenToRender);
   const allChildren = reactExports.useRef(/* @__PURE__ */ new Map()).current;
   const isInitialRender = reactExports.useRef(true);
-  useIsomorphicLayoutEffect(() => {
+  useIsomorphicLayoutEffect$1(() => {
     isInitialRender.current = false;
     updateChildLookup(filteredChildren, allChildren);
     presentChildren.current = childrenToRender;
@@ -22306,8 +22367,8 @@ var composeShouldForwardProps = function composeShouldForwardProps2(tag, options
   return shouldForwardProp2;
 };
 var isDevelopment = false;
-var Insertion = function Insertion2(_ref) {
-  var cache = _ref.cache, serialized = _ref.serialized, isStringTag = _ref.isStringTag;
+var Insertion = function Insertion2(_ref2) {
+  var cache = _ref2.cache, serialized = _ref2.serialized, isStringTag = _ref2.isStringTag;
   registerStyles(cache, serialized, isStringTag);
   useInsertionEffectAlwaysWithSyncFallback(function() {
     return insertStyles(cache, serialized, isStringTag);
@@ -22838,8 +22899,8 @@ function useStyleConfigImpl(themeKey, props = {}) {
   );
   const stylesRef = reactExports.useRef({});
   if (styleConfig) {
-    const getStyles = resolveStyleConfig(styleConfig);
-    const styles2 = getStyles(mergedProps);
+    const getStyles2 = resolveStyleConfig(styleConfig);
+    const styles2 = getStyles2(mergedProps);
     const isStyleEqual = isEqual2(stylesRef.current, styles2);
     if (!isStyleEqual) {
       stylesRef.current = styles2;
@@ -23499,16 +23560,16 @@ function getPrevIndex(current, max, loop) {
 }
 const useSafeLayoutEffect = typeof window !== "undefined" ? reactExports.useLayoutEffect : reactExports.useEffect;
 const cast = (value) => value;
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __defProp$1 = Object.defineProperty;
+var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField$1 = (obj, key, value) => {
+  __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
 class DescendantsManager {
   constructor() {
-    __publicField(this, "descendants", /* @__PURE__ */ new Map());
-    __publicField(this, "register", (nodeOrOptions) => {
+    __publicField$1(this, "descendants", /* @__PURE__ */ new Map());
+    __publicField$1(this, "register", (nodeOrOptions) => {
       if (nodeOrOptions == null)
         return;
       if (isElement(nodeOrOptions)) {
@@ -23518,63 +23579,63 @@ class DescendantsManager {
         this.registerNode(node2, nodeOrOptions);
       };
     });
-    __publicField(this, "unregister", (node2) => {
+    __publicField$1(this, "unregister", (node2) => {
       this.descendants.delete(node2);
       const sorted = sortNodes(Array.from(this.descendants.keys()));
       this.assignIndex(sorted);
     });
-    __publicField(this, "destroy", () => {
+    __publicField$1(this, "destroy", () => {
       this.descendants.clear();
     });
-    __publicField(this, "assignIndex", (descendants) => {
+    __publicField$1(this, "assignIndex", (descendants) => {
       this.descendants.forEach((descendant) => {
         const index = descendants.indexOf(descendant.node);
         descendant.index = index;
         descendant.node.dataset["index"] = descendant.index.toString();
       });
     });
-    __publicField(this, "count", () => this.descendants.size);
-    __publicField(this, "enabledCount", () => this.enabledValues().length);
-    __publicField(this, "values", () => {
+    __publicField$1(this, "count", () => this.descendants.size);
+    __publicField$1(this, "enabledCount", () => this.enabledValues().length);
+    __publicField$1(this, "values", () => {
       const values = Array.from(this.descendants.values());
       return values.sort((a, b2) => a.index - b2.index);
     });
-    __publicField(this, "enabledValues", () => {
+    __publicField$1(this, "enabledValues", () => {
       return this.values().filter((descendant) => !descendant.disabled);
     });
-    __publicField(this, "item", (index) => {
+    __publicField$1(this, "item", (index) => {
       if (this.count() === 0)
         return void 0;
       return this.values()[index];
     });
-    __publicField(this, "enabledItem", (index) => {
+    __publicField$1(this, "enabledItem", (index) => {
       if (this.enabledCount() === 0)
         return void 0;
       return this.enabledValues()[index];
     });
-    __publicField(this, "first", () => this.item(0));
-    __publicField(this, "firstEnabled", () => this.enabledItem(0));
-    __publicField(this, "last", () => this.item(this.descendants.size - 1));
-    __publicField(this, "lastEnabled", () => {
+    __publicField$1(this, "first", () => this.item(0));
+    __publicField$1(this, "firstEnabled", () => this.enabledItem(0));
+    __publicField$1(this, "last", () => this.item(this.descendants.size - 1));
+    __publicField$1(this, "lastEnabled", () => {
       const lastIndex = this.enabledValues().length - 1;
       return this.enabledItem(lastIndex);
     });
-    __publicField(this, "indexOf", (node2) => {
+    __publicField$1(this, "indexOf", (node2) => {
       var _a2;
       if (!node2)
         return -1;
       return ((_a2 = this.descendants.get(node2)) == null ? void 0 : _a2.index) ?? -1;
     });
-    __publicField(this, "enabledIndexOf", (node2) => {
+    __publicField$1(this, "enabledIndexOf", (node2) => {
       if (node2 == null)
         return -1;
       return this.enabledValues().findIndex((i2) => i2.node.isSameNode(node2));
     });
-    __publicField(this, "next", (index, loop = true) => {
+    __publicField$1(this, "next", (index, loop = true) => {
       const next2 = getNextIndex(index, this.count(), loop);
       return this.item(next2);
     });
-    __publicField(this, "nextEnabled", (index, loop = true) => {
+    __publicField$1(this, "nextEnabled", (index, loop = true) => {
       const item = this.item(index);
       if (!item)
         return;
@@ -23586,11 +23647,11 @@ class DescendantsManager {
       );
       return this.enabledItem(nextEnabledIndex);
     });
-    __publicField(this, "prev", (index, loop = true) => {
+    __publicField$1(this, "prev", (index, loop = true) => {
       const prev2 = getPrevIndex(index, this.count() - 1, loop);
       return this.item(prev2);
     });
-    __publicField(this, "prevEnabled", (index, loop = true) => {
+    __publicField$1(this, "prevEnabled", (index, loop = true) => {
       const item = this.item(index);
       if (!item)
         return;
@@ -23602,7 +23663,7 @@ class DescendantsManager {
       );
       return this.enabledItem(prevEnabledIndex);
     });
-    __publicField(this, "registerNode", (node2, options) => {
+    __publicField$1(this, "registerNode", (node2, options) => {
       if (!node2 || this.descendants.has(node2))
         return;
       const keys2 = Array.from(this.descendants.keys()).concat(node2);
@@ -23666,6 +23727,32 @@ function createDescendantContext() {
     useDescendant
   ];
 }
+const TRANSITION_EASINGS = {
+  ease: [0.25, 0.1, 0.25, 1],
+  easeIn: [0.4, 0, 1, 1],
+  easeOut: [0, 0, 0.2, 1],
+  easeInOut: [0.4, 0, 0.2, 1]
+};
+const TRANSITION_DEFAULTS = {
+  enter: {
+    duration: 0.2,
+    ease: TRANSITION_EASINGS.easeOut
+  },
+  exit: {
+    duration: 0.1,
+    ease: TRANSITION_EASINGS.easeIn
+  }
+};
+const withDelay = {
+  enter: (transition2, delay2) => ({
+    ...transition2,
+    delay: typeof delay2 === "number" ? delay2 : delay2 == null ? void 0 : delay2["enter"]
+  }),
+  exit: (transition2, delay2) => ({
+    ...transition2,
+    delay: typeof delay2 === "number" ? delay2 : delay2 == null ? void 0 : delay2["exit"]
+  })
+};
 const Box = chakra("div");
 Box.displayName = "Box";
 const [ButtonGroupProvider, useButtonGroup] = createContext({
@@ -23765,7 +23852,7 @@ const Button = forwardRef((props, ref) => {
       ...!!group && { _focus }
     };
   }, [styles2, group]);
-  const { ref: _ref, type: defaultType } = useButtonType(as);
+  const { ref: _ref2, type: defaultType } = useButtonType(as);
   const contentProps = {
     rightIcon,
     leftIcon,
@@ -23777,7 +23864,7 @@ const Button = forwardRef((props, ref) => {
     chakra.button,
     {
       disabled: isDisabled || isLoading,
-      ref: useMergeRefs(ref, _ref),
+      ref: useMergeRefs$1(ref, _ref2),
       as,
       type: type ?? defaultType,
       "data-active": dataAttr(isActive),
@@ -23976,7 +24063,7 @@ function onClickEvent(e2) {
     modality = "virtual";
   }
 }
-function onWindowFocus(event) {
+function onWindowFocus$1(event) {
   if (event.target === window || event.target === document) {
     return;
   }
@@ -23990,7 +24077,7 @@ function onWindowFocus(event) {
   hasEventBeforeFocus = false;
   hasBlurredWindowRecently = false;
 }
-function onWindowBlur() {
+function onWindowBlur$1() {
   hasEventBeforeFocus = false;
   hasBlurredWindowRecently = true;
 }
@@ -24009,8 +24096,8 @@ function setupGlobalFocusEvents() {
   document.addEventListener("keydown", onKeyboardEvent, true);
   document.addEventListener("keyup", onKeyboardEvent, true);
   document.addEventListener("click", onClickEvent, true);
-  window.addEventListener("focus", onWindowFocus, true);
-  window.addEventListener("blur", onWindowBlur, false);
+  window.addEventListener("focus", onWindowFocus$1, true);
+  window.addEventListener("blur", onWindowBlur$1, false);
   if (typeof PointerEvent !== "undefined") {
     document.addEventListener("pointerdown", onPointerEvent, true);
     document.addEventListener("pointermove", onPointerEvent, true);
@@ -24209,8 +24296,8 @@ function useFormControlProps(props) {
     isInvalid,
     isReadOnly,
     isDisabled,
-    onFocus,
-    onBlur,
+    onFocus: onFocus3,
+    onBlur: onBlur3,
     ...rest
   } = props;
   const labelIds = props["aria-describedby"] ? [props["aria-describedby"]] : [];
@@ -24228,8 +24315,8 @@ function useFormControlProps(props) {
     isReadOnly: readOnly ?? isReadOnly ?? (field == null ? void 0 : field.isReadOnly),
     isRequired: required ?? isRequired ?? (field == null ? void 0 : field.isRequired),
     isInvalid: isInvalid ?? (field == null ? void 0 : field.isInvalid),
-    onFocus: callAllHandlers(field == null ? void 0 : field.onFocus, onFocus),
-    onBlur: callAllHandlers(field == null ? void 0 : field.onBlur, onBlur)
+    onFocus: callAllHandlers(field == null ? void 0 : field.onFocus, onFocus3),
+    onBlur: callAllHandlers(field == null ? void 0 : field.onBlur, onBlur3)
   };
 }
 const visuallyHiddenStyle = {
@@ -24251,14 +24338,14 @@ function useCheckbox(props = {}) {
     isRequired,
     isInvalid,
     id: id2,
-    onBlur,
-    onFocus,
+    onBlur: onBlur3,
+    onFocus: onFocus3,
     "aria-describedby": ariaDescribedBy
   } = formControlProps;
   const {
     defaultChecked,
     isChecked: checkedProp,
-    isFocusable,
+    isFocusable: isFocusable2,
     onChange,
     isIndeterminate,
     name,
@@ -24279,9 +24366,9 @@ function useCheckbox(props = {}) {
     "onFocus",
     "aria-describedby"
   ]);
-  const onChangeProp = useCallbackRef(onChange);
-  const onBlurProp = useCallbackRef(onBlur);
-  const onFocusProp = useCallbackRef(onFocus);
+  const onChangeProp = useCallbackRef$1(onChange);
+  const onBlurProp = useCallbackRef$1(onBlur3);
+  const onFocusProp = useCallbackRef$1(onFocus3);
   const [isFocusVisible2, setIsFocusVisible] = reactExports.useState(false);
   const [isFocused, setFocused] = reactExports.useState(false);
   const [isHovered, setHovered] = reactExports.useState(false);
@@ -24341,7 +24428,7 @@ function useCheckbox(props = {}) {
       return (_a2 = el2.form) == null ? void 0 : _a2.removeEventListener("reset", formResetListener);
     };
   }, []);
-  const trulyDisabled = isDisabled && !isFocusable;
+  const trulyDisabled = isDisabled && !isFocusable2;
   const onKeyDown = reactExports.useCallback(
     (event) => {
       if (event.key === " ") {
@@ -24564,7 +24651,7 @@ const [EditableProvider, useEditableContext] = createContext({
   name: "EditableContext",
   errorMessage: "useEditableContext: context is undefined. Seems you forgot to wrap the editable components in `<Editable />`"
 });
-function contains(parent, child) {
+function contains$1(parent, child) {
   if (!parent)
     return false;
   return parent === child || parent.contains(child);
@@ -24587,7 +24674,7 @@ function useEditable(props = {}) {
     finalFocusRef,
     ...htmlProps
   } = props;
-  const onEditProp = useCallbackRef(onEditCallback);
+  const onEditProp = useCallbackRef$1(onEditCallback);
   const defaultIsEditing = Boolean(startWithEditView && !isDisabled);
   const [isEditing, setIsEditing] = reactExports.useState(defaultIsEditing);
   const [value, setValue] = useControllableState({
@@ -24699,14 +24786,14 @@ function useEditable(props = {}) {
     [onCancel]
   );
   const isValueEmpty = value.length === 0;
-  const onBlur = reactExports.useCallback(
+  const onBlur3 = reactExports.useCallback(
     (event) => {
       if (!isEditing)
         return;
       const doc = event.currentTarget.ownerDocument;
       const relatedTarget = event.relatedTarget ?? doc.activeElement;
-      const targetIsCancel = contains(cancelButtonRef.current, relatedTarget);
-      const targetIsSubmit = contains(submitButtonRef.current, relatedTarget);
+      const targetIsCancel = contains$1(cancelButtonRef.current, relatedTarget);
+      const targetIsSubmit = contains$1(submitButtonRef.current, relatedTarget);
       const isValidBlur = !targetIsCancel && !targetIsSubmit;
       if (isValidBlur) {
         if (submitOnBlur) {
@@ -24752,7 +24839,7 @@ function useEditable(props = {}) {
       disabled: isDisabled,
       "aria-disabled": ariaAttr(isDisabled),
       value,
-      onBlur: callAllHandlers(props2.onBlur, onBlur),
+      onBlur: callAllHandlers(props2.onBlur, onBlur3),
       onChange: callAllHandlers(props2.onChange, onChange),
       onKeyDown: callAllHandlers(props2.onKeyDown, onKeyDown),
       onFocus: callAllHandlers(props2.onFocus, onUpdatePrevValue)
@@ -24760,7 +24847,7 @@ function useEditable(props = {}) {
     [
       isDisabled,
       isEditing,
-      onBlur,
+      onBlur3,
       onChange,
       onKeyDown,
       onUpdatePrevValue,
@@ -24777,7 +24864,7 @@ function useEditable(props = {}) {
       disabled: isDisabled,
       "aria-disabled": ariaAttr(isDisabled),
       value,
-      onBlur: callAllHandlers(props2.onBlur, onBlur),
+      onBlur: callAllHandlers(props2.onBlur, onBlur3),
       onChange: callAllHandlers(props2.onChange, onChange),
       onKeyDown: callAllHandlers(props2.onKeyDown, onKeyDownWithoutSubmit),
       onFocus: callAllHandlers(props2.onFocus, onUpdatePrevValue)
@@ -24785,7 +24872,7 @@ function useEditable(props = {}) {
     [
       isDisabled,
       isEditing,
-      onBlur,
+      onBlur3,
       onChange,
       onKeyDownWithoutSubmit,
       onUpdatePrevValue,
@@ -24933,6 +25020,1489 @@ const Flex = forwardRef(function Flex2(props, ref) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.div, { ref, __css: styles2, ...rest });
 });
 Flex.displayName = "Flex";
+function _objectWithoutPropertiesLoose$1(r2, e2) {
+  if (null == r2) return {};
+  var t2 = {};
+  for (var n2 in r2) if ({}.hasOwnProperty.call(r2, n2)) {
+    if (e2.includes(n2)) continue;
+    t2[n2] = r2[n2];
+  }
+  return t2;
+}
+var FOCUS_GROUP = "data-focus-lock";
+var FOCUS_DISABLED = "data-focus-lock-disabled";
+var FOCUS_ALLOW = "data-no-focus-lock";
+var FOCUS_AUTO = "data-autofocus-inside";
+var FOCUS_NO_AUTOFOCUS = "data-no-autofocus";
+function assignRef(ref, value) {
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
+  return ref;
+}
+function useCallbackRef(initialValue, callback) {
+  var ref = reactExports.useState(function() {
+    return {
+      // value
+      value: initialValue,
+      // last callback
+      callback,
+      // "memoized" public interface
+      facade: {
+        get current() {
+          return ref.value;
+        },
+        set current(value) {
+          var last = ref.value;
+          if (last !== value) {
+            ref.value = value;
+            ref.callback(value, last);
+          }
+        }
+      }
+    };
+  })[0];
+  ref.callback = callback;
+  return ref.facade;
+}
+var useIsomorphicLayoutEffect = typeof window !== "undefined" ? reactExports.useLayoutEffect : reactExports.useEffect;
+var currentValues = /* @__PURE__ */ new WeakMap();
+function useMergeRefs(refs, defaultValue) {
+  var callbackRef = useCallbackRef(null, function(newValue) {
+    return refs.forEach(function(ref) {
+      return assignRef(ref, newValue);
+    });
+  });
+  useIsomorphicLayoutEffect(function() {
+    var oldValue = currentValues.get(callbackRef);
+    if (oldValue) {
+      var prevRefs_1 = new Set(oldValue);
+      var nextRefs_1 = new Set(refs);
+      var current_1 = callbackRef.current;
+      prevRefs_1.forEach(function(ref) {
+        if (!nextRefs_1.has(ref)) {
+          assignRef(ref, null);
+        }
+      });
+      nextRefs_1.forEach(function(ref) {
+        if (!prevRefs_1.has(ref)) {
+          assignRef(ref, current_1);
+        }
+      });
+    }
+    currentValues.set(callbackRef, refs);
+  }, [refs]);
+  return callbackRef;
+}
+var hiddenGuard = {
+  width: "1px",
+  height: "0px",
+  padding: 0,
+  overflow: "hidden",
+  position: "fixed",
+  top: "1px",
+  left: "1px"
+};
+var __assign = function() {
+  __assign = Object.assign || function __assign2(t2) {
+    for (var s, i2 = 1, n2 = arguments.length; i2 < n2; i2++) {
+      s = arguments[i2];
+      for (var p2 in s) if (Object.prototype.hasOwnProperty.call(s, p2)) t2[p2] = s[p2];
+    }
+    return t2;
+  };
+  return __assign.apply(this, arguments);
+};
+function __rest(s, e2) {
+  var t2 = {};
+  for (var p2 in s) if (Object.prototype.hasOwnProperty.call(s, p2) && e2.indexOf(p2) < 0)
+    t2[p2] = s[p2];
+  if (s != null && typeof Object.getOwnPropertySymbols === "function")
+    for (var i2 = 0, p2 = Object.getOwnPropertySymbols(s); i2 < p2.length; i2++) {
+      if (e2.indexOf(p2[i2]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p2[i2]))
+        t2[p2[i2]] = s[p2[i2]];
+    }
+  return t2;
+}
+function __spreadArray(to, from2, pack) {
+  if (pack || arguments.length === 2) for (var i2 = 0, l2 = from2.length, ar; i2 < l2; i2++) {
+    if (ar || !(i2 in from2)) {
+      if (!ar) ar = Array.prototype.slice.call(from2, 0, i2);
+      ar[i2] = from2[i2];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from2));
+}
+typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+  var e2 = new Error(message);
+  return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
+};
+function ItoI(a) {
+  return a;
+}
+function innerCreateMedium(defaults, middleware2) {
+  if (middleware2 === void 0) {
+    middleware2 = ItoI;
+  }
+  var buffer = [];
+  var assigned = false;
+  var medium = {
+    read: function() {
+      if (assigned) {
+        throw new Error("Sidecar: could not `read` from an `assigned` medium. `read` could be used only with `useMedium`.");
+      }
+      if (buffer.length) {
+        return buffer[buffer.length - 1];
+      }
+      return defaults;
+    },
+    useMedium: function(data) {
+      var item = middleware2(data, assigned);
+      buffer.push(item);
+      return function() {
+        buffer = buffer.filter(function(x2) {
+          return x2 !== item;
+        });
+      };
+    },
+    assignSyncMedium: function(cb2) {
+      assigned = true;
+      while (buffer.length) {
+        var cbs = buffer;
+        buffer = [];
+        cbs.forEach(cb2);
+      }
+      buffer = {
+        push: function(x2) {
+          return cb2(x2);
+        },
+        filter: function() {
+          return buffer;
+        }
+      };
+    },
+    assignMedium: function(cb2) {
+      assigned = true;
+      var pendingQueue = [];
+      if (buffer.length) {
+        var cbs = buffer;
+        buffer = [];
+        cbs.forEach(cb2);
+        pendingQueue = buffer;
+      }
+      var executeQueue = function() {
+        var cbs2 = pendingQueue;
+        pendingQueue = [];
+        cbs2.forEach(cb2);
+      };
+      var cycle = function() {
+        return Promise.resolve().then(executeQueue);
+      };
+      cycle();
+      buffer = {
+        push: function(x2) {
+          pendingQueue.push(x2);
+          cycle();
+        },
+        filter: function(filter2) {
+          pendingQueue = pendingQueue.filter(filter2);
+          return buffer;
+        }
+      };
+    }
+  };
+  return medium;
+}
+function createMedium(defaults, middleware2) {
+  if (middleware2 === void 0) {
+    middleware2 = ItoI;
+  }
+  return innerCreateMedium(defaults, middleware2);
+}
+function createSidecarMedium(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var medium = innerCreateMedium(null);
+  medium.options = __assign({ async: true, ssr: false }, options);
+  return medium;
+}
+var SideCar$1 = function(_a2) {
+  var sideCar = _a2.sideCar, rest = __rest(_a2, ["sideCar"]);
+  if (!sideCar) {
+    throw new Error("Sidecar: please provide `sideCar` property to import the right car");
+  }
+  var Target = sideCar.read();
+  if (!Target) {
+    throw new Error("Sidecar medium not found");
+  }
+  return reactExports.createElement(Target, __assign({}, rest));
+};
+SideCar$1.isSideCarExport = true;
+function exportSidecar(medium, exported) {
+  medium.useMedium(exported);
+  return SideCar$1;
+}
+var mediumFocus = createMedium({}, function(_ref2) {
+  var target = _ref2.target, currentTarget = _ref2.currentTarget;
+  return {
+    target,
+    currentTarget
+  };
+});
+var mediumBlur = createMedium();
+var mediumEffect = createMedium();
+var mediumSidecar = createSidecarMedium({
+  async: true,
+  ssr: typeof document !== "undefined"
+});
+var focusScope = /* @__PURE__ */ reactExports.createContext(void 0);
+var emptyArray = [];
+var FocusLock$1 = /* @__PURE__ */ reactExports.forwardRef(function FocusLockUI(props, parentRef) {
+  var _extends2;
+  var _React$useState = reactExports.useState(), realObserved = _React$useState[0], setObserved = _React$useState[1];
+  var observed = reactExports.useRef();
+  var isActive = reactExports.useRef(false);
+  var originalFocusedElement = reactExports.useRef(null);
+  var _React$useState2 = reactExports.useState({}), update = _React$useState2[1];
+  var children = props.children, _props$disabled = props.disabled, disabled = _props$disabled === void 0 ? false : _props$disabled, _props$noFocusGuards = props.noFocusGuards, noFocusGuards = _props$noFocusGuards === void 0 ? false : _props$noFocusGuards, _props$persistentFocu = props.persistentFocus, persistentFocus = _props$persistentFocu === void 0 ? false : _props$persistentFocu, _props$crossFrame = props.crossFrame, crossFrame = _props$crossFrame === void 0 ? true : _props$crossFrame, _props$autoFocus = props.autoFocus, autoFocus = _props$autoFocus === void 0 ? true : _props$autoFocus;
+  props.allowTextSelection;
+  var group = props.group, className = props.className, whiteList = props.whiteList, hasPositiveIndices = props.hasPositiveIndices, _props$shards = props.shards, shards = _props$shards === void 0 ? emptyArray : _props$shards, _props$as = props.as, Container2 = _props$as === void 0 ? "div" : _props$as, _props$lockProps = props.lockProps, containerProps = _props$lockProps === void 0 ? {} : _props$lockProps, SideCar2 = props.sideCar, _props$returnFocus = props.returnFocus, shouldReturnFocus = _props$returnFocus === void 0 ? false : _props$returnFocus, focusOptions = props.focusOptions, onActivationCallback = props.onActivation, onDeactivationCallback = props.onDeactivation;
+  var _React$useState3 = reactExports.useState({}), id2 = _React$useState3[0];
+  var onActivation = reactExports.useCallback(function(_ref2) {
+    var captureFocusRestore2 = _ref2.captureFocusRestore;
+    if (!originalFocusedElement.current) {
+      var _document;
+      var activeElement = (_document = document) == null ? void 0 : _document.activeElement;
+      originalFocusedElement.current = activeElement;
+      if (activeElement !== document.body) {
+        originalFocusedElement.current = captureFocusRestore2(activeElement);
+      }
+    }
+    if (observed.current && onActivationCallback) {
+      onActivationCallback(observed.current);
+    }
+    isActive.current = true;
+    update();
+  }, [onActivationCallback]);
+  var onDeactivation = reactExports.useCallback(function() {
+    isActive.current = false;
+    if (onDeactivationCallback) {
+      onDeactivationCallback(observed.current);
+    }
+    update();
+  }, [onDeactivationCallback]);
+  var returnFocus = reactExports.useCallback(function(allowDefer) {
+    var focusRestore = originalFocusedElement.current;
+    if (focusRestore) {
+      var returnFocusTo = (typeof focusRestore === "function" ? focusRestore() : focusRestore) || document.body;
+      var howToReturnFocus = typeof shouldReturnFocus === "function" ? shouldReturnFocus(returnFocusTo) : shouldReturnFocus;
+      if (howToReturnFocus) {
+        var returnFocusOptions = typeof howToReturnFocus === "object" ? howToReturnFocus : void 0;
+        originalFocusedElement.current = null;
+        if (allowDefer) {
+          Promise.resolve().then(function() {
+            return returnFocusTo.focus(returnFocusOptions);
+          });
+        } else {
+          returnFocusTo.focus(returnFocusOptions);
+        }
+      }
+    }
+  }, [shouldReturnFocus]);
+  var onFocus3 = reactExports.useCallback(function(event) {
+    if (isActive.current) {
+      mediumFocus.useMedium(event);
+    }
+  }, []);
+  var onBlur3 = mediumBlur.useMedium;
+  var setObserveNode = reactExports.useCallback(function(newObserved) {
+    if (observed.current !== newObserved) {
+      observed.current = newObserved;
+      setObserved(newObserved);
+    }
+  }, []);
+  var lockProps = _extends$1((_extends2 = {}, _extends2[FOCUS_DISABLED] = disabled && "disabled", _extends2[FOCUS_GROUP] = group, _extends2), containerProps);
+  var hasLeadingGuards = noFocusGuards !== true;
+  var hasTailingGuards = hasLeadingGuards && noFocusGuards !== "tail";
+  var mergedRef = useMergeRefs([parentRef, setObserveNode]);
+  var focusScopeValue = reactExports.useMemo(function() {
+    return {
+      observed,
+      shards,
+      enabled: !disabled,
+      active: isActive.current
+    };
+  }, [disabled, isActive.current, shards, realObserved]);
+  return /* @__PURE__ */ reactExports.createElement(reactExports.Fragment, null, hasLeadingGuards && [
+    /* @__PURE__ */ reactExports.createElement("div", {
+      key: "guard-first",
+      "data-focus-guard": true,
+      tabIndex: disabled ? -1 : 0,
+      style: hiddenGuard
+    }),
+    hasPositiveIndices ? /* @__PURE__ */ reactExports.createElement("div", {
+      key: "guard-nearest",
+      "data-focus-guard": true,
+      tabIndex: disabled ? -1 : 1,
+      style: hiddenGuard
+    }) : null
+  ], !disabled && /* @__PURE__ */ reactExports.createElement(SideCar2, {
+    id: id2,
+    sideCar: mediumSidecar,
+    observed: realObserved,
+    disabled,
+    persistentFocus,
+    crossFrame,
+    autoFocus,
+    whiteList,
+    shards,
+    onActivation,
+    onDeactivation,
+    returnFocus,
+    focusOptions,
+    noFocusGuards
+  }), /* @__PURE__ */ reactExports.createElement(Container2, _extends$1({
+    ref: mergedRef
+  }, lockProps, {
+    className,
+    onBlur: onBlur3,
+    onFocus: onFocus3
+  }), /* @__PURE__ */ reactExports.createElement(focusScope.Provider, {
+    value: focusScopeValue
+  }, children)), hasTailingGuards && /* @__PURE__ */ reactExports.createElement("div", {
+    "data-focus-guard": true,
+    tabIndex: disabled ? -1 : 0,
+    style: hiddenGuard
+  }));
+});
+FocusLock$1.propTypes = {};
+function _setPrototypeOf(t2, e2) {
+  return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function(t3, e3) {
+    return t3.__proto__ = e3, t3;
+  }, _setPrototypeOf(t2, e2);
+}
+function _inheritsLoose(t2, o) {
+  t2.prototype = Object.create(o.prototype), t2.prototype.constructor = t2, _setPrototypeOf(t2, o);
+}
+function _typeof(o) {
+  "@babel/helpers - typeof";
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o2) {
+    return typeof o2;
+  } : function(o2) {
+    return o2 && "function" == typeof Symbol && o2.constructor === Symbol && o2 !== Symbol.prototype ? "symbol" : typeof o2;
+  }, _typeof(o);
+}
+function toPrimitive(t2, r2) {
+  if ("object" != _typeof(t2) || !t2) return t2;
+  var e2 = t2[Symbol.toPrimitive];
+  if (void 0 !== e2) {
+    var i2 = e2.call(t2, r2 || "default");
+    if ("object" != _typeof(i2)) return i2;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r2 ? String : Number)(t2);
+}
+function toPropertyKey(t2) {
+  var i2 = toPrimitive(t2, "string");
+  return "symbol" == _typeof(i2) ? i2 : i2 + "";
+}
+function _defineProperty$1(e2, r2, t2) {
+  return (r2 = toPropertyKey(r2)) in e2 ? Object.defineProperty(e2, r2, {
+    value: t2,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  }) : e2[r2] = t2, e2;
+}
+function withSideEffect(reducePropsToState2, handleStateChangeOnClient2) {
+  function getDisplayName(WrappedComponent) {
+    return WrappedComponent.displayName || WrappedComponent.name || "Component";
+  }
+  return function wrap2(WrappedComponent) {
+    var mountedInstances = [];
+    var state2;
+    function emitChange() {
+      state2 = reducePropsToState2(mountedInstances.map(function(instance) {
+        return instance.props;
+      }));
+      handleStateChangeOnClient2(state2);
+    }
+    var SideEffect = /* @__PURE__ */ function(_PureComponent) {
+      _inheritsLoose(SideEffect2, _PureComponent);
+      function SideEffect2() {
+        return _PureComponent.apply(this, arguments) || this;
+      }
+      SideEffect2.peek = function peek2() {
+        return state2;
+      };
+      var _proto = SideEffect2.prototype;
+      _proto.componentDidMount = function componentDidMount() {
+        mountedInstances.push(this);
+        emitChange();
+      };
+      _proto.componentDidUpdate = function componentDidUpdate() {
+        emitChange();
+      };
+      _proto.componentWillUnmount = function componentWillUnmount() {
+        var index = mountedInstances.indexOf(this);
+        mountedInstances.splice(index, 1);
+        emitChange();
+      };
+      _proto.render = function render() {
+        return /* @__PURE__ */ React.createElement(WrappedComponent, this.props);
+      };
+      return SideEffect2;
+    }(reactExports.PureComponent);
+    _defineProperty$1(SideEffect, "displayName", "SideEffect(" + getDisplayName(WrappedComponent) + ")");
+    return SideEffect;
+  };
+}
+var toArray = function(a) {
+  var ret = Array(a.length);
+  for (var i2 = 0; i2 < a.length; ++i2) {
+    ret[i2] = a[i2];
+  }
+  return ret;
+};
+var asArray = function(a) {
+  return Array.isArray(a) ? a : [a];
+};
+var getFirst = function(a) {
+  return Array.isArray(a) ? a[0] : a;
+};
+var isElementHidden = function(node2) {
+  if (node2.nodeType !== Node.ELEMENT_NODE) {
+    return false;
+  }
+  var computedStyle = window.getComputedStyle(node2, null);
+  if (!computedStyle || !computedStyle.getPropertyValue) {
+    return false;
+  }
+  return computedStyle.getPropertyValue("display") === "none" || computedStyle.getPropertyValue("visibility") === "hidden";
+};
+var getParentNode = function(node2) {
+  return node2.parentNode && node2.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    node2.parentNode.host
+  ) : node2.parentNode;
+};
+var isTopNode = function(node2) {
+  return node2 === document || node2 && node2.nodeType === Node.DOCUMENT_NODE;
+};
+var isInert = function(node2) {
+  return node2.hasAttribute("inert");
+};
+var isVisibleUncached = function(node2, checkParent) {
+  return !node2 || isTopNode(node2) || !isElementHidden(node2) && !isInert(node2) && checkParent(getParentNode(node2));
+};
+var isVisibleCached = function(visibilityCache, node2) {
+  var cached = visibilityCache.get(node2);
+  if (cached !== void 0) {
+    return cached;
+  }
+  var result = isVisibleUncached(node2, isVisibleCached.bind(void 0, visibilityCache));
+  visibilityCache.set(node2, result);
+  return result;
+};
+var isAutoFocusAllowedUncached = function(node2, checkParent) {
+  return node2 && !isTopNode(node2) ? isAutoFocusAllowed(node2) ? checkParent(getParentNode(node2)) : false : true;
+};
+var isAutoFocusAllowedCached = function(cache, node2) {
+  var cached = cache.get(node2);
+  if (cached !== void 0) {
+    return cached;
+  }
+  var result = isAutoFocusAllowedUncached(node2, isAutoFocusAllowedCached.bind(void 0, cache));
+  cache.set(node2, result);
+  return result;
+};
+var getDataset = function(node2) {
+  return node2.dataset;
+};
+var isHTMLButtonElement = function(node2) {
+  return node2.tagName === "BUTTON";
+};
+var isHTMLInputElement = function(node2) {
+  return node2.tagName === "INPUT";
+};
+var isRadioElement = function(node2) {
+  return isHTMLInputElement(node2) && node2.type === "radio";
+};
+var notHiddenInput = function(node2) {
+  return !((isHTMLInputElement(node2) || isHTMLButtonElement(node2)) && (node2.type === "hidden" || node2.disabled));
+};
+var isAutoFocusAllowed = function(node2) {
+  var attribute = node2.getAttribute(FOCUS_NO_AUTOFOCUS);
+  return ![true, "true", ""].includes(attribute);
+};
+var isGuard = function(node2) {
+  var _a2;
+  return Boolean(node2 && ((_a2 = getDataset(node2)) === null || _a2 === void 0 ? void 0 : _a2.focusGuard));
+};
+var isNotAGuard = function(node2) {
+  return !isGuard(node2);
+};
+var isDefined = function(x2) {
+  return Boolean(x2);
+};
+var tabSort = function(a, b2) {
+  var aTab = Math.max(0, a.tabIndex);
+  var bTab = Math.max(0, b2.tabIndex);
+  var tabDiff = aTab - bTab;
+  var indexDiff = a.index - b2.index;
+  if (tabDiff) {
+    if (!aTab) {
+      return 1;
+    }
+    if (!bTab) {
+      return -1;
+    }
+  }
+  return tabDiff || indexDiff;
+};
+var getTabIndex = function(node2) {
+  if (node2.tabIndex < 0) {
+    if (!node2.hasAttribute("tabindex")) {
+      return 0;
+    }
+  }
+  return node2.tabIndex;
+};
+var orderByTabIndex = function(nodes, filterNegative, keepGuards) {
+  return toArray(nodes).map(function(node2, index) {
+    var tabIndex = getTabIndex(node2);
+    return {
+      node: node2,
+      index,
+      tabIndex: keepGuards && tabIndex === -1 ? (node2.dataset || {}).focusGuard ? 0 : -1 : tabIndex
+    };
+  }).filter(function(data) {
+    return !filterNegative || data.tabIndex >= 0;
+  }).sort(tabSort);
+};
+var tabbables = [
+  "button:enabled",
+  "select:enabled",
+  "textarea:enabled",
+  "input:enabled",
+  // elements with explicit roles will also use explicit tabindex
+  // '[role="button"]',
+  "a[href]",
+  "area[href]",
+  "summary",
+  "iframe",
+  "object",
+  "embed",
+  "audio[controls]",
+  "video[controls]",
+  "[tabindex]",
+  "[contenteditable]",
+  "[autofocus]"
+];
+var queryTabbables = tabbables.join(",");
+var queryGuardTabbables = "".concat(queryTabbables, ", [data-focus-guard]");
+var getFocusablesWithShadowDom = function(parent, withGuards) {
+  return toArray((parent.shadowRoot || parent).children).reduce(function(acc, child) {
+    return acc.concat(child.matches(withGuards ? queryGuardTabbables : queryTabbables) ? [child] : [], getFocusablesWithShadowDom(child));
+  }, []);
+};
+var getFocusablesWithIFrame = function(parent, withGuards) {
+  var _a2;
+  if (parent instanceof HTMLIFrameElement && ((_a2 = parent.contentDocument) === null || _a2 === void 0 ? void 0 : _a2.body)) {
+    return getFocusables([parent.contentDocument.body], withGuards);
+  }
+  return [parent];
+};
+var getFocusables = function(parents, withGuards) {
+  return parents.reduce(function(acc, parent) {
+    var _a2;
+    var focusableWithShadowDom = getFocusablesWithShadowDom(parent, withGuards);
+    var focusableWithIframes = (_a2 = []).concat.apply(_a2, focusableWithShadowDom.map(function(node2) {
+      return getFocusablesWithIFrame(node2, withGuards);
+    }));
+    return acc.concat(
+      // add all tabbables inside and within shadow DOMs in DOM order
+      focusableWithIframes,
+      // add if node is tabbable itself
+      parent.parentNode ? toArray(parent.parentNode.querySelectorAll(queryTabbables)).filter(function(node2) {
+        return node2 === parent;
+      }) : []
+    );
+  }, []);
+};
+var getParentAutofocusables = function(parent) {
+  var parentFocus = parent.querySelectorAll("[".concat(FOCUS_AUTO, "]"));
+  return toArray(parentFocus).map(function(node2) {
+    return getFocusables([node2]);
+  }).reduce(function(acc, nodes) {
+    return acc.concat(nodes);
+  }, []);
+};
+var filterFocusable = function(nodes, visibilityCache) {
+  return toArray(nodes).filter(function(node2) {
+    return isVisibleCached(visibilityCache, node2);
+  }).filter(function(node2) {
+    return notHiddenInput(node2);
+  });
+};
+var filterAutoFocusable = function(nodes, cache) {
+  if (cache === void 0) {
+    cache = /* @__PURE__ */ new Map();
+  }
+  return toArray(nodes).filter(function(node2) {
+    return isAutoFocusAllowedCached(cache, node2);
+  });
+};
+var getTabbableNodes = function(topNodes, visibilityCache, withGuards) {
+  return orderByTabIndex(filterFocusable(getFocusables(topNodes, withGuards), visibilityCache), true, withGuards);
+};
+var getFocusableNodes = function(topNodes, visibilityCache) {
+  return orderByTabIndex(filterFocusable(getFocusables(topNodes), visibilityCache), false);
+};
+var parentAutofocusables = function(topNode, visibilityCache) {
+  return filterFocusable(getParentAutofocusables(topNode), visibilityCache);
+};
+var contains = function(scope, element) {
+  if (scope.shadowRoot) {
+    return contains(scope.shadowRoot, element);
+  } else {
+    if (Object.getPrototypeOf(scope).contains !== void 0 && Object.getPrototypeOf(scope).contains.call(scope, element)) {
+      return true;
+    }
+    return toArray(scope.children).some(function(child) {
+      var _a2;
+      if (child instanceof HTMLIFrameElement) {
+        var iframeBody = (_a2 = child.contentDocument) === null || _a2 === void 0 ? void 0 : _a2.body;
+        if (iframeBody) {
+          return contains(iframeBody, element);
+        }
+        return false;
+      }
+      return contains(child, element);
+    });
+  }
+};
+var filterNested = function(nodes) {
+  var contained = /* @__PURE__ */ new Set();
+  var l2 = nodes.length;
+  for (var i2 = 0; i2 < l2; i2 += 1) {
+    for (var j = i2 + 1; j < l2; j += 1) {
+      var position2 = nodes[i2].compareDocumentPosition(nodes[j]);
+      if ((position2 & Node.DOCUMENT_POSITION_CONTAINED_BY) > 0) {
+        contained.add(j);
+      }
+      if ((position2 & Node.DOCUMENT_POSITION_CONTAINS) > 0) {
+        contained.add(i2);
+      }
+    }
+  }
+  return nodes.filter(function(_, index) {
+    return !contained.has(index);
+  });
+};
+var getTopParent = function(node2) {
+  return node2.parentNode ? getTopParent(node2.parentNode) : node2;
+};
+var getAllAffectedNodes = function(node2) {
+  var nodes = asArray(node2);
+  return nodes.filter(Boolean).reduce(function(acc, currentNode) {
+    var group = currentNode.getAttribute(FOCUS_GROUP);
+    acc.push.apply(acc, group ? filterNested(toArray(getTopParent(currentNode).querySelectorAll("[".concat(FOCUS_GROUP, '="').concat(group, '"]:not([').concat(FOCUS_DISABLED, '="disabled"])')))) : [currentNode]);
+    return acc;
+  }, []);
+};
+var safeProbe = function(cb2) {
+  try {
+    return cb2();
+  } catch (e2) {
+    return void 0;
+  }
+};
+var getActiveElement = function(inDocument) {
+  if (inDocument === void 0) {
+    inDocument = document;
+  }
+  if (!inDocument || !inDocument.activeElement) {
+    return void 0;
+  }
+  var activeElement = inDocument.activeElement;
+  return activeElement.shadowRoot ? getActiveElement(activeElement.shadowRoot) : activeElement instanceof HTMLIFrameElement && safeProbe(function() {
+    return activeElement.contentWindow.document;
+  }) ? getActiveElement(activeElement.contentWindow.document) : activeElement;
+};
+var focusInFrame = function(frame2, activeElement) {
+  return frame2 === activeElement;
+};
+var focusInsideIframe = function(topNode, activeElement) {
+  return Boolean(toArray(topNode.querySelectorAll("iframe")).some(function(node2) {
+    return focusInFrame(node2, activeElement);
+  }));
+};
+var focusInside = function(topNode, activeElement) {
+  if (activeElement === void 0) {
+    activeElement = getActiveElement(getFirst(topNode).ownerDocument);
+  }
+  if (!activeElement || activeElement.dataset && activeElement.dataset.focusGuard) {
+    return false;
+  }
+  return getAllAffectedNodes(topNode).some(function(node2) {
+    return contains(node2, activeElement) || focusInsideIframe(node2, activeElement);
+  });
+};
+var focusIsHidden = function(inDocument) {
+  if (inDocument === void 0) {
+    inDocument = document;
+  }
+  var activeElement = getActiveElement(inDocument);
+  if (!activeElement) {
+    return false;
+  }
+  return toArray(inDocument.querySelectorAll("[".concat(FOCUS_ALLOW, "]"))).some(function(node2) {
+    return contains(node2, activeElement);
+  });
+};
+var findSelectedRadio = function(node2, nodes) {
+  return nodes.filter(isRadioElement).filter(function(el2) {
+    return el2.name === node2.name;
+  }).filter(function(el2) {
+    return el2.checked;
+  })[0] || node2;
+};
+var correctNode = function(node2, nodes) {
+  if (isRadioElement(node2) && node2.name) {
+    return findSelectedRadio(node2, nodes);
+  }
+  return node2;
+};
+var correctNodes = function(nodes) {
+  var resultSet = /* @__PURE__ */ new Set();
+  nodes.forEach(function(node2) {
+    return resultSet.add(correctNode(node2, nodes));
+  });
+  return nodes.filter(function(node2) {
+    return resultSet.has(node2);
+  });
+};
+var pickFirstFocus = function(nodes) {
+  if (nodes[0] && nodes.length > 1) {
+    return correctNode(nodes[0], nodes);
+  }
+  return nodes[0];
+};
+var pickFocusable = function(nodes, node2) {
+  return nodes.indexOf(correctNode(node2, nodes));
+};
+var NEW_FOCUS = "NEW_FOCUS";
+var newFocus = function(innerNodes, innerTabbables, outerNodes, activeElement, lastNode) {
+  var cnt = innerNodes.length;
+  var firstFocus = innerNodes[0];
+  var lastFocus = innerNodes[cnt - 1];
+  var isOnGuard = isGuard(activeElement);
+  if (activeElement && innerNodes.indexOf(activeElement) >= 0) {
+    return void 0;
+  }
+  var activeIndex = activeElement !== void 0 ? outerNodes.indexOf(activeElement) : -1;
+  var lastIndex = lastNode ? outerNodes.indexOf(lastNode) : activeIndex;
+  var lastNodeInside = lastNode ? innerNodes.indexOf(lastNode) : -1;
+  if (activeIndex === -1) {
+    if (lastNodeInside !== -1) {
+      return lastNodeInside;
+    }
+    return NEW_FOCUS;
+  }
+  if (lastNodeInside === -1) {
+    return NEW_FOCUS;
+  }
+  var indexDiff = activeIndex - lastIndex;
+  var firstNodeIndex = outerNodes.indexOf(firstFocus);
+  var lastNodeIndex = outerNodes.indexOf(lastFocus);
+  var correctedNodes = correctNodes(outerNodes);
+  var correctedIndex = activeElement !== void 0 ? correctedNodes.indexOf(activeElement) : -1;
+  var correctedIndexDiff = correctedIndex - (lastNode ? correctedNodes.indexOf(lastNode) : activeIndex);
+  if (!indexDiff && lastNodeInside >= 0) {
+    return lastNodeInside;
+  }
+  if (innerTabbables.length === 0) {
+    return lastNodeInside;
+  }
+  var returnFirstNode = pickFocusable(innerNodes, innerTabbables[0]);
+  var returnLastNode = pickFocusable(innerNodes, innerTabbables[innerTabbables.length - 1]);
+  if (activeIndex <= firstNodeIndex && isOnGuard && Math.abs(indexDiff) > 1) {
+    return returnLastNode;
+  }
+  if (activeIndex >= lastNodeIndex && isOnGuard && Math.abs(indexDiff) > 1) {
+    return returnFirstNode;
+  }
+  if (indexDiff && Math.abs(correctedIndexDiff) > 1) {
+    return lastNodeInside;
+  }
+  if (activeIndex <= firstNodeIndex) {
+    return returnLastNode;
+  }
+  if (activeIndex > lastNodeIndex) {
+    return returnFirstNode;
+  }
+  if (indexDiff) {
+    if (Math.abs(indexDiff) > 1) {
+      return lastNodeInside;
+    }
+    return (cnt + lastNodeInside + indexDiff) % cnt;
+  }
+  return void 0;
+};
+var findAutoFocused = function(autoFocusables) {
+  return function(node2) {
+    var _a2;
+    var autofocus = (_a2 = getDataset(node2)) === null || _a2 === void 0 ? void 0 : _a2.autofocus;
+    return (
+      // @ts-expect-error
+      node2.autofocus || //
+      autofocus !== void 0 && autofocus !== "false" || //
+      autoFocusables.indexOf(node2) >= 0
+    );
+  };
+};
+var pickAutofocus = function(nodesIndexes, orderedNodes, groups) {
+  var nodes = nodesIndexes.map(function(_a2) {
+    var node2 = _a2.node;
+    return node2;
+  });
+  var autoFocusable = filterAutoFocusable(nodes.filter(findAutoFocused(groups)));
+  if (autoFocusable && autoFocusable.length) {
+    return pickFirstFocus(autoFocusable);
+  }
+  return pickFirstFocus(filterAutoFocusable(orderedNodes));
+};
+var getParents = function(node2, parents) {
+  if (parents === void 0) {
+    parents = [];
+  }
+  parents.push(node2);
+  if (node2.parentNode) {
+    getParents(node2.parentNode.host || node2.parentNode, parents);
+  }
+  return parents;
+};
+var getCommonParent = function(nodeA, nodeB) {
+  var parentsA = getParents(nodeA);
+  var parentsB = getParents(nodeB);
+  for (var i2 = 0; i2 < parentsA.length; i2 += 1) {
+    var currentParent = parentsA[i2];
+    if (parentsB.indexOf(currentParent) >= 0) {
+      return currentParent;
+    }
+  }
+  return false;
+};
+var getTopCommonParent = function(baseActiveElement, leftEntry, rightEntries) {
+  var activeElements = asArray(baseActiveElement);
+  var leftEntries = asArray(leftEntry);
+  var activeElement = activeElements[0];
+  var topCommon = false;
+  leftEntries.filter(Boolean).forEach(function(entry) {
+    topCommon = getCommonParent(topCommon || entry, entry) || topCommon;
+    rightEntries.filter(Boolean).forEach(function(subEntry) {
+      var common = getCommonParent(activeElement, subEntry);
+      if (common) {
+        if (!topCommon || contains(common, topCommon)) {
+          topCommon = common;
+        } else {
+          topCommon = getCommonParent(common, topCommon);
+        }
+      }
+    });
+  });
+  return topCommon;
+};
+var allParentAutofocusables = function(entries, visibilityCache) {
+  return entries.reduce(function(acc, node2) {
+    return acc.concat(parentAutofocusables(node2, visibilityCache));
+  }, []);
+};
+var reorderNodes = function(srcNodes, dstNodes) {
+  var remap = /* @__PURE__ */ new Map();
+  dstNodes.forEach(function(entity) {
+    return remap.set(entity.node, entity);
+  });
+  return srcNodes.map(function(node2) {
+    return remap.get(node2);
+  }).filter(isDefined);
+};
+var focusSolver = function(topNode, lastNode) {
+  var activeElement = getActiveElement(asArray(topNode).length > 0 ? document : getFirst(topNode).ownerDocument);
+  var entries = getAllAffectedNodes(topNode).filter(isNotAGuard);
+  var commonParent = getTopCommonParent(activeElement || topNode, topNode, entries);
+  var visibilityCache = /* @__PURE__ */ new Map();
+  var anyFocusable = getFocusableNodes(entries, visibilityCache);
+  var innerElements = anyFocusable.filter(function(_a2) {
+    var node2 = _a2.node;
+    return isNotAGuard(node2);
+  });
+  if (!innerElements[0]) {
+    return void 0;
+  }
+  var outerNodes = getFocusableNodes([commonParent], visibilityCache).map(function(_a2) {
+    var node2 = _a2.node;
+    return node2;
+  });
+  var orderedInnerElements = reorderNodes(outerNodes, innerElements);
+  var innerFocusables = orderedInnerElements.map(function(_a2) {
+    var node2 = _a2.node;
+    return node2;
+  });
+  var innerTabbable = orderedInnerElements.filter(function(_a2) {
+    var tabIndex = _a2.tabIndex;
+    return tabIndex >= 0;
+  }).map(function(_a2) {
+    var node2 = _a2.node;
+    return node2;
+  });
+  var newId = newFocus(innerFocusables, innerTabbable, outerNodes, activeElement, lastNode);
+  if (newId === NEW_FOCUS) {
+    var focusNode = (
+      // first try only tabbable, and the fallback to all focusable, as long as at least one element should be picked for focus
+      pickAutofocus(anyFocusable, innerTabbable, allParentAutofocusables(entries, visibilityCache)) || pickAutofocus(anyFocusable, innerFocusables, allParentAutofocusables(entries, visibilityCache))
+    );
+    if (focusNode) {
+      return { node: focusNode };
+    } else {
+      console.warn("focus-lock: cannot find any node to move focus into");
+      return void 0;
+    }
+  }
+  if (newId === void 0) {
+    return newId;
+  }
+  return orderedInnerElements[newId];
+};
+var expandFocusableNodes = function(topNode) {
+  var entries = getAllAffectedNodes(topNode).filter(isNotAGuard);
+  var commonParent = getTopCommonParent(topNode, topNode, entries);
+  var outerNodes = orderByTabIndex(getFocusables([commonParent], true), true, true);
+  var innerElements = getFocusables(entries, false);
+  return outerNodes.map(function(_a2) {
+    var node2 = _a2.node, index = _a2.index;
+    return {
+      node: node2,
+      index,
+      lockItem: innerElements.indexOf(node2) >= 0,
+      guard: isGuard(node2)
+    };
+  });
+};
+var focusOn = function(target, focusOptions) {
+  if (!target) {
+    return;
+  }
+  if ("focus" in target) {
+    target.focus(focusOptions);
+  }
+  if ("contentWindow" in target && target.contentWindow) {
+    target.contentWindow.focus();
+  }
+};
+var guardCount = 0;
+var lockDisabled = false;
+var moveFocusInside = function(topNode, lastNode, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var focusable = focusSolver(topNode, lastNode);
+  if (lockDisabled) {
+    return;
+  }
+  if (focusable) {
+    if (guardCount > 2) {
+      console.error("FocusLock: focus-fighting detected. Only one focus management system could be active. See https://github.com/theKashey/focus-lock/#focus-fighting");
+      lockDisabled = true;
+      setTimeout(function() {
+        lockDisabled = false;
+      }, 1);
+      return;
+    }
+    guardCount++;
+    focusOn(focusable.node, options.focusOptions);
+    guardCount--;
+  }
+};
+function weakRef(value) {
+  if (!value)
+    return null;
+  if (typeof WeakRef === "undefined") {
+    return function() {
+      return value || null;
+    };
+  }
+  var w2 = value ? new WeakRef(value) : null;
+  return function() {
+    return (w2 === null || w2 === void 0 ? void 0 : w2.deref()) || null;
+  };
+}
+var recordElementLocation = function(element) {
+  if (!element) {
+    return null;
+  }
+  var stack = [];
+  var currentElement = element;
+  while (currentElement && currentElement !== document.body) {
+    stack.push({
+      current: weakRef(currentElement),
+      parent: weakRef(currentElement.parentElement),
+      left: weakRef(currentElement.previousElementSibling),
+      right: weakRef(currentElement.nextElementSibling)
+    });
+    currentElement = currentElement.parentElement;
+  }
+  return {
+    element: weakRef(element),
+    stack,
+    ownerDocument: element.ownerDocument
+  };
+};
+var restoreFocusTo = function(location) {
+  var _a2, _b2, _c2, _d2, _e2;
+  if (!location) {
+    return void 0;
+  }
+  var stack = location.stack, ownerDocument = location.ownerDocument;
+  var visibilityCache = /* @__PURE__ */ new Map();
+  for (var _i2 = 0, stack_1 = stack; _i2 < stack_1.length; _i2++) {
+    var line2 = stack_1[_i2];
+    var parent_1 = (_a2 = line2.parent) === null || _a2 === void 0 ? void 0 : _a2.call(line2);
+    if (parent_1 && ownerDocument.contains(parent_1)) {
+      var left = (_b2 = line2.left) === null || _b2 === void 0 ? void 0 : _b2.call(line2);
+      var savedCurrent = line2.current();
+      var current = parent_1.contains(savedCurrent) ? savedCurrent : void 0;
+      var right = (_c2 = line2.right) === null || _c2 === void 0 ? void 0 : _c2.call(line2);
+      var focusables = getTabbableNodes([parent_1], visibilityCache);
+      var aim = (
+        // that is element itself
+        (_e2 = (_d2 = current !== null && current !== void 0 ? current : (
+          // or something in it's place
+          left === null || left === void 0 ? void 0 : left.nextElementSibling
+        )) !== null && _d2 !== void 0 ? _d2 : (
+          // or somebody to the right, still close enough
+          right
+        )) !== null && _e2 !== void 0 ? _e2 : (
+          // or somebody to the left, something?
+          left
+        )
+      );
+      while (aim) {
+        for (var _f2 = 0, focusables_1 = focusables; _f2 < focusables_1.length; _f2++) {
+          var focusable = focusables_1[_f2];
+          if (aim === null || aim === void 0 ? void 0 : aim.contains(focusable.node)) {
+            return focusable.node;
+          }
+        }
+        aim = aim.nextElementSibling;
+      }
+      if (focusables.length) {
+        return focusables[0].node;
+      }
+    }
+  }
+  return void 0;
+};
+var captureFocusRestore = function(targetElement) {
+  var location = recordElementLocation(targetElement);
+  return function() {
+    return restoreFocusTo(location);
+  };
+};
+var getRelativeFocusable = function(element, scope, useTabbables) {
+  if (!element || !scope) {
+    console.error("no element or scope given");
+    return {};
+  }
+  var shards = asArray(scope);
+  if (shards.every(function(shard) {
+    return !contains(shard, element);
+  })) {
+    console.error("Active element is not contained in the scope");
+    return {};
+  }
+  var focusables = useTabbables ? getTabbableNodes(shards, /* @__PURE__ */ new Map()) : getFocusableNodes(shards, /* @__PURE__ */ new Map());
+  var current = focusables.findIndex(function(_a2) {
+    var node2 = _a2.node;
+    return node2 === element;
+  });
+  if (current === -1) {
+    return void 0;
+  }
+  return {
+    prev: focusables[current - 1],
+    next: focusables[current + 1],
+    first: focusables[0],
+    last: focusables[focusables.length - 1]
+  };
+};
+var getBoundary = function(shards, useTabbables) {
+  var set = useTabbables ? getTabbableNodes(asArray(shards), /* @__PURE__ */ new Map()) : getFocusableNodes(asArray(shards), /* @__PURE__ */ new Map());
+  return {
+    first: set[0],
+    last: set[set.length - 1]
+  };
+};
+var defaultOptions = function(options) {
+  return Object.assign({
+    scope: document.body,
+    cycle: true,
+    onlyTabbable: true
+  }, options);
+};
+var moveFocus = function(fromElement, options, cb2) {
+  if (options === void 0) {
+    options = {};
+  }
+  var newOptions = defaultOptions(options);
+  var solution = getRelativeFocusable(fromElement, newOptions.scope, newOptions.onlyTabbable);
+  if (!solution) {
+    return;
+  }
+  var target = cb2(solution, newOptions.cycle);
+  if (target) {
+    focusOn(target.node, newOptions.focusOptions);
+  }
+};
+var focusNextElement = function(fromElement, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  moveFocus(fromElement, options, function(_a2, cycle) {
+    var next2 = _a2.next, first = _a2.first;
+    return next2 || cycle && first;
+  });
+};
+var focusPrevElement = function(fromElement, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  moveFocus(fromElement, options, function(_a2, cycle) {
+    var prev2 = _a2.prev, last = _a2.last;
+    return prev2 || cycle && last;
+  });
+};
+var pickBoundary = function(scope, options, what) {
+  var _a2;
+  var boundary = getBoundary(scope, (_a2 = options.onlyTabbable) !== null && _a2 !== void 0 ? _a2 : true);
+  var node2 = boundary[what];
+  if (node2) {
+    focusOn(node2.node, options.focusOptions);
+  }
+};
+var focusFirstElement = function(scope, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  pickBoundary(scope, options, "first");
+};
+var focusLastElement = function(scope, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  pickBoundary(scope, options, "last");
+};
+function deferAction(action) {
+  setTimeout(action, 1);
+}
+var extractRef$1 = function extractRef(ref) {
+  return ref && "current" in ref ? ref.current : ref;
+};
+var focusOnBody = function focusOnBody2() {
+  return document && document.activeElement === document.body;
+};
+var isFreeFocus = function isFreeFocus2() {
+  return focusOnBody() || focusIsHidden();
+};
+var lastActiveTrap = null;
+var lastActiveFocus = null;
+var tryRestoreFocus = function tryRestoreFocus2() {
+  return null;
+};
+var lastPortaledElement = null;
+var focusWasOutsideWindow = false;
+var windowFocused = false;
+var defaultWhitelist = function defaultWhitelist2() {
+  return true;
+};
+var focusWhitelisted = function focusWhitelisted2(activeElement) {
+  return (lastActiveTrap.whiteList || defaultWhitelist)(activeElement);
+};
+var recordPortal = function recordPortal2(observerNode, portaledElement) {
+  lastPortaledElement = {
+    observerNode,
+    portaledElement
+  };
+};
+var focusIsPortaledPair = function focusIsPortaledPair2(element) {
+  return lastPortaledElement && lastPortaledElement.portaledElement === element;
+};
+function autoGuard(startIndex, end, step, allNodes) {
+  var lastGuard = null;
+  var i2 = startIndex;
+  do {
+    var item = allNodes[i2];
+    if (item.guard) {
+      if (item.node.dataset.focusAutoGuard) {
+        lastGuard = item;
+      }
+    } else if (item.lockItem) {
+      if (i2 !== startIndex) {
+        return;
+      }
+      lastGuard = null;
+    } else {
+      break;
+    }
+  } while ((i2 += step) !== end);
+  if (lastGuard) {
+    lastGuard.node.tabIndex = 0;
+  }
+}
+var focusWasOutside = function focusWasOutside2(crossFrameOption) {
+  if (crossFrameOption) {
+    return Boolean(focusWasOutsideWindow);
+  }
+  return focusWasOutsideWindow === "meanwhile";
+};
+var checkInHost = function checkInHost2(check, el2, boundary) {
+  return el2 && (el2.host === check && (!el2.activeElement || boundary.contains(el2.activeElement)) || el2.parentNode && checkInHost2(check, el2.parentNode, boundary));
+};
+var withinHost = function withinHost2(activeElement, workingArea) {
+  return workingArea.some(function(area) {
+    return checkInHost(activeElement, area, area);
+  });
+};
+var getNodeFocusables = function getNodeFocusables2(nodes) {
+  return getFocusableNodes(nodes, /* @__PURE__ */ new Map());
+};
+var isNotFocusable = function isNotFocusable2(node2) {
+  return !getNodeFocusables([node2.parentNode]).some(function(el2) {
+    return el2.node === node2;
+  });
+};
+var activateTrap = function activateTrap2() {
+  var result = false;
+  if (lastActiveTrap) {
+    var _lastActiveTrap = lastActiveTrap, observed = _lastActiveTrap.observed, persistentFocus = _lastActiveTrap.persistentFocus, autoFocus = _lastActiveTrap.autoFocus, shards = _lastActiveTrap.shards, crossFrame = _lastActiveTrap.crossFrame, focusOptions = _lastActiveTrap.focusOptions, noFocusGuards = _lastActiveTrap.noFocusGuards;
+    var workingNode = observed || lastPortaledElement && lastPortaledElement.portaledElement;
+    if (focusOnBody() && lastActiveFocus) {
+      if (!document.body.contains(lastActiveFocus) || isNotFocusable(lastActiveFocus)) {
+        lastActiveFocus = null;
+        var newTarget = tryRestoreFocus();
+        if (newTarget) {
+          newTarget.focus();
+        }
+      }
+    }
+    var activeElement = document && document.activeElement;
+    if (workingNode) {
+      var workingArea = [workingNode].concat(shards.map(extractRef$1).filter(Boolean));
+      var shouldForceRestoreFocus = function shouldForceRestoreFocus2() {
+        if (!focusWasOutside(crossFrame) || !noFocusGuards || !lastActiveFocus || windowFocused) {
+          return false;
+        }
+        var nodes = getNodeFocusables(workingArea);
+        var lastIndex = nodes.findIndex(function(_ref2) {
+          var node2 = _ref2.node;
+          return node2 === lastActiveFocus;
+        });
+        return lastIndex === 0 || lastIndex === nodes.length - 1;
+      };
+      if (!activeElement || focusWhitelisted(activeElement)) {
+        if (persistentFocus || shouldForceRestoreFocus() || !isFreeFocus() || !lastActiveFocus && autoFocus) {
+          if (workingNode && !(focusInside(workingArea) || activeElement && withinHost(activeElement, workingArea) || focusIsPortaledPair(activeElement))) {
+            if (document && !lastActiveFocus && activeElement && !autoFocus) {
+              if (activeElement.blur) {
+                activeElement.blur();
+              }
+              document.body.focus();
+            } else {
+              result = moveFocusInside(workingArea, lastActiveFocus, {
+                focusOptions
+              });
+              lastPortaledElement = {};
+            }
+          }
+          focusWasOutsideWindow = false;
+          lastActiveFocus = document && document.activeElement;
+          tryRestoreFocus = captureFocusRestore(lastActiveFocus);
+        }
+      }
+      if (document && activeElement !== document.activeElement && document.querySelector("[data-focus-auto-guard]")) {
+        var newActiveElement = document && document.activeElement;
+        var allNodes = expandFocusableNodes(workingArea);
+        var focusedIndex = allNodes.map(function(_ref2) {
+          var node2 = _ref2.node;
+          return node2;
+        }).indexOf(newActiveElement);
+        if (focusedIndex > -1) {
+          allNodes.filter(function(_ref3) {
+            var guard2 = _ref3.guard, node2 = _ref3.node;
+            return guard2 && node2.dataset.focusAutoGuard;
+          }).forEach(function(_ref4) {
+            var node2 = _ref4.node;
+            return node2.removeAttribute("tabIndex");
+          });
+          autoGuard(focusedIndex, allNodes.length, 1, allNodes);
+          autoGuard(focusedIndex, -1, -1, allNodes);
+        }
+      }
+    }
+  }
+  return result;
+};
+var onTrap = function onTrap2(event) {
+  if (activateTrap() && event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+};
+var onBlur = function onBlur2() {
+  return deferAction(activateTrap);
+};
+var onFocus = function onFocus2(event) {
+  var source = event.target;
+  var currentNode = event.currentTarget;
+  if (!currentNode.contains(source)) {
+    recordPortal(currentNode, source);
+  }
+};
+var FocusWatcher = function FocusWatcher2() {
+  return null;
+};
+var onWindowFocus = function onWindowFocus2() {
+  windowFocused = true;
+};
+var onWindowBlur = function onWindowBlur2() {
+  windowFocused = false;
+  focusWasOutsideWindow = "just";
+  deferAction(function() {
+    focusWasOutsideWindow = "meanwhile";
+  });
+};
+var attachHandler = function attachHandler2() {
+  document.addEventListener("focusin", onTrap);
+  document.addEventListener("focusout", onBlur);
+  window.addEventListener("focus", onWindowFocus);
+  window.addEventListener("blur", onWindowBlur);
+};
+var detachHandler = function detachHandler2() {
+  document.removeEventListener("focusin", onTrap);
+  document.removeEventListener("focusout", onBlur);
+  window.removeEventListener("focus", onWindowFocus);
+  window.removeEventListener("blur", onWindowBlur);
+};
+function reducePropsToState(propsList) {
+  return propsList.filter(function(_ref6) {
+    var disabled = _ref6.disabled;
+    return !disabled;
+  });
+}
+var focusLockAPI = {
+  moveFocusInside,
+  focusInside,
+  focusNextElement,
+  focusPrevElement,
+  focusFirstElement,
+  focusLastElement,
+  captureFocusRestore
+};
+function handleStateChangeOnClient(traps) {
+  var trap = traps.slice(-1)[0];
+  if (trap && !lastActiveTrap) {
+    attachHandler();
+  }
+  var lastTrap = lastActiveTrap;
+  var sameTrap = lastTrap && trap && trap.id === lastTrap.id;
+  lastActiveTrap = trap;
+  if (lastTrap && !sameTrap) {
+    lastTrap.onDeactivation();
+    if (!traps.filter(function(_ref7) {
+      var id2 = _ref7.id;
+      return id2 === lastTrap.id;
+    }).length) {
+      lastTrap.returnFocus(!trap);
+    }
+  }
+  if (trap) {
+    lastActiveFocus = null;
+    if (!sameTrap || lastTrap.observed !== trap.observed) {
+      trap.onActivation(focusLockAPI);
+    }
+    activateTrap();
+    deferAction(activateTrap);
+  } else {
+    detachHandler();
+    lastActiveFocus = null;
+  }
+}
+mediumFocus.assignSyncMedium(onFocus);
+mediumBlur.assignMedium(onBlur);
+mediumEffect.assignMedium(function(cb2) {
+  return cb2(focusLockAPI);
+});
+const FocusTrap$1 = withSideEffect(reducePropsToState, handleStateChangeOnClient)(FocusWatcher);
+var FocusLockCombination = /* @__PURE__ */ reactExports.forwardRef(function FocusLockUICombination(props, ref) {
+  return /* @__PURE__ */ reactExports.createElement(FocusLock$1, _extends$1({
+    sideCar: FocusTrap$1,
+    ref
+  }, props));
+});
+var _ref = FocusLock$1.propTypes || {};
+_ref.sideCar;
+_objectWithoutPropertiesLoose$1(_ref, ["sideCar"]);
+FocusLockCombination.propTypes = {};
+const FocusTrap = FocusLockCombination.default ?? FocusLockCombination;
+const FocusLock = (props) => {
+  const {
+    initialFocusRef,
+    finalFocusRef,
+    contentRef,
+    restoreFocus,
+    children,
+    isDisabled,
+    autoFocus,
+    persistentFocus,
+    lockFocusAcrossFrames
+  } = props;
+  const onActivation = reactExports.useCallback(() => {
+    if (initialFocusRef == null ? void 0 : initialFocusRef.current) {
+      initialFocusRef.current.focus();
+    } else if (contentRef == null ? void 0 : contentRef.current) {
+      const focusables = getAllFocusable(contentRef.current);
+      if (focusables.length === 0) {
+        requestAnimationFrame(() => {
+          var _a2;
+          (_a2 = contentRef.current) == null ? void 0 : _a2.focus();
+        });
+      }
+    }
+  }, [initialFocusRef, contentRef]);
+  const onDeactivation = reactExports.useCallback(() => {
+    var _a2;
+    (_a2 = finalFocusRef == null ? void 0 : finalFocusRef.current) == null ? void 0 : _a2.focus();
+  }, [finalFocusRef]);
+  const returnFocus = restoreFocus && !finalFocusRef;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    FocusTrap,
+    {
+      crossFrame: lockFocusAcrossFrames,
+      persistentFocus,
+      autoFocus,
+      disabled: isDisabled,
+      onActivation,
+      onDeactivation,
+      returnFocus,
+      children
+    }
+  );
+};
+FocusLock.displayName = "FocusLock";
 const Grid = forwardRef(function Grid2(props, ref) {
   const {
     templateAreas,
@@ -25075,6 +26645,22 @@ const InputGroup = forwardRef(
   }
 );
 InputGroup.displayName = "InputGroup";
+const Link = forwardRef(function Link2(props, ref) {
+  const styles2 = useStyleConfig("Link", props);
+  const { className, isExternal, ...rest } = omitThemingProps(props);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.a,
+    {
+      target: isExternal ? "_blank" : void 0,
+      rel: isExternal ? "noopener" : void 0,
+      ref,
+      className: cx("chakra-link", className),
+      ...rest,
+      __css: styles2
+    }
+  );
+});
+Link.displayName = "Link";
 function useEventListeners() {
   const listeners = reactExports.useRef(/* @__PURE__ */ new Map());
   const currentListeners = listeners.current;
@@ -25109,7 +26695,7 @@ function useClickable(props = {}) {
   const {
     ref: htmlRef,
     isDisabled,
-    isFocusable,
+    isFocusable: isFocusable2,
     clickOnEnter = true,
     clickOnSpace = true,
     onMouseDown,
@@ -25133,7 +26719,7 @@ function useClickable(props = {}) {
     }
   };
   const tabIndex = isButton ? tabIndexProp : tabIndexProp || 0;
-  const trulyDisabled = isDisabled && !isFocusable;
+  const trulyDisabled = isDisabled && !isFocusable2;
   const handleClick = reactExports.useCallback(
     (event) => {
       if (isDisabled) {
@@ -25298,6 +26884,1227 @@ function useClickable(props = {}) {
     onMouseLeave: handleMouseLeave
   };
 }
+var getDefaultParent = function(originalTarget) {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  var sampleTarget = Array.isArray(originalTarget) ? originalTarget[0] : originalTarget;
+  return sampleTarget.ownerDocument.body;
+};
+var counterMap = /* @__PURE__ */ new WeakMap();
+var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+var markerMap = {};
+var lockCount = 0;
+var unwrapHost = function(node2) {
+  return node2 && (node2.host || unwrapHost(node2.parentNode));
+};
+var correctTargets = function(parent, targets) {
+  return targets.map(function(target) {
+    if (parent.contains(target)) {
+      return target;
+    }
+    var correctedTarget = unwrapHost(target);
+    if (correctedTarget && parent.contains(correctedTarget)) {
+      return correctedTarget;
+    }
+    console.error("aria-hidden", target, "in not contained inside", parent, ". Doing nothing");
+    return null;
+  }).filter(function(x2) {
+    return Boolean(x2);
+  });
+};
+var applyAttributeToOthers = function(originalTarget, parentNode, markerName, controlAttribute) {
+  var targets = correctTargets(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+  if (!markerMap[markerName]) {
+    markerMap[markerName] = /* @__PURE__ */ new WeakMap();
+  }
+  var markerCounter = markerMap[markerName];
+  var hiddenNodes = [];
+  var elementsToKeep = /* @__PURE__ */ new Set();
+  var elementsToStop = new Set(targets);
+  var keep = function(el2) {
+    if (!el2 || elementsToKeep.has(el2)) {
+      return;
+    }
+    elementsToKeep.add(el2);
+    keep(el2.parentNode);
+  };
+  targets.forEach(keep);
+  var deep = function(parent) {
+    if (!parent || elementsToStop.has(parent)) {
+      return;
+    }
+    Array.prototype.forEach.call(parent.children, function(node2) {
+      if (elementsToKeep.has(node2)) {
+        deep(node2);
+      } else {
+        try {
+          var attr = node2.getAttribute(controlAttribute);
+          var alreadyHidden = attr !== null && attr !== "false";
+          var counterValue = (counterMap.get(node2) || 0) + 1;
+          var markerValue = (markerCounter.get(node2) || 0) + 1;
+          counterMap.set(node2, counterValue);
+          markerCounter.set(node2, markerValue);
+          hiddenNodes.push(node2);
+          if (counterValue === 1 && alreadyHidden) {
+            uncontrolledNodes.set(node2, true);
+          }
+          if (markerValue === 1) {
+            node2.setAttribute(markerName, "true");
+          }
+          if (!alreadyHidden) {
+            node2.setAttribute(controlAttribute, "true");
+          }
+        } catch (e2) {
+          console.error("aria-hidden: cannot operate on ", node2, e2);
+        }
+      }
+    });
+  };
+  deep(parentNode);
+  elementsToKeep.clear();
+  lockCount++;
+  return function() {
+    hiddenNodes.forEach(function(node2) {
+      var counterValue = counterMap.get(node2) - 1;
+      var markerValue = markerCounter.get(node2) - 1;
+      counterMap.set(node2, counterValue);
+      markerCounter.set(node2, markerValue);
+      if (!counterValue) {
+        if (!uncontrolledNodes.has(node2)) {
+          node2.removeAttribute(controlAttribute);
+        }
+        uncontrolledNodes.delete(node2);
+      }
+      if (!markerValue) {
+        node2.removeAttribute(markerName);
+      }
+    });
+    lockCount--;
+    if (!lockCount) {
+      counterMap = /* @__PURE__ */ new WeakMap();
+      counterMap = /* @__PURE__ */ new WeakMap();
+      uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+      markerMap = {};
+    }
+  };
+};
+var hideOthers = function(originalTarget, parentNode, markerName) {
+  if (markerName === void 0) {
+    markerName = "data-aria-hidden";
+  }
+  var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+  var activeParentNode = getDefaultParent(originalTarget);
+  if (!activeParentNode) {
+    return function() {
+      return null;
+    };
+  }
+  targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live]")));
+  return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
+};
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, key + "", value);
+  return value;
+};
+class ModalManager {
+  constructor() {
+    __publicField(this, "modals");
+    this.modals = /* @__PURE__ */ new Set();
+  }
+  add(modal) {
+    this.modals.add(modal);
+    return this.modals.size;
+  }
+  remove(modal) {
+    this.modals.delete(modal);
+  }
+  isTopModal(modal) {
+    if (!modal)
+      return false;
+    const topModal = Array.from(this.modals)[this.modals.size - 1];
+    return modal === topModal;
+  }
+}
+const modalManager = new ModalManager();
+function useModalManager(ref, isOpen) {
+  const [index, setIndex] = reactExports.useState(0);
+  reactExports.useEffect(() => {
+    const node2 = ref.current;
+    if (!node2)
+      return;
+    if (isOpen) {
+      const index2 = modalManager.add(node2);
+      setIndex(index2);
+    }
+    return () => {
+      modalManager.remove(node2);
+      setIndex(0);
+    };
+  }, [isOpen, ref]);
+  return index;
+}
+function useModal(props) {
+  const {
+    isOpen,
+    onClose,
+    id: id2,
+    closeOnOverlayClick = true,
+    closeOnEsc = true,
+    useInert = true,
+    onOverlayClick: onOverlayClickProp,
+    onEsc
+  } = props;
+  const dialogRef = reactExports.useRef(null);
+  const overlayRef = reactExports.useRef(null);
+  const [dialogId, headerId, bodyId] = useIds(
+    id2,
+    `chakra-modal`,
+    `chakra-modal--header`,
+    `chakra-modal--body`
+  );
+  useAriaHidden(dialogRef, isOpen && useInert);
+  const index = useModalManager(dialogRef, isOpen);
+  const mouseDownTarget = reactExports.useRef(null);
+  const onMouseDown = reactExports.useCallback((event) => {
+    mouseDownTarget.current = event.target;
+  }, []);
+  const onKeyDown = reactExports.useCallback(
+    (event) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        if (closeOnEsc) {
+          onClose == null ? void 0 : onClose();
+        }
+        onEsc == null ? void 0 : onEsc();
+      }
+    },
+    [closeOnEsc, onClose, onEsc]
+  );
+  const [headerMounted, setHeaderMounted] = reactExports.useState(false);
+  const [bodyMounted, setBodyMounted] = reactExports.useState(false);
+  const getDialogProps = reactExports.useCallback(
+    (props2 = {}, ref = null) => ({
+      role: "dialog",
+      ...props2,
+      ref: mergeRefs(ref, dialogRef),
+      id: dialogId,
+      tabIndex: -1,
+      "aria-modal": true,
+      "aria-labelledby": headerMounted ? headerId : void 0,
+      "aria-describedby": bodyMounted ? bodyId : void 0,
+      onClick: callAllHandlers(
+        props2.onClick,
+        (event) => event.stopPropagation()
+      )
+    }),
+    [bodyId, bodyMounted, dialogId, headerId, headerMounted]
+  );
+  const onOverlayClick = reactExports.useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (mouseDownTarget.current !== event.target)
+        return;
+      if (!modalManager.isTopModal(dialogRef.current))
+        return;
+      if (closeOnOverlayClick) {
+        onClose == null ? void 0 : onClose();
+      }
+      onOverlayClickProp == null ? void 0 : onOverlayClickProp();
+    },
+    [onClose, closeOnOverlayClick, onOverlayClickProp]
+  );
+  const getDialogContainerProps = reactExports.useCallback(
+    (props2 = {}, ref = null) => ({
+      ...props2,
+      ref: mergeRefs(ref, overlayRef),
+      onClick: callAllHandlers(props2.onClick, onOverlayClick),
+      onKeyDown: callAllHandlers(props2.onKeyDown, onKeyDown),
+      onMouseDown: callAllHandlers(props2.onMouseDown, onMouseDown)
+    }),
+    [onKeyDown, onMouseDown, onOverlayClick]
+  );
+  return {
+    isOpen,
+    onClose,
+    headerId,
+    bodyId,
+    setBodyMounted,
+    setHeaderMounted,
+    dialogRef,
+    overlayRef,
+    getDialogProps,
+    getDialogContainerProps,
+    index
+  };
+}
+function useAriaHidden(ref, shouldHide) {
+  const currentElement = ref.current;
+  reactExports.useEffect(() => {
+    if (!ref.current || !shouldHide)
+      return void 0;
+    return hideOthers(ref.current);
+  }, [shouldHide, ref, currentElement]);
+}
+function useIds(idProp, ...prefixes) {
+  const reactId = reactExports.useId();
+  const id2 = idProp || reactId;
+  return reactExports.useMemo(() => {
+    return prefixes.map((prefix2) => `${prefix2}-${id2}`);
+  }, [id2, prefixes]);
+}
+const [ModalStylesProvider, useModalStyles] = createContext({
+  name: `ModalStylesContext`,
+  errorMessage: `useModalStyles returned is 'undefined'. Seems you forgot to wrap the components in "<Modal />" `
+});
+const [ModalContextProvider, useModalContext] = createContext({
+  strict: true,
+  name: "ModalContext",
+  errorMessage: "useModalContext: `context` is undefined. Seems you forgot to wrap modal components in `<Modal />`"
+});
+const Modal = (props) => {
+  const modalProps = {
+    scrollBehavior: "outside",
+    autoFocus: true,
+    trapFocus: true,
+    returnFocusOnClose: true,
+    blockScrollOnMount: true,
+    allowPinchZoom: false,
+    preserveScrollBarGap: true,
+    motionPreset: "scale",
+    ...props,
+    lockFocusAcrossFrames: props.lockFocusAcrossFrames || true
+  };
+  const {
+    portalProps,
+    children,
+    autoFocus,
+    trapFocus,
+    initialFocusRef,
+    finalFocusRef,
+    returnFocusOnClose,
+    blockScrollOnMount,
+    allowPinchZoom,
+    preserveScrollBarGap,
+    motionPreset,
+    lockFocusAcrossFrames,
+    animatePresenceProps,
+    onCloseComplete
+  } = modalProps;
+  const styles2 = useMultiStyleConfig("Modal", modalProps);
+  const modal = useModal(modalProps);
+  const context = {
+    ...modal,
+    autoFocus,
+    trapFocus,
+    initialFocusRef,
+    finalFocusRef,
+    returnFocusOnClose,
+    blockScrollOnMount,
+    allowPinchZoom,
+    preserveScrollBarGap,
+    motionPreset,
+    lockFocusAcrossFrames
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ModalContextProvider, { value: context, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ModalStylesProvider, { value: styles2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    AnimatePresence,
+    {
+      ...animatePresenceProps,
+      onExitComplete: onCloseComplete,
+      children: context.isOpen && /* @__PURE__ */ jsxRuntimeExports.jsx(Portal, { ...portalProps, children })
+    }
+  ) }) });
+};
+Modal.displayName = "Modal";
+var zeroRightClassName = "right-scroll-bar-position";
+var fullWidthClassName = "width-before-scroll-bar";
+var noScrollbarsClassName = "with-scroll-bars-hidden";
+var removedBarSizeVariable = "--removed-body-scroll-bar-size";
+var effectCar = createSidecarMedium();
+var nothing = function() {
+  return;
+};
+var RemoveScroll = reactExports.forwardRef(function(props, parentRef) {
+  var ref = reactExports.useRef(null);
+  var _a2 = reactExports.useState({
+    onScrollCapture: nothing,
+    onWheelCapture: nothing,
+    onTouchMoveCapture: nothing
+  }), callbacks = _a2[0], setCallbacks = _a2[1];
+  var forwardProps = props.forwardProps, children = props.children, className = props.className, removeScrollBar = props.removeScrollBar, enabled = props.enabled, shards = props.shards, sideCar = props.sideCar, noIsolation = props.noIsolation, inert = props.inert, allowPinchZoom = props.allowPinchZoom, _b2 = props.as, Container2 = _b2 === void 0 ? "div" : _b2, gapMode = props.gapMode, rest = __rest(props, ["forwardProps", "children", "className", "removeScrollBar", "enabled", "shards", "sideCar", "noIsolation", "inert", "allowPinchZoom", "as", "gapMode"]);
+  var SideCar2 = sideCar;
+  var containerRef = useMergeRefs([ref, parentRef]);
+  var containerProps = __assign(__assign({}, rest), callbacks);
+  return reactExports.createElement(
+    reactExports.Fragment,
+    null,
+    enabled && reactExports.createElement(SideCar2, { sideCar: effectCar, removeScrollBar, shards, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
+    forwardProps ? reactExports.cloneElement(reactExports.Children.only(children), __assign(__assign({}, containerProps), { ref: containerRef })) : reactExports.createElement(Container2, __assign({}, containerProps, { className, ref: containerRef }), children)
+  );
+});
+RemoveScroll.defaultProps = {
+  enabled: true,
+  removeScrollBar: true,
+  inert: false
+};
+RemoveScroll.classNames = {
+  fullWidth: fullWidthClassName,
+  zeroRight: zeroRightClassName
+};
+var getNonce = function() {
+  if (typeof __webpack_nonce__ !== "undefined") {
+    return __webpack_nonce__;
+  }
+  return void 0;
+};
+function makeStyleTag() {
+  if (!document)
+    return null;
+  var tag = document.createElement("style");
+  tag.type = "text/css";
+  var nonce = getNonce();
+  if (nonce) {
+    tag.setAttribute("nonce", nonce);
+  }
+  return tag;
+}
+function injectStyles(tag, css2) {
+  if (tag.styleSheet) {
+    tag.styleSheet.cssText = css2;
+  } else {
+    tag.appendChild(document.createTextNode(css2));
+  }
+}
+function insertStyleTag(tag) {
+  var head = document.head || document.getElementsByTagName("head")[0];
+  head.appendChild(tag);
+}
+var stylesheetSingleton = function() {
+  var counter2 = 0;
+  var stylesheet = null;
+  return {
+    add: function(style) {
+      if (counter2 == 0) {
+        if (stylesheet = makeStyleTag()) {
+          injectStyles(stylesheet, style);
+          insertStyleTag(stylesheet);
+        }
+      }
+      counter2++;
+    },
+    remove: function() {
+      counter2--;
+      if (!counter2 && stylesheet) {
+        stylesheet.parentNode && stylesheet.parentNode.removeChild(stylesheet);
+        stylesheet = null;
+      }
+    }
+  };
+};
+var styleHookSingleton = function() {
+  var sheet = stylesheetSingleton();
+  return function(styles2, isDynamic) {
+    reactExports.useEffect(function() {
+      sheet.add(styles2);
+      return function() {
+        sheet.remove();
+      };
+    }, [styles2 && isDynamic]);
+  };
+};
+var styleSingleton = function() {
+  var useStyle2 = styleHookSingleton();
+  var Sheet = function(_a2) {
+    var styles2 = _a2.styles, dynamic = _a2.dynamic;
+    useStyle2(styles2, dynamic);
+    return null;
+  };
+  return Sheet;
+};
+var zeroGap = {
+  left: 0,
+  top: 0,
+  right: 0,
+  gap: 0
+};
+var parse = function(x2) {
+  return parseInt(x2 || "", 10) || 0;
+};
+var getOffset = function(gapMode) {
+  var cs = window.getComputedStyle(document.body);
+  var left = cs[gapMode === "padding" ? "paddingLeft" : "marginLeft"];
+  var top = cs[gapMode === "padding" ? "paddingTop" : "marginTop"];
+  var right = cs[gapMode === "padding" ? "paddingRight" : "marginRight"];
+  return [parse(left), parse(top), parse(right)];
+};
+var getGapWidth = function(gapMode) {
+  if (gapMode === void 0) {
+    gapMode = "margin";
+  }
+  if (typeof window === "undefined") {
+    return zeroGap;
+  }
+  var offsets = getOffset(gapMode);
+  var documentWidth = document.documentElement.clientWidth;
+  var windowWidth = window.innerWidth;
+  return {
+    left: offsets[0],
+    top: offsets[1],
+    right: offsets[2],
+    gap: Math.max(0, windowWidth - documentWidth + offsets[2] - offsets[0])
+  };
+};
+var Style = styleSingleton();
+var lockAttribute = "data-scroll-locked";
+var getStyles = function(_a2, allowRelative, gapMode, important) {
+  var left = _a2.left, top = _a2.top, right = _a2.right, gap = _a2.gap;
+  if (gapMode === void 0) {
+    gapMode = "margin";
+  }
+  return "\n  .".concat(noScrollbarsClassName, " {\n   overflow: hidden ").concat(important, ";\n   padding-right: ").concat(gap, "px ").concat(important, ";\n  }\n  body[").concat(lockAttribute, "] {\n    overflow: hidden ").concat(important, ";\n    overscroll-behavior: contain;\n    ").concat([
+    allowRelative && "position: relative ".concat(important, ";"),
+    gapMode === "margin" && "\n    padding-left: ".concat(left, "px;\n    padding-top: ").concat(top, "px;\n    padding-right: ").concat(right, "px;\n    margin-left:0;\n    margin-top:0;\n    margin-right: ").concat(gap, "px ").concat(important, ";\n    "),
+    gapMode === "padding" && "padding-right: ".concat(gap, "px ").concat(important, ";")
+  ].filter(Boolean).join(""), "\n  }\n  \n  .").concat(zeroRightClassName, " {\n    right: ").concat(gap, "px ").concat(important, ";\n  }\n  \n  .").concat(fullWidthClassName, " {\n    margin-right: ").concat(gap, "px ").concat(important, ";\n  }\n  \n  .").concat(zeroRightClassName, " .").concat(zeroRightClassName, " {\n    right: 0 ").concat(important, ";\n  }\n  \n  .").concat(fullWidthClassName, " .").concat(fullWidthClassName, " {\n    margin-right: 0 ").concat(important, ";\n  }\n  \n  body[").concat(lockAttribute, "] {\n    ").concat(removedBarSizeVariable, ": ").concat(gap, "px;\n  }\n");
+};
+var getCurrentUseCounter = function() {
+  var counter2 = parseInt(document.body.getAttribute(lockAttribute) || "0", 10);
+  return isFinite(counter2) ? counter2 : 0;
+};
+var useLockAttribute = function() {
+  reactExports.useEffect(function() {
+    document.body.setAttribute(lockAttribute, (getCurrentUseCounter() + 1).toString());
+    return function() {
+      var newCounter = getCurrentUseCounter() - 1;
+      if (newCounter <= 0) {
+        document.body.removeAttribute(lockAttribute);
+      } else {
+        document.body.setAttribute(lockAttribute, newCounter.toString());
+      }
+    };
+  }, []);
+};
+var RemoveScrollBar = function(_a2) {
+  var noRelative = _a2.noRelative, noImportant = _a2.noImportant, _b2 = _a2.gapMode, gapMode = _b2 === void 0 ? "margin" : _b2;
+  useLockAttribute();
+  var gap = reactExports.useMemo(function() {
+    return getGapWidth(gapMode);
+  }, [gapMode]);
+  return reactExports.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
+};
+var passiveSupported = false;
+if (typeof window !== "undefined") {
+  try {
+    var options = Object.defineProperty({}, "passive", {
+      get: function() {
+        passiveSupported = true;
+        return true;
+      }
+    });
+    window.addEventListener("test", options, options);
+    window.removeEventListener("test", options, options);
+  } catch (err) {
+    passiveSupported = false;
+  }
+}
+var nonPassive = passiveSupported ? { passive: false } : false;
+var alwaysContainsScroll = function(node2) {
+  return node2.tagName === "TEXTAREA";
+};
+var elementCanBeScrolled = function(node2, overflow) {
+  if (!(node2 instanceof Element)) {
+    return false;
+  }
+  var styles2 = window.getComputedStyle(node2);
+  return (
+    // not-not-scrollable
+    styles2[overflow] !== "hidden" && // contains scroll inside self
+    !(styles2.overflowY === styles2.overflowX && !alwaysContainsScroll(node2) && styles2[overflow] === "visible")
+  );
+};
+var elementCouldBeVScrolled = function(node2) {
+  return elementCanBeScrolled(node2, "overflowY");
+};
+var elementCouldBeHScrolled = function(node2) {
+  return elementCanBeScrolled(node2, "overflowX");
+};
+var locationCouldBeScrolled = function(axis, node2) {
+  var ownerDocument = node2.ownerDocument;
+  var current = node2;
+  do {
+    if (typeof ShadowRoot !== "undefined" && current instanceof ShadowRoot) {
+      current = current.host;
+    }
+    var isScrollable = elementCouldBeScrolled(axis, current);
+    if (isScrollable) {
+      var _a2 = getScrollVariables(axis, current), scrollHeight = _a2[1], clientHeight = _a2[2];
+      if (scrollHeight > clientHeight) {
+        return true;
+      }
+    }
+    current = current.parentNode;
+  } while (current && current !== ownerDocument.body);
+  return false;
+};
+var getVScrollVariables = function(_a2) {
+  var scrollTop = _a2.scrollTop, scrollHeight = _a2.scrollHeight, clientHeight = _a2.clientHeight;
+  return [
+    scrollTop,
+    scrollHeight,
+    clientHeight
+  ];
+};
+var getHScrollVariables = function(_a2) {
+  var scrollLeft = _a2.scrollLeft, scrollWidth = _a2.scrollWidth, clientWidth = _a2.clientWidth;
+  return [
+    scrollLeft,
+    scrollWidth,
+    clientWidth
+  ];
+};
+var elementCouldBeScrolled = function(axis, node2) {
+  return axis === "v" ? elementCouldBeVScrolled(node2) : elementCouldBeHScrolled(node2);
+};
+var getScrollVariables = function(axis, node2) {
+  return axis === "v" ? getVScrollVariables(node2) : getHScrollVariables(node2);
+};
+var getDirectionFactor = function(axis, direction2) {
+  return axis === "h" && direction2 === "rtl" ? -1 : 1;
+};
+var handleScroll = function(axis, endTarget, event, sourceDelta, noOverscroll) {
+  var directionFactor = getDirectionFactor(axis, window.getComputedStyle(endTarget).direction);
+  var delta = directionFactor * sourceDelta;
+  var target = event.target;
+  var targetInLock = endTarget.contains(target);
+  var shouldCancelScroll = false;
+  var isDeltaPositive = delta > 0;
+  var availableScroll = 0;
+  var availableScrollTop = 0;
+  do {
+    var _a2 = getScrollVariables(axis, target), position2 = _a2[0], scroll_1 = _a2[1], capacity = _a2[2];
+    var elementScroll = scroll_1 - capacity - directionFactor * position2;
+    if (position2 || elementScroll) {
+      if (elementCouldBeScrolled(axis, target)) {
+        availableScroll += elementScroll;
+        availableScrollTop += position2;
+      }
+    }
+    if (target instanceof ShadowRoot) {
+      target = target.host;
+    } else {
+      target = target.parentNode;
+    }
+  } while (
+    // portaled content
+    !targetInLock && target !== document.body || // self content
+    targetInLock && (endTarget.contains(target) || endTarget === target)
+  );
+  if (isDeltaPositive && (Math.abs(availableScroll) < 1 || !noOverscroll)) {
+    shouldCancelScroll = true;
+  } else if (!isDeltaPositive && (Math.abs(availableScrollTop) < 1 || !noOverscroll)) {
+    shouldCancelScroll = true;
+  }
+  return shouldCancelScroll;
+};
+var getTouchXY = function(event) {
+  return "changedTouches" in event ? [event.changedTouches[0].clientX, event.changedTouches[0].clientY] : [0, 0];
+};
+var getDeltaXY = function(event) {
+  return [event.deltaX, event.deltaY];
+};
+var extractRef2 = function(ref) {
+  return ref && "current" in ref ? ref.current : ref;
+};
+var deltaCompare = function(x2, y2) {
+  return x2[0] === y2[0] && x2[1] === y2[1];
+};
+var generateStyle = function(id2) {
+  return "\n  .block-interactivity-".concat(id2, " {pointer-events: none;}\n  .allow-interactivity-").concat(id2, " {pointer-events: all;}\n");
+};
+var idCounter = 0;
+var lockStack = [];
+function RemoveScrollSideCar(props) {
+  var shouldPreventQueue = reactExports.useRef([]);
+  var touchStartRef = reactExports.useRef([0, 0]);
+  var activeAxis = reactExports.useRef();
+  var id2 = reactExports.useState(idCounter++)[0];
+  var Style2 = reactExports.useState(styleSingleton)[0];
+  var lastProps = reactExports.useRef(props);
+  reactExports.useEffect(function() {
+    lastProps.current = props;
+  }, [props]);
+  reactExports.useEffect(function() {
+    if (props.inert) {
+      document.body.classList.add("block-interactivity-".concat(id2));
+      var allow_1 = __spreadArray([props.lockRef.current], (props.shards || []).map(extractRef2), true).filter(Boolean);
+      allow_1.forEach(function(el2) {
+        return el2.classList.add("allow-interactivity-".concat(id2));
+      });
+      return function() {
+        document.body.classList.remove("block-interactivity-".concat(id2));
+        allow_1.forEach(function(el2) {
+          return el2.classList.remove("allow-interactivity-".concat(id2));
+        });
+      };
+    }
+    return;
+  }, [props.inert, props.lockRef.current, props.shards]);
+  var shouldCancelEvent = reactExports.useCallback(function(event, parent) {
+    if ("touches" in event && event.touches.length === 2 || event.type === "wheel" && event.ctrlKey) {
+      return !lastProps.current.allowPinchZoom;
+    }
+    var touch = getTouchXY(event);
+    var touchStart = touchStartRef.current;
+    var deltaX = "deltaX" in event ? event.deltaX : touchStart[0] - touch[0];
+    var deltaY = "deltaY" in event ? event.deltaY : touchStart[1] - touch[1];
+    var currentAxis;
+    var target = event.target;
+    var moveDirection = Math.abs(deltaX) > Math.abs(deltaY) ? "h" : "v";
+    if ("touches" in event && moveDirection === "h" && target.type === "range") {
+      return false;
+    }
+    var canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
+    if (!canBeScrolledInMainDirection) {
+      return true;
+    }
+    if (canBeScrolledInMainDirection) {
+      currentAxis = moveDirection;
+    } else {
+      currentAxis = moveDirection === "v" ? "h" : "v";
+      canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
+    }
+    if (!canBeScrolledInMainDirection) {
+      return false;
+    }
+    if (!activeAxis.current && "changedTouches" in event && (deltaX || deltaY)) {
+      activeAxis.current = currentAxis;
+    }
+    if (!currentAxis) {
+      return true;
+    }
+    var cancelingAxis = activeAxis.current || currentAxis;
+    return handleScroll(cancelingAxis, parent, event, cancelingAxis === "h" ? deltaX : deltaY, true);
+  }, []);
+  var shouldPrevent = reactExports.useCallback(function(_event) {
+    var event = _event;
+    if (!lockStack.length || lockStack[lockStack.length - 1] !== Style2) {
+      return;
+    }
+    var delta = "deltaY" in event ? getDeltaXY(event) : getTouchXY(event);
+    var sourceEvent = shouldPreventQueue.current.filter(function(e2) {
+      return e2.name === event.type && (e2.target === event.target || event.target === e2.shadowParent) && deltaCompare(e2.delta, delta);
+    })[0];
+    if (sourceEvent && sourceEvent.should) {
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+      return;
+    }
+    if (!sourceEvent) {
+      var shardNodes = (lastProps.current.shards || []).map(extractRef2).filter(Boolean).filter(function(node2) {
+        return node2.contains(event.target);
+      });
+      var shouldStop = shardNodes.length > 0 ? shouldCancelEvent(event, shardNodes[0]) : !lastProps.current.noIsolation;
+      if (shouldStop) {
+        if (event.cancelable) {
+          event.preventDefault();
+        }
+      }
+    }
+  }, []);
+  var shouldCancel = reactExports.useCallback(function(name, delta, target, should) {
+    var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
+    shouldPreventQueue.current.push(event);
+    setTimeout(function() {
+      shouldPreventQueue.current = shouldPreventQueue.current.filter(function(e2) {
+        return e2 !== event;
+      });
+    }, 1);
+  }, []);
+  var scrollTouchStart = reactExports.useCallback(function(event) {
+    touchStartRef.current = getTouchXY(event);
+    activeAxis.current = void 0;
+  }, []);
+  var scrollWheel = reactExports.useCallback(function(event) {
+    shouldCancel(event.type, getDeltaXY(event), event.target, shouldCancelEvent(event, props.lockRef.current));
+  }, []);
+  var scrollTouchMove = reactExports.useCallback(function(event) {
+    shouldCancel(event.type, getTouchXY(event), event.target, shouldCancelEvent(event, props.lockRef.current));
+  }, []);
+  reactExports.useEffect(function() {
+    lockStack.push(Style2);
+    props.setCallbacks({
+      onScrollCapture: scrollWheel,
+      onWheelCapture: scrollWheel,
+      onTouchMoveCapture: scrollTouchMove
+    });
+    document.addEventListener("wheel", shouldPrevent, nonPassive);
+    document.addEventListener("touchmove", shouldPrevent, nonPassive);
+    document.addEventListener("touchstart", scrollTouchStart, nonPassive);
+    return function() {
+      lockStack = lockStack.filter(function(inst) {
+        return inst !== Style2;
+      });
+      document.removeEventListener("wheel", shouldPrevent, nonPassive);
+      document.removeEventListener("touchmove", shouldPrevent, nonPassive);
+      document.removeEventListener("touchstart", scrollTouchStart, nonPassive);
+    };
+  }, []);
+  var removeScrollBar = props.removeScrollBar, inert = props.inert;
+  return reactExports.createElement(
+    reactExports.Fragment,
+    null,
+    inert ? reactExports.createElement(Style2, { styles: generateStyle(id2) }) : null,
+    removeScrollBar ? reactExports.createElement(RemoveScrollBar, { gapMode: props.gapMode }) : null
+  );
+}
+function getOutermostShadowParent(node2) {
+  var shadowParent = null;
+  while (node2 !== null) {
+    if (node2 instanceof ShadowRoot) {
+      shadowParent = node2.host;
+      node2 = node2.host;
+    }
+    node2 = node2.parentNode;
+  }
+  return shadowParent;
+}
+const SideCar = exportSidecar(effectCar, RemoveScrollSideCar);
+var ReactRemoveScroll = reactExports.forwardRef(function(props, ref) {
+  return reactExports.createElement(RemoveScroll, __assign({}, props, { ref, sideCar: SideCar }));
+});
+ReactRemoveScroll.classNames = RemoveScroll.classNames;
+function ModalFocusScope(props) {
+  const {
+    autoFocus,
+    trapFocus,
+    dialogRef,
+    initialFocusRef,
+    blockScrollOnMount,
+    allowPinchZoom,
+    finalFocusRef,
+    returnFocusOnClose,
+    preserveScrollBarGap,
+    lockFocusAcrossFrames,
+    isOpen
+  } = useModalContext();
+  const [isPresent2, safeToRemove] = usePresence();
+  reactExports.useEffect(() => {
+    if (!isPresent2 && safeToRemove) {
+      setTimeout(safeToRemove);
+    }
+  }, [isPresent2, safeToRemove]);
+  const index = useModalManager(dialogRef, isOpen);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    FocusLock,
+    {
+      autoFocus,
+      isDisabled: !trapFocus,
+      initialFocusRef,
+      finalFocusRef,
+      restoreFocus: returnFocusOnClose,
+      contentRef: dialogRef,
+      lockFocusAcrossFrames,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        ReactRemoveScroll,
+        {
+          removeScrollBar: !preserveScrollBarGap,
+          allowPinchZoom,
+          enabled: index === 1 && blockScrollOnMount,
+          forwardProps: true,
+          children: props.children
+        }
+      )
+    }
+  );
+}
+const variants$2 = {
+  initial: ({ offsetX, offsetY, transition: transition2, transitionEnd, delay: delay2 }) => ({
+    opacity: 0,
+    x: offsetX,
+    y: offsetY,
+    transition: (transition2 == null ? void 0 : transition2.exit) ?? withDelay.exit(TRANSITION_DEFAULTS.exit, delay2),
+    transitionEnd: transitionEnd == null ? void 0 : transitionEnd.exit
+  }),
+  enter: ({ transition: transition2, transitionEnd, delay: delay2 }) => ({
+    opacity: 1,
+    x: 0,
+    y: 0,
+    transition: (transition2 == null ? void 0 : transition2.enter) ?? withDelay.enter(TRANSITION_DEFAULTS.enter, delay2),
+    transitionEnd: transitionEnd == null ? void 0 : transitionEnd.enter
+  }),
+  exit: ({ offsetY, offsetX, transition: transition2, transitionEnd, reverse, delay: delay2 }) => {
+    const offset = { x: offsetX, y: offsetY };
+    return {
+      opacity: 0,
+      transition: (transition2 == null ? void 0 : transition2.exit) ?? withDelay.exit(TRANSITION_DEFAULTS.exit, delay2),
+      ...reverse ? { ...offset, transitionEnd: transitionEnd == null ? void 0 : transitionEnd.exit } : { transitionEnd: { ...offset, ...transitionEnd == null ? void 0 : transitionEnd.exit } }
+    };
+  }
+};
+const slideFadeConfig = {
+  initial: "initial",
+  animate: "enter",
+  exit: "exit",
+  variants: variants$2
+};
+const SlideFade = reactExports.forwardRef(
+  function SlideFade2(props, ref) {
+    const {
+      unmountOnExit,
+      in: isOpen,
+      reverse = true,
+      className,
+      offsetX = 0,
+      offsetY = 8,
+      transition: transition2,
+      transitionEnd,
+      delay: delay2,
+      animatePresenceProps,
+      ...rest
+    } = props;
+    const show = unmountOnExit ? isOpen && unmountOnExit : true;
+    const animate = isOpen || unmountOnExit ? "enter" : "exit";
+    const custom = {
+      offsetX,
+      offsetY,
+      reverse,
+      transition: transition2,
+      transitionEnd,
+      delay: delay2
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { ...animatePresenceProps, custom, children: show && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      motion.div,
+      {
+        ref,
+        className: cx("chakra-offset-slide", className),
+        custom,
+        ...slideFadeConfig,
+        animate,
+        ...rest
+      }
+    ) });
+  }
+);
+SlideFade.displayName = "SlideFade";
+const variants$1 = {
+  exit: ({ reverse, initialScale, transition: transition2, transitionEnd, delay: delay2 }) => ({
+    opacity: 0,
+    ...reverse ? { scale: initialScale, transitionEnd: transitionEnd == null ? void 0 : transitionEnd.exit } : { transitionEnd: { scale: initialScale, ...transitionEnd == null ? void 0 : transitionEnd.exit } },
+    transition: (transition2 == null ? void 0 : transition2.exit) ?? withDelay.exit(TRANSITION_DEFAULTS.exit, delay2)
+  }),
+  enter: ({ transitionEnd, transition: transition2, delay: delay2 }) => ({
+    opacity: 1,
+    scale: 1,
+    transition: (transition2 == null ? void 0 : transition2.enter) ?? withDelay.enter(TRANSITION_DEFAULTS.enter, delay2),
+    transitionEnd: transitionEnd == null ? void 0 : transitionEnd.enter
+  })
+};
+const scaleFadeConfig = {
+  initial: "exit",
+  animate: "enter",
+  exit: "exit",
+  variants: variants$1
+};
+const ScaleFade = reactExports.forwardRef(
+  function ScaleFade2(props, ref) {
+    const {
+      unmountOnExit,
+      in: isOpen,
+      reverse = true,
+      initialScale = 0.95,
+      className,
+      transition: transition2,
+      transitionEnd,
+      delay: delay2,
+      animatePresenceProps,
+      ...rest
+    } = props;
+    const show = unmountOnExit ? isOpen && unmountOnExit : true;
+    const animate = isOpen || unmountOnExit ? "enter" : "exit";
+    const custom = { initialScale, reverse, transition: transition2, transitionEnd, delay: delay2 };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { ...animatePresenceProps, custom, children: show && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      motion.div,
+      {
+        ref,
+        className: cx("chakra-offset-slide", className),
+        ...scaleFadeConfig,
+        animate,
+        custom,
+        ...rest
+      }
+    ) });
+  }
+);
+ScaleFade.displayName = "ScaleFade";
+const transitions = {
+  slideInBottom: {
+    ...slideFadeConfig,
+    custom: { offsetY: 16, reverse: true }
+  },
+  slideInRight: {
+    ...slideFadeConfig,
+    custom: { offsetX: 16, reverse: true }
+  },
+  slideInTop: {
+    ...slideFadeConfig,
+    custom: { offsetY: -16, reverse: true }
+  },
+  slideInLeft: {
+    ...slideFadeConfig,
+    custom: { offsetX: -16, reverse: true }
+  },
+  scale: {
+    ...scaleFadeConfig,
+    custom: { initialScale: 0.95, reverse: true }
+  },
+  none: {}
+};
+const MotionSection = chakra(motion.section);
+const getMotionProps = (preset) => {
+  return transitions[preset || "none"];
+};
+const ModalTransition = reactExports.forwardRef(
+  (props, ref) => {
+    const { preset, motionProps = getMotionProps(preset), ...rest } = props;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(MotionSection, { ref, ...motionProps, ...rest });
+  }
+);
+ModalTransition.displayName = "ModalTransition";
+const ModalContent = forwardRef(
+  (props, ref) => {
+    const {
+      className,
+      children,
+      containerProps: rootProps,
+      motionProps,
+      ...rest
+    } = props;
+    const { getDialogProps, getDialogContainerProps } = useModalContext();
+    const dialogProps = getDialogProps(rest, ref);
+    const containerProps = getDialogContainerProps(rootProps);
+    const _className = cx("chakra-modal__content", className);
+    const styles2 = useModalStyles();
+    const dialogStyles = defineStyle({
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      width: "100%",
+      outline: 0,
+      ...styles2.dialog
+    });
+    const dialogContainerStyles = defineStyle({
+      display: "flex",
+      width: "100vw",
+      height: "$100vh",
+      position: "fixed",
+      left: 0,
+      top: 0,
+      ...styles2.dialogContainer
+    });
+    const { motionPreset } = useModalContext();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(ModalFocusScope, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        ...containerProps,
+        className: "chakra-modal__content-container",
+        tabIndex: -1,
+        __css: dialogContainerStyles,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          ModalTransition,
+          {
+            preset: motionPreset,
+            motionProps,
+            className: _className,
+            ...dialogProps,
+            __css: dialogStyles,
+            children
+          }
+        )
+      }
+    ) });
+  }
+);
+ModalContent.displayName = "ModalContent";
+const ModalBody = forwardRef((props, ref) => {
+  const { className, ...rest } = props;
+  const { bodyId, setBodyMounted } = useModalContext();
+  reactExports.useEffect(() => {
+    setBodyMounted(true);
+    return () => setBodyMounted(false);
+  }, [setBodyMounted]);
+  const _className = cx("chakra-modal__body", className);
+  const styles2 = useModalStyles();
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.div,
+    {
+      ref,
+      className: _className,
+      id: bodyId,
+      ...rest,
+      __css: styles2.body
+    }
+  );
+});
+ModalBody.displayName = "ModalBody";
+const ModalCloseButton = forwardRef(
+  (props, ref) => {
+    const { onClick, className, ...rest } = props;
+    const { onClose } = useModalContext();
+    const _className = cx("chakra-modal__close-btn", className);
+    const styles2 = useModalStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      CloseButton,
+      {
+        ref,
+        __css: styles2.closeButton,
+        className: _className,
+        onClick: callAllHandlers(onClick, (event) => {
+          event.stopPropagation();
+          onClose();
+        }),
+        ...rest
+      }
+    );
+  }
+);
+ModalCloseButton.displayName = "ModalCloseButton";
+const ModalFooter = forwardRef(
+  (props, ref) => {
+    const { className, ...rest } = props;
+    const _className = cx("chakra-modal__footer", className);
+    const styles2 = useModalStyles();
+    const footerStyles = defineStyle({
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      ...styles2.footer
+    });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.footer,
+      {
+        ref,
+        ...rest,
+        __css: footerStyles,
+        className: _className
+      }
+    );
+  }
+);
+ModalFooter.displayName = "ModalFooter";
+const ModalHeader = forwardRef(
+  (props, ref) => {
+    const { className, ...rest } = props;
+    const { headerId, setHeaderMounted } = useModalContext();
+    reactExports.useEffect(() => {
+      setHeaderMounted(true);
+      return () => setHeaderMounted(false);
+    }, [setHeaderMounted]);
+    const _className = cx("chakra-modal__header", className);
+    const styles2 = useModalStyles();
+    const headerStyles = defineStyle({
+      flex: 0,
+      ...styles2.header
+    });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.header,
+      {
+        ref,
+        className: _className,
+        id: headerId,
+        ...rest,
+        __css: headerStyles
+      }
+    );
+  }
+);
+ModalHeader.displayName = "ModalHeader";
+const variants = {
+  enter: ({ transition: transition2, transitionEnd, delay: delay2 } = {}) => ({
+    opacity: 1,
+    transition: (transition2 == null ? void 0 : transition2.enter) ?? withDelay.enter(TRANSITION_DEFAULTS.enter, delay2),
+    transitionEnd: transitionEnd == null ? void 0 : transitionEnd.enter
+  }),
+  exit: ({ transition: transition2, transitionEnd, delay: delay2 } = {}) => ({
+    opacity: 0,
+    transition: (transition2 == null ? void 0 : transition2.exit) ?? withDelay.exit(TRANSITION_DEFAULTS.exit, delay2),
+    transitionEnd: transitionEnd == null ? void 0 : transitionEnd.exit
+  })
+};
+const fadeConfig = {
+  initial: "exit",
+  animate: "enter",
+  exit: "exit",
+  variants
+};
+const Fade = reactExports.forwardRef(
+  function Fade2(props, ref) {
+    const {
+      unmountOnExit,
+      in: isOpen,
+      className,
+      transition: transition2,
+      transitionEnd,
+      delay: delay2,
+      animatePresenceProps,
+      ...rest
+    } = props;
+    const animate = isOpen || unmountOnExit ? "enter" : "exit";
+    const show = unmountOnExit ? isOpen && unmountOnExit : true;
+    const custom = { transition: transition2, transitionEnd, delay: delay2 };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { ...animatePresenceProps, custom, children: show && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      motion.div,
+      {
+        ref,
+        className: cx("chakra-fade", className),
+        custom,
+        ...fadeConfig,
+        animate,
+        ...rest
+      }
+    ) });
+  }
+);
+Fade.displayName = "Fade";
+const MotionDiv = chakra(motion.div);
+const ModalOverlay = forwardRef(
+  (props, ref) => {
+    const { className, transition: transition2, motionProps: _motionProps, ...rest } = props;
+    const _className = cx("chakra-modal__overlay", className);
+    const styles2 = useModalStyles();
+    const overlayStyle = {
+      pos: "fixed",
+      left: "0",
+      top: "0",
+      w: "100vw",
+      h: "100vh",
+      ...styles2.overlay
+    };
+    const { motionPreset } = useModalContext();
+    const defaultMotionProps = motionPreset === "none" ? {} : fadeConfig;
+    const motionProps = _motionProps || defaultMotionProps;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      MotionDiv,
+      {
+        ...motionProps,
+        __css: overlayStyle,
+        ref,
+        className: _className,
+        ...rest
+      }
+    );
+  }
+);
+ModalOverlay.displayName = "ModalOverlay";
+function AlertDialog(props) {
+  const { leastDestructiveRef, ...rest } = props;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Modal, { ...rest, initialFocusRef: leastDestructiveRef });
+}
+const AlertDialogContent = forwardRef(
+  (props, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(ModalContent, { ref, role: "alertdialog", ...props })
+);
 const StackItem = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   chakra.div,
   {
@@ -25628,18 +28435,18 @@ function useTabList(props) {
   };
 }
 function useTab(props) {
-  const { isDisabled = false, isFocusable = false, ...htmlProps } = props;
+  const { isDisabled = false, isFocusable: isFocusable2 = false, ...htmlProps } = props;
   const { setSelectedIndex, isManual, id: id2, setFocusedIndex, selectedIndex } = useTabsContext();
   const { index, register } = useTabsDescendant({
-    disabled: isDisabled && !isFocusable
+    disabled: isDisabled && !isFocusable2
   });
   const isSelected = index === selectedIndex;
   const onClick = () => {
     setSelectedIndex(index);
   };
-  const onFocus = () => {
+  const onFocus3 = () => {
     setFocusedIndex(index);
-    const isDisabledButFocusable = isDisabled && isFocusable;
+    const isDisabledButFocusable = isDisabled && isFocusable2;
     const shouldSelect = !isManual && !isDisabledButFocusable;
     if (shouldSelect) {
       setSelectedIndex(index);
@@ -25649,7 +28456,7 @@ function useTab(props) {
     ...htmlProps,
     ref: mergeRefs(register, props.ref),
     isDisabled,
-    isFocusable,
+    isFocusable: isFocusable2,
     onClick: callAllHandlers(props.onClick, onClick)
   });
   const type = "button";
@@ -25661,7 +28468,7 @@ function useTab(props) {
     type,
     "aria-selected": isSelected,
     "aria-controls": makeTabPanelId(id2, index),
-    onFocus: isDisabled ? void 0 : callAllHandlers(props.onFocus, onFocus)
+    onFocus: isDisabled ? void 0 : callAllHandlers(props.onFocus, onFocus3)
   };
 }
 const [TabPanelProvider, useTabPanelContext] = createContext({});
@@ -28850,46 +31657,55 @@ var getPublicKey = i.getPublicKey;
 i.finalizeEvent;
 i.verifyEvent;
 export {
-  TabPanels as A,
+  AlertDialog as A,
   Button as B,
   Card as C,
-  TabPanel as D,
+  npubEncode as D,
   Editable as E,
   Flex as F,
   GiBirdTwitter as G,
   HStack as H,
   IconButton as I,
-  createRoot as J,
-  ChakraProvider as K,
+  bytesToHex$1 as J,
+  decode as K,
   LuPinOff as L,
+  ModalOverlay as M,
   NostrTypeGuard as N,
+  Tabs as O,
+  TabList as P,
+  Tab as Q,
+  React as R,
   StackDivider as S,
   Text as T,
+  TabPanels as U,
   VStack as V,
+  TabPanel as W,
+  createRoot as X,
+  ChakraProvider as Y,
   LuPin as a,
-  LuEyeOff as b,
-  LuEye as c,
-  GridItem as d,
-  Heading as e,
-  Box as f,
-  Grid as g,
-  Switch as h,
-  InputGroup as i,
+  AlertDialogContent as b,
+  ModalHeader as c,
+  ModalCloseButton as d,
+  ModalBody as e,
+  Link as f,
+  ModalFooter as g,
+  LuEyeOff as h,
+  LuEye as i,
   jsxRuntimeExports as j,
-  Input as k,
-  CardHeader as l,
-  EditablePreview as m,
-  EditableInput as n,
-  CardBody as o,
-  CardFooter as p,
-  generateSecretKey as q,
+  GridItem as k,
+  Heading as l,
+  Box as m,
+  Grid as n,
+  Switch as o,
+  InputGroup as p,
+  Input as q,
   reactExports as r,
-  nsecEncode as s,
-  getPublicKey as t,
-  npubEncode as u,
-  bytesToHex$1 as v,
-  decode as w,
-  Tabs as x,
-  TabList as y,
-  Tab as z
+  CardHeader as s,
+  EditablePreview as t,
+  EditableInput as u,
+  CardBody as v,
+  CardFooter as w,
+  generateSecretKey as x,
+  nsecEncode as y,
+  getPublicKey as z
 };

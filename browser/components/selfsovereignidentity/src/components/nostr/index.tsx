@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import {
   Heading,
   Tab,
@@ -24,8 +24,8 @@ export default function Nostr(props) {
   return (
     <div>
       <Text size="md" mb="10px">
-        Your key is stored in local, where separated and not been able to
-        accessed from web apps.
+        Your keys are stored locally, isolated from and inaccessible to the web
+        app.
       </Text>
       <Tabs variant="enclosed">
         <TabList>

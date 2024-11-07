@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "Experiment-APIs Selfsovereignidentity",
+  "version": "0.0.1",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "experimentapis-ssi@teatwo.dev"
+    }
+  },
+
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "<all_urls>",
+    "mozillaAddons"
+  ],
+
+  "experiment_apis": {
+    "ssi": {
+      "schema": "experiment-apis/ssi.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiment-apis/ssiParent.js",
+        "paths": [["ssi"], ["ssiInParent"]]
+      },
+      "child": {
+        "scopes": ["addon_child"],
+        "script": "experiment-apis/ssiChild.js",
+        "paths": [["ssi"]]
+      }
+    }
+  },
+
+  "background": {
+    "scripts": ["backgrounds/backgrounds.bundle.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "run_at": "document_start",
+      "js": ["contents/contents.bundle.js"]
+    }
+  ],
+  "web_accessible_resources": ["inpages/inpages.bundle.js"]
+}

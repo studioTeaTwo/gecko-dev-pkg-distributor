@@ -287,13 +287,13 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
       if (changeSet.hasOwnProperty("usedPrimarypasswordToSettings")) {
         Services.prefs.setBoolPref(
           "selfsovereignidentity.nostr.primarypassword.toSettings.enabled",
-          changeSet.usedPrimarypassword
+          changeSet.usedPrimarypasswordToSettings
         )
       }
       if (changeSet.hasOwnProperty("usedPrimarypasswordToApps")) {
         Services.prefs.setBoolPref(
           "selfsovereignidentity.nostr.primarypassword.toApps.enabled",
-          changeSet.usedPrimarypassword
+          changeSet.usedPrimarypasswordToApps
         )
       }
       if (changeSet.hasOwnProperty("usedTrustedSites")) {

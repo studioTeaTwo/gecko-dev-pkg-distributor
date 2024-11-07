@@ -17,6 +17,7 @@ import useChildActorEvent, {
 } from "../../hooks/useChildActorEvent"
 import { Credential } from "../../custom.type"
 import { promptForPrimaryPassword } from "../../shared/utils"
+import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
 
 interface NostrCredential extends Credential {
   properties: {
@@ -36,9 +37,11 @@ export const DefaultTrustedSites = [
 
 export default function NIP07(props) {
   const { prefs, credentials } = useChildActorEvent()
-  const { modifyCredentialToStore, onPrefChanged } = dispatchEvents
+  const { modifyCredentialToStore, onPrefChanged, onPrimaryChanged } =
+    dispatchEvents
 
   const [newSite, setNewSite] = useState("")
+  const [isOpenDialog, setIsOpenDialog] = useState(false)
   const [error, setError] = useState("")
 
   const nostrkeys = useMemo(
@@ -49,22 +52,17 @@ export default function NIP07(props) {
     [credentials]
   )
 
-  const handleUsedTrustedSites = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.preventDefault()
-
+  const handleUsedTrustedSites = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
       )
       if (!primaryPasswordAuth) {
-        alert("sorry!")
+        setIsOpenDialog(true)
         return
       }
     }
 
-    const checked = e.target.checked
     onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked })
   }
 
@@ -78,7 +76,7 @@ export default function NIP07(props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`)
       return
     }
-    // FIXME(ssb): improve the match method, such as supporting glob.
+    // TODO(ssb): improve the match method, such as supporting glob.
     const found = nostrkeys.some((site) =>
       site.trustedSites.some((site) => site.url === newSite)
     )
@@ -91,7 +89,7 @@ export default function NIP07(props) {
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
       )
       if (!primaryPasswordAuth) {
-        alert("sorry!")
+        setIsOpenDialog(true)
         return
       }
     }
@@ -111,6 +109,13 @@ export default function NIP07(props) {
         ]),
       })
     }
+
+    // Notify to the buit-in extension
+    // TODO(ssb): make TrustedSitesChanged a separate event.
+    setTimeout(() => {
+      const primary = nostrkeys.find((key) => key.primary)
+      onPrimaryChanged({ protocolName: "nostr", guid: primary.guid })
+    }, 100)
   }
 
   const handleRemoveSite = async (removedSite) => {
@@ -119,7 +124,7 @@ export default function NIP07(props) {
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
       )
       if (!primaryPasswordAuth) {
-        alert("sorry!")
+        setIsOpenDialog(true)
         return
       }
     }
@@ -132,6 +137,13 @@ export default function NIP07(props) {
         ),
       })
     }
+
+    // Notify to the buit-in extension
+    // TODO(ssb): make TrustedSitesChanged a separate event.
+    setTimeout(() => {
+      const primary = nostrkeys.find((key) => key.primary)
+      onPrimaryChanged({ protocolName: "nostr", guid: primary.guid })
+    }, 100)
   }
 
   const getTrustedSites = useCallback(() => {
@@ -174,22 +186,17 @@ export default function NIP07(props) {
     onPrefChanged({ protocolName: "nostr", usedBuiltInNip07: checked })
   }
 
-  const handleUsedPrimarypasswordToApps = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.preventDefault()
-
+  const handleUsedPrimarypasswordToApps = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
       )
       if (!primaryPasswordAuth) {
-        alert("sorry!")
+        setIsOpenDialog(true)
         return
       }
     }
 
-    const checked = e.target.checked
     onPrefChanged({ protocolName: "nostr", usedPrimarypasswordToApps: checked })
   }
 
@@ -200,34 +207,40 @@ export default function NIP07(props) {
     onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked })
   }
 
+  const cancelRef = React.useRef()
+  const onCloseDialog = () => {
+    setIsOpenDialog(false)
+  }
+
   return (
-    <VStack
-      divider={<StackDivider borderColor="gray.200" />}
-      spacing={4}
-      align="stretch"
-    >
-      <Box>
-        <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
-          <GridItem colSpan={2}>
-            <Text fontSize="xs">
-              You can still use your keys and these features with
-              extensions/apps compatible with the APIs, if turning off
-              &quot;built-in NIP-07&quot;.
-            </Text>
-          </GridItem>
-          <GridItem>
-            <label htmlFor="nostr-pref-usedBuiltInNip07">
-              Use built-in NIP-07
-            </label>
-          </GridItem>
-          <GridItem>
-            <Switch
-              id="nostr-pref-usedBuiltInNip07"
-              isChecked={prefs.nostr.usedBuiltInNip07}
-              onChange={handleUsedBuiltInNip07}
-            />
-          </GridItem>
-          {/* <GridItem>
+    <>
+      <VStack
+        divider={<StackDivider borderColor="gray.200" />}
+        spacing={4}
+        align="stretch"
+      >
+        <Box>
+          <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
+            <GridItem colSpan={2}>
+              <Text fontSize="xs">
+                You can still use these features with your keys on
+                extensions/apps compatible with this browser, if turning off
+                &quot;built-in NIP-07&quot;.
+              </Text>
+            </GridItem>
+            <GridItem>
+              <label htmlFor="nostr-pref-usedBuiltInNip07">
+                Use built-in NIP-07
+              </label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedBuiltInNip07"
+                isChecked={prefs.nostr.usedBuiltInNip07}
+                onChange={handleUsedBuiltInNip07}
+              />
+            </GridItem>
+            {/* <GridItem>
             <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
               Use primary password to Web apps
             </label>
@@ -236,68 +249,74 @@ export default function NIP07(props) {
             <Switch
               id="nostr-pref-usedPrimarypasswordToApps"
               isChecked={prefs.nostr.usedPrimarypasswordToApps}
-              onChange={handleUsedPrimarypasswordToApps}
+              onChange={(e) => handleUsedPrimarypasswordToApps(e.target.checked)}
             />
           </GridItem> */}
-          <GridItem>
-            <label htmlFor="nostr-pref-usedAccountChanged">
-              Notify &quot;Account Changed&quot; to Web apps
-            </label>
-          </GridItem>
-          <GridItem>
-            <Switch
-              id="nostr-pref-usedAccountChanged"
-              isChecked={prefs.nostr.usedAccountChanged}
-              onChange={handleUsedAccountChanged}
-            />
-          </GridItem>
-        </Grid>
-      </Box>
-      <Box>
-        <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
-          <GridItem colSpan={2}>
-            <Heading as="h4" size="md">
-              Trusted Sites
-            </Heading>
-          </GridItem>
-          <GridItem>
-            <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
-          </GridItem>
-          <GridItem>
-            <Switch
-              id="nostr-pref-usedTrustedSites"
-              isChecked={prefs.nostr.usedTrustedSites}
-              onChange={handleUsedTrustedSites}
-            />
-          </GridItem>
-          <GridItem>
-            <label>Register</label>
-          </GridItem>
-          <GridItem>
-            <InputGroup>
-              <Input
-                placeholder="https://example/"
-                value={newSite}
-                onChange={handleNewSiteChange}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleRegistSite(e)
-                  }
-                }}
-                maxW="500px"
+            <GridItem>
+              <label htmlFor="nostr-pref-usedAccountChanged">
+                Notify &quot;Account Changed&quot; to Web apps
+              </label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedAccountChanged"
+                isChecked={prefs.nostr.usedAccountChanged}
+                onChange={handleUsedAccountChanged}
               />
-              <Button
-                variant="outline"
-                colorScheme="blue"
-                onClick={handleRegistSite}
-              >
-                Regist
-              </Button>
-            </InputGroup>
-          </GridItem>
-          {getTrustedSites()}
-        </Grid>
-      </Box>
-    </VStack>
+            </GridItem>
+          </Grid>
+        </Box>
+        <Box>
+          <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
+            <GridItem colSpan={2}>
+              <Heading as="h4" size="md">
+                Trusted Sites
+              </Heading>
+            </GridItem>
+            <GridItem>
+              <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedTrustedSites"
+                isChecked={prefs.nostr.usedTrustedSites}
+                onChange={(e) => handleUsedTrustedSites(e.target.checked)}
+              />
+            </GridItem>
+            <GridItem>
+              <label>Register</label>
+            </GridItem>
+            <GridItem>
+              <InputGroup>
+                <Input
+                  placeholder="https://example/"
+                  value={newSite}
+                  onChange={handleNewSiteChange}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleRegistSite(e)
+                    }
+                  }}
+                  maxW="500px"
+                />
+                <Button
+                  variant="outline"
+                  colorScheme="blue"
+                  onClick={handleRegistSite}
+                >
+                  Regist
+                </Button>
+              </InputGroup>
+            </GridItem>
+            {getTrustedSites()}
+          </Grid>
+        </Box>
+      </VStack>
+      <AlertPrimaryPassword
+        isOpen={isOpenDialog}
+        onClose={onCloseDialog}
+        cancelRef={cancelRef}
+      />
+    </>
   )
 }
