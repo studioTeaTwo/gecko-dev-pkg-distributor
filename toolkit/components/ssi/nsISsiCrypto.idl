@@ -74,7 +74,7 @@ interface nsISsiCrypto : nsISupports {
   /**
    * isLoggedIn
    *
-   * Current selfsovereignidentity state of the token used for encryption. If the user is
+   * Current login state of the token used for encryption. If the user is
    * not logged in, performing a crypto operation will result in a primary
    * password prompt.
    */

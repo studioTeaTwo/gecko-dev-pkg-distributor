@@ -15320,8 +15320,14 @@
   value: true
   mirror: always
 
-# Whether to use primary password to calls from websites.
-- name: selfsovereignidentity.nostr.primarypassword.toWebsite.enabled
+# Whether to use primary password when managing secrets in setting page.
+- name: selfsovereignidentity.nostr.primarypassword.toSettings.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Whether to use primary password to calls from webapps.
+- name: selfsovereignidentity.nostr.primarypassword.toApps.enabled
   type: bool
   value: true
   mirror: always

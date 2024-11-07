@@ -118,8 +118,11 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
       enabled: Services.prefs.getBoolPref(
         "selfsovereignidentity.nostr.enabled"
       ),
-      usedPrimarypassword: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.primarypassword.toWebsite.enabled"
+      usedPrimarypasswordToSettings: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.primarypassword.toSettings.enabled"
+      ),
+      usedPrimarypasswordToApps: Services.prefs.getBoolPref(
+        "selfsovereignidentity.nostr.primarypassword.toApps.enabled"
       ),
       usedTrustedSites: Services.prefs.getBoolPref(
         "selfsovereignidentity.nostr.trustedSites.enabled"

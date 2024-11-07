@@ -10,5 +10,4 @@ browser.jar:
   content/selfsovereignidentity/selfsovereignidentity.html (content/selfsovereignidentity.html)
   content/selfsovereignidentity/js/main.bundle.js (content/js/main.bundle.js)
   content/selfsovereignidentity/js/vendor.bundle.js (content/js/vendor.bundle.js)
-  content/selfsovereignidentity/js/vendor.bundle2.js (content/js/vendor.bundle2.js)
   content/selfsovereignidentity/js/entry.js (content/js/entry.js)

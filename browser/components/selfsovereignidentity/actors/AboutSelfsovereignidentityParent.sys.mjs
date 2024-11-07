@@ -5,7 +5,6 @@
 // _AboutSelfsovereignidentity is only exported for testing
 import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs"
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs"
 import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs"
 
@@ -13,18 +12,11 @@ const lazy = {}
 
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
-  OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
 })
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
   return lazy.SsiHelper.createLogger("AboutSelfsovereignidentityParent")
 })
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "OS_AUTH_ENABLED",
-  "signon.management.page.os-auth.enabled",
-  true
-)
 // TODO(ssb): reconsider later
 // ChromeUtils.defineLazyGetter(lazy, "AboutSelfsovereignidentityL10n", () => {
 //   return new Localization(["branding/brand.ftl", "browser/aboutSelfsovereignidentity.ftl"])
@@ -154,14 +146,22 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     }
     // TODO(ssb): reconsider later
     // let messageText = { value: "NOT SUPPORTED" }
-    let messageText = { value: "AUTH LOCKED" }
+    let messageText =
+      messageId ===
+      "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+        ? { value: "YOUR KEY" }
+        : { value: "AUTH LOCKED" }
     let captionText = { value: "" }
+
+    const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+      lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    )
 
     // This feature is only supported on Windows and macOS
     // but we still call in to OSKeyStore on Linux to get
     // the proper auth_details for Telemetry.
     // See bug 1614874 for Linux support.
-    if (lazy.OS_AUTH_ENABLED && lazy.OSKeyStore.canReauth()) {
+    if (isOSAuthEnabled) {
       messageId += "-" + AppConstants.platform
       // TODO(ssb): reconsider later
       // [messageText, captionText] =
@@ -177,7 +177,7 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
 
     let { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
       this.browsingContext.embedderElement,
-      lazy.OS_AUTH_ENABLED,
+      isOSAuthEnabled,
       AboutSelfsovereignidentity._authExpirationTime,
       messageText.value,
       captionText.value
@@ -201,6 +201,7 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   }
 
   async #subscribe() {
+    AboutSelfsovereignidentity._authExpirationTime = Number.NEGATIVE_INFINITY
     AboutSelfsovereignidentity.addObservers()
 
     const credentials = await AboutSelfsovereignidentity.getAllCredentials()
@@ -283,9 +284,15 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
           changeSet.enabled
         )
       }
-      if (changeSet.hasOwnProperty("usedPrimarypassword")) {
+      if (changeSet.hasOwnProperty("usedPrimarypasswordToSettings")) {
         Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.primarypassword.toWebsite.enabled",
+          "selfsovereignidentity.nostr.primarypassword.toSettings.enabled",
+          changeSet.usedPrimarypassword
+        )
+      }
+      if (changeSet.hasOwnProperty("usedPrimarypasswordToApps")) {
+        Services.prefs.setBoolPref(
+          "selfsovereignidentity.nostr.primarypassword.toApps.enabled",
           changeSet.usedPrimarypassword
         )
       }

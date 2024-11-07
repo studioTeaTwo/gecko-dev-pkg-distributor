@@ -10,16 +10,26 @@
  * of nsISsi.
  */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
+
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
 });
 
+XPCOMUtils.defineLazyServiceGetter(
+  lazy,
+  "Crypto",
+  "@mozilla.org/ssi/crypto/SDR;1",
+  "nsISsiCrypto"
+);
+const OS_AUTH_FOR_PASSWORDS_PREF = "signon.management.page.os-auth.optout";
 /**
  * Contains functions shared by different Ssi Store components.
  */
 export const SsiHelper = {
   debug: null,
+  OS_AUTH_FOR_PASSWORDS_PREF,
 
   init() {
     // Services.telemetry.setEventRecordingEnabled("ssi", true);
@@ -450,6 +460,101 @@ export const SsiHelper = {
   },
 
   /**
+   * Get the decrypted value for a string pref.
+   *
+   * @param {string} prefName -> The pref whose value is needed.
+   * @param {string} safeDefaultValue -> Value to be returned incase the pref is not yet set.
+   * @returns {string}
+   */
+  getSecurePref(prefName, safeDefaultValue) {
+    if (Services.prefs.getBoolPref("security.nocertdb", false)) {
+      return false;
+    }
+    try {
+      const encryptedValue = Services.prefs.getStringPref(prefName, "");
+      return encryptedValue === ""
+        ? safeDefaultValue
+        : lazy.Crypto.decrypt(encryptedValue);
+    } catch {
+      return safeDefaultValue;
+    }
+  },
+
+  /**
+   * Set the pref to the encrypted form of the value.
+   *
+   * @param {string} prefName -> The pref whose value is to be set.
+   * @param {string} value -> The value to be set in its encrypted form.
+   */
+  setSecurePref(prefName, value) {
+    if (Services.prefs.getBoolPref("security.nocertdb", false)) {
+      return;
+    }
+    if (value) {
+      const encryptedValue = lazy.Crypto.encrypt(value);
+      Services.prefs.setStringPref(prefName, encryptedValue);
+    } else {
+      Services.prefs.clearUserPref(prefName);
+    }
+  },
+
+  /**
+   * Get whether the OSAuth is enabled or not.
+   *
+   * @param {string} prefName -> The name of the pref (creditcards or addresses)
+   * @returns {boolean}
+   */
+  getOSAuthEnabled(prefName) {
+    // TODO(ssb): Managed by prefs. We will continue to monitor updates on the password manager side.
+    // return (
+    //   lazy.OSKeyStore.canReauth() &&
+    //   this.getSecurePref(prefName, "") !== "opt out"
+    // );
+    return (
+      lazy.OSKeyStore.canReauth()
+    );
+  },
+
+  /**
+   * Set whether the OSAuth is enabled or not.
+   *
+   * @param {string} prefName -> The pref to encrypt.
+   * @param {boolean} enable -> Whether the pref is to be enabled.
+   */
+  setOSAuthEnabled(prefName, enable) {
+    this.setSecurePref(prefName, enable ? null : "opt out");
+  },
+
+  async verifyUserOSAuth(
+    prefName,
+    promptMessage,
+    captionDialog = "",
+    parentWindow = null,
+    generateKeyIfNotAvailable = true
+  ) {
+    if (!this.getOSAuthEnabled(prefName)) {
+      promptMessage = false;
+    }
+    try {
+      const result = (
+        await lazy.OSKeyStore.ensureLoggedIn(
+          promptMessage,
+          captionDialog,
+          parentWindow,
+          generateKeyIfNotAvailable
+        )
+      ).authenticated;
+      return result
+    } catch (ex) {
+      // Since Win throws an exception whereas Mac resolves to false upon cancelling.
+      if (ex.result !== Cr.NS_ERROR_FAILURE) {
+        throw ex;
+      }
+    }
+    return false;
+  },
+
+  /**
    * Shows the Primary Password prompt if enabled, or the
    * OS auth dialog otherwise.
    *
@@ -491,32 +596,36 @@ export const SsiHelper = {
     }
 
     // Default to true if there is no primary password and OS reauth is not available
-    if (!token.hasPassword && !OSReauthEnabled) {
-      isAuthorized = true;
-      telemetryEvent = {
-        object: "os_auth",
-        method: "reauthenticate",
-        value: "success_disabled",
-      };
-      return {
-        isAuthorized,
-        telemetryEvent,
-      };
-    }
+    // NOTE(ssb): Manage it in our prefs and don't let it come here
+    // if (!token.hasPassword && !OSReauthEnabled) {
+    //   isAuthorized = true;
+    //   telemetryEvent = {
+    //     object: "os_auth",
+    //     method: "reauthenticate",
+    //     value: "success_disabled",
+    //   };
+    //   return {
+    //     isAuthorized,
+    //     telemetryEvent,
+    //   };
+    // }
     // Use the OS auth dialog if there is no primary password
     if (!token.hasPassword && OSReauthEnabled) {
-      let result = await lazy.OSKeyStore.ensureLoggedIn(
+      let isAuthorized = await this.verifyUserOSAuth(
+        OS_AUTH_FOR_PASSWORDS_PREF,
         messageText,
         captionText,
         browser.ownerGlobal,
         false
       );
-      isAuthorized = result.authenticated;
+      let value = lazy.OSKeyStore.canReauth()
+        ? "success"
+        : "success_unsupported_platform";
+
       telemetryEvent = {
         object: "os_auth",
         method: "reauthenticate",
-        value: result.auth_details,
-        extra: result.auth_details_extra,
+        value: isAuthorized ? value : "fail",
       };
       return {
         isAuthorized,
@@ -538,11 +647,11 @@ export const SsiHelper = {
 
     // So there's a primary password. But since checkPassword didn't succeed, we're logged out (per nsIPK11Token.idl).
     try {
-      // Rewallet and ask for the primary password.
-      token.selfsovereignidentity(true); // 'true' means always prompt for token password. User will be prompted until
+      // Relogin and ask for the primary password.
+      token.login(true); // 'true' means always prompt for token password. User will be prompted until
       // clicking 'Cancel' or entering the correct password.
     } catch (e) {
-      // An exception will be thrown if the user cancels the selfsovereignidentity prompt dialog.
+      // An exception will be thrown if the user cancels the login prompt dialog.
       // User is also logged out of Software Security Device.
     }
     isAuthorized = token.isLoggedIn();

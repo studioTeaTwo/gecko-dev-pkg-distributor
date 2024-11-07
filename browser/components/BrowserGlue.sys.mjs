@@ -2339,7 +2339,7 @@ BrowserGlue.prototype = {
 
   async _setupSelfsovereignidentity() {
     // There is no pref for this add-on because it shouldn't be disabled.
-    const ID = "addons-selfsovereignidentity@teatwo.dev";
+    const ID = "experimentapis-ssi@teatwo.dev";
 
     let addon = await lazy.AddonManager.getAddonByID(ID);
 

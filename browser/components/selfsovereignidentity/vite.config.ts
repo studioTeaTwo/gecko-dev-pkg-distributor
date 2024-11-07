@@ -29,6 +29,7 @@ export default defineConfig({
       treeshake: true,
       input: {
         app: './selfsovereignidentity.html',
+        css: './src/styles/main.scss',
       },
       output: {
         // inlineDynamicImports : true,

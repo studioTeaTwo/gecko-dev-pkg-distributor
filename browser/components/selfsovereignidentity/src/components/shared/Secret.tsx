@@ -6,17 +6,23 @@ import { promptForPrimaryPassword } from "../../shared/utils"
 export default function Secret(props: {
   value: string
   onChangeVisibility
+  usedPrimarypasswordToSettings
   textProps?
 }) {
   const [visible, setVisible] = useState(false)
-  const { value, textProps, onChangeVisibility } = props
+  const {
+    value,
+    textProps,
+    onChangeVisibility,
+    usedPrimarypasswordToSettings,
+  } = props
 
   const maskedValue = useCallback(() => "*".repeat(value.length), [value])
 
   const handleToggole = async () => {
-    if (visible === false) {
+    if (visible === false && usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignidentity-reveal-password-os-auth-dialog-message"
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
       )
       if (!primaryPasswordAuth) {
         alert("sorry!")
