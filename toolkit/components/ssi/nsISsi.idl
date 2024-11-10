@@ -1,0 +1,165 @@
+// This is the base include which defines nsISupports. This class defines
+// the QueryInterface method.
+#include "nsISupports.idl"
+
+interface nsICredentialInfo;
+interface nsIPropertyBag;
+
+// `scriptable` designates that this object will be used with JavaScript
+// `uuid`       The example below uses a UUID with all Xs. Replace the Xs with
+//              your own UUID generated here:
+//              http://mozilla.pettay.fi/cgi-bin/mozuuid.pl
+
+[scriptable, uuid(9F617EA6-6A49-4E45-A5BC-75806625952B)]
+interface nsISsiSearchCallback : nsISupports
+{
+  /**
+   * Called when a search is complete and the results are ready.
+   *
+   * @param aCredentials
+   *        Credentials found in the search.
+   */
+  void onSearchComplete(in Array<nsICredentialInfo> aCredentials);
+};
+
+/**
+ * Make sure to document your interface.
+ */
+[scriptable, uuid(AA131FC6-69F8-465D-B269-BF7B9ECF6388)]
+interface nsISsi : nsISupports {
+  /**
+   * This promise is resolved when initialization is complete, and is rejected
+   * in case initialization failed.  This includes the initial loading of the
+   * credential data as well as any migration from previous versions.
+   *
+   * Calling any method of nsISsi before this promise is resolved
+   * might trigger the synchronous initialization fallback.
+   */
+  readonly attribute Promise initializationPromise;
+
+  /**
+   * Store a new credential in the ssi store.
+   *
+   * @param aCredential
+   *        The credential to be added.
+   * @return a clone of the credential info with the guid set (even if it was not provided)
+   *
+   * Default values for the credential's nsICredentialMetaInfo properties will be
+   * created. However, if the caller specifies non-default values, they will
+   * be used instead.
+   */
+  nsICredentialInfo addCredential(in nsICredentialInfo aCredential);
+
+  /**
+   * Like addCredential, but asynchronous.
+   *
+   * @param aCredential
+   *        The credential to be added.
+   * @return A promise which resolves with a cloned credential with the guid set.
+   *
+   * Default values for each credential's nsICredentialMetaInfo properties will be
+   * created. However, if the caller specifies non-default values, they will
+   * be used instead.
+   */
+  Promise addCredentialAsync(in nsICredentialInfo aCredential);
+
+  /**
+   * Remove a credential from the ssi store.
+   *
+   * @param aCredential
+   *        The credential to be removed.
+   *
+   * The specified credential must exactly match a stored credential. However, the
+   * values of any nsICredentialMetaInfo properties are ignored.
+   */
+  void removeCredential(in nsICredentialInfo aCredential);
+
+  /**
+   * Modify an existing credential in the ssi store.
+   *
+   * @param oldCredential
+   *        The credential to be modified.
+   * @param newCredentialData
+   *        The new credential values (either a nsICredentialInfo or nsIProperyBag)
+   *
+   * If newCredentialData is a nsICredentialInfo, all of the old credential's nsICredentialInfo
+   * properties are changed to the values from newCredentialData (but the old
+   * credential's nsICredentialMetaInfo properties are unmodified).
+   *
+   * If newCredentialData is a nsIPropertyBag, only the specified properties
+   * will be changed. The nsICredentialMetaInfo properties of oldCredential can be
+   * changed in this manner.
+   *
+   * If the propertybag contains an item named "timesUsedIncrement", the
+   * credential's timesUsed property will be incremented by the item's value.
+   */
+  void modifyCredential(in nsICredentialInfo oldCredential, in nsISupports newCredentialData);
+
+  /**
+   * Completely remove all credentials.
+   *
+   */
+  void removeAllCredentials();
+
+  /**
+   * Fetch all credentials in the ssi store. An array is always returned;
+   * if there are no credentials the array is empty. Decryption is handled in
+   * one batch.
+   *
+   * @return A promise which resolves with a JS Array of nsICredentialInfo objects.
+   */
+  Promise getAllCredentials();
+
+  /**
+   * Like getAllCredentials, but with a callback returning the search results.
+   *
+   * @param {nsISsiSearchCallback} aCallback
+   *        The interface to notify when the search is complete.
+   *
+   */
+  void getAllCredentialsWithCallback(in nsISsiSearchCallback aCallback);
+
+  /**
+   * Search for credentials matching the specified criteria, as with
+   * findCredentials(). This interface only returns the number of matching
+   * credentials (and not the credentials themselves), which allows a caller to
+   * check for credentials without causing the user to be prompted for a primary
+   * password to decrypt the credentials.
+   *
+   * Specify an empty string to match all. A null value will not match any credentials, and
+   * will thus always return a count of 0.
+   * @param protocolName
+   * @param credentialName
+   */
+  unsigned long countCredentials(in AString protocolName, in AString credentialName);
+
+  /**
+   * Asynchonously search for credentials in the ssi store. The Promise always
+   * resolves to an array; if there are no credentials the array is empty.
+   *
+   * @param {object} matchData
+   *        The data used to search as a JS object. This does not follow the same
+   *        requirements as findCredentials for those fields. Wildcard matches are
+   *        simply not specified. If a `guid` is specified then no other properties
+   *        are used (outside of GeckoView).
+   * @return A promise resolving to an array of nsICredentialInfo objects.
+   */
+  Promise searchCredentialsAsync(in jsval matchData);
+
+ /**
+  * True when a primary password prompt is being displayed.
+  */
+  readonly attribute boolean uiBusy;
+
+ /**
+  * True when the primary password has already been entered, and so a caller
+  * can ask for decrypted credentials without triggering a prompt.
+  */
+  readonly attribute boolean isLoggedIn;
+};
+
+%{C++
+
+#define NS_SSI_CONTRACTID "@mozilla.org/ssi;1"
+
+%}

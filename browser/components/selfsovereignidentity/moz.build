@@ -10,6 +10,6 @@ with Files("**"):
 JAR_MANIFESTS += ["jar.mn"]
 
 FINAL_TARGET_FILES.actors += [
-    "actors/AboutIdentityChild.sys.mjs",
-    "actors/AboutIdentityParent.sys.mjs",
+    "actors/AboutSelfsovereignidentityChild.sys.mjs",
+    "actors/AboutSelfsovereignidentityParent.sys.mjs",
 ]
