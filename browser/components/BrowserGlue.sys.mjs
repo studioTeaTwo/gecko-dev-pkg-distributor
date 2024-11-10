@@ -280,25 +280,27 @@ let JSWINDOWACTORS = {
     remoteTypes: ["privilegedabout"],
   },
 
-  AboutIdentity: {
+  AboutSelfsovereignidentity: {
     parent: {
-      esModuleURI: "resource:///actors/AboutIdentityParent.sys.mjs",
+      esModuleURI: "resource:///actors/AboutSelfsovereignidentityParent.sys.mjs",
     },
     child: {
-      esModuleURI: "resource:///actors/AboutIdentityChild.sys.mjs",
+      esModuleURI: "resource:///actors/AboutSelfsovereignidentityChild.sys.mjs",
       events: {
-        AboutIdentityCreateCredential: {},
-        AboutIdentityDeleteCredential: {},
-        AboutIdentityInit: {},
-        AboutIdentityRecordTelemetryEvent: {},
-        AboutIdentityRemoveAllCredentials: {},
-        AboutIdentityUpdateCredential: {},
+        AboutSelfsovereignidentityCreateCredential: { wantUntrusted: true },
+        AboutSelfsovereignidentityDeleteCredential: { wantUntrusted: true },
+        AboutSelfsovereignidentityGetAllCredentials: { wantUntrusted: true },
+        AboutSelfsovereignidentityInit: { wantUntrusted: true },
+        AboutSelfsovereignidentityRecordTelemetryEvent: { wantUntrusted: true },
+        AboutSelfsovereignidentityRemoveAllCredentials: { wantUntrusted: true },
+        AboutSelfsovereignidentityUpdateCredential: { wantUntrusted: true },
+        AboutSelfsovereignidentityPrimaryChanged: { wantUntrusted: true },
+        AboutSelfsovereignidentityPrefChanged: { wantUntrusted: true },
       },
     },
-    matches: ["about:identity", "about:identity?*"],
+    matches: ["about:selfsovereignidentity", "about:selfsovereignidentity?*"],
     allFrames: true,
-    // TODO: (ssb) review security
-    // remoteTypes: ["privilegedabout"],
+    remoteTypes: ["privilegedabout"],
   },
 
   AboutMessagePreview: {
@@ -2335,6 +2337,17 @@ BrowserGlue.prototype = {
     }
   },
 
+  async _setupSelfsovereignidentity() {
+    // There is no pref for this add-on because it shouldn't be disabled.
+    const ID = "experimentapis-ssi@teatwo.dev";
+
+    let addon = await lazy.AddonManager.getAddonByID(ID);
+
+    if (!addon.isActive) {
+      addon.enable({ allowSystemAddons: true });
+    }
+  },
+
   _monitorHTTPSOnlyPref() {
     const PREF_ENABLED = "dom.security.https_only_mode";
     const PREF_WAS_ENABLED = "dom.security.https_only_mode_ever_enabled";
@@ -2566,6 +2579,7 @@ BrowserGlue.prototype = {
     this._monitorIonPref();
     this._monitorIonStudies();
     this._setupSearchDetection();
+    this._setupSelfsovereignidentity();
 
     this._monitorGPCPref();
 

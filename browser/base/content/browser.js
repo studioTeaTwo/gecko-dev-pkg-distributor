@@ -6606,10 +6606,10 @@ function BrowserOpenAddonsMgr(aView, { selectTabByViewId = false } = {}) {
 }
 
 /**
- * Open about:identity page
+ * Open about:selfsovereignidentity page
  */
 function BrowserOpenSelfsovereignidentity() {
-  switchToTabHavingURI("about:identity", true);
+  switchToTabHavingURI("about:selfsovereignidentity", true);
 }
 
 function AddKeywordForSearchField() {

@@ -2,16 +2,20 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <!-- TODO: (ssb) rearrange later -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src chrome: blob:; img-src https:; object-src 'none'"> -->
+    <!-- TODO(ssb): reconsider later -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; object-src 'none'; script-src resource: chrome:; img-src data: blob:; style-src 'unsafe-inline';"
+    >
     <base href="chrome://selfsovereignidentity/content/" />
-    <link rel="localization" href="toolkit/branding/brandings.ftl" />
+    <link rel="localization" href="./toolkit/branding/brandings.ftl" />
     <title>Identity</title>
-    <link rel="stylesheet" href="css/main.compiled.css" />
+    <script type="module" crossorigin src="./js/main.bundle.js"></script>
+    <link rel="modulepreload" crossorigin href="./js/vendor.bundle.js">
+    <link rel="stylesheet" crossorigin href="./css/style.css">
   </head>
   <body class="selfsovereignidentity_containerhome" aria-live="polite">
-    <script src="js/vendor.bundle.js"></script>
-    <script src="js/main.bundle.js"></script>
-    <script src="js/entry.js"></script>
+    <div id="root"></div>
+    <script src="./js/entry.js"></script>
   </body>
 </html>

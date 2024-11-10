@@ -15311,6 +15311,46 @@
   mirror: always
 
 #---------------------------------------------------------------------------
+# Prefs starting with "selfsovereignidentity."
+#---------------------------------------------------------------------------
+
+# Enabling to use keys of Nostr
+- name: selfsovereignidentity.nostr.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Whether to use primary password when managing secrets in setting page.
+- name: selfsovereignidentity.nostr.primarypassword.toSettings.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Whether to use primary password to calls from webapps.
+- name: selfsovereignidentity.nostr.primarypassword.toApps.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Trusting only registered sites
+- name: selfsovereignidentity.nostr.trustedSites.enabled
+  type: bool
+  value: false
+  mirror: always
+
+# Injecting `window.nostr` by built-in NIP-07
+- name: selfsovereignidentity.nostr.builtInNip07.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Permitting to emit `accountChanged` event
+- name: selfsovereignidentity.nostr.event.accountChanged.enabled
+  type: bool
+  value: true
+  mirror: always
+
+#---------------------------------------------------------------------------
 # Prefs starting with "signon."
 #---------------------------------------------------------------------------
 - name: signon.usernameOnlyForm.enabled
