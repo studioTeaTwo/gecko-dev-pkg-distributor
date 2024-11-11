@@ -1,0 +1,230 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Please write our copyright if you use this file.
+# © 2023 Floorp Projects & Contributors
+
+name: "release"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-display-version:
+    runs-on: ubuntu-latest
+    outputs:
+      display-version: ${{ steps.get.outputs.display-version }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+        sparse-checkout: 'browser/config/version_display.txt'
+    - name: Get Display Version
+      id: get
+      run: |
+        echo "display-version=$(cat browser/config/version_display.txt)" >> $GITHUB_OUTPUT
+
+  get-inside-version:
+    runs-on: ubuntu-latest
+    outputs:
+      inside-version: ${{ steps.get.outputs.inside-version }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+        sparse-checkout: 'browser/config/version.txt'
+    - name: Get Inside Version
+      id: get
+      run: |
+        echo "inside-version=$(cat browser/config/version.txt)" >> $GITHUB_OUTPUT
+
+  get-buildid:
+    runs-on: ubuntu-latest
+    outputs:
+      buildids: ${{ steps.get.outputs.bid }}
+    steps:
+    - id: get
+      shell: bash -xe {0}
+      run: |
+        bdat=`date +"%Y%m%d%I%M%S"`
+        echo "bid=${bdat}" >> $GITHUB_OUTPUT
+
+################################################################ ↑ Preparation ####################################################################################
+
+#? Original branding of the code is official
+#? It seems in PGO build, branding is not important in NOT deploying binary
+
+  # Part1-macOS-Universal-build-with-profgen:
+  #   uses: ./.github/workflows/macOS-Universal.yml
+  #   with:
+  #     profgen: true
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
+
+  # Part2-macOS-Universal-gen-profdata-and-jarlog:
+  #   needs: Part1-macOS-Universal-build-with-profgen
+  #   uses: ./.github/workflows/macOS-generate-profile-data-and-jarlog.yml
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
+
+  Part3-macOS-Universal-build-with-profdata-and-jarlog:
+    uses: ./.github/workflows/macOS-Universal.yml
+    needs: [get-buildid]
+    with:
+      build-with-profdata-and-jarlog: true
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part4-macOS-Universal-package-and-sign:
+    uses: ./.github/workflows/macOS-integration.yml
+    needs: [get-buildid, get-display-version, get-inside-version, Part3-macOS-Universal-build-with-profdata-and-jarlog]
+    with:
+      x86_64_artifact_name: ssb-mac-x86_64-package
+      aarch64_artifact_name: ssb-mac-aarch64-package
+      display_version: ${{needs.get-display-version.outputs.display-version}}
+      inside_version: ${{needs.get-inside-version.outputs.inside-version}}
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      # macOS_CERTIFICATES_P12_For_App_BASE64: ${{ secrets.macOS_CERTIFICATES_P12_For_App_BASE64 }}
+      # macOS_CERTIFICATES_P12_PASSWORD: ${{ secrets.macOS_CERTIFICATES_P12_PASSWORD }}
+      # macOS_AppleDeveloperId: ${{ secrets.macOS_AppleDeveloperId }}
+      # macOS_AppleAccountId: ${{ secrets.macOS_AppleAccountId }}
+      # macOS_AppleTeamId: ${{ secrets.macOS_AppleTeamId }}
+      # macOS_AppleAccountAppSpecificPassword: ${{ secrets.macOS_AppleAccountAppSpecificPassword }}
+      PAT: ${{ secrets.PAT }}
+
+################################################ ↑ Mac OS Build ################################################
+
+  Part1-linux-x86_64-build-with-PGO:
+    uses: ./.github/workflows/linux-build.yml
+    needs: get-buildid
+    with:
+      aarch64: false
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+################################################################ ↑ Linux x86_64 Build ####################################################################################
+
+  Part1-linux-aarch64-build:
+    uses: ./.github/workflows/linux-build.yml
+    needs: get-buildid
+    with:
+      aarch64: true
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+################################################ ↑ Linux AArch64 Build ################################################
+
+  # Part1-win-x86_64-build-with-profgen-zstd:
+  #   uses: ./.github/workflows/windows-build.yml
+  #   with:
+  #     profgen: true
+  #     aarch64: false
+  #     zstd: true
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
+
+  # Part2-win-x86_64-gen-profdata-and-jarlog:
+  #   needs: Part1-win-x86_64-build-with-profgen-zstd
+  #   uses: ./.github/workflows/window-generate-profile-data-and-jarlog.yml
+  #   with:
+  #     browser-artifact-name: ssb-windows-x86_64-build-with-profgen-zstd
+  #     arch: x86_64
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
+
+  # Part3-win-x86_64-build-with-profdata-and-jarlog:
+  #   needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid]
+  #   uses: ./.github/workflows/windows-build.yml
+  #   with:
+  #     aarch64: false
+  #     profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
+  #     out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+  #     MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
+
+################################################################ ↑ Windows x86_64 Build ###################################################################################
+
+  Deploy-to-installer:
+    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, get-display-version, get-inside-version]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Release version 📦
+      run: |
+        echo "Release version: ${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+
+    - name: make directory 📁
+      run: |
+        mkdir -p ~/downloads/artifacts
+        mkdir -p ~/downloads/artifacts/linux-x64
+        mkdir -p ~/downloads/artifacts/linux-aarch64
+        mkdir -p ~/downloads/artifacts/macOS-x64
+        # mkdir -p ~/downloads/artifacts/windows-x64
+
+    - name: download Linux x86_64 build artifact 📥
+      uses: actions/download-artifact@v4
+      with:
+        name: ssb-linux-x64
+        path: ~/downloads/artifacts/linux-x64
+
+    - name: download Linux aarch64 build artifact 📥
+      uses: actions/download-artifact@v4
+      with:
+        name: ssb-linux-aarch64
+        path: ~/downloads/artifacts/linux-aarch64
+
+    - name: download macOS Universal build artifact📥
+      uses: actions/download-artifact@v4
+      with:
+        name: Universal-Artifact
+        path: ~/downloads/artifacts/macOS-x64
+
+    # - name: download Windows x86_64 build artifact📥
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+    #     path: ~/downloads/artifacts/windows-x64
+
+    - name: check file structure 🗃
+      run: |
+        cd ~/downloads/artifacts
+        echo "current directory: $PWD"
+        echo "****************************************************************************************************"
+        find . -print | sed -e "s;[^/]*/;|____;g;s;____|; |;g"
+        echo "****************************************************************************************************"
+
+    - name: Create hashes.txt file 📝
+      run: |
+        cd /home/runner/downloads/artifacts
+        touch hashes.txt
+        echo "SHA256 hashes" > hashes.txt
+        echo "****************************************************************************************************" >> hashes.txt
+        echo "Linux AArch64" >> hashes.txt
+        sha256sum linux-aarch64/ssb-${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr.linux-aarch64.tar.bz2  >> hashes.txt
+        echo "****************************************************************************************************" >> hashes.txt
+        echo "Linux x86_64" >> hashes.txt
+        sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr.linux-x86_64.tar.bz2  >> hashes.txt
+        echo "****************************************************************************************************" >> hashes.txt
+
+    - name: Deploy to GitHub Releases for Stable Version 🚀
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
+          /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
+          /home/runner/downloads/artifacts/macOS-x64/ssb-*.macOS-universal.dmg
+          # /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
+          /home/runner/downloads/artifacts/hashes.txt
+        tag_name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        draft: true
+        prerelease: true
+        token: ${{ secrets.PAT }}
+      env:
+        GITHUB_REPOSITORY: ${{ github.repository }}
