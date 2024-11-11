@@ -1,0 +1,212 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Please write our copyright if you use this file.
+# © 2023 Floorp Projects & Contributors
+
+#! SELF HOST DOES NOT SUPPORTED
+#TODO: separate Publish to other workflow
+
+#? On linux x86_64 build, pgo build is enabled on default.
+
+#? In GitHub, boolean DOES NOT return `true`, DOES return `'true'`
+#? So, In `if:`(github) or `if [];then`(bash), you may SHOULD write like
+#? `if: ${{boolean == 'true'}}`(github), `if [ ${{boolean}} == 'true' ];then`(bash)
+#? ref https://github.com/actions/runner/issues/1483
+#? and in bash, space between [ and value is important like [ ${{}} ]
+on:
+  workflow_call:
+    inputs:
+      disable-updater:
+        description: disable updater esp. for deb
+        type: boolean
+        default: false
+      aarch64:
+        description: "aarch64 option is not compartiable with deb option"
+        type: boolean
+        default: false
+      MOZ_BUILD_DATE:
+        type: string
+        default: ""
+    secrets:
+      PAT:
+        description: "Personal Access Token for checkout"
+        required: true
+
+
+# name: Linux Build
+# description: Action of ssb Linux build (x64, aarch64)
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      name: Clone 🧬
+      with:
+        token: ${{ secrets.PAT }}
+        submodules: 'recursive'
+
+    - name: Change PPA mirror servers
+      run: |
+        sudo perl -p -i -e 's%(deb(?:-src|)\s+)https?://(?!archive\.canonical\.com|security\.ubuntu\.com)[^\s]+%$1http://archive.ubuntu.com/ubuntu/%' /etc/apt/sources.list
+        sudo apt update
+
+    - name: Setup Disk & Swap Space 💿
+      run: |
+        chmod +x .github/workflows/src/disk_swap_for_github_runner.sh
+        .github/workflows/src/disk_swap_for_github_runner.sh
+
+    - name: Prepare cross compiler (aarch64)⚒
+      if: ${{ inputs.aarch64 }}
+      run: |
+        sudo apt update
+        sudo apt -y install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+    - name: setup Rust 🦀
+      run: |
+        if [[ $GHA_aarch64 == 'true' ]];then
+          rustup target add aarch64-unknown-linux-gnu --toolchain stable
+        fi
+
+        #? https://github.com/mozilla/sccache#known-caveats
+        export CARGO_INCREMENTAL=0
+      env:
+        GHA_aarch64: ${{inputs.aarch64}}
+
+    - name: Configure sccache
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Create environment 🌲
+      run: |
+        import os
+        import sys
+        import shutil
+
+        disable_updater = os.environ["GHA_disable_updater"] == "true"
+        aarch64 = os.environ["GHA_aarch64"] == "true"
+        MOZ_BUILD_DATE= os.environ["GHA_MOZ_BUILD_DATE"]
+
+        os.system("sudo apt update")
+        os.system("sudo apt install xvfb")
+
+        shutil.copyfile("./.github/workflows/src/linux/shared/mozconfig_linux_base","./mozconfig")
+        # os.system("cp ./.github/workflows/src/linux/shared/mozconfig_linux_base ./mozconfig")
+        if MOZ_BUILD_DATE != "":
+          os.system("export MOZ_BUILD_DATE="+MOZ_BUILD_DATE)
+
+        mozconfig = []
+
+        mozconfig.append('ac_add_options --with-branding=browser/branding/unofficial')
+
+        if disable_updater:
+          mozconfig.append('ac_add_options --disable-updater')
+
+        if aarch64:
+          mozconfig += [
+            ('ac_add_options --enable-rust-simd')
+          , ('ac_add_options --target=aarch64-unknown-linux-gnu')
+          ]
+
+        if not aarch64:
+          mozconfig.append('ac_add_options MOZ_PGO=1')
+
+        # SCCACHE SETTINGS START
+        mozconfig += [
+          ("mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'")
+        , ("mk_add_options 'export CCACHE_CPP2=yes'")
+        , ("ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache")
+        , ("mk_add_options 'export SCCACHE_GHA_ENABLED=on'")
+        ]
+        # SCCACHE SETTINGS END
+
+        mozconfig_file = open("mozconfig",'a')
+        mozconfig_file.writelines('\n'.join(mozconfig))
+
+        mozconfig_file.close()
+        os.system("cat mozconfig")
+        os.system("./mach --no-interactive bootstrap --application-choice browser")
+
+      env:
+        # `-` character sometimes bugs on env esp. nodejs
+        GHA_disable_updater: ${{inputs.disable-updater}}
+        GHA_aarch64: ${{inputs.aarch64}}
+        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+      shell: python3 {0}
+
+    - name: Build 🔨
+      continue-on-error: true
+      run: |
+        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+        fi
+        rm -rf ./l10n-central/.git
+
+        Xvfb :2 -screen 0 1024x768x24 &
+        export DISPLAY=:2
+
+        ./mach build
+      env:
+        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+
+    - name: Retry Build if 1st build is failed 🔨
+      if: failure()
+      run: |
+        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+        fi
+        rm -rf ./l10n-central/.git
+
+        Xvfb :2 -screen 0 1024x768x24 &
+        export DISPLAY=:2
+
+        ./mach build
+      env:
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+
+    - name: Remove folders
+      run: |
+        rm -fr ./third_party/rust
+        rm -fr ./third_party/libwebrtc
+
+    - name: Package 1 - mach 🎁
+      run: |
+        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+        fi
+        ./mach package
+      env:
+        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+
+    - name: Package 2 - zip 📦
+      run: |
+        export DISPLAY_VERSION=`cat browser/config/version_display.txt`
+        export INSIDE_VERSION=`cat ./browser/config/version.txt`
+
+        mkdir ~/output
+        if [[ $GHA_aarch64 != 'true' ]];then
+          cp obj-x86_64-pc-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-x86_64.tar.bz2
+          # echo "OUTPUT=obj-x86_64-pc-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
+          # zip -r dist.zip obj-x86_64-pc-linux-gnu/dist/*.tar.bz2
+        else
+          #aarch64
+          cp obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-aarch64.tar.bz2
+          # echo "OUTPUT=obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
+          # zip -r dist.zip obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2
+        fi
+      env:
+        GHA_aarch64: ${{inputs.aarch64}}
+
+    #PUBLISH START
+    - name: Publish🎁
+      uses: actions/upload-artifact@v4
+      with:
+        name: ssb-linux-${{fromJson('["x64","aarch64"]')[inputs.aarch64]}}
+        path: ~/output
+        # path: dist.zip
+    #PUBLISH END
