@@ -119,39 +119,39 @@ jobs:
 
 ################################################ ↑ Linux AArch64 Build ################################################
 
-  Part1-win-x86_64-build-with-profgen-zstd:
-    uses: ./.github/workflows/windows-build.yml
-    with:
-      profgen: true
-      aarch64: false
-      zstd: true
-    secrets:
-      PAT: ${{ secrets.PAT }}
+  # Part1-win-x86_64-build-with-profgen-zstd:
+  #   uses: ./.github/workflows/windows-build.yml
+  #   with:
+  #     profgen: true
+  #     aarch64: false
+  #     zstd: true
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
 
-  Part2-win-x86_64-gen-profdata-and-jarlog:
-    needs: Part1-win-x86_64-build-with-profgen-zstd
-    uses: ./.github/workflows/window-generate-profile-data-and-jarlog.yml
-    with:
-      browser-artifact-name: ssb-windows-x86_64-build-with-profgen-zstd
-      arch: x86_64
-    secrets:
-      PAT: ${{ secrets.PAT }}
+  # Part2-win-x86_64-gen-profdata-and-jarlog:
+  #   needs: Part1-win-x86_64-build-with-profgen-zstd
+  #   uses: ./.github/workflows/window-generate-profile-data-and-jarlog.yml
+  #   with:
+  #     browser-artifact-name: ssb-windows-x86_64-build-with-profgen-zstd
+  #     arch: x86_64
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
 
-  Part3-win-x86_64-build-with-profdata-and-jarlog:
-    needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid]
-    uses: ./.github/workflows/windows-build.yml
-    with:
-      aarch64: false
-      profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
-      out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
-      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
-    secrets:
-      PAT: ${{ secrets.PAT }}
+  # Part3-win-x86_64-build-with-profdata-and-jarlog:
+  #   needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid]
+  #   uses: ./.github/workflows/windows-build.yml
+  #   with:
+  #     aarch64: false
+  #     profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
+  #     out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+  #     MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+  #   secrets:
+  #     PAT: ${{ secrets.PAT }}
 
 ################################################################ ↑ Windows x86_64 Build ###################################################################################
 
   Deploy-to-installer:
-    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version, get-inside-version]
+    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, get-display-version, get-inside-version]
     runs-on: ubuntu-latest
     steps:
     - name: Release version 📦
@@ -164,7 +164,7 @@ jobs:
         mkdir -p ~/downloads/artifacts/linux-x64
         mkdir -p ~/downloads/artifacts/linux-aarch64
         mkdir -p ~/downloads/artifacts/macOS-x64
-        mkdir -p ~/downloads/artifacts/windows-x64
+        # mkdir -p ~/downloads/artifacts/windows-x64
 
     - name: download Linux x86_64 build artifact 📥
       uses: actions/download-artifact@v4
@@ -184,11 +184,11 @@ jobs:
         name: Universal-Artifact
         path: ~/downloads/artifacts/macOS-x64
 
-    - name: download Windows x86_64 build artifact📥
-      uses: actions/download-artifact@v4
-      with:
-        name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
-        path: ~/downloads/artifacts/windows-x64
+    # - name: download Windows x86_64 build artifact📥
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+    #     path: ~/downloads/artifacts/windows-x64
 
     - name: check file structure 🗃
       run: |
@@ -219,7 +219,7 @@ jobs:
           /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
           /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
           /home/runner/downloads/artifacts/macOS-x64/ssb-*.macOS-universal.dmg
-          /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
+          # /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
           /home/runner/downloads/artifacts/hashes.txt
         tag_name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
         name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
