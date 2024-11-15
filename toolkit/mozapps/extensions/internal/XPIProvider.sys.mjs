@@ -2555,6 +2555,11 @@ export var XPIProvider = {
         "1.3",
         "resource://default-theme/"
       );
+      this.maybeInstallBuiltinAddon(
+        "experimentapis-ssi@teatwo.dev",
+        "0.0.1",
+        "resource://builtin-addons/ssi/"
+      );
 
       resolveProviderReady(Promise.all(this.startupPromises));
 

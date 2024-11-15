@@ -1,0 +1,11 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+browser.jar:
+%   resource builtin-addons %builtin-addons/  contentaccessible=yes
+    builtin-addons/ssi/manifest.json (extension/manifest.json)
+    builtin-addons/ssi/backgrounds/backgrounds.bundle.js (extension/backgrounds.bundle.js)
+    builtin-addons/ssi/contents/contents.bundle.js (extension/contents.bundle.js)
+    builtin-addons/ssi/inpages/inpages.bundle.js (extension/inpages.bundle.js)
+    builtin-addons/ssi/experiment-apis (experiment-apis/**)
