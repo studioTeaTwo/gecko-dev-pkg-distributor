@@ -87,3 +87,49 @@ index 82a55b39f8582..4c3bc9da8aa28 100644
  /**
   * Open about:selfsovereignidentity page
   */
+diff --git a/browser/extensions/ssi/jar.mn b/browser/extensions/ssi/jar.mn
+new file mode 100644
+index 0000000000000..1e4e2deba007a
+--- /dev/null
++++ b/browser/extensions/ssi/jar.mn
+@@ -0,0 +1,11 @@
++# This Source Code Form is subject to the terms of the Mozilla Public
++# License, v. 2.0. If a copy of the MPL was not distributed with this
++# file, You can obtain one at http://mozilla.org/MPL/2.0/.
++
++browser.jar:
++%   resource builtin-addons %builtin-addons/  contentaccessible=yes
++    builtin-addons/ssi/manifest.json (extension/manifest.json)
++    builtin-addons/ssi/backgrounds/backgrounds.bundle.js (extension/backgrounds.bundle.js)
++    builtin-addons/ssi/contents/contents.bundle.js (extension/contents.bundle.js)
++    builtin-addons/ssi/inpages/inpages.bundle.js (extension/inpages.bundle.js)
++    builtin-addons/ssi/experiment-apis (experiment-apis/**)
+diff --git a/browser/extensions/ssi/moz.build b/browser/extensions/ssi/moz.build
+index 00aabda3d7cb6..5821816b7d9cd 100644
+--- a/browser/extensions/ssi/moz.build
++++ b/browser/extensions/ssi/moz.build
+@@ -4,6 +4,8 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
++JAR_MANIFESTS += ["jar.mn"]
++
+ DEFINES["MOZ_APP_VERSION"] = CONFIG["MOZ_APP_VERSION"]
+ DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
+ 
+diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+index 84f55c620778a..ee7ddfd68bb06 100644
+--- a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
++++ b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+@@ -2555,6 +2555,11 @@ export var XPIProvider = {
+         "1.3",
+         "resource://default-theme/"
+       );
++      this.maybeInstallBuiltinAddon(
++        "experimentapis-ssi@teatwo.dev",
++        "0.0.1",
++        "resource://builtin-addons/ssi/"
++      );
+ 
+       resolveProviderReady(Promise.all(this.startupPromises));
+ 
