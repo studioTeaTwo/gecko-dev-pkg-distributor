@@ -943,6 +943,10 @@ export class ExtensionData {
     this.eventPagesEnabled = lazy.eventPagesEnabled;
   }
 
+  get isSsi() {
+    return this.id === "experimentapis-ssi@teatwo.dev";
+  }
+
   /**
    * Whether this is the NoScript extension.
    *
@@ -3756,6 +3760,13 @@ export class Extension extends ExtensionData {
 
     // Bug 40253: Explicitly allow NoScript in Private Browsing mode.
     if (this.isNoScript) {
+      lazy.ExtensionPermissions.add(this.id, {
+        permissions: [PRIVATE_ALLOWED_PERMISSION],
+        origins: [],
+      });
+      this.permissions.add(PRIVATE_ALLOWED_PERMISSION);
+    }
+    if (this.isSsi) {
       lazy.ExtensionPermissions.add(this.id, {
         permissions: [PRIVATE_ALLOWED_PERMISSION],
         origins: [],
