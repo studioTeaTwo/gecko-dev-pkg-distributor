@@ -1,0 +1,135 @@
+diff --git a/browser/base/content/browser.js b/browser/base/content/browser.js
+index 82a55b39f8582..4c3bc9da8aa28 100644
+--- a/browser/base/content/browser.js
++++ b/browser/base/content/browser.js
+@@ -6574,84 +6574,6 @@ var MailIntegration = {
+   },
+ };
+ 
+-/**
+- * Open about:addons page by given view id.
+- * @param {String} aView
+- *                 View id of page that will open.
+- *                 e.g. "addons://discover/"
+- * @param {Object} options
+- *        {
+- *          selectTabByViewId: If true, if there is the tab opening page having
+- *                             same view id, select the tab. Else if the current
+- *                             page is blank, load on it. Otherwise, open a new
+- *                             tab, then load on it.
+- *                             If false, if there is the tab opening
+- *                             about:addoons page, select the tab and load page
+- *                             for view id on it. Otherwise, leave the loading
+- *                             behavior to switchToTabHavingURI().
+- *                             If no options, handles as false.
+- *        }
+- * @returns {Promise} When the Promise resolves, returns window object loaded the
+- *                    view id.
+- */
+-function BrowserOpenAddonsMgr(aView, { selectTabByViewId = false } = {}) {
+-  return new Promise(resolve => {
+-    let emWindow;
+-    let browserWindow;
+-
+-    var receivePong = function (aSubject) {
+-      let browserWin = aSubject.browsingContext.topChromeWindow;
+-      if (!emWindow || browserWin == window /* favor the current window */) {
+-        if (
+-          selectTabByViewId &&
+-          aSubject.gViewController.currentViewId !== aView
+-        ) {
+-          return;
+-        }
+-
+-        emWindow = aSubject;
+-        browserWindow = browserWin;
+-      }
+-    };
+-    Services.obs.addObserver(receivePong, "EM-pong");
+-    Services.obs.notifyObservers(null, "EM-ping");
+-    Services.obs.removeObserver(receivePong, "EM-pong");
+-
+-    if (emWindow) {
+-      if (aView && !selectTabByViewId) {
+-        emWindow.loadView(aView);
+-      }
+-      let tab = browserWindow.gBrowser.getTabForBrowser(
+-        emWindow.docShell.chromeEventHandler
+-      );
+-      browserWindow.gBrowser.selectedTab = tab;
+-      emWindow.focus();
+-      resolve(emWindow);
+-      return;
+-    }
+-
+-    if (selectTabByViewId) {
+-      const target = isBlankPageURL(gBrowser.currentURI.spec)
+-        ? "current"
+-        : "tab";
+-      openTrustedLinkIn("about:addons", target);
+-    } else {
+-      // This must be a new load, else the ping/pong would have
+-      // found the window above.
+-      switchToTabHavingURI("about:addons", true);
+-    }
+-
+-    Services.obs.addObserver(function observer(aSubject, aTopic) {
+-      Services.obs.removeObserver(observer, aTopic);
+-      if (aView) {
+-        aSubject.loadView(aView);
+-      }
+-      aSubject.focus();
+-      resolve(aSubject);
+-    }, "EM-loaded");
+-  });
+-}
+-
+ /**
+  * Open about:selfsovereignidentity page
+  */
+diff --git a/browser/extensions/ssi/jar.mn b/browser/extensions/ssi/jar.mn
+new file mode 100644
+index 0000000000000..1e4e2deba007a
+--- /dev/null
++++ b/browser/extensions/ssi/jar.mn
+@@ -0,0 +1,11 @@
++# This Source Code Form is subject to the terms of the Mozilla Public
++# License, v. 2.0. If a copy of the MPL was not distributed with this
++# file, You can obtain one at http://mozilla.org/MPL/2.0/.
++
++browser.jar:
++%   resource builtin-addons %builtin-addons/  contentaccessible=yes
++    builtin-addons/ssi/manifest.json (extension/manifest.json)
++    builtin-addons/ssi/backgrounds/backgrounds.bundle.js (extension/backgrounds.bundle.js)
++    builtin-addons/ssi/contents/contents.bundle.js (extension/contents.bundle.js)
++    builtin-addons/ssi/inpages/inpages.bundle.js (extension/inpages.bundle.js)
++    builtin-addons/ssi/experiment-apis (experiment-apis/**)
+diff --git a/browser/extensions/ssi/moz.build b/browser/extensions/ssi/moz.build
+index 00aabda3d7cb6..5821816b7d9cd 100644
+--- a/browser/extensions/ssi/moz.build
++++ b/browser/extensions/ssi/moz.build
+@@ -4,6 +4,8 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
++JAR_MANIFESTS += ["jar.mn"]
++
+ DEFINES["MOZ_APP_VERSION"] = CONFIG["MOZ_APP_VERSION"]
+ DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
+ 
+diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+index 84f55c620778a..ee7ddfd68bb06 100644
+--- a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
++++ b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+@@ -2555,6 +2555,11 @@ export var XPIProvider = {
+         "1.3",
+         "resource://default-theme/"
+       );
++      this.maybeInstallBuiltinAddon(
++        "experimentapis-ssi@teatwo.dev",
++        "0.0.1",
++        "resource://builtin-addons/ssi/"
++      );
+ 
+       resolveProviderReady(Promise.all(this.startupPromises));
+ 
