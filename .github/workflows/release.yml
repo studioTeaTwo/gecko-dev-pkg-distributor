@@ -211,6 +211,14 @@ jobs:
         sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr.linux-x86_64.tar.bz2  >> hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
 
+    - name: Create a tag with signature
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v6.2
+      with:
+        github_token: ${{ secrets.PAT }}
+        custom_tag: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        create_annotated_tag: true
+
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
       uses: softprops/action-gh-release@v2
