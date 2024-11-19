@@ -149,8 +149,8 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     let messageText =
       messageId ===
       "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-        ? { value: "YOUR KEY" }
-        : { value: "AUTH LOCKED" }
+        ? { value: "ACCESS YOUR KEY" }
+        : { value: "AUTH LOCK" }
     let captionText = { value: "" }
 
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(

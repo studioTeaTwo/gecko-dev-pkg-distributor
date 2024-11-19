@@ -1,4 +1,4 @@
-Experiment-APIs Selfsovereignidentity
+Experiment-API Selfsovereignidentity
 =============
 
 Introduction

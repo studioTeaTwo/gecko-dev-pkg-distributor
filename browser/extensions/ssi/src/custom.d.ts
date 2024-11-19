@@ -12,80 +12,51 @@ declare namespace browser.ssi {
     guid?: string
   }
 
-  /**
-   * Selfsovereignidentity prefs
-   * ref: modules/libpref/init/StaticPrefList.yaml
-   */
-  interface SelfsovereignidentityDefaultPrefs {
-    enabled: boolean // selfsovereignidentity.[protocolName].enabled
-    usedPrimarypasswordToSettings: boolean // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
-    usedPrimarypasswordToApps: boolean // selfsovereignidentity.[protocolName].primarypassword.toApps.enabled
-    usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
-    usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
-  }
-  interface SelfsovereignidentityPrefs {
-    nostr: {
-      usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
-    } & SelfsovereignidentityDefaultPrefs
-  }
-
   const searchCredentialsWithoutSecret: (
     protocolName: ProtocolName,
     credentialName: string,
     primary: boolean,
     guid: string
   ) => Promise<Credential[] | null>
-  const signByNostrKey: (
-    guid: string,
-    serializedEvent: string
-  ) => Promise<string | null>
-  const getPrefs: (protocolName: ProtocolName) => Promise<{
-    enabled: boolean
-    "trustedSites.enabled": boolean
-    "event.accountChanged.enabled": boolean
-    "builtInNip07.enabled": boolean
-  } | null>
-  const askPermission: (protocolName: ProtocolName) => Promise<boolean>
-  const onPrimaryChanged: {
-    addListener: (
-      callback: (newGuid: string) => void,
-      protocolName: ProtocolName
-    ) => {}
-    rmoveListener: () => void
-    hadListener: Function
+
+  type commonApis = {
+    getPrefs: () => Promise<{
+      enabled: boolean
+      "trustedSites.enabled": boolean
+      "event.accountChanged.enabled": boolean
+      "builtInNip07.enabled": boolean
+    } | null>
+    askPermission: () => Promise<boolean>
+    onPrimaryChanged: {
+      addListener: (callback: (newGuid: string) => void) => {}
+      rmoveListener: () => void
+      hadListener: Function
+    }
+    onPrefEnabledChanged: {
+      addListener: (callback: (prefKey: string) => void) => {}
+      rmoveListener: () => void
+      hadListener: Function
+    }
+    onPrefTrustedSitesChanged: {
+      addListener: (callback: (prefKey: string) => void) => {}
+      rmoveListener: () => void
+      hadListener: Function
+    }
+    onPrefAccountChanged: {
+      addListener: (callback: (prefKey: string) => void) => {}
+      rmoveListener: () => void
+      hadListener: Function
+    }
   }
-  const onPrefEnabledChanged: {
-    addListener: (
-      callback: (prefKey: string) => void,
-      protocolName: ProtocolName
-    ) => {}
-    rmoveListener: () => void
-    hadListener: Function
-  }
-  const onPrefTrustedSitesChanged: {
-    addListener: (
-      callback: (prefKey: string) => void,
-      protocolName: ProtocolName
-    ) => {}
-    rmoveListener: () => void
-    hadListener: Function
-  }
-  const onPrefBuiltInNip07Changed: {
-    addListener: (
-      callback: (prefKey: string) => void,
-      protocolName: ProtocolName
-    ) => {}
-    rmoveListener: () => void
-    hadListener: Function
-  }
-  const onPrefAccountChanged: {
-    addListener: (
-      callback: (prefKey: string) => void,
-      protocolName: ProtocolName
-    ) => {}
-    rmoveListener: () => void
-    hadListener: Function
-  }
+
+  const nostr: {
+    sign: (guid: string, serializedEvent: string) => Promise<string | null>
+    onPrefBuiltInNip07Changed: {
+      addListener: (callback: (prefKey: string) => void) => {}
+      rmoveListener: () => void
+      hadListener: Function
+    }
+  } & commonApis
 }
 
 type PublicKey = string

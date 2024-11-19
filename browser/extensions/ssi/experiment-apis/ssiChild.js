@@ -2,20 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-"use strict";
+"use strict"
 
-/* global ExtensionAPI, Services, XPCOMUtils */
+/* global ExtensionAPI, Services, ChromeUtils */
 
-const lazy = {};
+let lazy = {}
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
-});
+})
 
 const AUTH_TIMEOUT_MS = 24 * 60 * 60 * 1000 // 1 day
 const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-ssi-required"
 
 this.ssi = class extends ExtensionAPI {
-
   getAPI(context) {
     let _authExpirationTime = Number.NEGATIVE_INFINITY
 
@@ -25,6 +24,6 @@ this.ssi = class extends ExtensionAPI {
           // TODO(ssb): Not yet implemented
         },
       },
-    };
+    }
   }
-};
+}

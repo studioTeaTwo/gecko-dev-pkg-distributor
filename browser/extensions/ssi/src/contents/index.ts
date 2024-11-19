@@ -9,7 +9,7 @@ import { init as nostrInit } from "./nostr"
 
 log(
   "content-script working",
-  browser.runtime.getURL("inpages/inpages.bundle.js")
+  browser.runtime.getURL("inpages.bundle.js")
 )
 
 function loadInpageScript(url) {
@@ -26,6 +26,6 @@ function loadInpageScript(url) {
     console.error("injection failed", err)
   }
 }
-loadInpageScript(browser.runtime.getURL("inpages/inpages.bundle.js"))
+loadInpageScript(browser.runtime.getURL("inpages.bundle.js"))
 
 nostrInit()

@@ -1,98 +1,6 @@
 [
   {
     "namespace": "ssi",
-    "events": [
-      {
-        "name": "onPrimaryChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "newGuid",
-            "type": "string",
-            "description": "The new guid which changed. If it's empty string, so it means all removed."
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocolName to monitor"
-          }
-        ]
-      },
-      {
-        "name": "onPrefEnabledChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocolName to monitor"
-          }
-        ]
-      },
-      {
-        "name": "onPrefTrustedSitesChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocolName to monitor"
-          }
-        ]
-      },
-      {
-        "name": "onPrefBuiltInNip07Changed",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocolName to monitor"
-          }
-        ]
-      },
-      {
-        "name": "onPrefAccountChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocolName to monitor"
-          }
-        ]
-      }
-    ],
     "functions": [
       {
         "name": "searchCredentialsWithoutSecret",
@@ -123,19 +31,6 @@
         ]
       },
       {
-        "name": "getPrefs",
-        "type": "function",
-        "description": "Get preference's values",
-        "parameters": [
-          {
-            "name": "protocolName",
-            "type": "string",
-            "description": "The protocol name of preference"
-          }
-        ],
-        "async": true
-      },
-      {
         "name": "askPermission",
         "type": "function",
         "description": "Ask the user whether to give a permission to the requsting web app",
@@ -147,24 +42,6 @@
           }
         ],
         "async": true
-      },
-      {
-        "name": "signByNostrKey",
-        "type": "function",
-        "description": "Pass message and return the signature by Nostr secret key",
-        "async": true,
-        "parameters": [
-          {
-            "name": "message",
-            "type": "string",
-            "description": "The message to sign"
-          },
-          {
-            "name": "guid",
-            "type": "string",
-            "description": "The guid to specify the secret key"
-          }
-        ]
       }
     ]
   }

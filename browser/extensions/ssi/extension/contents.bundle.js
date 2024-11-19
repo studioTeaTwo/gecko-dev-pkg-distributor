@@ -198,7 +198,7 @@ __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(45);
-(0, logger_1.log)("content-script working", browser.runtime.getURL("inpages/inpages.bundle.js"));
+(0, logger_1.log)("content-script working", browser.runtime.getURL("inpages.bundle.js"));
 function loadInpageScript(url) {
     try {
         if (!document)
@@ -216,7 +216,7 @@ function loadInpageScript(url) {
         console.error("injection failed", err);
     }
 }
-loadInpageScript(browser.runtime.getURL("inpages/inpages.bundle.js"));
+loadInpageScript(browser.runtime.getURL("inpages.bundle.js"));
 (0, nostr_1.init)();
 
 })();
