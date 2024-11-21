@@ -1,6 +1,5 @@
 ac_add_options --with-app-name=ssb
 ac_add_options --with-app-basename=ssb
-ac_add_options --with-branding=browser/branding/unofficial
 
 ac_add_options --disable-crashreporter
 ac_add_options --enable-proxy-bypass-protection
@@ -19,8 +18,3 @@ export MOZ_INCLUDE_SOURCE_INFO=1
 MOZ_REQUIRE_SIGNING=
 MOZ_DATA_REPORTING=
 MOZ_TELEMETRY_REPORTING=
-
-MOZ_USER_DIR="SSB"
-MOZ_APP_BASENAME=ssb
-MOZ_APP_PROFILE=ssb
-MOZ_APP_DISPLAYNAME="SSB"
