@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { VStack, Button, HStack, IconButton } from "@chakra-ui/react"
-import { MdElectricBolt } from "react-icons/md"
-import { GiBirdTwitter } from "react-icons/gi"
-import BitcoinIcon from "./bitcoin/Logo"
 import { MenuItem } from "../custom.type"
-import { LuPin, LuPinOff } from "react-icons/lu"
+import BitcoinIcon from "./shared/Logo"
+import { GiBirdTwitter, LuPinOff, LuPin } from "./shared/react-icons/Icons"
 
 const IDB_NAME = "selfsovereignidentity"
 const STORE_NAME = "settings"
@@ -29,7 +27,7 @@ function Menu(props: { selectedMenu: MenuItem; setMenu: Function }) {
         .get(KEY_NAME).onsuccess = (event) => {
         console.info(event.target.result)
         const initialMenu =
-          (event.target.result && (event.target.result.value as MenuItem)) ??
+          ((event.target.result && event.target.result.value) as MenuItem) ??
           "nostr"
         setMenuPin(initialMenu)
         setMenu(initialMenu)

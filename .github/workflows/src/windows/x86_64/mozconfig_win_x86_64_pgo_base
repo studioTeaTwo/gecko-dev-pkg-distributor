@@ -1,6 +1,5 @@
 ac_add_options --with-app-name=ssb
 ac_add_options --with-app-basename=ssb
-ac_add_options --with-branding=browser/branding/unofficial
 
 ac_add_options --disable-crashreporter
 ac_add_options --disable-maintenance-service

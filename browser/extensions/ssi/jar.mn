@@ -4,8 +4,5 @@
 
 browser.jar:
 %   resource builtin-addons %builtin-addons/  contentaccessible=yes
-    builtin-addons/ssi/manifest.json (extension/manifest.json)
-    builtin-addons/ssi/backgrounds/backgrounds.bundle.js (extension/backgrounds.bundle.js)
-    builtin-addons/ssi/contents/contents.bundle.js (extension/contents.bundle.js)
-    builtin-addons/ssi/inpages/inpages.bundle.js (extension/inpages.bundle.js)
+    builtin-addons/ssi (extension/**)
     builtin-addons/ssi/experiment-apis (experiment-apis/**)

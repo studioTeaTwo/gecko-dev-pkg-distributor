@@ -1,6 +1,14 @@
 type ApplicationName = "ssb"
 type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht"
 
+interface SelfsovereignidentityDefaultPrefs {
+  enabled: boolean // selfsovereignidentity.[protocolName].enabled
+  usedPrimarypasswordToSettings: boolean // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
+  usedPrimarypasswordToApps: boolean // selfsovereignidentity.[protocolName].primarypassword.toApps.enabled
+  usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
+  usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+}
+
 /**
  * Message Property
  */
@@ -22,10 +30,6 @@ interface MessageBag {
   data: any
 }
 
-/**
- * Nostr
- */
-
 const verifiedSymbol = Symbol("verified")
 type NostrEvent = {
   kind: number
@@ -36,4 +40,13 @@ type NostrEvent = {
   id?: string
   sig?: string
   [verifiedSymbol]?: boolean
+}
+
+/**
+ * Nostr
+ */
+interface SelfsovereignidentityPrefs {
+  nostr: {
+    usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
+  } & SelfsovereignidentityDefaultPrefs
 }

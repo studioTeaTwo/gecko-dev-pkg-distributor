@@ -1088,6 +1088,7 @@ const MapBetweenPrefAndState = {
     usedBuiltInNip07: "builtInNip07.enabled",
     usedAccountChanged: "event.accountChanged.enabled",
 };
+// TODO(ssb): conceal as much information as possible
 const ERR_MSG_NOT_ENABLED = "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
 const ERR_MSG_NOT_TRUSTED = "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.";
@@ -1115,7 +1116,7 @@ const doNostrAction = async (origin, action, args) => {
             event.pubkey = decodeNpub(state_1.state.nostr.npub);
             // Sign
             const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
-            const signature = await browser.ssi.signByNostrKey(eventHash, state_1.state.nostr.guid);
+            const signature = await browser.ssi.nostr.sign(eventHash, state_1.state.nostr.guid);
             event.id = eventHash;
             event.sig = signature;
             return event;
@@ -1136,7 +1137,7 @@ async function init() {
         };
     }
     // Get setting values from the prefs.
-    const results = await browser.ssi.getPrefs("nostr");
+    const results = await browser.ssi.nostr.getPrefs();
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
         prefs[state] = results[pref];
@@ -1197,7 +1198,7 @@ const onPrimaryChangedCallback = async (newGuid) => {
         }
     }
 };
-browser.ssi.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr");
+browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
     const stateName = Object.entries(MapBetweenPrefAndState)
         .filter(([state, pref]) => pref === prefKey)
@@ -1217,10 +1218,10 @@ const onPrefChangedCallback = async (prefKey) => {
         }
     }
 };
-browser.ssi.onPrefEnabledChanged.addListener(onPrefChangedCallback, "nostr");
-browser.ssi.onPrefTrustedSitesChanged.addListener(onPrefChangedCallback, "nostr");
-browser.ssi.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback, "nostr");
-browser.ssi.onPrefAccountChanged.addListener(onPrefChangedCallback, "nostr");
+browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefTrustedSitesChanged.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback);
 /**
  * Internal Utils
  *

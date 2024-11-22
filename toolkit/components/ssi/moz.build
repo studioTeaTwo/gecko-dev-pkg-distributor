@@ -32,7 +32,9 @@ EXTRA_JS_MODULES += [
     "SsiHelper.sys.mjs",
 ]
 
+# TODO(ssb): divide to another component
 EXTRA_JS_MODULES.shared += [
+    "protocols/Bitcoin.sys.mjs",
     "protocols/noble-curves/_shortw_utils.sys.mjs",
     "protocols/noble-curves/abstract/curve.sys.mjs",
     "protocols/noble-curves/abstract/hash-to-curve.sys.mjs",
@@ -46,7 +48,7 @@ EXTRA_JS_MODULES.shared += [
     "protocols/noble-hashes/hmac.sys.mjs",
     "protocols/noble-hashes/sha256.sys.mjs",
     "protocols/noble-hashes/utils-hashes.sys.mjs",
-    "protocols/nostr.sys.mjs",
+    "protocols/Nostr.sys.mjs",
 ]
 
 if CONFIG["OS_TARGET"] != "Android":

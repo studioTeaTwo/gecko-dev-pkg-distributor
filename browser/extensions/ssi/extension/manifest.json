@@ -1,27 +1,22 @@
 {
   "manifest_version": 2,
-  "name": "Experiment-APIs Selfsovereignidentity",
+  "name": "Experiment-API Selfsovereignidentity",
   "version": "0.0.1",
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "experimentapis-ssi@teatwo.dev"
+      "id": "experimentapi-ssi@teatwo.dev"
     }
   },
 
-  "permissions": [
-    "tabs",
-    "webNavigation",
-    "<all_urls>",
-    "mozillaAddons"
-  ],
+  "permissions": ["tabs", "webNavigation", "<all_urls>", "mozillaAddons"],
 
   "experiment_apis": {
     "ssi": {
       "schema": "experiment-apis/ssi.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "experiment-apis/ssiParent.js",
+        "script": "experiment-apis/ssi.js",
         "paths": [["ssi"], ["ssiInParent"]]
       },
       "child": {
@@ -29,18 +24,26 @@
         "script": "experiment-apis/ssiChild.js",
         "paths": [["ssi"]]
       }
+    },
+    "ssi.nostr": {
+      "schema": "experiment-apis/ssi.nostr.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiment-apis/ssi.nostr.js",
+        "paths": [["ssi", "nostr"]]
+      }
     }
   },
 
   "background": {
-    "scripts": ["backgrounds/backgrounds.bundle.js"]
+    "scripts": ["backgrounds.bundle.js"]
   },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
       "run_at": "document_start",
-      "js": ["contents/contents.bundle.js"]
+      "js": ["contents.bundle.js"]
     }
   ],
-  "web_accessible_resources": ["inpages/inpages.bundle.js"]
+  "web_accessible_resources": ["inpages.bundle.js"]
 }

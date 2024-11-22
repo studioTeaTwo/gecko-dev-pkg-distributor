@@ -15,6 +15,7 @@ const MapBetweenPrefAndState = {
   usedAccountChanged: "event.accountChanged.enabled",
 }
 
+// TODO(ssb): conceal as much information as possible
 const ERR_MSG_NOT_ENABLED =
   "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'."
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`
@@ -49,7 +50,7 @@ export const doNostrAction = async (origin, action, args) => {
       const eventHash = bytesToHex(
         sha256(new TextEncoder().encode(serializeEvent(event)))
       )
-      const signature = await browser.ssi.signByNostrKey(
+      const signature = await browser.ssi.nostr.sign(
         eventHash,
         state.nostr.guid
       )
@@ -81,7 +82,7 @@ export async function init() {
   }
 
   // Get setting values from the prefs.
-  const results = await browser.ssi.getPrefs("nostr")
+  const results = await browser.ssi.nostr.getPrefs()
   const prefs = {} as FixMe
   Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
     prefs[state] = results[pref]
@@ -163,7 +164,7 @@ const onPrimaryChangedCallback = async (newGuid: string) => {
     }
   }
 }
-browser.ssi.onPrimaryChanged.addListener(onPrimaryChangedCallback, "nostr")
+browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
 
 const onPrefChangedCallback = async (prefKey: string) => {
   const stateName = Object.entries(MapBetweenPrefAndState)
@@ -185,16 +186,10 @@ const onPrefChangedCallback = async (prefKey: string) => {
     }
   }
 }
-browser.ssi.onPrefEnabledChanged.addListener(onPrefChangedCallback, "nostr")
-browser.ssi.onPrefTrustedSitesChanged.addListener(
-  onPrefChangedCallback,
-  "nostr"
-)
-browser.ssi.onPrefBuiltInNip07Changed.addListener(
-  onPrefChangedCallback,
-  "nostr"
-)
-browser.ssi.onPrefAccountChanged.addListener(onPrefChangedCallback, "nostr")
+browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
+browser.ssi.nostr.onPrefTrustedSitesChanged.addListener(onPrefChangedCallback)
+browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback)
+browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback)
 
 /**
  * Internal Utils

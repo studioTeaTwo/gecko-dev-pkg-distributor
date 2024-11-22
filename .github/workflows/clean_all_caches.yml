@@ -11,16 +11,16 @@ jobs:
           gh extension install actions/gh-actions-cache
 
           set -e
-          echo "Deleting caches..."
+          echo 'Deleting caches...'
 
           i=1
           while [ "$i" -le 10 ]; do
-            gh actions-cache list -R $REPO -L 100 --sort created-at --order asc | while IFS=$'\t' read -r cacheKey _ branch _
+            gh actions-cache list -R "$REPO" -L 100 --sort created-at --order asc | while IFS=$'\t' read -r cacheKey _ branch _
             do
-              gh actions-cache delete "$cacheKey" -R $REPO -B "$branch" --confirm
+              gh actions-cache delete "$cacheKey" -R "$REPO" -B "$branch" --confirm
             done
           done
-          echo "Done"
+          echo 'Done'
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           REPO: ${{ github.repository }}

@@ -131,7 +131,7 @@ jobs:
 
         - name: Integration 🗃
           run: |
-            export APP_NAME="ssb"
+            export APP_NAME="Nightly"
 
             ./mach python "./toolkit/mozapps/installer/unify.py" "./obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}.app" "./obj-aarch64-apple-darwin/dist/ssb/${APP_NAME}.app"
 

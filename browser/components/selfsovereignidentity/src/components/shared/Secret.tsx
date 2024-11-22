@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { HStack, IconButton, Text } from "@chakra-ui/react"
-import { LuEye, LuEyeOff } from "react-icons/lu"
+import { LuEye, LuEyeOff } from "./react-icons/Icons"
 import { promptForPrimaryPassword } from "../../shared/utils"
 import AlertPrimaryPassword from "./AlertPrimaryPassword"
 

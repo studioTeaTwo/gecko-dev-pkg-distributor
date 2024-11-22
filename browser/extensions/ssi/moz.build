@@ -6,31 +6,6 @@
 
 JAR_MANIFESTS += ["jar.mn"]
 
-DEFINES["MOZ_APP_VERSION"] = CONFIG["MOZ_APP_VERSION"]
-DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
-
-FINAL_TARGET_FILES.features["experimentapis-ssi@teatwo.dev"] += [
-    "extension/manifest.json",
-]
-
-FINAL_TARGET_FILES.features["experimentapis-ssi@teatwo.dev"]["experiment-apis"] += [
-    "experiment-apis/ssi.json",
-    "experiment-apis/ssiChild.js",
-    "experiment-apis/ssiParent.js",
-]
-
-FINAL_TARGET_FILES.features["experimentapis-ssi@teatwo.dev"]["backgrounds"] += [
-    "extension/backgrounds.bundle.js",
-]
-
-FINAL_TARGET_FILES.features["experimentapis-ssi@teatwo.dev"]["contents"] += [
-    "extension/contents.bundle.js",
-]
-
-FINAL_TARGET_FILES.features["experimentapis-ssi@teatwo.dev"]["inpages"] += [
-    "extension/inpages.bundle.js",
-]
-
 # BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.toml"]
 
 with Files("**"):
