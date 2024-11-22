@@ -1,5 +1,5 @@
 {
-  "name": "experimentapis-ssi",
+  "name": "experimentapi-ssi",
   "version": "0.0.1",
   "description": "",
   "scripts": {
@@ -10,8 +10,8 @@
     "lint:check:src": "eslint --config .eslintrc.src.json --ext .ts,.tsx,.mjs src",
     "lint:check:mozilla": "eslint --config .eslintrc.js --ext .js experiment-apis",
     "lint:fix": "npm-run-all lint:fix:*",
-    "lint:fix:src": "eslint --fix --config .eslintrc.src.json --ext .ts,.tsx,.mjs src",
-    "lint:fix:mozilla": "eslint --fix --config .eslintrc.js --ext .js experiment-apis",
+    "lint:fix:src": "eslint --fix --config .eslintrc.src.json --ext .ts,.tsx src",
+    "lint:fix:mozilla": "eslint --fix --config .eslintrc.js --ext .js,.mjs experiment-apis",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",

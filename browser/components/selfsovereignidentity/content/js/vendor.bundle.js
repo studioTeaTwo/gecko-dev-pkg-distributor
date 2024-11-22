@@ -1,7 +1,7 @@
 var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
 function _mergeNamespaces(n2, m2) {
-  for (var i2 = 0; i2 < m2.length; i2++) {
-    const e2 = m2[i2];
+  for (var i = 0; i < m2.length; i++) {
+    const e2 = m2[i];
     if (typeof e2 !== "string" && !Array.isArray(e2)) {
       for (const k2 in e2) {
         if (k2 !== "default" && !(k2 in n2)) {
@@ -7053,7 +7053,7 @@ function px$1(value) {
 }
 const sortByBreakpointValue = (a, b2) => parseInt(a[1], 10) > parseInt(b2[1], 10) ? 1 : -1;
 const sortBps = (breakpoints2) => Object.fromEntries(Object.entries(breakpoints2).sort(sortByBreakpointValue));
-function normalize$2(breakpoints2) {
+function normalize$1(breakpoints2) {
   const sorted = sortBps(breakpoints2);
   return Object.assign(Object.values(sorted), sorted);
 }
@@ -7080,7 +7080,7 @@ function analyzeBreakpoints(breakpoints2) {
   if (!breakpoints2)
     return null;
   breakpoints2.base = breakpoints2.base ?? "0px";
-  const normalized = normalize$2(breakpoints2);
+  const normalized = normalize$1(breakpoints2);
   const queries = Object.entries(breakpoints2).sort(sortByBreakpointValue).map(([breakpoint, minW], index, entry) => {
     let [, maxW] = entry[index + 1] ?? [];
     maxW = parseFloat(maxW) > 0 ? subtract$2(maxW) : void 0;
@@ -7104,7 +7104,7 @@ function analyzeBreakpoints(breakpoints2) {
       return keys2.length > 0 && keys2.every((key) => _keys.has(key));
     },
     asObject: sortBps(breakpoints2),
-    asArray: normalize$2(breakpoints2),
+    asArray: normalize$1(breakpoints2),
     details: queries,
     get(key) {
       return queries.find((q2) => q2.breakpoint === key);
@@ -7330,8 +7330,8 @@ function splitProps(props, ...keys2) {
   const dKeys = Object.keys(descriptors);
   const split = (k2) => {
     const clone = {};
-    for (let i2 = 0; i2 < k2.length; i2++) {
-      const key = k2[i2];
+    for (let i = 0; i < k2.length; i++) {
+      const key = k2[i];
       if (descriptors[key]) {
         Object.defineProperty(clone, key, descriptors[key]);
         delete descriptors[key];
@@ -7469,7 +7469,7 @@ lodash_mergewith.exports;
       return result;
     };
   }();
-  function Hash3(entries) {
+  function Hash2(entries) {
     var index = -1, length2 = entries == null ? 0 : entries.length;
     this.clear();
     while (++index < length2) {
@@ -7504,11 +7504,11 @@ lodash_mergewith.exports;
     data[key] = nativeCreate && value === void 0 ? HASH_UNDEFINED : value;
     return this;
   }
-  Hash3.prototype.clear = hashClear;
-  Hash3.prototype["delete"] = hashDelete;
-  Hash3.prototype.get = hashGet;
-  Hash3.prototype.has = hashHas;
-  Hash3.prototype.set = hashSet;
+  Hash2.prototype.clear = hashClear;
+  Hash2.prototype["delete"] = hashDelete;
+  Hash2.prototype.get = hashGet;
+  Hash2.prototype.has = hashHas;
+  Hash2.prototype.set = hashSet;
   function ListCache(entries) {
     var index = -1, length2 = entries == null ? 0 : entries.length;
     this.clear();
@@ -7568,9 +7568,9 @@ lodash_mergewith.exports;
   function mapCacheClear() {
     this.size = 0;
     this.__data__ = {
-      "hash": new Hash3(),
+      "hash": new Hash2(),
       "map": new (Map2 || ListCache)(),
-      "string": new Hash3()
+      "string": new Hash2()
     };
   }
   function mapCacheDelete(key) {
@@ -9485,8 +9485,8 @@ function splitByComma(value) {
   const chunks = [];
   let chunk = "";
   let inParens = false;
-  for (let i2 = 0; i2 < value.length; i2++) {
-    const char2 = value[i2];
+  for (let i = 0; i < value.length; i++) {
+    const char2 = value[i];
     if (char2 === "(") {
       inParens = true;
       chunk += char2;
@@ -9606,7 +9606,7 @@ function createMultiStyleConfigHelpers(parts) {
     }
   };
 }
-function normalize$1(value, toArray2) {
+function normalize(value, toArray2) {
   if (Array.isArray(value))
     return value;
   if (isObject(value))
@@ -9614,8 +9614,8 @@ function normalize$1(value, toArray2) {
   if (value != null)
     return [value];
 }
-function getNextIndex$1(values, i2) {
-  for (let j = i2 + 1; j < values.length; j++) {
+function getNextIndex$1(values, i) {
+  for (let j = i + 1; j < values.length; j++) {
     if (values[j] != null)
       return j;
   }
@@ -9628,17 +9628,17 @@ function createResolver(theme2) {
     if (!breakpointUtil)
       return;
     const result = {};
-    const normalized = normalize$1(value, breakpointUtil.toArrayValue);
+    const normalized = normalize(value, breakpointUtil.toArrayValue);
     if (!normalized)
       return result;
     const len = normalized.length;
     const isSingle = len === 1;
     const isMultipart = !!config2.parts;
-    for (let i2 = 0; i2 < len; i2++) {
-      const key = breakpointUtil.details[i2];
-      const nextKey = breakpointUtil.details[getNextIndex$1(normalized, i2)];
+    for (let i = 0; i < len; i++) {
+      const key = breakpointUtil.details[i];
+      const nextKey = breakpointUtil.details[getNextIndex$1(normalized, i)];
       const query = toMediaQueryString(key.minW, nextKey == null ? void 0 : nextKey._minW);
-      const styles2 = runIfFn$1((_a2 = config2[prop]) == null ? void 0 : _a2[normalized[i2]], props);
+      const styles2 = runIfFn$1((_a2 = config2[prop]) == null ? void 0 : _a2[normalized[i]], props);
       if (!styles2)
         continue;
       if (isMultipart) {
@@ -9916,7 +9916,7 @@ function toCSSVar(rawTheme) {
 }
 function anatomy(name, map = {}) {
   let called = false;
-  function assert2() {
+  function assert() {
     if (!called) {
       called = true;
       return;
@@ -9926,7 +9926,7 @@ function anatomy(name, map = {}) {
     );
   }
   function parts(...values) {
-    assert2();
+    assert();
     for (const part of values) {
       map[part] = toPart(part);
     }
@@ -10224,11 +10224,11 @@ function parseToRgba(color2) {
   }
   throw new ColorError$1(color2);
 }
-function hash$3(str) {
+function hash$2(str) {
   let hash2 = 5381;
-  let i2 = str.length;
-  while (i2) {
-    hash2 = hash2 * 33 ^ str.charCodeAt(--i2);
+  let i = str.length;
+  while (i) {
+    hash2 = hash2 * 33 ^ str.charCodeAt(--i);
   }
   return (hash2 >>> 0) % 2341;
 }
@@ -10237,7 +10237,7 @@ const compressedColorMap = "1q29ehhb 1n09sgk7 1kl1ekf_ _yl4zsno 16z9eiv3 1p29lhp
   const key = colorToInt(next2.substring(0, 3));
   const hex2 = colorToInt(next2.substring(3)).toString(16);
   let prefix2 = "";
-  for (let i2 = 0; i2 < 6 - hex2.length; i2++) {
+  for (let i = 0; i < 6 - hex2.length; i++) {
     prefix2 += "0";
   }
   acc[key] = `${prefix2}${hex2}`;
@@ -10245,7 +10245,7 @@ const compressedColorMap = "1q29ehhb 1n09sgk7 1kl1ekf_ _yl4zsno 16z9eiv3 1p29lhp
 }, {});
 function nameToHex(color2) {
   const normalizedColorName = color2.toLowerCase().trim();
-  const result = compressedColorMap[hash$3(normalizedColorName)];
+  const result = compressedColorMap[hash$2(normalizedColorName)];
   if (!result) throw new ColorError$1(color2);
   return `#${result}`;
 }
@@ -10377,8 +10377,8 @@ function randomColorFromString(str) {
   let hash2 = 0;
   if (str.length === 0)
     return hash2.toString();
-  for (let i2 = 0; i2 < str.length; i2 += 1) {
-    hash2 = str.charCodeAt(i2) + ((hash2 << 5) - hash2);
+  for (let i = 0; i < str.length; i += 1) {
+    hash2 = str.charCodeAt(i) + ((hash2 << 5) - hash2);
     hash2 = hash2 & hash2;
   }
   let color2 = "#";
@@ -10392,8 +10392,8 @@ function randomColorFromList(str, list2) {
   let index = 0;
   if (str.length === 0)
     return list2[0];
-  for (let i2 = 0; i2 < str.length; i2 += 1) {
-    index = str.charCodeAt(i2) + ((index << 5) - index);
+  for (let i = 0; i < str.length; i += 1) {
+    index = str.charCodeAt(i) + ((index << 5) - index);
     index = index & index;
   }
   index = (index % list2.length + list2.length) % list2.length;
@@ -13815,9 +13815,9 @@ function sheetForTag(tag) {
   if (tag.sheet) {
     return tag.sheet;
   }
-  for (var i2 = 0; i2 < document.styleSheets.length; i2++) {
-    if (document.styleSheets[i2].ownerNode === tag) {
-      return document.styleSheets[i2];
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    if (document.styleSheets[i].ownerNode === tag) {
+      return document.styleSheets[i];
     }
   }
   return void 0;
@@ -13903,7 +13903,7 @@ var LAYER = "@layer";
 var abs = Math.abs;
 var from = String.fromCharCode;
 var assign = Object.assign;
-function hash$2(value, length2) {
+function hash$1(value, length2) {
   return charat(value, 0) ^ 45 ? (((length2 << 2 ^ charat(value, 0)) << 2 ^ charat(value, 1)) << 2 ^ charat(value, 2)) << 2 ^ charat(value, 3) : 0;
 }
 function trim(value) {
@@ -14178,8 +14178,8 @@ function ruleset(value, root, parent, index, offset, rules, points, type, props,
   var post = offset - 1;
   var rule = offset === 0 ? rules : [""];
   var size2 = sizeof(rule);
-  for (var i2 = 0, j = 0, k2 = 0; i2 < index; ++i2)
-    for (var x2 = 0, y2 = substr(value, post + 1, post = abs(j = points[i2])), z2 = value; x2 < size2; ++x2)
+  for (var i = 0, j = 0, k2 = 0; i < index; ++i)
+    for (var x2 = 0, y2 = substr(value, post + 1, post = abs(j = points[i])), z2 = value; x2 < size2; ++x2)
       if (z2 = trim(j > 0 ? rule[x2] + " " + y2 : replace(y2, /&\f/g, rule[x2])))
         props[k2++] = z2;
   return node(value, root, parent, offset === 0 ? RULESET : type, props, children, length2);
@@ -14193,8 +14193,8 @@ function declaration(value, root, parent, length2) {
 function serialize(children, callback) {
   var output2 = "";
   var length2 = sizeof(children);
-  for (var i2 = 0; i2 < length2; i2++)
-    output2 += callback(children[i2], i2, children, callback) || "";
+  for (var i = 0; i < length2; i++)
+    output2 += callback(children[i], i, children, callback) || "";
   return output2;
 }
 function stringify(element, index, children, callback) {
@@ -14217,8 +14217,8 @@ function middleware(collection) {
   var length2 = sizeof(collection);
   return function(element, index, children, callback) {
     var output2 = "";
-    for (var i2 = 0; i2 < length2; i2++)
-      output2 += collection[i2](element, index, children, callback) || "";
+    for (var i = 0; i < length2; i++)
+      output2 += collection[i](element, index, children, callback) || "";
     return output2;
   };
 }
@@ -14316,9 +14316,9 @@ var compat = function compat2(element) {
   var points = [];
   var rules = getRules(value, points);
   var parentRules = parent.props;
-  for (var i2 = 0, k2 = 0; i2 < rules.length; i2++) {
+  for (var i = 0, k2 = 0; i < rules.length; i++) {
     for (var j = 0; j < parentRules.length; j++, k2++) {
-      element.props[k2] = points[i2] ? rules[i2].replace(/&\f/g, parentRules[j]) : parentRules[j] + " " + rules[i2];
+      element.props[k2] = points[i] ? rules[i].replace(/&\f/g, parentRules[j]) : parentRules[j] + " " + rules[i];
     }
   }
 };
@@ -14336,7 +14336,7 @@ var removeLabel = function removeLabel2(element) {
   }
 };
 function prefix(value, length2) {
-  switch (hash$2(value, length2)) {
+  switch (hash$1(value, length2)) {
     case 5103:
       return WEBKIT + "print-" + value + value;
     case 5737:
@@ -14504,8 +14504,8 @@ var createCache = function createCache2(options) {
       document.querySelectorAll('style[data-emotion^="' + key + ' "]'),
       function(node2) {
         var attrib = node2.getAttribute("data-emotion").split(" ");
-        for (var i2 = 1; i2 < attrib.length; i2++) {
-          inserted[attrib[i2]] = true;
+        for (var i = 1; i < attrib.length; i++) {
+          inserted[attrib[i]] = true;
         }
         nodesToHydrate.push(node2);
       }
@@ -14548,14 +14548,14 @@ var createCache = function createCache2(options) {
   cache.sheet.hydrate(nodesToHydrate);
   return cache;
 };
-function _extends$1() {
-  return _extends$1 = Object.assign ? Object.assign.bind() : function(n2) {
+function _extends() {
+  return _extends = Object.assign ? Object.assign.bind() : function(n2) {
     for (var e2 = 1; e2 < arguments.length; e2++) {
       var t2 = arguments[e2];
       for (var r2 in t2) ({}).hasOwnProperty.call(t2, r2) && (n2[r2] = t2[r2]);
     }
     return n2;
-  }, _extends$1.apply(null, arguments);
+  }, _extends.apply(null, arguments);
 }
 var reactIs$1 = { exports: {} };
 var reactIs_production_min = {};
@@ -14720,9 +14720,9 @@ var insertStyles = function insertStyles2(cache, serialized, isStringTag) {
 };
 function murmur2(str) {
   var h2 = 0;
-  var k2, i2 = 0, len = str.length;
-  for (; len >= 4; ++i2, len -= 4) {
-    k2 = str.charCodeAt(i2) & 255 | (str.charCodeAt(++i2) & 255) << 8 | (str.charCodeAt(++i2) & 255) << 16 | (str.charCodeAt(++i2) & 255) << 24;
+  var k2, i = 0, len = str.length;
+  for (; len >= 4; ++i, len -= 4) {
+    k2 = str.charCodeAt(i) & 255 | (str.charCodeAt(++i) & 255) << 8 | (str.charCodeAt(++i) & 255) << 16 | (str.charCodeAt(++i) & 255) << 24;
     k2 = /* Math.imul(k, m): */
     (k2 & 65535) * 1540483477 + ((k2 >>> 16) * 59797 << 16);
     k2 ^= /* k >>> r: */
@@ -14733,11 +14733,11 @@ function murmur2(str) {
   }
   switch (len) {
     case 3:
-      h2 ^= (str.charCodeAt(i2 + 2) & 255) << 16;
+      h2 ^= (str.charCodeAt(i + 2) & 255) << 16;
     case 2:
-      h2 ^= (str.charCodeAt(i2 + 1) & 255) << 8;
+      h2 ^= (str.charCodeAt(i + 1) & 255) << 8;
     case 1:
-      h2 ^= str.charCodeAt(i2) & 255;
+      h2 ^= str.charCodeAt(i) & 255;
       h2 = /* Math.imul(h, m): */
       (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
   }
@@ -14890,8 +14890,8 @@ function handleInterpolation(mergedProps, registered, interpolation) {
 function createStringFromObject(mergedProps, registered, obj) {
   var string = "";
   if (Array.isArray(obj)) {
-    for (var i2 = 0; i2 < obj.length; i2++) {
-      string += handleInterpolation(mergedProps, registered, obj[i2]) + ";";
+    for (var i = 0; i < obj.length; i++) {
+      string += handleInterpolation(mergedProps, registered, obj[i]) + ";";
     }
   } else {
     for (var key in obj) {
@@ -14948,11 +14948,11 @@ function serializeStyles(args, registered, mergedProps) {
     var asTemplateStringsArr = strings;
     styles2 += asTemplateStringsArr[0];
   }
-  for (var i2 = 1; i2 < args.length; i2++) {
-    styles2 += handleInterpolation(mergedProps, registered, args[i2]);
+  for (var i = 1; i < args.length; i++) {
+    styles2 += handleInterpolation(mergedProps, registered, args[i]);
     if (stringMode) {
       var templateStringsArr = strings;
-      styles2 += templateStringsArr[i2];
+      styles2 += templateStringsArr[i];
     }
   }
   labelPattern.lastIndex = 0;
@@ -14998,7 +14998,7 @@ var getTheme$1 = function getTheme(outerTheme, theme2) {
     var mergedTheme = theme2(outerTheme);
     return mergedTheme;
   }
-  return _extends$1({}, outerTheme, theme2);
+  return _extends({}, outerTheme, theme2);
 };
 var createCacheWithTheme = /* @__PURE__ */ weakMemoize(function(outerTheme) {
   return weakMemoize(function(theme2) {
@@ -15966,8 +15966,8 @@ const translateAlias = {
 const numTransforms = transformPropOrder.length;
 function buildTransform(transform2, { enableHardwareAcceleration = true, allowTransformNone = true }, transformIsDefault, transformTemplate2) {
   let transformString = "";
-  for (let i2 = 0; i2 < numTransforms; i2++) {
-    const key = transformPropOrder[i2];
+  for (let i = 0; i < numTransforms; i++) {
+    const key = transformPropOrder[i];
     if (transform2[key] !== void 0) {
       const transformName = translateAlias[key] || key;
       transformString += `${transformName}(${transform2[key]}) `;
@@ -15992,17 +15992,17 @@ const getValueAsType = (value, type) => {
   return type && typeof value === "number" ? type.transform(value) : value;
 };
 const clamp = (min, max, v2) => Math.min(Math.max(v2, min), max);
-const number$2 = {
+const number$1 = {
   test: (v2) => typeof v2 === "number",
   parse: parseFloat,
   transform: (v2) => v2
 };
 const alpha = {
-  ...number$2,
+  ...number$1,
   transform: (v2) => clamp(0, 1, v2)
 };
 const scale = {
-  ...number$2,
+  ...number$1,
   default: 1
 };
 const sanitize = (v2) => Math.round(v2 * 1e5) / 1e5;
@@ -16028,7 +16028,7 @@ const progressPercentage = {
   transform: (v2) => percent.transform(v2 * 100)
 };
 const int = {
-  ...number$2,
+  ...number$1,
   transform: Math.round
 };
 const numberValueTypes = {
@@ -16551,8 +16551,8 @@ function createRenderStep(runNextFrame) {
       nextFrame.clear();
       numToRun = thisFrame.order.length;
       if (numToRun) {
-        for (let i2 = 0; i2 < numToRun; i2++) {
-          const callback = thisFrame.order[i2];
+        for (let i = 0; i < numToRun; i++) {
+          const callback = thisFrame.order[i];
           callback(frameData2);
           if (toKeepAlive.has(callback)) {
             step.schedule(callback);
@@ -17012,8 +17012,8 @@ function shallowCompare(next2, prev2) {
   const prevLength = prev2.length;
   if (prevLength !== next2.length)
     return false;
-  for (let i2 = 0; i2 < prevLength; i2++) {
-    if (prev2[i2] !== next2[i2])
+  for (let i = 0; i < prevLength; i++) {
+    if (prev2[i] !== next2[i])
       return false;
   }
   return true;
@@ -17085,7 +17085,7 @@ const subdivisionMaxIterations = 12;
 function binarySubdivide(x2, lowerBound, upperBound, mX1, mX2) {
   let currentX;
   let currentT;
-  let i2 = 0;
+  let i = 0;
   do {
     currentT = lowerBound + (upperBound - lowerBound) / 2;
     currentX = calcBezier(currentT, mX1, mX2) - x2;
@@ -17094,7 +17094,7 @@ function binarySubdivide(x2, lowerBound, upperBound, mX1, mX2) {
     } else {
       lowerBound = currentT;
     }
-  } while (Math.abs(currentX) > subdivisionPrecision && ++i2 < subdivisionMaxIterations);
+  } while (Math.abs(currentX) > subdivisionPrecision && ++i < subdivisionMaxIterations);
   return currentT;
 }
 function cubicBezier(mX1, mY1, mX2, mY2) {
@@ -17158,7 +17158,7 @@ const splitColor = (aName, bName, cName) => (v2) => {
 };
 const clampRgbUnit = (v2) => clamp(0, 255, v2);
 const rgbUnit = {
-  ...number$2,
+  ...number$1,
   transform: (v2) => Math.round(clampRgbUnit(v2))
 };
 const rgba = {
@@ -17193,7 +17193,7 @@ function parseHex(v2) {
     alpha: a ? parseInt(a, 16) / 255 : 1
   };
 }
-const hex$1 = {
+const hex = {
   test: isColorString("#"),
   parse: parseHex,
   transform: rgba.transform
@@ -17206,14 +17206,14 @@ const hsla = {
   }
 };
 const color = {
-  test: (v2) => rgba.test(v2) || hex$1.test(v2) || hsla.test(v2),
+  test: (v2) => rgba.test(v2) || hex.test(v2) || hsla.test(v2),
   parse: (v2) => {
     if (rgba.test(v2)) {
       return rgba.parse(v2);
     } else if (hsla.test(v2)) {
       return hsla.parse(v2);
     } else {
-      return hex$1.parse(v2);
+      return hex.parse(v2);
     }
   },
   transform: (v2) => {
@@ -17261,7 +17261,7 @@ const mixLinearColor = (from2, to, v2) => {
   const fromExpo = from2 * from2;
   return Math.sqrt(Math.max(0, v2 * (to * to - fromExpo) + fromExpo));
 };
-const colorTypes = [hex$1, rgba, hsla];
+const colorTypes = [hex, rgba, hsla];
 const getColorType = (v2) => colorTypes.find((type) => type.test(v2));
 function asRGBA(color2) {
   const type = getColorType(color2);
@@ -17303,7 +17303,7 @@ const numberTokeniser = {
   regex: floatRegex,
   countKey: "Numbers",
   token: "${n}",
-  parse: number$2.parse
+  parse: number$1.parse
 };
 function tokenise(info, { regex, countKey, token: token2, parse: parse2 }) {
   const matches = info.tokenised.match(regex);
@@ -17337,13 +17337,13 @@ function createTransformer(source) {
   const numValues = values.length;
   return (v2) => {
     let output2 = tokenised;
-    for (let i2 = 0; i2 < numValues; i2++) {
-      if (i2 < numVars) {
-        output2 = output2.replace(cssVarTokeniser.token, v2[i2]);
-      } else if (i2 < numVars + numColors) {
-        output2 = output2.replace(colorTokeniser.token, color.transform(v2[i2]));
+    for (let i = 0; i < numValues; i++) {
+      if (i < numVars) {
+        output2 = output2.replace(cssVarTokeniser.token, v2[i]);
+      } else if (i < numVars + numColors) {
+        output2 = output2.replace(colorTokeniser.token, color.transform(v2[i]));
       } else {
-        output2 = output2.replace(numberTokeniser.token, sanitize(v2[i2]));
+        output2 = output2.replace(numberTokeniser.token, sanitize(v2[i]));
       }
     }
     return output2;
@@ -17374,10 +17374,10 @@ function getMixer(origin, target) {
 const mixArray = (from2, to) => {
   const output2 = [...from2];
   const numValues = output2.length;
-  const blendValue = from2.map((fromThis, i2) => getMixer(fromThis, to[i2]));
+  const blendValue = from2.map((fromThis, i) => getMixer(fromThis, to[i]));
   return (v2) => {
-    for (let i2 = 0; i2 < numValues; i2++) {
-      output2[i2] = blendValue[i2](v2);
+    for (let i = 0; i < numValues; i++) {
+      output2[i] = blendValue[i](v2);
     }
     return output2;
   };
@@ -17429,10 +17429,10 @@ function createMixers(output2, ease2, customMixer) {
   const mixers = [];
   const mixerFactory = customMixer || detectMixerFactory(output2[0]);
   const numMixers = output2.length - 1;
-  for (let i2 = 0; i2 < numMixers; i2++) {
-    let mixer = mixerFactory(output2[i2], output2[i2 + 1]);
+  for (let i = 0; i < numMixers; i++) {
+    let mixer = mixerFactory(output2[i], output2[i + 1]);
     if (ease2) {
-      const easingFunction = Array.isArray(ease2) ? ease2[i2] || noop : ease2;
+      const easingFunction = Array.isArray(ease2) ? ease2[i] || noop : ease2;
       mixer = pipe(easingFunction, mixer);
     }
     mixers.push(mixer);
@@ -17451,22 +17451,22 @@ function interpolate(input, output2, { clamp: isClamp = true, ease: ease2, mixer
   const mixers = createMixers(output2, ease2, mixer);
   const numMixers = mixers.length;
   const interpolator = (v2) => {
-    let i2 = 0;
+    let i = 0;
     if (numMixers > 1) {
-      for (; i2 < input.length - 2; i2++) {
-        if (v2 < input[i2 + 1])
+      for (; i < input.length - 2; i++) {
+        if (v2 < input[i + 1])
           break;
       }
     }
-    const progressInRange = progress(input[i2], input[i2 + 1], v2);
-    return mixers[i2](progressInRange);
+    const progressInRange = progress(input[i], input[i + 1], v2);
+    return mixers[i](progressInRange);
   };
   return isClamp ? (v2) => interpolator(clamp(input[0], input[inputLength - 1], v2)) : interpolator;
 }
 function fillOffset(offset, remaining) {
   const min = offset[offset.length - 1];
-  for (let i2 = 1; i2 <= remaining; i2++) {
-    const offsetProgress = progress(0, remaining, i2);
+  for (let i = 1; i <= remaining; i++) {
+    const offsetProgress = progress(0, remaining, i);
     offset.push(mix(min, 1, offsetProgress));
   }
 }
@@ -17576,7 +17576,7 @@ function findSpring({ duration = 800, bounce = 0.25, velocity = 0, mass = 1 }) {
 const rootIterations = 12;
 function approximateRoot(envelope, derivative, initialGuess) {
   let result = initialGuess;
-  for (let i2 = 1; i2 < rootIterations; i2++) {
+  for (let i = 1; i < rootIterations; i++) {
     result = result - envelope(result) / derivative(result);
   }
   return result;
@@ -18229,20 +18229,20 @@ function getKeyframes(value, valueName, target, transition2) {
   const defaultOrigin = transition2.from !== void 0 ? transition2.from : value.get();
   let animatableTemplateValue = void 0;
   const noneKeyframeIndexes = [];
-  for (let i2 = 0; i2 < keyframes3.length; i2++) {
-    if (keyframes3[i2] === null) {
-      keyframes3[i2] = i2 === 0 ? defaultOrigin : keyframes3[i2 - 1];
+  for (let i = 0; i < keyframes3.length; i++) {
+    if (keyframes3[i] === null) {
+      keyframes3[i] = i === 0 ? defaultOrigin : keyframes3[i - 1];
     }
-    if (isNone(keyframes3[i2])) {
-      noneKeyframeIndexes.push(i2);
+    if (isNone(keyframes3[i])) {
+      noneKeyframeIndexes.push(i);
     }
-    if (typeof keyframes3[i2] === "string" && keyframes3[i2] !== "none" && keyframes3[i2] !== "0") {
-      animatableTemplateValue = keyframes3[i2];
+    if (typeof keyframes3[i] === "string" && keyframes3[i] !== "none" && keyframes3[i] !== "0") {
+      animatableTemplateValue = keyframes3[i];
     }
   }
   if (isTargetAnimatable && noneKeyframeIndexes.length && animatableTemplateValue) {
-    for (let i2 = 0; i2 < noneKeyframeIndexes.length; i2++) {
-      const index = noneKeyframeIndexes[i2];
+    for (let i = 0; i < noneKeyframeIndexes.length; i++) {
+      const index = noneKeyframeIndexes[i];
       keyframes3[index] = getAnimatableNone(valueName, animatableTemplateValue);
     }
   }
@@ -18345,8 +18345,8 @@ class SubscriptionManager {
     if (numSubscriptions === 1) {
       this.subscriptions[0](a, b2, c2);
     } else {
-      for (let i2 = 0; i2 < numSubscriptions; i2++) {
-        const handler = this.subscriptions[i2];
+      for (let i = 0; i < numSubscriptions; i++) {
+        const handler = this.subscriptions[i];
         handler && handler(a, b2, c2);
       }
     }
@@ -18627,7 +18627,7 @@ const auto = {
   test: (v2) => v2 === "auto",
   parse: (v2) => v2
 };
-const dimensionValueTypes = [number$2, px, percent, degrees, vw, vh, auto];
+const dimensionValueTypes = [number$1, px, percent, degrees, vw, vh, auto];
 const findDimensionValueType = (v2) => dimensionValueTypes.find(testValueType(v2));
 const valueTypes = [...dimensionValueTypes, color, complex];
 const findValueType = (v2) => valueTypes.find(testValueType(v2));
@@ -18653,8 +18653,8 @@ function checkTargetForNewValues(visualElement, target, origin) {
   const numNewValues = newValueKeys.length;
   if (!numNewValues)
     return;
-  for (let i2 = 0; i2 < numNewValues; i2++) {
-    const key = newValueKeys[i2];
+  for (let i = 0; i < numNewValues; i++) {
+    const key = newValueKeys[i];
     const targetValue = target[key];
     let value = null;
     if (Array.isArray(targetValue)) {
@@ -18707,8 +18707,8 @@ function shouldBlockAnimation({ protectedKeys, needsAnimating }, key) {
 function hasKeyframesChanged(value, target) {
   const current = value.get();
   if (Array.isArray(target)) {
-    for (let i2 = 0; i2 < target.length; i2++) {
-      if (target[i2] !== current)
+    for (let i = 0; i < target.length; i++) {
+      if (target[i] !== current)
         return true;
     }
   } else {
@@ -18789,12 +18789,12 @@ function animateVariant(visualElement, variant, options = {}) {
 function animateChildren(visualElement, variant, delayChildren = 0, staggerChildren = 0, staggerDirection = 1, options) {
   const animations2 = [];
   const maxStaggerDuration = (visualElement.variantChildren.size - 1) * staggerChildren;
-  const generateStaggerDuration = staggerDirection === 1 ? (i2 = 0) => i2 * staggerChildren : (i2 = 0) => maxStaggerDuration - i2 * staggerChildren;
-  Array.from(visualElement.variantChildren).sort(sortByTreeOrder).forEach((child, i2) => {
+  const generateStaggerDuration = staggerDirection === 1 ? (i = 0) => i * staggerChildren : (i = 0) => maxStaggerDuration - i * staggerChildren;
+  Array.from(visualElement.variantChildren).sort(sortByTreeOrder).forEach((child, i) => {
     child.notify("AnimationStart", variant);
     animations2.push(animateVariant(child, variant, {
       ...options,
-      delay: delayChildren + generateStaggerDuration(i2)
+      delay: delayChildren + generateStaggerDuration(i)
     }).then(() => child.notify("AnimationComplete", variant)));
   });
   return Promise.all(animations2);
@@ -18843,14 +18843,14 @@ function createAnimationState(visualElement) {
     const removedKeys = /* @__PURE__ */ new Set();
     let encounteredKeys = {};
     let removedVariantIndex = Infinity;
-    for (let i2 = 0; i2 < numAnimationTypes; i2++) {
-      const type = reversePriorityOrder[i2];
+    for (let i = 0; i < numAnimationTypes; i++) {
+      const type = reversePriorityOrder[i];
       const typeState = state2[type];
       const prop = props[type] !== void 0 ? props[type] : context[type];
       const propIsVariant = isVariantLabel(prop);
       const activeDelta = type === changedActiveType ? typeState.isActive : null;
       if (activeDelta === false)
-        removedVariantIndex = i2;
+        removedVariantIndex = i;
       let isInherited = prop === context[type] && prop !== props[type] && propIsVariant;
       if (isInherited && isInitialRender && visualElement.manuallyAnimateOnMount) {
         isInherited = false;
@@ -18867,7 +18867,7 @@ function createAnimationState(visualElement) {
       const variantDidChange = checkVariantsDidChange(typeState.prevProp, prop);
       let shouldAnimateType = variantDidChange || // If we're making this variant active, we want to always make it active
       type === changedActiveType && typeState.isActive && !isInherited && propIsVariant || // If we removed a higher-priority variant (i is in reverse order)
-      i2 > removedVariantIndex && propIsVariant;
+      i > removedVariantIndex && propIsVariant;
       let handledRemovedValues = false;
       const definitionList = Array.isArray(prop) ? prop : [prop];
       let resolvedValues = definitionList.reduce(buildResolvedTypeValues, {});
@@ -19155,15 +19155,15 @@ function getVelocity(history, timeDelta) {
   if (history.length < 2) {
     return { x: 0, y: 0 };
   }
-  let i2 = history.length - 1;
+  let i = history.length - 1;
   let timestampedPoint = null;
   const lastPoint = lastDevicePoint(history);
-  while (i2 >= 0) {
-    timestampedPoint = history[i2];
+  while (i >= 0) {
+    timestampedPoint = history[i];
     if (lastPoint.timestamp - timestampedPoint.timestamp > secondsToMilliseconds(timeDelta)) {
       break;
     }
-    i2--;
+    i--;
   }
   if (!timestampedPoint) {
     return { x: 0, y: 0 };
@@ -19376,8 +19376,8 @@ function applyTreeDeltas(box, treeScale, treePath, isSharedTransition = false) {
   treeScale.x = treeScale.y = 1;
   let node2;
   let delta;
-  for (let i2 = 0; i2 < treeLength; i2++) {
-    node2 = treePath[i2];
+  for (let i = 0; i < treeLength; i++) {
+    node2 = treePath[i];
     delta = node2.projectionDelta;
     const instance = node2.instance;
     if (instance && instance.style && instance.style.display === "contents") {
@@ -20031,8 +20031,8 @@ function mixValues(target, follow, lead, progress2, shouldCrossfadeOpacity, isOn
   } else if (isOnlyMember) {
     target.opacity = mix(follow.opacity !== void 0 ? follow.opacity : 1, lead.opacity !== void 0 ? lead.opacity : 1, progress2);
   }
-  for (let i2 = 0; i2 < numBorders; i2++) {
-    const borderLabel = `border${borders[i2]}Radius`;
+  for (let i = 0; i < numBorders; i++) {
+    const borderLabel = `border${borders[i]}Radius`;
     let followRadius = getRadius(follow, borderLabel);
     let leadRadius = getRadius(lead, borderLabel);
     if (followRadius === void 0 && leadRadius === void 0)
@@ -20146,8 +20146,8 @@ class NodeStack {
     if (indexOfNode === 0)
       return false;
     let prevLead;
-    for (let i2 = indexOfNode; i2 >= 0; i2--) {
-      const member = this.members[i2];
+    for (let i = indexOfNode; i >= 0; i--) {
+      const member = this.members[i];
       if (member.isPresent !== false) {
         prevLead = member;
         break;
@@ -20340,8 +20340,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
       this.path = parent ? [...parent.path, parent] : [];
       this.parent = parent;
       this.depth = parent ? parent.depth + 1 : 0;
-      for (let i2 = 0; i2 < this.path.length; i2++) {
-        this.path[i2].shouldResetTransform = true;
+      for (let i = 0; i < this.path.length; i++) {
+        this.path[i].shouldResetTransform = true;
       }
       if (this.root === this)
         this.nodes = new FlatTree();
@@ -20475,8 +20475,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
       if (this.isLayoutDirty)
         return;
       this.isLayoutDirty = true;
-      for (let i2 = 0; i2 < this.path.length; i2++) {
-        const node2 = this.path[i2];
+      for (let i = 0; i < this.path.length; i++) {
+        const node2 = this.path[i];
         node2.shouldResetTransform = true;
         node2.updateScroll("snapshot");
         if (node2.options.layoutRoot) {
@@ -20558,8 +20558,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
         return;
       }
       if (this.resumeFrom && !this.resumeFrom.instance) {
-        for (let i2 = 0; i2 < this.path.length; i2++) {
-          const node2 = this.path[i2];
+        for (let i = 0; i < this.path.length; i++) {
+          const node2 = this.path[i];
           node2.updateScroll();
         }
       }
@@ -20630,8 +20630,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
     removeElementScroll(box) {
       const boxWithoutScroll = createBox();
       copyBoxInto(boxWithoutScroll, box);
-      for (let i2 = 0; i2 < this.path.length; i2++) {
-        const node2 = this.path[i2];
+      for (let i = 0; i < this.path.length; i++) {
+        const node2 = this.path[i];
         const { scroll: scroll2, options } = node2;
         if (node2 !== this.root && scroll2 && options.layoutScroll) {
           if (scroll2.isRoot) {
@@ -20651,8 +20651,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
     applyTransform(box, transformOnly = false) {
       const withTransforms = createBox();
       copyBoxInto(withTransforms, box);
-      for (let i2 = 0; i2 < this.path.length; i2++) {
-        const node2 = this.path[i2];
+      for (let i = 0; i < this.path.length; i++) {
+        const node2 = this.path[i];
         if (!transformOnly && node2.options.layoutScroll && node2.scroll && node2 !== node2.root) {
           transformBox(withTransforms, {
             x: -node2.scroll.offset.x,
@@ -20671,8 +20671,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
     removeTransform(box) {
       const boxWithoutTransform = createBox();
       copyBoxInto(boxWithoutTransform, box);
-      for (let i2 = 0; i2 < this.path.length; i2++) {
-        const node2 = this.path[i2];
+      for (let i = 0; i < this.path.length; i++) {
+        const node2 = this.path[i];
         if (!node2.instance)
           continue;
         if (!hasTransform(node2.latestValues))
@@ -21029,8 +21029,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
       if (!hasRotate)
         return;
       const resetValues = {};
-      for (let i2 = 0; i2 < transformAxes.length; i2++) {
-        const key = "rotate" + transformAxes[i2];
+      for (let i = 0; i < transformAxes.length; i++) {
+        const key = "rotate" + transformAxes[i];
         if (latestValues[key]) {
           resetValues[key] = latestValues[key];
           visualElement.setStaticValue(key, 0);
@@ -21093,8 +21093,8 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
         const corrected = styles2.transform === "none" ? valuesToRender[key] : correct(valuesToRender[key], lead);
         if (applyTo) {
           const num = applyTo.length;
-          for (let i2 = 0; i2 < num; i2++) {
-            styles2[applyTo[i2]] = corrected;
+          for (let i = 0; i < num; i++) {
+            styles2[applyTo[i]] = corrected;
           }
         } else {
           styles2[key] = corrected;
@@ -21380,7 +21380,7 @@ const isPositionalKey = (key) => positionalKeys.has(key);
 const hasPositionalKey = (target) => {
   return Object.keys(target).some(isPositionalKey);
 };
-const isNumOrPxType = (v2) => v2 === number$2 || v2 === px;
+const isNumOrPxType = (v2) => v2 === number$1 || v2 === px;
 const getPosFromMatrix = (matrix, pos) => parseFloat(matrix.split(", ")[pos]);
 const getTranslateFromMatrix = (pos2, pos3) => (_bbox, { transform: transform2 }) => {
   if (transform2 === "none" || !transform2)
@@ -21467,13 +21467,13 @@ const checkAndConvertChangedValueTypes = (visualElement, target, origin = {}, tr
       const fromIndex = to[0] === null ? 1 : 0;
       from2 = to[fromIndex];
       fromType = findDimensionValueType(from2);
-      for (let i2 = fromIndex; i2 < numKeyframes; i2++) {
-        if (to[i2] === null)
+      for (let i = fromIndex; i < numKeyframes; i++) {
+        if (to[i] === null)
           break;
         if (!toType) {
-          toType = findDimensionValueType(to[i2]);
+          toType = findDimensionValueType(to[i]);
         } else {
-          invariant(findDimensionValueType(to[i2]) === toType);
+          invariant(findDimensionValueType(to[i]) === toType);
         }
       }
     } else {
@@ -21709,8 +21709,8 @@ class VisualElement {
   loadFeatures({ children, ...renderedProps }, isStrict, preloadedFeatures2, initialLayoutGroupConfig) {
     let ProjectionNodeConstructor;
     let MeasureLayout2;
-    for (let i2 = 0; i2 < numFeatures; i2++) {
-      const name = featureNames[i2];
+    for (let i = 0; i < numFeatures; i++) {
+      const name = featureNames[i];
       const { isEnabled, Feature: FeatureConstructor, ProjectionNode, MeasureLayout: MeasureLayoutComponent } = featureDefinitions[name];
       if (ProjectionNode)
         ProjectionNodeConstructor = ProjectionNode;
@@ -21797,8 +21797,8 @@ class VisualElement {
     this.props = props;
     this.prevPresenceContext = this.presenceContext;
     this.presenceContext = presenceContext;
-    for (let i2 = 0; i2 < propEventHandlers.length; i2++) {
-      const key = propEventHandlers[i2];
+    for (let i = 0; i < propEventHandlers.length; i++) {
+      const key = propEventHandlers[i];
       if (this.propEventSubscriptions[key]) {
         this.propEventSubscriptions[key]();
         delete this.propEventSubscriptions[key];
@@ -21846,8 +21846,8 @@ class VisualElement {
       return context2;
     }
     const context = {};
-    for (let i2 = 0; i2 < numVariantProps; i2++) {
-      const name = variantProps[i2];
+    for (let i = 0; i < numVariantProps; i++) {
+      const name = variantProps[i];
       const prop = this.props[name];
       if (isVariantLabel(prop) || prop === false) {
         context[name] = prop;
@@ -22238,8 +22238,8 @@ const AnimatePresence = ({ children, custom, initial = true, onExitComplete, exi
   const presentKeys = presentChildren.current.map(getChildKey);
   const targetKeys = filteredChildren.map(getChildKey);
   const numPresent = presentKeys.length;
-  for (let i2 = 0; i2 < numPresent; i2++) {
-    const key = presentKeys[i2];
+  for (let i = 0; i < numPresent; i++) {
+    const key = presentKeys[i];
     if (targetKeys.indexOf(key) === -1 && !exitingChildren.has(key)) {
       exitingChildren.set(key, void 0);
     }
@@ -22398,9 +22398,9 @@ var createStyled = function createStyled2(tag, options) {
     } else {
       styles2.push(args[0][0]);
       var len = args.length;
-      var i2 = 1;
-      for (; i2 < len; i2++) {
-        styles2.push(args[i2], args[0][i2]);
+      var i = 1;
+      for (; i < len; i++) {
+        styles2.push(args[i], args[0][i]);
       }
     }
     var Styled = withEmotionCache(function(props, cache, ref) {
@@ -22458,7 +22458,7 @@ var createStyled = function createStyled2(tag, options) {
       }
     });
     Styled.withComponent = function(nextTag, nextOptions) {
-      return createStyled2(nextTag, _extends$1({}, options, nextOptions, {
+      return createStyled2(nextTag, _extends({}, options, nextOptions, {
         shouldForwardProp: composeShouldForwardProps(Styled, nextOptions, true)
       })).apply(void 0, styles2);
     };
@@ -22807,37 +22807,37 @@ function equal(a, b2) {
   if (a === b2) return true;
   if (a && b2 && typeof a == "object" && typeof b2 == "object") {
     if (a.constructor !== b2.constructor) return false;
-    var length2, i2, keys2;
+    var length2, i, keys2;
     if (Array.isArray(a)) {
       length2 = a.length;
       if (length2 != b2.length) return false;
-      for (i2 = length2; i2-- !== 0; )
-        if (!equal(a[i2], b2[i2])) return false;
+      for (i = length2; i-- !== 0; )
+        if (!equal(a[i], b2[i])) return false;
       return true;
     }
     var it;
     if (hasMap && a instanceof Map && b2 instanceof Map) {
       if (a.size !== b2.size) return false;
       it = a.entries();
-      while (!(i2 = it.next()).done)
-        if (!b2.has(i2.value[0])) return false;
+      while (!(i = it.next()).done)
+        if (!b2.has(i.value[0])) return false;
       it = a.entries();
-      while (!(i2 = it.next()).done)
-        if (!equal(i2.value[1], b2.get(i2.value[0]))) return false;
+      while (!(i = it.next()).done)
+        if (!equal(i.value[1], b2.get(i.value[0]))) return false;
       return true;
     }
     if (hasSet && a instanceof Set && b2 instanceof Set) {
       if (a.size !== b2.size) return false;
       it = a.entries();
-      while (!(i2 = it.next()).done)
-        if (!b2.has(i2.value[0])) return false;
+      while (!(i = it.next()).done)
+        if (!b2.has(i.value[0])) return false;
       return true;
     }
     if (hasArrayBuffer && ArrayBuffer.isView(a) && ArrayBuffer.isView(b2)) {
       length2 = a.length;
       if (length2 != b2.length) return false;
-      for (i2 = length2; i2-- !== 0; )
-        if (a[i2] !== b2[i2]) return false;
+      for (i = length2; i-- !== 0; )
+        if (a[i] !== b2[i]) return false;
       return true;
     }
     if (a.constructor === RegExp) return a.source === b2.source && a.flags === b2.flags;
@@ -22846,14 +22846,14 @@ function equal(a, b2) {
     keys2 = Object.keys(a);
     length2 = keys2.length;
     if (length2 !== Object.keys(b2).length) return false;
-    for (i2 = length2; i2-- !== 0; )
-      if (!Object.prototype.hasOwnProperty.call(b2, keys2[i2])) return false;
+    for (i = length2; i-- !== 0; )
+      if (!Object.prototype.hasOwnProperty.call(b2, keys2[i])) return false;
     if (hasElementType && a instanceof Element) return false;
-    for (i2 = length2; i2-- !== 0; ) {
-      if ((keys2[i2] === "_owner" || keys2[i2] === "__v" || keys2[i2] === "__o") && a.$$typeof) {
+    for (i = length2; i-- !== 0; ) {
+      if ((keys2[i] === "_owner" || keys2[i] === "__v" || keys2[i] === "__o") && a.$$typeof) {
         continue;
       }
-      if (!equal(a[keys2[i2]], b2[keys2[i2]])) return false;
+      if (!equal(a[keys2[i]], b2[keys2[i]])) return false;
     }
     return true;
   }
@@ -23629,7 +23629,7 @@ class DescendantsManager {
     __publicField$1(this, "enabledIndexOf", (node2) => {
       if (node2 == null)
         return -1;
-      return this.enabledValues().findIndex((i2) => i2.node.isSameNode(node2));
+      return this.enabledValues().findIndex((i) => i.node.isSameNode(node2));
     });
     __publicField$1(this, "next", (index, loop = true) => {
       const next2 = getNextIndex(index, this.count(), loop);
@@ -25020,7 +25020,7 @@ const Flex = forwardRef(function Flex2(props, ref) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.div, { ref, __css: styles2, ...rest });
 });
 Flex.displayName = "Flex";
-function _objectWithoutPropertiesLoose$1(r2, e2) {
+function _objectWithoutPropertiesLoose(r2, e2) {
   if (null == r2) return {};
   var t2 = {};
   for (var n2 in r2) if ({}.hasOwnProperty.call(r2, n2)) {
@@ -25107,8 +25107,8 @@ var hiddenGuard = {
 };
 var __assign = function() {
   __assign = Object.assign || function __assign2(t2) {
-    for (var s, i2 = 1, n2 = arguments.length; i2 < n2; i2++) {
-      s = arguments[i2];
+    for (var s, i = 1, n2 = arguments.length; i < n2; i++) {
+      s = arguments[i];
       for (var p2 in s) if (Object.prototype.hasOwnProperty.call(s, p2)) t2[p2] = s[p2];
     }
     return t2;
@@ -25120,17 +25120,17 @@ function __rest(s, e2) {
   for (var p2 in s) if (Object.prototype.hasOwnProperty.call(s, p2) && e2.indexOf(p2) < 0)
     t2[p2] = s[p2];
   if (s != null && typeof Object.getOwnPropertySymbols === "function")
-    for (var i2 = 0, p2 = Object.getOwnPropertySymbols(s); i2 < p2.length; i2++) {
-      if (e2.indexOf(p2[i2]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p2[i2]))
-        t2[p2[i2]] = s[p2[i2]];
+    for (var i = 0, p2 = Object.getOwnPropertySymbols(s); i < p2.length; i++) {
+      if (e2.indexOf(p2[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p2[i]))
+        t2[p2[i]] = s[p2[i]];
     }
   return t2;
 }
 function __spreadArray(to, from2, pack) {
-  if (pack || arguments.length === 2) for (var i2 = 0, l2 = from2.length, ar; i2 < l2; i2++) {
-    if (ar || !(i2 in from2)) {
-      if (!ar) ar = Array.prototype.slice.call(from2, 0, i2);
-      ar[i2] = from2[i2];
+  if (pack || arguments.length === 2) for (var i = 0, l2 = from2.length, ar; i < l2; i++) {
+    if (ar || !(i in from2)) {
+      if (!ar) ar = Array.prototype.slice.call(from2, 0, i);
+      ar[i] = from2[i];
     }
   }
   return to.concat(ar || Array.prototype.slice.call(from2));
@@ -25324,7 +25324,7 @@ var FocusLock$1 = /* @__PURE__ */ reactExports.forwardRef(function FocusLockUI(p
       setObserved(newObserved);
     }
   }, []);
-  var lockProps = _extends$1((_extends2 = {}, _extends2[FOCUS_DISABLED] = disabled && "disabled", _extends2[FOCUS_GROUP] = group, _extends2), containerProps);
+  var lockProps = _extends((_extends2 = {}, _extends2[FOCUS_DISABLED] = disabled && "disabled", _extends2[FOCUS_GROUP] = group, _extends2), containerProps);
   var hasLeadingGuards = noFocusGuards !== true;
   var hasTailingGuards = hasLeadingGuards && noFocusGuards !== "tail";
   var mergedRef = useMergeRefs([parentRef, setObserveNode]);
@@ -25364,7 +25364,7 @@ var FocusLock$1 = /* @__PURE__ */ reactExports.forwardRef(function FocusLockUI(p
     returnFocus,
     focusOptions,
     noFocusGuards
-  }), /* @__PURE__ */ reactExports.createElement(Container2, _extends$1({
+  }), /* @__PURE__ */ reactExports.createElement(Container2, _extends({
     ref: mergedRef
   }, lockProps, {
     className,
@@ -25399,17 +25399,17 @@ function toPrimitive(t2, r2) {
   if ("object" != _typeof(t2) || !t2) return t2;
   var e2 = t2[Symbol.toPrimitive];
   if (void 0 !== e2) {
-    var i2 = e2.call(t2, r2 || "default");
-    if ("object" != _typeof(i2)) return i2;
+    var i = e2.call(t2, r2 || "default");
+    if ("object" != _typeof(i)) return i;
     throw new TypeError("@@toPrimitive must return a primitive value.");
   }
   return ("string" === r2 ? String : Number)(t2);
 }
 function toPropertyKey(t2) {
-  var i2 = toPrimitive(t2, "string");
-  return "symbol" == _typeof(i2) ? i2 : i2 + "";
+  var i = toPrimitive(t2, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
 }
-function _defineProperty$1(e2, r2, t2) {
+function _defineProperty(e2, r2, t2) {
   return (r2 = toPropertyKey(r2)) in e2 ? Object.defineProperty(e2, r2, {
     value: t2,
     enumerable: true,
@@ -25456,14 +25456,14 @@ function withSideEffect(reducePropsToState2, handleStateChangeOnClient2) {
       };
       return SideEffect2;
     }(reactExports.PureComponent);
-    _defineProperty$1(SideEffect, "displayName", "SideEffect(" + getDisplayName(WrappedComponent) + ")");
+    _defineProperty(SideEffect, "displayName", "SideEffect(" + getDisplayName(WrappedComponent) + ")");
     return SideEffect;
   };
 }
 var toArray = function(a) {
   var ret = Array(a.length);
-  for (var i2 = 0; i2 < a.length; ++i2) {
-    ret[i2] = a[i2];
+  for (var i = 0; i < a.length; ++i) {
+    ret[i] = a[i];
   }
   return ret;
 };
@@ -25688,14 +25688,14 @@ var contains = function(scope, element) {
 var filterNested = function(nodes) {
   var contained = /* @__PURE__ */ new Set();
   var l2 = nodes.length;
-  for (var i2 = 0; i2 < l2; i2 += 1) {
-    for (var j = i2 + 1; j < l2; j += 1) {
-      var position2 = nodes[i2].compareDocumentPosition(nodes[j]);
+  for (var i = 0; i < l2; i += 1) {
+    for (var j = i + 1; j < l2; j += 1) {
+      var position2 = nodes[i].compareDocumentPosition(nodes[j]);
       if ((position2 & Node.DOCUMENT_POSITION_CONTAINED_BY) > 0) {
         contained.add(j);
       }
       if ((position2 & Node.DOCUMENT_POSITION_CONTAINS) > 0) {
-        contained.add(i2);
+        contained.add(i);
       }
     }
   }
@@ -25889,8 +25889,8 @@ var getParents = function(node2, parents) {
 var getCommonParent = function(nodeA, nodeB) {
   var parentsA = getParents(nodeA);
   var parentsB = getParents(nodeB);
-  for (var i2 = 0; i2 < parentsA.length; i2 += 1) {
-    var currentParent = parentsA[i2];
+  for (var i = 0; i < parentsA.length; i += 1) {
+    var currentParent = parentsA[i];
     if (parentsB.indexOf(currentParent) >= 0) {
       return currentParent;
     }
@@ -26243,22 +26243,22 @@ var focusIsPortaledPair = function focusIsPortaledPair2(element) {
 };
 function autoGuard(startIndex, end, step, allNodes) {
   var lastGuard = null;
-  var i2 = startIndex;
+  var i = startIndex;
   do {
-    var item = allNodes[i2];
+    var item = allNodes[i];
     if (item.guard) {
       if (item.node.dataset.focusAutoGuard) {
         lastGuard = item;
       }
     } else if (item.lockItem) {
-      if (i2 !== startIndex) {
+      if (i !== startIndex) {
         return;
       }
       lastGuard = null;
     } else {
       break;
     }
-  } while ((i2 += step) !== end);
+  } while ((i += step) !== end);
   if (lastGuard) {
     lastGuard.node.tabIndex = 0;
   }
@@ -26448,14 +26448,14 @@ mediumEffect.assignMedium(function(cb2) {
 });
 const FocusTrap$1 = withSideEffect(reducePropsToState, handleStateChangeOnClient)(FocusWatcher);
 var FocusLockCombination = /* @__PURE__ */ reactExports.forwardRef(function FocusLockUICombination(props, ref) {
-  return /* @__PURE__ */ reactExports.createElement(FocusLock$1, _extends$1({
+  return /* @__PURE__ */ reactExports.createElement(FocusLock$1, _extends({
     sideCar: FocusTrap$1,
     ref
   }, props));
 });
 var _ref = FocusLock$1.propTypes || {};
 _ref.sideCar;
-_objectWithoutPropertiesLoose$1(_ref, ["sideCar"]);
+_objectWithoutPropertiesLoose(_ref, ["sideCar"]);
 FocusLockCombination.propTypes = {};
 const FocusTrap = FocusLockCombination.default ?? FocusLockCombination;
 const FocusLock = (props) => {
@@ -28658,165 +28658,18 @@ const Text = forwardRef(function Text2(props, ref) {
   );
 });
 Text.displayName = "Text";
-var DefaultContext = {
-  color: void 0,
-  size: void 0,
-  className: void 0,
-  style: void 0,
-  attr: void 0
-};
-var IconContext = React.createContext && /* @__PURE__ */ React.createContext(DefaultContext);
-var _excluded = ["attr", "size", "title"];
-function _objectWithoutProperties(source, excluded) {
-  if (source == null) return {};
-  var target = _objectWithoutPropertiesLoose(source, excluded);
-  var key, i2;
-  if (Object.getOwnPropertySymbols) {
-    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-    for (i2 = 0; i2 < sourceSymbolKeys.length; i2++) {
-      key = sourceSymbolKeys[i2];
-      if (excluded.indexOf(key) >= 0) continue;
-      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
-      target[key] = source[key];
-    }
-  }
-  return target;
-}
-function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null) return {};
-  var target = {};
-  for (var key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      if (excluded.indexOf(key) >= 0) continue;
-      target[key] = source[key];
-    }
-  }
-  return target;
-}
-function _extends() {
-  _extends = Object.assign ? Object.assign.bind() : function(target) {
-    for (var i2 = 1; i2 < arguments.length; i2++) {
-      var source = arguments[i2];
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-    return target;
-  };
-  return _extends.apply(this, arguments);
-}
-function ownKeys(e2, r2) {
-  var t2 = Object.keys(e2);
-  if (Object.getOwnPropertySymbols) {
-    var o = Object.getOwnPropertySymbols(e2);
-    r2 && (o = o.filter(function(r3) {
-      return Object.getOwnPropertyDescriptor(e2, r3).enumerable;
-    })), t2.push.apply(t2, o);
-  }
-  return t2;
-}
-function _objectSpread(e2) {
-  for (var r2 = 1; r2 < arguments.length; r2++) {
-    var t2 = null != arguments[r2] ? arguments[r2] : {};
-    r2 % 2 ? ownKeys(Object(t2), true).forEach(function(r3) {
-      _defineProperty(e2, r3, t2[r3]);
-    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e2, Object.getOwnPropertyDescriptors(t2)) : ownKeys(Object(t2)).forEach(function(r3) {
-      Object.defineProperty(e2, r3, Object.getOwnPropertyDescriptor(t2, r3));
-    });
-  }
-  return e2;
-}
-function _defineProperty(obj, key, value) {
-  key = _toPropertyKey(key);
-  if (key in obj) {
-    Object.defineProperty(obj, key, { value, enumerable: true, configurable: true, writable: true });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
-}
-function _toPropertyKey(t2) {
-  var i2 = _toPrimitive(t2, "string");
-  return "symbol" == typeof i2 ? i2 : i2 + "";
-}
-function _toPrimitive(t2, r2) {
-  if ("object" != typeof t2 || !t2) return t2;
-  var e2 = t2[Symbol.toPrimitive];
-  if (void 0 !== e2) {
-    var i2 = e2.call(t2, r2 || "default");
-    if ("object" != typeof i2) return i2;
-    throw new TypeError("@@toPrimitive must return a primitive value.");
-  }
-  return ("string" === r2 ? String : Number)(t2);
-}
-function Tree2Element(tree) {
-  return tree && tree.map((node2, i2) => /* @__PURE__ */ React.createElement(node2.tag, _objectSpread({
-    key: i2
-  }, node2.attr), Tree2Element(node2.child)));
-}
-function GenIcon(data) {
-  return (props) => /* @__PURE__ */ React.createElement(IconBase, _extends({
-    attr: _objectSpread({}, data.attr)
-  }, props), Tree2Element(data.child));
-}
-function IconBase(props) {
-  var elem = (conf) => {
-    var {
-      attr,
-      size: size2,
-      title
-    } = props, svgProps = _objectWithoutProperties(props, _excluded);
-    var computedSize = size2 || conf.size || "1em";
-    var className;
-    if (conf.className) className = conf.className;
-    if (props.className) className = (className ? className + " " : "") + props.className;
-    return /* @__PURE__ */ React.createElement("svg", _extends({
-      stroke: "currentColor",
-      fill: "currentColor",
-      strokeWidth: "0"
-    }, conf.attr, attr, svgProps, {
-      className,
-      style: _objectSpread(_objectSpread({
-        color: props.color || conf.color
-      }, conf.style), props.style),
-      height: computedSize,
-      width: computedSize,
-      xmlns: "http://www.w3.org/2000/svg"
-    }), title && /* @__PURE__ */ React.createElement("title", null, title), props.children);
-  };
-  return IconContext !== void 0 ? /* @__PURE__ */ React.createElement(IconContext.Consumer, null, (conf) => elem(conf)) : elem(DefaultContext);
-}
-function GiBirdTwitter(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 512 512" }, "child": [{ "tag": "path", "attr": { "d": "M77.313 28.438l36.406 51.25L44.874 98.25l34.688 18.53c-37.62 38-62.482 102.735-57.532 198.94V493h147.314v-.188H269.75c-13.74-59.032-15.368-110.625-5.563-149.875-16.954-7.98-25.126-17.362-32.75-30.375 51.348 21.135 127.618 35.582 200.47 18.594-23.227-10.096-47.07-22.578-70.094-37.156-.013-.007-.02-.024-.032-.03-17.996-10.514-34.942-22.247-49.967-36.376-9.385-7.88-18.41-16.142-26.907-24.78 36.074-25.505 77.297-40.297 118.656-46.876-7.72 5.104-15.336 10.82-22.687 16.937-18.272 15.207-34.737 32.736-45.313 50.656 4.9 3.986 10.02 7.785 15.313 11.44 9.017-15.524 24.43-33.122 41.97-47.72 24.26-20.193 52.937-34.698 70.06-35.375h.126c10.89.214 21.608.935 32.064 2.125-10.838-7.647-21.748-14.487-32.72-20.563v-.25c-.145.006-.29.025-.437.032-54.844-30.266-111.23-41.295-168.03-36.72-21.272-24.23-49.025-40.62-78.657-47.875L77.312 28.437zm74.343 107.312c4.67 0 9.16.754 13.375 2.125-8.493 2.716-14.655 10.667-14.655 20.063 0 11.634 9.428 21.062 21.063 21.062 9.84 0 18.122-6.754 20.437-15.875 1.934 4.905 3 10.252 3 15.844 0 23.867-19.35 43.218-43.22 43.218-23.867 0-43.218-19.35-43.218-43.22 0-23.867 19.35-43.218 43.22-43.218z" }, "child": [] }] })(props);
-}
-function LuEyeOff(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M9.88 9.88a3 3 0 1 0 4.24 4.24" }, "child": [] }, { "tag": "path", "attr": { "d": "M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" }, "child": [] }, { "tag": "path", "attr": { "d": "M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" }, "child": [] }, { "tag": "line", "attr": { "x1": "2", "x2": "22", "y1": "2", "y2": "22" }, "child": [] }] })(props);
-}
-function LuEye(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "path", "attr": { "d": "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" }, "child": [] }, { "tag": "circle", "attr": { "cx": "12", "cy": "12", "r": "3" }, "child": [] }] })(props);
-}
-function LuPinOff(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "line", "attr": { "x1": "2", "x2": "22", "y1": "2", "y2": "22" }, "child": [] }, { "tag": "line", "attr": { "x1": "12", "x2": "12", "y1": "17", "y2": "22" }, "child": [] }, { "tag": "path", "attr": { "d": "M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h12" }, "child": [] }, { "tag": "path", "attr": { "d": "M15 9.34V6h1a2 2 0 0 0 0-4H7.89" }, "child": [] }] })(props);
-}
-function LuPin(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "strokeWidth": "2", "strokeLinecap": "round", "strokeLinejoin": "round" }, "child": [{ "tag": "line", "attr": { "x1": "12", "x2": "12", "y1": "17", "y2": "22" }, "child": [] }, { "tag": "path", "attr": { "d": "M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" }, "child": [] }] })(props);
-}
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 const u8a$2 = (a) => a instanceof Uint8Array;
-const createView$1 = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
-const rotr$1 = (word, shift) => word << 32 - shift | word >>> shift;
 const isLE$1 = new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68;
 if (!isLE$1)
   throw new Error("Non little-endian hardware is not supported");
-const hexes$1 = Array.from({ length: 256 }, (v2, i2) => i2.toString(16).padStart(2, "0"));
+const hexes$1 = Array.from({ length: 256 }, (v2, i) => i.toString(16).padStart(2, "0"));
 function bytesToHex$1(bytes2) {
   if (!u8a$2(bytes2))
     throw new Error("Uint8Array expected");
   let hex2 = "";
-  for (let i2 = 0; i2 < bytes2.length; i2++) {
-    hex2 += hexes$1[bytes2[i2]];
+  for (let i = 0; i < bytes2.length; i++) {
+    hex2 += hexes$1[bytes2[i]];
   }
   return hex2;
 }
@@ -28827,529 +28680,40 @@ function hexToBytes$1(hex2) {
   if (len % 2)
     throw new Error("padded hex string expected, got unpadded hex of length " + len);
   const array = new Uint8Array(len / 2);
-  for (let i2 = 0; i2 < array.length; i2++) {
-    const j = i2 * 2;
+  for (let i = 0; i < array.length; i++) {
+    const j = i * 2;
     const hexByte = hex2.slice(j, j + 2);
     const byte = Number.parseInt(hexByte, 16);
     if (Number.isNaN(byte) || byte < 0)
       throw new Error("Invalid byte sequence");
-    array[i2] = byte;
+    array[i] = byte;
   }
   return array;
 }
-function utf8ToBytes$2(str) {
-  if (typeof str !== "string")
-    throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
-  return new Uint8Array(new TextEncoder().encode(str));
-}
-function toBytes$1(data) {
-  if (typeof data === "string")
-    data = utf8ToBytes$2(data);
-  if (!u8a$2(data))
-    throw new Error(`expected Uint8Array, got ${typeof data}`);
-  return data;
-}
-let Hash$1 = class Hash {
-  // Safe version that clones internal state
-  clone() {
-    return this._cloneInto();
-  }
-};
-function wrapConstructor$1(hashCons) {
-  const hashC = (msg) => hashCons().update(toBytes$1(msg)).digest();
-  const tmp = hashCons();
-  hashC.outputLen = tmp.outputLen;
-  hashC.blockLen = tmp.blockLen;
-  hashC.create = () => hashCons();
-  return hashC;
-}
-/*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-function assertNumber(n2) {
-  if (!Number.isSafeInteger(n2))
-    throw new Error(`Wrong integer: ${n2}`);
-}
-function chain(...args) {
-  const wrap2 = (a, b2) => (c2) => a(b2(c2));
-  const encode = Array.from(args).reverse().reduce((acc, i2) => acc ? wrap2(acc, i2.encode) : i2.encode, void 0);
-  const decode2 = args.reduce((acc, i2) => acc ? wrap2(acc, i2.decode) : i2.decode, void 0);
-  return { encode, decode: decode2 };
-}
-function alphabet(alphabet2) {
-  return {
-    encode: (digits) => {
-      if (!Array.isArray(digits) || digits.length && typeof digits[0] !== "number")
-        throw new Error("alphabet.encode input should be an array of numbers");
-      return digits.map((i2) => {
-        assertNumber(i2);
-        if (i2 < 0 || i2 >= alphabet2.length)
-          throw new Error(`Digit index outside alphabet: ${i2} (alphabet: ${alphabet2.length})`);
-        return alphabet2[i2];
-      });
-    },
-    decode: (input) => {
-      if (!Array.isArray(input) || input.length && typeof input[0] !== "string")
-        throw new Error("alphabet.decode input should be array of strings");
-      return input.map((letter) => {
-        if (typeof letter !== "string")
-          throw new Error(`alphabet.decode: not string element=${letter}`);
-        const index = alphabet2.indexOf(letter);
-        if (index === -1)
-          throw new Error(`Unknown letter: "${letter}". Allowed: ${alphabet2}`);
-        return index;
-      });
-    }
-  };
-}
-function join(separator = "") {
-  if (typeof separator !== "string")
-    throw new Error("join separator should be string");
-  return {
-    encode: (from2) => {
-      if (!Array.isArray(from2) || from2.length && typeof from2[0] !== "string")
-        throw new Error("join.encode input should be array of strings");
-      for (let i2 of from2)
-        if (typeof i2 !== "string")
-          throw new Error(`join.encode: non-string input=${i2}`);
-      return from2.join(separator);
-    },
-    decode: (to) => {
-      if (typeof to !== "string")
-        throw new Error("join.decode input should be string");
-      return to.split(separator);
-    }
-  };
-}
-function padding(bits, chr = "=") {
-  assertNumber(bits);
-  if (typeof chr !== "string")
-    throw new Error("padding chr should be string");
-  return {
-    encode(data) {
-      if (!Array.isArray(data) || data.length && typeof data[0] !== "string")
-        throw new Error("padding.encode input should be array of strings");
-      for (let i2 of data)
-        if (typeof i2 !== "string")
-          throw new Error(`padding.encode: non-string input=${i2}`);
-      while (data.length * bits % 8)
-        data.push(chr);
-      return data;
-    },
-    decode(input) {
-      if (!Array.isArray(input) || input.length && typeof input[0] !== "string")
-        throw new Error("padding.encode input should be array of strings");
-      for (let i2 of input)
-        if (typeof i2 !== "string")
-          throw new Error(`padding.decode: non-string input=${i2}`);
-      let end = input.length;
-      if (end * bits % 8)
-        throw new Error("Invalid padding: string should have whole number of bytes");
-      for (; end > 0 && input[end - 1] === chr; end--) {
-        if (!((end - 1) * bits % 8))
-          throw new Error("Invalid padding: string has too much padding");
-      }
-      return input.slice(0, end);
-    }
-  };
-}
-function normalize(fn) {
-  if (typeof fn !== "function")
-    throw new Error("normalize fn should be function");
-  return { encode: (from2) => from2, decode: (to) => fn(to) };
-}
-function convertRadix(data, from2, to) {
-  if (from2 < 2)
-    throw new Error(`convertRadix: wrong from=${from2}, base cannot be less than 2`);
-  if (to < 2)
-    throw new Error(`convertRadix: wrong to=${to}, base cannot be less than 2`);
-  if (!Array.isArray(data))
-    throw new Error("convertRadix: data should be array");
-  if (!data.length)
-    return [];
-  let pos = 0;
-  const res = [];
-  const digits = Array.from(data);
-  digits.forEach((d2) => {
-    assertNumber(d2);
-    if (d2 < 0 || d2 >= from2)
-      throw new Error(`Wrong integer: ${d2}`);
-  });
-  while (true) {
-    let carry = 0;
-    let done = true;
-    for (let i2 = pos; i2 < digits.length; i2++) {
-      const digit = digits[i2];
-      const digitBase = from2 * carry + digit;
-      if (!Number.isSafeInteger(digitBase) || from2 * carry / from2 !== carry || digitBase - digit !== from2 * carry) {
-        throw new Error("convertRadix: carry overflow");
-      }
-      carry = digitBase % to;
-      digits[i2] = Math.floor(digitBase / to);
-      if (!Number.isSafeInteger(digits[i2]) || digits[i2] * to + carry !== digitBase)
-        throw new Error("convertRadix: carry overflow");
-      if (!done)
-        continue;
-      else if (!digits[i2])
-        pos = i2;
-      else
-        done = false;
-    }
-    res.push(carry);
-    if (done)
-      break;
-  }
-  for (let i2 = 0; i2 < data.length - 1 && data[i2] === 0; i2++)
-    res.push(0);
-  return res.reverse();
-}
-const gcd = (a, b2) => !b2 ? a : gcd(b2, a % b2);
-const radix2carry = (from2, to) => from2 + (to - gcd(from2, to));
-function convertRadix2(data, from2, to, padding2) {
-  if (!Array.isArray(data))
-    throw new Error("convertRadix2: data should be array");
-  if (from2 <= 0 || from2 > 32)
-    throw new Error(`convertRadix2: wrong from=${from2}`);
-  if (to <= 0 || to > 32)
-    throw new Error(`convertRadix2: wrong to=${to}`);
-  if (radix2carry(from2, to) > 32) {
-    throw new Error(`convertRadix2: carry overflow from=${from2} to=${to} carryBits=${radix2carry(from2, to)}`);
-  }
-  let carry = 0;
-  let pos = 0;
-  const mask = 2 ** to - 1;
-  const res = [];
-  for (const n2 of data) {
-    assertNumber(n2);
-    if (n2 >= 2 ** from2)
-      throw new Error(`convertRadix2: invalid data word=${n2} from=${from2}`);
-    carry = carry << from2 | n2;
-    if (pos + from2 > 32)
-      throw new Error(`convertRadix2: carry overflow pos=${pos} from=${from2}`);
-    pos += from2;
-    for (; pos >= to; pos -= to)
-      res.push((carry >> pos - to & mask) >>> 0);
-    carry &= 2 ** pos - 1;
-  }
-  carry = carry << to - pos & mask;
-  if (!padding2 && pos >= from2)
-    throw new Error("Excess padding");
-  if (!padding2 && carry)
-    throw new Error(`Non-zero padding: ${carry}`);
-  if (padding2 && pos > 0)
-    res.push(carry >>> 0);
-  return res;
-}
-function radix(num) {
-  assertNumber(num);
-  return {
-    encode: (bytes2) => {
-      if (!(bytes2 instanceof Uint8Array))
-        throw new Error("radix.encode input should be Uint8Array");
-      return convertRadix(Array.from(bytes2), 2 ** 8, num);
-    },
-    decode: (digits) => {
-      if (!Array.isArray(digits) || digits.length && typeof digits[0] !== "number")
-        throw new Error("radix.decode input should be array of strings");
-      return Uint8Array.from(convertRadix(digits, num, 2 ** 8));
-    }
-  };
-}
-function radix2(bits, revPadding = false) {
-  assertNumber(bits);
-  if (bits <= 0 || bits > 32)
-    throw new Error("radix2: bits should be in (0..32]");
-  if (radix2carry(8, bits) > 32 || radix2carry(bits, 8) > 32)
-    throw new Error("radix2: carry overflow");
-  return {
-    encode: (bytes2) => {
-      if (!(bytes2 instanceof Uint8Array))
-        throw new Error("radix2.encode input should be Uint8Array");
-      return convertRadix2(Array.from(bytes2), 8, bits, !revPadding);
-    },
-    decode: (digits) => {
-      if (!Array.isArray(digits) || digits.length && typeof digits[0] !== "number")
-        throw new Error("radix2.decode input should be array of strings");
-      return Uint8Array.from(convertRadix2(digits, bits, 8, revPadding));
-    }
-  };
-}
-function unsafeWrapper(fn) {
-  if (typeof fn !== "function")
-    throw new Error("unsafeWrapper fn should be function");
-  return function(...args) {
-    try {
-      return fn.apply(null, args);
-    } catch (e2) {
-    }
-  };
-}
-const base16 = chain(radix2(4), alphabet("0123456789ABCDEF"), join(""));
-const base32 = chain(radix2(5), alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"), padding(5), join(""));
-chain(radix2(5), alphabet("0123456789ABCDEFGHIJKLMNOPQRSTUV"), padding(5), join(""));
-chain(radix2(5), alphabet("0123456789ABCDEFGHJKMNPQRSTVWXYZ"), join(""), normalize((s) => s.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1")));
-const base64 = chain(radix2(6), alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), padding(6), join(""));
-const base64url = chain(radix2(6), alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"), padding(6), join(""));
-const genBase58 = (abc) => chain(radix(58), alphabet(abc), join(""));
-const base58 = genBase58("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
-genBase58("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ");
-genBase58("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz");
-const XMR_BLOCK_LEN = [0, 2, 3, 5, 6, 7, 9, 10, 11];
-const base58xmr = {
-  encode(data) {
-    let res = "";
-    for (let i2 = 0; i2 < data.length; i2 += 8) {
-      const block = data.subarray(i2, i2 + 8);
-      res += base58.encode(block).padStart(XMR_BLOCK_LEN[block.length], "1");
-    }
-    return res;
-  },
-  decode(str) {
-    let res = [];
-    for (let i2 = 0; i2 < str.length; i2 += 11) {
-      const slice2 = str.slice(i2, i2 + 11);
-      const blockLen = XMR_BLOCK_LEN.indexOf(slice2.length);
-      const block = base58.decode(slice2);
-      for (let j = 0; j < block.length - blockLen; j++) {
-        if (block[j] !== 0)
-          throw new Error("base58xmr: wrong padding");
-      }
-      res = res.concat(Array.from(block.slice(block.length - blockLen)));
-    }
-    return Uint8Array.from(res);
-  }
-};
-const BECH_ALPHABET = chain(alphabet("qpzry9x8gf2tvdw0s3jn54khce6mua7l"), join(""));
-const POLYMOD_GENERATORS = [996825010, 642813549, 513874426, 1027748829, 705979059];
-function bech32Polymod(pre) {
-  const b2 = pre >> 25;
-  let chk = (pre & 33554431) << 5;
-  for (let i2 = 0; i2 < POLYMOD_GENERATORS.length; i2++) {
-    if ((b2 >> i2 & 1) === 1)
-      chk ^= POLYMOD_GENERATORS[i2];
-  }
-  return chk;
-}
-function bechChecksum(prefix2, words, encodingConst = 1) {
-  const len = prefix2.length;
-  let chk = 1;
-  for (let i2 = 0; i2 < len; i2++) {
-    const c2 = prefix2.charCodeAt(i2);
-    if (c2 < 33 || c2 > 126)
-      throw new Error(`Invalid prefix (${prefix2})`);
-    chk = bech32Polymod(chk) ^ c2 >> 5;
-  }
-  chk = bech32Polymod(chk);
-  for (let i2 = 0; i2 < len; i2++)
-    chk = bech32Polymod(chk) ^ prefix2.charCodeAt(i2) & 31;
-  for (let v2 of words)
-    chk = bech32Polymod(chk) ^ v2;
-  for (let i2 = 0; i2 < 6; i2++)
-    chk = bech32Polymod(chk);
-  chk ^= encodingConst;
-  return BECH_ALPHABET.encode(convertRadix2([chk % 2 ** 30], 30, 5, false));
-}
-function genBech32(encoding) {
-  const ENCODING_CONST = encoding === "bech32" ? 1 : 734539939;
-  const _words = radix2(5);
-  const fromWords = _words.decode;
-  const toWords = _words.encode;
-  const fromWordsUnsafe = unsafeWrapper(fromWords);
-  function encode(prefix2, words, limit = 90) {
-    if (typeof prefix2 !== "string")
-      throw new Error(`bech32.encode prefix should be string, not ${typeof prefix2}`);
-    if (!Array.isArray(words) || words.length && typeof words[0] !== "number")
-      throw new Error(`bech32.encode words should be array of numbers, not ${typeof words}`);
-    const actualLength = prefix2.length + 7 + words.length;
-    if (limit !== false && actualLength > limit)
-      throw new TypeError(`Length ${actualLength} exceeds limit ${limit}`);
-    prefix2 = prefix2.toLowerCase();
-    return `${prefix2}1${BECH_ALPHABET.encode(words)}${bechChecksum(prefix2, words, ENCODING_CONST)}`;
-  }
-  function decode2(str, limit = 90) {
-    if (typeof str !== "string")
-      throw new Error(`bech32.decode input should be string, not ${typeof str}`);
-    if (str.length < 8 || limit !== false && str.length > limit)
-      throw new TypeError(`Wrong string length: ${str.length} (${str}). Expected (8..${limit})`);
-    const lowered = str.toLowerCase();
-    if (str !== lowered && str !== str.toUpperCase())
-      throw new Error(`String must be lowercase or uppercase`);
-    str = lowered;
-    const sepIndex = str.lastIndexOf("1");
-    if (sepIndex === 0 || sepIndex === -1)
-      throw new Error(`Letter "1" must be present between prefix and data only`);
-    const prefix2 = str.slice(0, sepIndex);
-    const _words2 = str.slice(sepIndex + 1);
-    if (_words2.length < 6)
-      throw new Error("Data must be at least 6 characters long");
-    const words = BECH_ALPHABET.decode(_words2).slice(0, -6);
-    const sum = bechChecksum(prefix2, words, ENCODING_CONST);
-    if (!_words2.endsWith(sum))
-      throw new Error(`Invalid checksum in ${str}: expected "${sum}"`);
-    return { prefix: prefix2, words };
-  }
-  const decodeUnsafe = unsafeWrapper(decode2);
-  function decodeToBytes(str) {
-    const { prefix: prefix2, words } = decode2(str, false);
-    return { prefix: prefix2, words, bytes: fromWords(words) };
-  }
-  return { encode, decode: decode2, decodeToBytes, decodeUnsafe, fromWords, fromWordsUnsafe, toWords };
-}
-const bech32 = genBech32("bech32");
-genBech32("bech32m");
-const utf8 = {
-  encode: (data) => new TextDecoder().decode(data),
-  decode: (str) => new TextEncoder().encode(str)
-};
-const hex = chain(radix2(4), alphabet("0123456789abcdef"), join(""), normalize((s) => {
-  if (typeof s !== "string" || s.length % 2)
-    throw new TypeError(`hex.decode: expected string, got ${typeof s} with length ${s.length}`);
-  return s.toLowerCase();
-}));
-const CODERS = {
-  utf8,
-  hex,
-  base16,
-  base32,
-  base64,
-  base64url,
-  base58,
-  base58xmr
-};
-`Invalid encoding type. Available types: ${Object.keys(CODERS).join(", ")}`;
-var utf8Decoder = new TextDecoder("utf-8");
-new TextEncoder();
-var NostrTypeGuard = {
-  isNProfile: (value) => /^nprofile1[a-z\d]+$/.test(value || ""),
-  isNRelay: (value) => /^nrelay1[a-z\d]+$/.test(value || ""),
-  isNEvent: (value) => /^nevent1[a-z\d]+$/.test(value || ""),
-  isNAddr: (value) => /^naddr1[a-z\d]+$/.test(value || ""),
-  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || ""),
-  isNPub: (value) => /^npub1[a-z\d]{58}$/.test(value || ""),
-  isNote: (value) => /^note1[a-z\d]+$/.test(value || ""),
-  isNcryptsec: (value) => /^ncryptsec1[a-z\d]+$/.test(value || "")
-};
-var Bech32MaxSize = 5e3;
-function decode(nip19) {
-  var _a2, _b2, _c2, _d2, _e2, _f2, _g2;
-  let { prefix: prefix2, words } = bech32.decode(nip19, Bech32MaxSize);
-  let data = new Uint8Array(bech32.fromWords(words));
-  switch (prefix2) {
-    case "nprofile": {
-      let tlv = parseTLV(data);
-      if (!((_a2 = tlv[0]) == null ? void 0 : _a2[0]))
-        throw new Error("missing TLV 0 for nprofile");
-      if (tlv[0][0].length !== 32)
-        throw new Error("TLV 0 should be 32 bytes");
-      return {
-        type: "nprofile",
-        data: {
-          pubkey: bytesToHex$1(tlv[0][0]),
-          relays: tlv[1] ? tlv[1].map((d2) => utf8Decoder.decode(d2)) : []
-        }
-      };
-    }
-    case "nevent": {
-      let tlv = parseTLV(data);
-      if (!((_b2 = tlv[0]) == null ? void 0 : _b2[0]))
-        throw new Error("missing TLV 0 for nevent");
-      if (tlv[0][0].length !== 32)
-        throw new Error("TLV 0 should be 32 bytes");
-      if (tlv[2] && tlv[2][0].length !== 32)
-        throw new Error("TLV 2 should be 32 bytes");
-      if (tlv[3] && tlv[3][0].length !== 4)
-        throw new Error("TLV 3 should be 4 bytes");
-      return {
-        type: "nevent",
-        data: {
-          id: bytesToHex$1(tlv[0][0]),
-          relays: tlv[1] ? tlv[1].map((d2) => utf8Decoder.decode(d2)) : [],
-          author: ((_c2 = tlv[2]) == null ? void 0 : _c2[0]) ? bytesToHex$1(tlv[2][0]) : void 0,
-          kind: ((_d2 = tlv[3]) == null ? void 0 : _d2[0]) ? parseInt(bytesToHex$1(tlv[3][0]), 16) : void 0
-        }
-      };
-    }
-    case "naddr": {
-      let tlv = parseTLV(data);
-      if (!((_e2 = tlv[0]) == null ? void 0 : _e2[0]))
-        throw new Error("missing TLV 0 for naddr");
-      if (!((_f2 = tlv[2]) == null ? void 0 : _f2[0]))
-        throw new Error("missing TLV 2 for naddr");
-      if (tlv[2][0].length !== 32)
-        throw new Error("TLV 2 should be 32 bytes");
-      if (!((_g2 = tlv[3]) == null ? void 0 : _g2[0]))
-        throw new Error("missing TLV 3 for naddr");
-      if (tlv[3][0].length !== 4)
-        throw new Error("TLV 3 should be 4 bytes");
-      return {
-        type: "naddr",
-        data: {
-          identifier: utf8Decoder.decode(tlv[0][0]),
-          pubkey: bytesToHex$1(tlv[2][0]),
-          kind: parseInt(bytesToHex$1(tlv[3][0]), 16),
-          relays: tlv[1] ? tlv[1].map((d2) => utf8Decoder.decode(d2)) : []
-        }
-      };
-    }
-    case "nsec":
-      return { type: prefix2, data };
-    case "npub":
-    case "note":
-      return { type: prefix2, data: bytesToHex$1(data) };
-    default:
-      throw new Error(`unknown prefix ${prefix2}`);
-  }
-}
-function parseTLV(data) {
-  let result = {};
-  let rest = data;
-  while (rest.length > 0) {
-    let t2 = rest[0];
-    let l2 = rest[1];
-    let v2 = rest.slice(2, 2 + l2);
-    rest = rest.slice(2 + l2);
-    if (v2.length < l2)
-      throw new Error(`not enough data to read on TLV ${t2}`);
-    result[t2] = result[t2] || [];
-    result[t2].push(v2);
-  }
-  return result;
-}
-function nsecEncode(key) {
-  return encodeBytes("nsec", key);
-}
-function npubEncode(hex2) {
-  return encodeBytes("npub", hexToBytes$1(hex2));
-}
-function encodeBech32(prefix2, data) {
-  let words = bech32.toWords(data);
-  return bech32.encode(prefix2, words, Bech32MaxSize);
-}
-function encodeBytes(prefix2, bytes2) {
-  return encodeBech32(prefix2, bytes2);
-}
-function number$1(n2) {
+function number(n2) {
   if (!Number.isSafeInteger(n2) || n2 < 0)
     throw new Error(`Wrong positive integer: ${n2}`);
 }
-function bytes$1(b2, ...lengths) {
+function bytes(b2, ...lengths) {
   if (!(b2 instanceof Uint8Array))
     throw new Error("Expected Uint8Array");
   if (lengths.length > 0 && !lengths.includes(b2.length))
     throw new Error(`Expected Uint8Array of length ${lengths}, not of length=${b2.length}`);
 }
-function hash$1(hash2) {
+function hash(hash2) {
   if (typeof hash2 !== "function" || typeof hash2.create !== "function")
     throw new Error("Hash should be wrapped by utils.wrapConstructor");
-  number$1(hash2.outputLen);
-  number$1(hash2.blockLen);
+  number(hash2.outputLen);
+  number(hash2.blockLen);
 }
-function exists$1(instance, checkFinished = true) {
+function exists(instance, checkFinished = true) {
   if (instance.destroyed)
     throw new Error("Hash instance has been destroyed");
   if (checkFinished && instance.finished)
     throw new Error("Hash#digest() has already been called");
 }
-function output$1(out, instance) {
-  bytes$1(out);
+function output(out, instance) {
+  bytes(out);
   const min = instance.outputLen;
   if (out.length < min) {
     throw new Error(`digestInto() expects output buffer of length at least ${min}`);
@@ -29386,7 +28750,7 @@ function concatBytes$1(...arrays) {
   });
   return r2;
 }
-class Hash2 {
+class Hash {
   // Safe version that clones internal state
   clone() {
     return this._cloneInto();
@@ -29406,7 +28770,7 @@ function randomBytes(bytesLength = 32) {
   }
   throw new Error("crypto.getRandomValues must be defined");
 }
-function setBigUint64$1(view, byteOffset, value, isLE2) {
+function setBigUint64(view, byteOffset, value, isLE2) {
   if (typeof view.setBigUint64 === "function")
     return view.setBigUint64(byteOffset, value, isLE2);
   const _32n = BigInt(32);
@@ -29418,7 +28782,7 @@ function setBigUint64$1(view, byteOffset, value, isLE2) {
   view.setUint32(byteOffset + h2, wh2, isLE2);
   view.setUint32(byteOffset + l2, wl, isLE2);
 }
-let SHA2$1 = class SHA2 extends Hash2 {
+class SHA2 extends Hash {
   constructor(blockLen, outputLen, padOffset, isLE2) {
     super();
     this.blockLen = blockLen;
@@ -29433,7 +28797,7 @@ let SHA2$1 = class SHA2 extends Hash2 {
     this.view = createView(this.buffer);
   }
   update(data) {
-    exists$1(this);
+    exists(this);
     const { view, buffer, blockLen } = this;
     data = toBytes(data);
     const len = data.length;
@@ -29458,8 +28822,8 @@ let SHA2$1 = class SHA2 extends Hash2 {
     return this;
   }
   digestInto(out) {
-    exists$1(this);
-    output$1(out, this);
+    exists(this);
+    output(out, this);
     this.finished = true;
     const { buffer, view, blockLen, isLE: isLE2 } = this;
     let { pos } = this;
@@ -29469,9 +28833,9 @@ let SHA2$1 = class SHA2 extends Hash2 {
       this.process(view, 0);
       pos = 0;
     }
-    for (let i2 = pos; i2 < blockLen; i2++)
-      buffer[i2] = 0;
-    setBigUint64$1(view, blockLen - 8, BigInt(this.length * 8), isLE2);
+    for (let i = pos; i < blockLen; i++)
+      buffer[i] = 0;
+    setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE2);
     this.process(view, 0);
     const oview = createView(out);
     const len = this.outputLen;
@@ -29481,8 +28845,8 @@ let SHA2$1 = class SHA2 extends Hash2 {
     const state2 = this.get();
     if (outLen > state2.length)
       throw new Error("_sha2: outputLen bigger than state");
-    for (let i2 = 0; i2 < outLen; i2++)
-      oview.setUint32(4 * i2, state2[i2], isLE2);
+    for (let i = 0; i < outLen; i++)
+      oview.setUint32(4 * i, state2[i], isLE2);
   }
   digest() {
     const { buffer, outputLen } = this;
@@ -29503,10 +28867,10 @@ let SHA2$1 = class SHA2 extends Hash2 {
       to.buffer.set(buffer);
     return to;
   }
-};
-const Chi$1 = (a, b2, c2) => a & b2 ^ ~a & c2;
-const Maj$1 = (a, b2, c2) => a & b2 ^ a & c2 ^ b2 & c2;
-const SHA256_K$1 = /* @__PURE__ */ new Uint32Array([
+}
+const Chi = (a, b2, c2) => a & b2 ^ ~a & c2;
+const Maj = (a, b2, c2) => a & b2 ^ a & c2 ^ b2 & c2;
+const SHA256_K = /* @__PURE__ */ new Uint32Array([
   1116352408,
   1899447441,
   3049323471,
@@ -29572,7 +28936,7 @@ const SHA256_K$1 = /* @__PURE__ */ new Uint32Array([
   3204031479,
   3329325298
 ]);
-const IV$1 = /* @__PURE__ */ new Uint32Array([
+const IV = /* @__PURE__ */ new Uint32Array([
   1779033703,
   3144134277,
   1013904242,
@@ -29582,18 +28946,18 @@ const IV$1 = /* @__PURE__ */ new Uint32Array([
   528734635,
   1541459225
 ]);
-const SHA256_W$1 = /* @__PURE__ */ new Uint32Array(64);
-let SHA256$1 = class SHA256 extends SHA2$1 {
+const SHA256_W = /* @__PURE__ */ new Uint32Array(64);
+class SHA256 extends SHA2 {
   constructor() {
     super(64, 32, 8, false);
-    this.A = IV$1[0] | 0;
-    this.B = IV$1[1] | 0;
-    this.C = IV$1[2] | 0;
-    this.D = IV$1[3] | 0;
-    this.E = IV$1[4] | 0;
-    this.F = IV$1[5] | 0;
-    this.G = IV$1[6] | 0;
-    this.H = IV$1[7] | 0;
+    this.A = IV[0] | 0;
+    this.B = IV[1] | 0;
+    this.C = IV[2] | 0;
+    this.D = IV[3] | 0;
+    this.E = IV[4] | 0;
+    this.F = IV[5] | 0;
+    this.G = IV[6] | 0;
+    this.H = IV[7] | 0;
   }
   get() {
     const { A: A2, B: B2, C: C2, D: D2, E: E2, F: F2, G: G2, H: H2 } = this;
@@ -29611,21 +28975,21 @@ let SHA256$1 = class SHA256 extends SHA2$1 {
     this.H = H2 | 0;
   }
   process(view, offset) {
-    for (let i2 = 0; i2 < 16; i2++, offset += 4)
-      SHA256_W$1[i2] = view.getUint32(offset, false);
-    for (let i2 = 16; i2 < 64; i2++) {
-      const W15 = SHA256_W$1[i2 - 15];
-      const W2 = SHA256_W$1[i2 - 2];
+    for (let i = 0; i < 16; i++, offset += 4)
+      SHA256_W[i] = view.getUint32(offset, false);
+    for (let i = 16; i < 64; i++) {
+      const W15 = SHA256_W[i - 15];
+      const W2 = SHA256_W[i - 2];
       const s0 = rotr(W15, 7) ^ rotr(W15, 18) ^ W15 >>> 3;
       const s1 = rotr(W2, 17) ^ rotr(W2, 19) ^ W2 >>> 10;
-      SHA256_W$1[i2] = s1 + SHA256_W$1[i2 - 7] + s0 + SHA256_W$1[i2 - 16] | 0;
+      SHA256_W[i] = s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16] | 0;
     }
     let { A: A2, B: B2, C: C2, D: D2, E: E2, F: F2, G: G2, H: H2 } = this;
-    for (let i2 = 0; i2 < 64; i2++) {
+    for (let i = 0; i < 64; i++) {
       const sigma1 = rotr(E2, 6) ^ rotr(E2, 11) ^ rotr(E2, 25);
-      const T1 = H2 + sigma1 + Chi$1(E2, F2, G2) + SHA256_K$1[i2] + SHA256_W$1[i2] | 0;
+      const T1 = H2 + sigma1 + Chi(E2, F2, G2) + SHA256_K[i] + SHA256_W[i] | 0;
       const sigma0 = rotr(A2, 2) ^ rotr(A2, 13) ^ rotr(A2, 22);
-      const T2 = sigma0 + Maj$1(A2, B2, C2) | 0;
+      const T2 = sigma0 + Maj(A2, B2, C2) | 0;
       H2 = G2;
       G2 = F2;
       F2 = E2;
@@ -29646,26 +29010,26 @@ let SHA256$1 = class SHA256 extends SHA2$1 {
     this.set(A2, B2, C2, D2, E2, F2, G2, H2);
   }
   roundClean() {
-    SHA256_W$1.fill(0);
+    SHA256_W.fill(0);
   }
   destroy() {
     this.set(0, 0, 0, 0, 0, 0, 0, 0);
     this.buffer.fill(0);
   }
-};
-const sha256$1 = /* @__PURE__ */ wrapConstructor(() => new SHA256$1());
+}
+const sha256 = /* @__PURE__ */ wrapConstructor(() => new SHA256());
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 const _0n$4 = BigInt(0);
 const _1n$4 = BigInt(1);
 const _2n$2 = BigInt(2);
 const u8a = (a) => a instanceof Uint8Array;
-const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i2) => i2.toString(16).padStart(2, "0"));
+const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 function bytesToHex(bytes2) {
   if (!u8a(bytes2))
     throw new Error("Uint8Array expected");
   let hex2 = "";
-  for (let i2 = 0; i2 < bytes2.length; i2++) {
-    hex2 += hexes[bytes2[i2]];
+  for (let i = 0; i < bytes2.length; i++) {
+    hex2 += hexes[bytes2[i]];
   }
   return hex2;
 }
@@ -29685,13 +29049,13 @@ function hexToBytes(hex2) {
   if (len % 2)
     throw new Error("padded hex string expected, got unpadded hex of length " + len);
   const array = new Uint8Array(len / 2);
-  for (let i2 = 0; i2 < array.length; i2++) {
-    const j = i2 * 2;
+  for (let i = 0; i < array.length; i++) {
+    const j = i * 2;
     const hexByte = hex2.slice(j, j + 2);
     const byte = Number.parseInt(hexByte, 16);
     if (Number.isNaN(byte) || byte < 0)
       throw new Error("Invalid byte sequence");
-    array[i2] = byte;
+    array[i] = byte;
   }
   return array;
 }
@@ -29744,8 +29108,8 @@ function concatBytes(...arrays) {
 function equalBytes(b1, b2) {
   if (b1.length !== b2.length)
     return false;
-  for (let i2 = 0; i2 < b1.length; i2++)
-    if (b1[i2] !== b2[i2])
+  for (let i = 0; i < b1.length; i++)
+    if (b1[i] !== b2[i])
       return false;
   return true;
 }
@@ -29778,11 +29142,11 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     throw new Error("hmacFn must be a function");
   let v2 = u8n(hashLen);
   let k2 = u8n(hashLen);
-  let i2 = 0;
+  let i = 0;
   const reset = () => {
     v2.fill(1);
     k2.fill(0);
-    i2 = 0;
+    i = 0;
   };
   const h2 = (...b2) => hmacFn(k2, v2, ...b2);
   const reseed = (seed = u8n()) => {
@@ -29794,7 +29158,7 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     v2 = h2();
   };
   const gen = () => {
-    if (i2++ >= 1e3)
+    if (i++ >= 1e3)
       throw new Error("drbg: tried 1000 values");
     let len = 0;
     const out = [];
@@ -29975,8 +29339,8 @@ function FpSqrt(P2) {
       const n22 = Fp2.mul(n2, _2n$1);
       const v2 = Fp2.pow(n22, c1);
       const nv = Fp2.mul(n2, v2);
-      const i2 = Fp2.mul(Fp2.mul(nv, _2n$1), v2);
-      const root = Fp2.mul(nv, Fp2.sub(i2, Fp2.ONE));
+      const i = Fp2.mul(Fp2.mul(nv, _2n$1), v2);
+      const root = Fp2.mul(nv, Fp2.sub(i, Fp2.ONE));
       if (!Fp2.eql(Fp2.sqr(root), n2))
         throw new Error("Cannot find square root");
       return root;
@@ -30035,17 +29399,17 @@ function FpPow(f2, num, power) {
 }
 function FpInvertBatch(f2, nums) {
   const tmp = new Array(nums.length);
-  const lastMultiplied = nums.reduce((acc, num, i2) => {
+  const lastMultiplied = nums.reduce((acc, num, i) => {
     if (f2.is0(num))
       return acc;
-    tmp[i2] = acc;
+    tmp[i] = acc;
     return f2.mul(acc, num);
   }, f2.ONE);
   const inverted = f2.inv(lastMultiplied);
-  nums.reduceRight((acc, num, i2) => {
+  nums.reduceRight((acc, num, i) => {
     if (f2.is0(num))
       return acc;
-    tmp[i2] = f2.mul(acc, tmp[i2]);
+    tmp[i] = f2.mul(acc, tmp[i]);
     return f2.mul(acc, num);
   }, inverted);
   return tmp;
@@ -30170,7 +29534,7 @@ function wNAF(c2, bits) {
       for (let window2 = 0; window2 < windows; window2++) {
         base = p2;
         points.push(base);
-        for (let i2 = 1; i2 < windowSize; i2++) {
+        for (let i = 1; i < windowSize; i++) {
           base = base.add(p2);
           points.push(base);
         }
@@ -30398,7 +29762,7 @@ function weierstrassPoints(opts) {
         throw new Error("invalid affine point");
       if (p2 instanceof Point2)
         throw new Error("projective point not allowed");
-      const is0 = (i2) => Fp2.eql(i2, Fp2.ZERO);
+      const is0 = (i) => Fp2.eql(i, Fp2.ZERO);
       if (is0(x2) && is0(y2))
         return Point2.ZERO;
       return new Point2(x2, y2, Fp2.ONE);
@@ -30417,7 +29781,7 @@ function weierstrassPoints(opts) {
      */
     static normalizeZ(points) {
       const toInv = Fp2.invertBatch(points.map((p2) => p2.pz));
-      return points.map((p2, i2) => p2.toAffine(toInv[i2])).map(Point2.fromAffine);
+      return points.map((p2, i) => p2.toAffine(toInv[i])).map(Point2.fromAffine);
     }
     /**
      * Converts hash string or Uint8Array to Point.
@@ -30581,7 +29945,7 @@ function weierstrassPoints(opts) {
     wNAF(n2) {
       return wnaf.wNAFCached(this, pointPrecomputes, n2, (comp) => {
         const toInv = Fp2.invertBatch(comp.map((p2) => p2.pz));
-        return comp.map((p2, i2) => p2.toAffine(toInv[i2])).map(Point2.fromAffine);
+        return comp.map((p2, i) => p2.toAffine(toInv[i])).map(Point2.fromAffine);
       });
     }
     /**
@@ -30887,7 +30251,7 @@ function weierstrass(curveDef) {
       return point;
     }
   };
-  function getPublicKey2(privateKey, isCompressed = true) {
+  function getPublicKey(privateKey, isCompressed = true) {
     return Point2.fromPrivateKey(privateKey).toRawBytes(isCompressed);
   }
   function isProbPub(item) {
@@ -31024,7 +30388,7 @@ function weierstrass(curveDef) {
   }
   return {
     CURVE,
-    getPublicKey: getPublicKey2,
+    getPublicKey,
     getSharedSecret,
     sign,
     verify,
@@ -31033,38 +30397,38 @@ function weierstrass(curveDef) {
     utils
   };
 }
-class HMAC extends Hash2 {
-  constructor(hash2, _key) {
+class HMAC extends Hash {
+  constructor(hash$12, _key) {
     super();
     this.finished = false;
     this.destroyed = false;
-    hash$1(hash2);
+    hash(hash$12);
     const key = toBytes(_key);
-    this.iHash = hash2.create();
+    this.iHash = hash$12.create();
     if (typeof this.iHash.update !== "function")
       throw new Error("Expected instance of class which extends utils.Hash");
     this.blockLen = this.iHash.blockLen;
     this.outputLen = this.iHash.outputLen;
     const blockLen = this.blockLen;
     const pad = new Uint8Array(blockLen);
-    pad.set(key.length > blockLen ? hash2.create().update(key).digest() : key);
-    for (let i2 = 0; i2 < pad.length; i2++)
-      pad[i2] ^= 54;
+    pad.set(key.length > blockLen ? hash$12.create().update(key).digest() : key);
+    for (let i = 0; i < pad.length; i++)
+      pad[i] ^= 54;
     this.iHash.update(pad);
-    this.oHash = hash2.create();
-    for (let i2 = 0; i2 < pad.length; i2++)
-      pad[i2] ^= 54 ^ 92;
+    this.oHash = hash$12.create();
+    for (let i = 0; i < pad.length; i++)
+      pad[i] ^= 54 ^ 92;
     this.oHash.update(pad);
     pad.fill(0);
   }
   update(buf) {
-    exists$1(this);
+    exists(this);
     this.iHash.update(buf);
     return this;
   }
   digestInto(out) {
-    exists$1(this);
-    bytes$1(out, this.outputLen);
+    exists(this);
+    bytes(out, this.outputLen);
     this.finished = true;
     this.iHash.digestInto(out);
     this.oHash.update(out);
@@ -31178,7 +30542,7 @@ const secp256k1 = createCurve({
       return { k1neg, k1, k2neg, k2: k22 };
     }
   }
-}, sha256$1);
+}, sha256);
 const _0n = BigInt(0);
 const fe = (x2) => typeof x2 === "bigint" && _0n < x2 && x2 < secp256k1P;
 const ge = (x2) => typeof x2 === "bigint" && _0n < x2 && x2 < secp256k1N;
@@ -31186,11 +30550,11 @@ const TAGGED_HASH_PREFIXES = {};
 function taggedHash(tag, ...messages) {
   let tagP = TAGGED_HASH_PREFIXES[tag];
   if (tagP === void 0) {
-    const tagH = sha256$1(Uint8Array.from(tag, (c2) => c2.charCodeAt(0)));
+    const tagH = sha256(Uint8Array.from(tag, (c2) => c2.charCodeAt(0)));
     tagP = concatBytes(tagH, tagH);
     TAGGED_HASH_PREFIXES[tag] = tagP;
   }
-  return sha256$1(concatBytes(tagP, ...messages));
+  return sha256(concatBytes(tagP, ...messages));
 }
 const pointToBytes = (point) => point.toRawBytes(true).slice(1);
 const numTo32b = (n2) => numberToBytesBE(n2, 32);
@@ -31275,437 +30639,269 @@ const schnorr = /* @__PURE__ */ (() => ({
     mod
   }
 }))();
-function number(n2) {
-  if (!Number.isSafeInteger(n2) || n2 < 0)
-    throw new Error(`Wrong positive integer: ${n2}`);
+/*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+function isBytes(a) {
+  return a instanceof Uint8Array || a != null && typeof a === "object" && a.constructor.name === "Uint8Array";
 }
-function bool(b2) {
-  if (typeof b2 !== "boolean")
-    throw new Error(`Expected boolean, not ${b2}`);
+// @__NO_SIDE_EFFECTS__
+function chain(...args) {
+  const id2 = (a) => a;
+  const wrap2 = (a, b2) => (c2) => a(b2(c2));
+  const encode = args.map((x2) => x2.encode).reduceRight(wrap2, id2);
+  const decode = args.map((x2) => x2.decode).reduce(wrap2, id2);
+  return { encode, decode };
 }
-function bytes(b2, ...lengths) {
-  if (!(b2 instanceof Uint8Array))
-    throw new Error("Expected Uint8Array");
-  if (lengths.length > 0 && !lengths.includes(b2.length))
-    throw new Error(`Expected Uint8Array of length ${lengths}, not of length=${b2.length}`);
-}
-function hash(hash2) {
-  if (typeof hash2 !== "function" || typeof hash2.create !== "function")
-    throw new Error("Hash should be wrapped by utils.wrapConstructor");
-  number(hash2.outputLen);
-  number(hash2.blockLen);
-}
-function exists(instance, checkFinished = true) {
-  if (instance.destroyed)
-    throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
-    throw new Error("Hash#digest() has already been called");
-}
-function output(out, instance) {
-  bytes(out);
-  const min = instance.outputLen;
-  if (out.length < min) {
-    throw new Error(`digestInto() expects output buffer of length at least ${min}`);
-  }
-}
-const assert = {
-  number,
-  bool,
-  bytes,
-  hash,
-  exists,
-  output
-};
-function setBigUint64(view, byteOffset, value, isLE2) {
-  if (typeof view.setBigUint64 === "function")
-    return view.setBigUint64(byteOffset, value, isLE2);
-  const _32n = BigInt(32);
-  const _u32_max = BigInt(4294967295);
-  const wh2 = Number(value >> _32n & _u32_max);
-  const wl = Number(value & _u32_max);
-  const h2 = isLE2 ? 4 : 0;
-  const l2 = isLE2 ? 0 : 4;
-  view.setUint32(byteOffset + h2, wh2, isLE2);
-  view.setUint32(byteOffset + l2, wl, isLE2);
-}
-class SHA22 extends Hash$1 {
-  constructor(blockLen, outputLen, padOffset, isLE2) {
-    super();
-    this.blockLen = blockLen;
-    this.outputLen = outputLen;
-    this.padOffset = padOffset;
-    this.isLE = isLE2;
-    this.finished = false;
-    this.length = 0;
-    this.pos = 0;
-    this.destroyed = false;
-    this.buffer = new Uint8Array(blockLen);
-    this.view = createView$1(this.buffer);
-  }
-  update(data) {
-    assert.exists(this);
-    const { view, buffer, blockLen } = this;
-    data = toBytes$1(data);
-    const len = data.length;
-    for (let pos = 0; pos < len; ) {
-      const take = Math.min(blockLen - this.pos, len - pos);
-      if (take === blockLen) {
-        const dataView = createView$1(data);
-        for (; blockLen <= len - pos; pos += blockLen)
-          this.process(dataView, pos);
-        continue;
-      }
-      buffer.set(data.subarray(pos, pos + take), this.pos);
-      this.pos += take;
-      pos += take;
-      if (this.pos === blockLen) {
-        this.process(view, 0);
-        this.pos = 0;
-      }
+// @__NO_SIDE_EFFECTS__
+function alphabet(alphabet2) {
+  return {
+    encode: (digits) => {
+      if (!Array.isArray(digits) || digits.length && typeof digits[0] !== "number")
+        throw new Error("alphabet.encode input should be an array of numbers");
+      return digits.map((i) => {
+        if (i < 0 || i >= alphabet2.length)
+          throw new Error(`Digit index outside alphabet: ${i} (alphabet: ${alphabet2.length})`);
+        return alphabet2[i];
+      });
+    },
+    decode: (input) => {
+      if (!Array.isArray(input) || input.length && typeof input[0] !== "string")
+        throw new Error("alphabet.decode input should be array of strings");
+      return input.map((letter) => {
+        if (typeof letter !== "string")
+          throw new Error(`alphabet.decode: not string element=${letter}`);
+        const index = alphabet2.indexOf(letter);
+        if (index === -1)
+          throw new Error(`Unknown letter: "${letter}". Allowed: ${alphabet2}`);
+        return index;
+      });
     }
-    this.length += data.length;
-    this.roundClean();
-    return this;
-  }
-  digestInto(out) {
-    assert.exists(this);
-    assert.output(out, this);
-    this.finished = true;
-    const { buffer, view, blockLen, isLE: isLE2 } = this;
-    let { pos } = this;
-    buffer[pos++] = 128;
-    this.buffer.subarray(pos).fill(0);
-    if (this.padOffset > blockLen - pos) {
-      this.process(view, 0);
-      pos = 0;
-    }
-    for (let i2 = pos; i2 < blockLen; i2++)
-      buffer[i2] = 0;
-    setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE2);
-    this.process(view, 0);
-    const oview = createView$1(out);
-    const len = this.outputLen;
-    if (len % 4)
-      throw new Error("_sha2: outputLen should be aligned to 32bit");
-    const outLen = len / 4;
-    const state2 = this.get();
-    if (outLen > state2.length)
-      throw new Error("_sha2: outputLen bigger than state");
-    for (let i2 = 0; i2 < outLen; i2++)
-      oview.setUint32(4 * i2, state2[i2], isLE2);
-  }
-  digest() {
-    const { buffer, outputLen } = this;
-    this.digestInto(buffer);
-    const res = buffer.slice(0, outputLen);
-    this.destroy();
-    return res;
-  }
-  _cloneInto(to) {
-    to || (to = new this.constructor());
-    to.set(...this.get());
-    const { blockLen, buffer, length: length2, finished, destroyed, pos } = this;
-    to.length = length2;
-    to.pos = pos;
-    to.finished = finished;
-    to.destroyed = destroyed;
-    if (length2 % blockLen)
-      to.buffer.set(buffer);
-    return to;
-  }
+  };
 }
-const Chi = (a, b2, c2) => a & b2 ^ ~a & c2;
-const Maj = (a, b2, c2) => a & b2 ^ a & c2 ^ b2 & c2;
-const SHA256_K = new Uint32Array([
-  1116352408,
-  1899447441,
-  3049323471,
-  3921009573,
-  961987163,
-  1508970993,
-  2453635748,
-  2870763221,
-  3624381080,
-  310598401,
-  607225278,
-  1426881987,
-  1925078388,
-  2162078206,
-  2614888103,
-  3248222580,
-  3835390401,
-  4022224774,
-  264347078,
-  604807628,
-  770255983,
-  1249150122,
-  1555081692,
-  1996064986,
-  2554220882,
-  2821834349,
-  2952996808,
-  3210313671,
-  3336571891,
-  3584528711,
-  113926993,
-  338241895,
-  666307205,
-  773529912,
-  1294757372,
-  1396182291,
-  1695183700,
-  1986661051,
-  2177026350,
-  2456956037,
-  2730485921,
-  2820302411,
-  3259730800,
-  3345764771,
-  3516065817,
-  3600352804,
-  4094571909,
-  275423344,
-  430227734,
-  506948616,
-  659060556,
-  883997877,
-  958139571,
-  1322822218,
-  1537002063,
-  1747873779,
-  1955562222,
-  2024104815,
-  2227730452,
-  2361852424,
-  2428436474,
-  2756734187,
-  3204031479,
-  3329325298
-]);
-const IV = new Uint32Array([
-  1779033703,
-  3144134277,
-  1013904242,
-  2773480762,
-  1359893119,
-  2600822924,
-  528734635,
-  1541459225
-]);
-const SHA256_W = new Uint32Array(64);
-class SHA2562 extends SHA22 {
-  constructor() {
-    super(64, 32, 8, false);
-    this.A = IV[0] | 0;
-    this.B = IV[1] | 0;
-    this.C = IV[2] | 0;
-    this.D = IV[3] | 0;
-    this.E = IV[4] | 0;
-    this.F = IV[5] | 0;
-    this.G = IV[6] | 0;
-    this.H = IV[7] | 0;
-  }
-  get() {
-    const { A: A2, B: B2, C: C2, D: D2, E: E2, F: F2, G: G2, H: H2 } = this;
-    return [A2, B2, C2, D2, E2, F2, G2, H2];
-  }
-  // prettier-ignore
-  set(A2, B2, C2, D2, E2, F2, G2, H2) {
-    this.A = A2 | 0;
-    this.B = B2 | 0;
-    this.C = C2 | 0;
-    this.D = D2 | 0;
-    this.E = E2 | 0;
-    this.F = F2 | 0;
-    this.G = G2 | 0;
-    this.H = H2 | 0;
-  }
-  process(view, offset) {
-    for (let i2 = 0; i2 < 16; i2++, offset += 4)
-      SHA256_W[i2] = view.getUint32(offset, false);
-    for (let i2 = 16; i2 < 64; i2++) {
-      const W15 = SHA256_W[i2 - 15];
-      const W2 = SHA256_W[i2 - 2];
-      const s0 = rotr$1(W15, 7) ^ rotr$1(W15, 18) ^ W15 >>> 3;
-      const s1 = rotr$1(W2, 17) ^ rotr$1(W2, 19) ^ W2 >>> 10;
-      SHA256_W[i2] = s1 + SHA256_W[i2 - 7] + s0 + SHA256_W[i2 - 16] | 0;
+// @__NO_SIDE_EFFECTS__
+function join(separator = "") {
+  if (typeof separator !== "string")
+    throw new Error("join separator should be string");
+  return {
+    encode: (from2) => {
+      if (!Array.isArray(from2) || from2.length && typeof from2[0] !== "string")
+        throw new Error("join.encode input should be array of strings");
+      for (let i of from2)
+        if (typeof i !== "string")
+          throw new Error(`join.encode: non-string input=${i}`);
+      return from2.join(separator);
+    },
+    decode: (to) => {
+      if (typeof to !== "string")
+        throw new Error("join.decode input should be string");
+      return to.split(separator);
     }
-    let { A: A2, B: B2, C: C2, D: D2, E: E2, F: F2, G: G2, H: H2 } = this;
-    for (let i2 = 0; i2 < 64; i2++) {
-      const sigma1 = rotr$1(E2, 6) ^ rotr$1(E2, 11) ^ rotr$1(E2, 25);
-      const T1 = H2 + sigma1 + Chi(E2, F2, G2) + SHA256_K[i2] + SHA256_W[i2] | 0;
-      const sigma0 = rotr$1(A2, 2) ^ rotr$1(A2, 13) ^ rotr$1(A2, 22);
-      const T2 = sigma0 + Maj(A2, B2, C2) | 0;
-      H2 = G2;
-      G2 = F2;
-      F2 = E2;
-      E2 = D2 + T1 | 0;
-      D2 = C2;
-      C2 = B2;
-      B2 = A2;
-      A2 = T1 + T2 | 0;
-    }
-    A2 = A2 + this.A | 0;
-    B2 = B2 + this.B | 0;
-    C2 = C2 + this.C | 0;
-    D2 = D2 + this.D | 0;
-    E2 = E2 + this.E | 0;
-    F2 = F2 + this.F | 0;
-    G2 = G2 + this.G | 0;
-    H2 = H2 + this.H | 0;
-    this.set(A2, B2, C2, D2, E2, F2, G2, H2);
-  }
-  roundClean() {
-    SHA256_W.fill(0);
-  }
-  destroy() {
-    this.set(0, 0, 0, 0, 0, 0, 0, 0);
-    this.buffer.fill(0);
-  }
+  };
 }
-class SHA224 extends SHA2562 {
-  constructor() {
-    super();
-    this.A = 3238371032 | 0;
-    this.B = 914150663 | 0;
-    this.C = 812702999 | 0;
-    this.D = 4144912697 | 0;
-    this.E = 4290775857 | 0;
-    this.F = 1750603025 | 0;
-    this.G = 1694076839 | 0;
-    this.H = 3204075428 | 0;
-    this.outputLen = 28;
+const gcd = /* @__NO_SIDE_EFFECTS__ */ (a, b2) => !b2 ? a : /* @__PURE__ */ gcd(b2, a % b2);
+const radix2carry = /* @__NO_SIDE_EFFECTS__ */ (from2, to) => from2 + (to - /* @__PURE__ */ gcd(from2, to));
+// @__NO_SIDE_EFFECTS__
+function convertRadix2(data, from2, to, padding) {
+  if (!Array.isArray(data))
+    throw new Error("convertRadix2: data should be array");
+  if (from2 <= 0 || from2 > 32)
+    throw new Error(`convertRadix2: wrong from=${from2}`);
+  if (to <= 0 || to > 32)
+    throw new Error(`convertRadix2: wrong to=${to}`);
+  if (/* @__PURE__ */ radix2carry(from2, to) > 32) {
+    throw new Error(`convertRadix2: carry overflow from=${from2} to=${to} carryBits=${/* @__PURE__ */ radix2carry(from2, to)}`);
   }
+  let carry = 0;
+  let pos = 0;
+  const mask = 2 ** to - 1;
+  const res = [];
+  for (const n2 of data) {
+    if (n2 >= 2 ** from2)
+      throw new Error(`convertRadix2: invalid data word=${n2} from=${from2}`);
+    carry = carry << from2 | n2;
+    if (pos + from2 > 32)
+      throw new Error(`convertRadix2: carry overflow pos=${pos} from=${from2}`);
+    pos += from2;
+    for (; pos >= to; pos -= to)
+      res.push((carry >> pos - to & mask) >>> 0);
+    carry &= 2 ** pos - 1;
+  }
+  carry = carry << to - pos & mask;
+  if (!padding && pos >= from2)
+    throw new Error("Excess padding");
+  if (!padding && carry)
+    throw new Error(`Non-zero padding: ${carry}`);
+  if (padding && pos > 0)
+    res.push(carry >>> 0);
+  return res;
 }
-const sha256 = wrapConstructor$1(() => new SHA2562());
-wrapConstructor$1(() => new SHA224());
-var verifiedSymbol = Symbol("verified");
-var isRecord = (obj) => obj instanceof Object;
-function validateEvent(event) {
-  if (!isRecord(event))
-    return false;
-  if (typeof event.kind !== "number")
-    return false;
-  if (typeof event.content !== "string")
-    return false;
-  if (typeof event.created_at !== "number")
-    return false;
-  if (typeof event.pubkey !== "string")
-    return false;
-  if (!event.pubkey.match(/^[a-f0-9]{64}$/))
-    return false;
-  if (!Array.isArray(event.tags))
-    return false;
-  for (let i2 = 0; i2 < event.tags.length; i2++) {
-    let tag = event.tags[i2];
-    if (!Array.isArray(tag))
-      return false;
-    for (let j = 0; j < tag.length; j++) {
-      if (typeof tag[j] === "object")
-        return false;
+// @__NO_SIDE_EFFECTS__
+function radix2(bits, revPadding = false) {
+  if (bits <= 0 || bits > 32)
+    throw new Error("radix2: bits should be in (0..32]");
+  if (/* @__PURE__ */ radix2carry(8, bits) > 32 || /* @__PURE__ */ radix2carry(bits, 8) > 32)
+    throw new Error("radix2: carry overflow");
+  return {
+    encode: (bytes2) => {
+      if (!isBytes(bytes2))
+        throw new Error("radix2.encode input should be Uint8Array");
+      return /* @__PURE__ */ convertRadix2(Array.from(bytes2), 8, bits, !revPadding);
+    },
+    decode: (digits) => {
+      if (!Array.isArray(digits) || digits.length && typeof digits[0] !== "number")
+        throw new Error("radix2.decode input should be array of numbers");
+      return Uint8Array.from(/* @__PURE__ */ convertRadix2(digits, bits, 8, revPadding));
     }
-  }
-  return true;
+  };
 }
-new TextDecoder("utf-8");
-var utf8Encoder = new TextEncoder();
-var JS = class {
-  generateSecretKey() {
-    return schnorr.utils.randomPrivateKey();
-  }
-  getPublicKey(secretKey) {
-    return bytesToHex$1(schnorr.getPublicKey(secretKey));
-  }
-  finalizeEvent(t2, secretKey) {
-    const event = t2;
-    event.pubkey = bytesToHex$1(schnorr.getPublicKey(secretKey));
-    event.id = getEventHash(event);
-    event.sig = bytesToHex$1(schnorr.sign(getEventHash(event), secretKey));
-    event[verifiedSymbol] = true;
-    return event;
-  }
-  verifyEvent(event) {
-    if (typeof event[verifiedSymbol] === "boolean")
-      return event[verifiedSymbol];
-    const hash2 = getEventHash(event);
-    if (hash2 !== event.id) {
-      event[verifiedSymbol] = false;
-      return false;
-    }
+// @__NO_SIDE_EFFECTS__
+function unsafeWrapper(fn) {
+  if (typeof fn !== "function")
+    throw new Error("unsafeWrapper fn should be function");
+  return function(...args) {
     try {
-      const valid = schnorr.verify(event.sig, hash2, event.pubkey);
-      event[verifiedSymbol] = valid;
-      return valid;
-    } catch (err) {
-      event[verifiedSymbol] = false;
-      return false;
+      return fn.apply(null, args);
+    } catch (e2) {
     }
+  };
+}
+const BECH_ALPHABET = /* @__PURE__ */ chain(/* @__PURE__ */ alphabet("qpzry9x8gf2tvdw0s3jn54khce6mua7l"), /* @__PURE__ */ join(""));
+const POLYMOD_GENERATORS = [996825010, 642813549, 513874426, 1027748829, 705979059];
+// @__NO_SIDE_EFFECTS__
+function bech32Polymod(pre) {
+  const b2 = pre >> 25;
+  let chk = (pre & 33554431) << 5;
+  for (let i = 0; i < POLYMOD_GENERATORS.length; i++) {
+    if ((b2 >> i & 1) === 1)
+      chk ^= POLYMOD_GENERATORS[i];
   }
-};
-function serializeEvent(evt) {
-  if (!validateEvent(evt))
-    throw new Error("can't serialize event with wrong or missing properties");
-  return JSON.stringify([0, evt.pubkey, evt.created_at, evt.kind, evt.tags, evt.content]);
+  return chk;
 }
-function getEventHash(event) {
-  let eventHash = sha256(utf8Encoder.encode(serializeEvent(event)));
-  return bytesToHex$1(eventHash);
+// @__NO_SIDE_EFFECTS__
+function bechChecksum(prefix2, words, encodingConst = 1) {
+  const len = prefix2.length;
+  let chk = 1;
+  for (let i = 0; i < len; i++) {
+    const c2 = prefix2.charCodeAt(i);
+    if (c2 < 33 || c2 > 126)
+      throw new Error(`Invalid prefix (${prefix2})`);
+    chk = /* @__PURE__ */ bech32Polymod(chk) ^ c2 >> 5;
+  }
+  chk = /* @__PURE__ */ bech32Polymod(chk);
+  for (let i = 0; i < len; i++)
+    chk = /* @__PURE__ */ bech32Polymod(chk) ^ prefix2.charCodeAt(i) & 31;
+  for (let v2 of words)
+    chk = /* @__PURE__ */ bech32Polymod(chk) ^ v2;
+  for (let i = 0; i < 6; i++)
+    chk = /* @__PURE__ */ bech32Polymod(chk);
+  chk ^= encodingConst;
+  return BECH_ALPHABET.encode(/* @__PURE__ */ convertRadix2([chk % 2 ** 30], 30, 5, false));
 }
-var i = new JS();
-var generateSecretKey = i.generateSecretKey;
-var getPublicKey = i.getPublicKey;
-i.finalizeEvent;
-i.verifyEvent;
+// @__NO_SIDE_EFFECTS__
+function genBech32(encoding) {
+  const ENCODING_CONST = encoding === "bech32" ? 1 : 734539939;
+  const _words = /* @__PURE__ */ radix2(5);
+  const fromWords = _words.decode;
+  const toWords = _words.encode;
+  const fromWordsUnsafe = /* @__PURE__ */ unsafeWrapper(fromWords);
+  function encode(prefix2, words, limit = 90) {
+    if (typeof prefix2 !== "string")
+      throw new Error(`bech32.encode prefix should be string, not ${typeof prefix2}`);
+    if (words instanceof Uint8Array)
+      words = Array.from(words);
+    if (!Array.isArray(words) || words.length && typeof words[0] !== "number")
+      throw new Error(`bech32.encode words should be array of numbers, not ${typeof words}`);
+    if (prefix2.length === 0)
+      throw new TypeError(`Invalid prefix length ${prefix2.length}`);
+    const actualLength = prefix2.length + 7 + words.length;
+    if (limit !== false && actualLength > limit)
+      throw new TypeError(`Length ${actualLength} exceeds limit ${limit}`);
+    const lowered = prefix2.toLowerCase();
+    const sum = /* @__PURE__ */ bechChecksum(lowered, words, ENCODING_CONST);
+    return `${lowered}1${BECH_ALPHABET.encode(words)}${sum}`;
+  }
+  function decode(str, limit = 90) {
+    if (typeof str !== "string")
+      throw new Error(`bech32.decode input should be string, not ${typeof str}`);
+    if (str.length < 8 || limit !== false && str.length > limit)
+      throw new TypeError(`Wrong string length: ${str.length} (${str}). Expected (8..${limit})`);
+    const lowered = str.toLowerCase();
+    if (str !== lowered && str !== str.toUpperCase())
+      throw new Error(`String must be lowercase or uppercase`);
+    const sepIndex = lowered.lastIndexOf("1");
+    if (sepIndex === 0 || sepIndex === -1)
+      throw new Error(`Letter "1" must be present between prefix and data only`);
+    const prefix2 = lowered.slice(0, sepIndex);
+    const data = lowered.slice(sepIndex + 1);
+    if (data.length < 6)
+      throw new Error("Data must be at least 6 characters long");
+    const words = BECH_ALPHABET.decode(data).slice(0, -6);
+    const sum = /* @__PURE__ */ bechChecksum(prefix2, words, ENCODING_CONST);
+    if (!data.endsWith(sum))
+      throw new Error(`Invalid checksum in ${str}: expected "${sum}"`);
+    return { prefix: prefix2, words };
+  }
+  const decodeUnsafe = /* @__PURE__ */ unsafeWrapper(decode);
+  function decodeToBytes(str) {
+    const { prefix: prefix2, words } = decode(str, false);
+    return { prefix: prefix2, words, bytes: fromWords(words) };
+  }
+  function encodeFromBytes(prefix2, bytes2) {
+    return encode(prefix2, toWords(bytes2));
+  }
+  return {
+    encode,
+    decode,
+    encodeFromBytes,
+    decodeToBytes,
+    decodeUnsafe,
+    fromWords,
+    fromWordsUnsafe,
+    toWords
+  };
+}
+const bech32 = /* @__PURE__ */ genBech32("bech32");
 export {
   AlertDialog as A,
   Button as B,
   Card as C,
-  npubEncode as D,
+  TabPanel as D,
   Editable as E,
   Flex as F,
-  GiBirdTwitter as G,
+  GridItem as G,
   HStack as H,
   IconButton as I,
-  bytesToHex$1 as J,
-  decode as K,
-  LuPinOff as L,
+  createRoot as J,
+  ChakraProvider as K,
+  Link as L,
   ModalOverlay as M,
-  NostrTypeGuard as N,
-  Tabs as O,
-  TabList as P,
-  Tab as Q,
   React as R,
   StackDivider as S,
   Text as T,
-  TabPanels as U,
   VStack as V,
-  TabPanel as W,
-  createRoot as X,
-  ChakraProvider as Y,
-  LuPin as a,
-  AlertDialogContent as b,
-  ModalHeader as c,
-  ModalCloseButton as d,
-  ModalBody as e,
-  Link as f,
+  bech32 as a,
+  bytesToHex$1 as b,
+  AlertDialogContent as c,
+  ModalHeader as d,
+  ModalCloseButton as e,
+  ModalBody as f,
   ModalFooter as g,
-  LuEyeOff as h,
-  LuEye as i,
+  Heading as h,
+  Box as i,
   jsxRuntimeExports as j,
-  GridItem as k,
-  Heading as l,
-  Box as m,
-  Grid as n,
-  Switch as o,
-  InputGroup as p,
-  Input as q,
+  Grid as k,
+  Switch as l,
+  InputGroup as m,
+  Input as n,
+  CardHeader as o,
+  EditablePreview as p,
+  EditableInput as q,
   reactExports as r,
-  CardHeader as s,
-  EditablePreview as t,
-  EditableInput as u,
-  CardBody as v,
-  CardFooter as w,
-  generateSecretKey as x,
-  nsecEncode as y,
-  getPublicKey as z
+  schnorr as s,
+  CardBody as t,
+  CardFooter as u,
+  hexToBytes$1 as v,
+  Tabs as w,
+  TabList as x,
+  Tab as y,
+  TabPanels as z
 };

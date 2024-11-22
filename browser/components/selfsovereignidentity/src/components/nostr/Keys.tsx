@@ -24,14 +24,13 @@ import useChildActorEvent, {
   dispatchEvents,
 } from "../../hooks/useChildActorEvent"
 import { Credential } from "../../custom.type"
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils"
 import {
-  decode,
+  BIP340,
+  decodeFromNostrKey,
+  encodeToNostrKey,
   NostrTypeGuard,
-  npubEncode,
-  nsecEncode,
-} from "nostr-tools/nip19"
-import { generateSecretKey, getPublicKey } from "nostr-tools/pure"
-import { bytesToHex } from "@noble/hashes/utils"
+} from "../../shared/keys"
 import Secret from "../shared/Secret"
 import { DefaultTrustedSites } from "./NIP07"
 import { promptForPrimaryPassword } from "../../shared/utils"
@@ -39,22 +38,22 @@ import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
 
 interface NostrCredential extends Credential {
   properties: {
-    pubkey: string
-    seckey: string
     displayName: string
   }
+}
+interface NostrDisplayedCredential extends NostrCredential {
+  nseckey: string
+  rawPubkey: string
 }
 
 const NostrTemplate: NostrCredential = {
   protocolName: "nostr",
   credentialName: "nsec",
-  identifier: "", // npub key
-  secret: "", // nsec key
+  identifier: "", // npubkey
+  secret: "", // raw seckey
   primary: false,
   trustedSites: [],
   properties: {
-    pubkey: "", // raw pubkey
-    seckey: "", // raw seckey
     displayName: "",
   },
 }
@@ -95,21 +94,18 @@ export default function Nostr(props) {
   ) => {
     e.preventDefault()
 
-    const seckey = generateSecretKey()
-    const nseckey = nsecEncode(seckey)
-    const pubkey = getPublicKey(seckey as Uint8Array)
-    const npubkey = npubEncode(pubkey)
+    const seckey = BIP340.generateSecretKey()
+    const pubkey = BIP340.generatePublicKey(seckey)
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey))
 
     addCredentialToStore({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: nseckey,
+      secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
       trustedSites: DefaultTrustedSites,
       properties: {
         displayName: npubkey,
-        pubkey,
-        seckey: bytesToHex(seckey),
       },
     })
 
@@ -132,19 +128,17 @@ export default function Nostr(props) {
       return
     }
 
-    const { data: seckey } = decode(importedKey)
-    const pubkey = getPublicKey(seckey as Uint8Array)
-    const npubkey = npubEncode(pubkey)
+    const { data: seckey } = decodeFromNostrKey(importedKey)
+    const pubkey = BIP340.generatePublicKey(seckey)
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey))
 
     addCredentialToStore({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: importedKey,
+      secret: bytesToHex(seckey as Uint8Array),
       primary: nostrkeys.length === 0,
       properties: {
         displayName: npubkey,
-        pubkey,
-        seckey: bytesToHex(seckey),
       },
     })
 
@@ -232,6 +226,13 @@ export default function Nostr(props) {
     setIsOpenDialog(false)
   }
 
+  function addInterpretedKeys(item: NostrCredential): NostrDisplayedCredential {
+    const rawSeckey = hexToBytes(item.secret)
+    const nseckey = encodeToNostrKey("nsec", rawSeckey)
+    const rawPubkey = BIP340.generatePublicKey(rawSeckey)
+    return { ...item, nseckey, rawPubkey }
+  }
+
   return (
     <>
       <VStack
@@ -298,7 +299,7 @@ export default function Nostr(props) {
         <Box>
           {nostrkeys.length === 0 && <p>No key is regisitered.</p>}
           <Flex gap={6} wrap="wrap">
-            {nostrkeys.map((item, i) => (
+            {nostrkeys.map(addInterpretedKeys).map((item, i) => (
               <Card maxW="md" overflow="hidden" key={i}>
                 <CardHeader>
                   <Heading size="md">
@@ -334,7 +335,7 @@ export default function Nostr(props) {
                       Nostr Secret Key
                     </Heading>
                     <Secret
-                      value={item.secret}
+                      value={item.nseckey}
                       onChangeVisibility={() => {}}
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings
@@ -347,7 +348,7 @@ export default function Nostr(props) {
                       Raw Public Key
                     </Heading>
                     <Text fontSize="sm" isTruncated>
-                      {item.properties.pubkey}
+                      {item.rawPubkey}
                     </Text>
                   </Box>
                   <Box>
@@ -355,7 +356,7 @@ export default function Nostr(props) {
                       Raw Secret Key
                     </Heading>
                     <Secret
-                      value={item.properties.seckey}
+                      value={item.secret}
                       onChangeVisibility={() => {}}
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings

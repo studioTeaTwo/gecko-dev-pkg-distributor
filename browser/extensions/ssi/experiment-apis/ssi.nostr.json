@@ -1,0 +1,89 @@
+[
+  {
+    "namespace": "ssi.nostr",
+    "events": [
+      {
+        "name": "onPrimaryChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "newGuid",
+            "type": "string",
+            "description": "The new guid which changed. If it's empty string, so it means all removed."
+          }
+        ]
+      },
+      {
+        "name": "onPrefEnabledChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      },
+      {
+        "name": "onPrefTrustedSitesChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      },
+      {
+        "name": "onPrefAccountChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      },
+      {
+        "name": "onPrefBuiltInNip07Changed",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "getPrefs",
+        "type": "function",
+        "description": "Get preference's values",
+        "parameters": [],
+        "async": true
+      },
+      {
+        "name": "sign",
+        "type": "function",
+        "description": "Pass message and return the signature by Nostr secret key",
+        "async": true,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string",
+            "description": "The message to sign"
+          },
+          {
+            "name": "guid",
+            "type": "string",
+            "description": "The guid to specify the secret key"
+          }
+        ]
+      }
+    ]
+  }
+]

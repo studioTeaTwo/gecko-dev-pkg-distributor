@@ -43,11 +43,11 @@ on:
       MOZ_BUILD_DATE:
         type: string
         default: ""
-    outputs:
-      mar_name:
-        value: ${{jobs.win-build.outputs.mar_name}}
-      mar_size:
-        value: ${{jobs.win-build.outputs.mar_size}}
+    # outputs:
+    #   mar_name:
+    #     value: ${{jobs.win-build.outputs.mar_name}}
+    #   mar_size:
+    #     value: ${{jobs.win-build.outputs.mar_size}}
     secrets:
       PAT:
         description: "Personal Access Token"
@@ -55,9 +55,9 @@ on:
 jobs:
   win-build:
     runs-on: ubuntu-latest
-    outputs:
-      mar_name: ${{steps.gen-mar.outputs.MAR_NAME}}
-      mar_size: ${{steps.gen-mar.outputs.MAR_SIZE}}
+    # outputs:
+    #   mar_name: ${{steps.gen-mar.outputs.MAR_NAME}}
+    #   mar_size: ${{steps.gen-mar.outputs.MAR_SIZE}}
     steps:
     - name: Use Node.js
       uses: actions/setup-node@v4

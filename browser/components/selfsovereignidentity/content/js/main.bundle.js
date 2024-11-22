@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, L as LuPinOff, a as LuPin, V as VStack, G as GiBirdTwitter, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, f as Link, g as ModalFooter, R as React, T as Text, h as LuEyeOff, i as LuEye, k as GridItem, l as Heading, S as StackDivider, m as Box, n as Grid, o as Switch, p as InputGroup, q as Input, F as Flex, C as Card, s as CardHeader, E as Editable, t as EditablePreview, u as EditableInput, v as CardBody, w as CardFooter, x as generateSecretKey, y as nsecEncode, z as getPublicKey, D as npubEncode, J as bytesToHex, N as NostrTypeGuard, K as decode, O as Tabs, P as TabList, Q as Tab, U as TabPanels, W as TabPanel, X as createRoot, Y as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, m as InputGroup, n as Input, F as Flex, C as Card, o as CardHeader, E as Editable, p as EditablePreview, q as EditableInput, t as CardBody, u as CardFooter, v as hexToBytes, w as Tabs, x as TabList, y as Tab, z as TabPanels, D as TabPanel, J as createRoot, K as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -58,6 +58,196 @@ BitcoinLogo.defaultProps = {
   color: "currentColor",
   size: "13"
 };
+const DefaultContext = {
+  color: void 0,
+  size: void 0,
+  className: void 0,
+  style: void 0,
+  attr: void 0
+};
+const IconContext = reactExports.createContext && reactExports.createContext(DefaultContext);
+function Tree2Element(tree) {
+  return tree && tree.map(
+    (node, i) => reactExports.createElement(
+      node.tag,
+      { key: i, ...node.attr },
+      Tree2Element(node.child)
+    )
+  );
+}
+function GenIcon(data) {
+  return (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(IconBase, { attr: { ...data.attr }, ...props, children: Tree2Element(data.child) });
+}
+function IconBase(props) {
+  const elem = (conf) => {
+    const { attr, size, title, ...svgProps } = props;
+    const computedSize = size || conf.size || "1em";
+    let className;
+    if (conf.className) className = conf.className;
+    if (props.className)
+      className = (className ? className + " " : "") + props.className;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "svg",
+      {
+        stroke: "currentColor",
+        fill: "currentColor",
+        strokeWidth: "0",
+        ...conf.attr,
+        ...attr,
+        ...svgProps,
+        className,
+        style: {
+          color: props.color || conf.color,
+          ...conf.style,
+          ...props.style
+        },
+        height: computedSize,
+        width: computedSize,
+        xmlns: "http://www.w3.org/2000/svg",
+        children: [
+          title && /* @__PURE__ */ jsxRuntimeExports.jsx("title", { children: title }),
+          props.children
+        ]
+      }
+    );
+  };
+  return IconContext !== void 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx(IconContext.Consumer, { children: (conf) => elem(conf) }) : elem(DefaultContext);
+}
+function LuEyeOff(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    },
+    child: [
+      { tag: "path", attr: { d: "M9.88 9.88a3 3 0 1 0 4.24 4.24" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+        },
+        child: []
+      },
+      {
+        tag: "path",
+        attr: {
+          d: "M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
+        },
+        child: []
+      },
+      {
+        tag: "line",
+        attr: { x1: "2", x2: "22", y1: "2", y2: "22" },
+        child: []
+      }
+    ]
+  })(props);
+}
+function LuEye(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    },
+    child: [
+      {
+        tag: "path",
+        attr: { d: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" },
+        child: []
+      },
+      { tag: "circle", attr: { cx: "12", cy: "12", r: "3" }, child: [] }
+    ]
+  })(props);
+}
+function LuPinOff(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    },
+    child: [
+      {
+        tag: "line",
+        attr: { x1: "2", x2: "22", y1: "2", y2: "22" },
+        child: []
+      },
+      {
+        tag: "line",
+        attr: { x1: "12", x2: "12", y1: "17", y2: "22" },
+        child: []
+      },
+      {
+        tag: "path",
+        attr: {
+          d: "M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h12"
+        },
+        child: []
+      },
+      {
+        tag: "path",
+        attr: { d: "M15 9.34V6h1a2 2 0 0 0 0-4H7.89" },
+        child: []
+      }
+    ]
+  })(props);
+}
+function LuPin(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    },
+    child: [
+      {
+        tag: "line",
+        attr: { x1: "12", x2: "12", y1: "17", y2: "22" },
+        child: []
+      },
+      {
+        tag: "path",
+        attr: {
+          d: "M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"
+        },
+        child: []
+      }
+    ]
+  })(props);
+}
+function GiBirdTwitter(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 512 512" },
+    child: [
+      {
+        tag: "path",
+        attr: {
+          d: "M77.313 28.438l36.406 51.25L44.874 98.25l34.688 18.53c-37.62 38-62.482 102.735-57.532 198.94V493h147.314v-.188H269.75c-13.74-59.032-15.368-110.625-5.563-149.875-16.954-7.98-25.126-17.362-32.75-30.375 51.348 21.135 127.618 35.582 200.47 18.594-23.227-10.096-47.07-22.578-70.094-37.156-.013-.007-.02-.024-.032-.03-17.996-10.514-34.942-22.247-49.967-36.376-9.385-7.88-18.41-16.142-26.907-24.78 36.074-25.505 77.297-40.297 118.656-46.876-7.72 5.104-15.336 10.82-22.687 16.937-18.272 15.207-34.737 32.736-45.313 50.656 4.9 3.986 10.02 7.785 15.313 11.44 9.017-15.524 24.43-33.122 41.97-47.72 24.26-20.193 52.937-34.698 70.06-35.375h.126c10.89.214 21.608.935 32.064 2.125-10.838-7.647-21.748-14.487-32.72-20.563v-.25c-.145.006-.29.025-.437.032-54.844-30.266-111.23-41.295-168.03-36.72-21.272-24.23-49.025-40.62-78.657-47.875L77.312 28.437zm74.343 107.312c4.67 0 9.16.754 13.375 2.125-8.493 2.716-14.655 10.667-14.655 20.063 0 11.634 9.428 21.062 21.063 21.062 9.84 0 18.122-6.754 20.437-15.875 1.934 4.905 3 10.252 3 15.844 0 23.867-19.35 43.218-43.22 43.218-23.867 0-43.218-19.35-43.218-43.22 0-23.867 19.35-43.218 43.22-43.218z"
+        },
+        child: []
+      }
+    ]
+  })(props);
+}
 const IDB_NAME = "selfsovereignidentity";
 const STORE_NAME = "settings";
 const KEY_NAME = "menuPin";
@@ -331,6 +521,32 @@ function useChildActorEvent() {
     credentials
   };
 }
+const BIP340 = {
+  generateSecretKey: () => schnorr.utils.randomPrivateKey(),
+  generatePublicKey: (secretKey) => bytesToHex(schnorr.getPublicKey(secretKey))
+};
+const NostrTypeGuard = {
+  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
+};
+const Bech32MaxSize = 5e3;
+const encodeToNostrKey = (prefix, bytes) => {
+  const words = bech32.toWords(bytes);
+  return bech32.encode(
+    prefix,
+    words,
+    Bech32MaxSize
+  );
+};
+const decodeFromNostrKey = (nip19) => {
+  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
+  const data = new Uint8Array(bech32.fromWords(words));
+  switch (prefix) {
+    case "nsec":
+      return { type: prefix, data };
+    case "npub":
+      return { type: prefix, data: bytesToHex(data) };
+  }
+};
 function promptForPrimaryPassword(messageId) {
   return new Promise((resolve) => {
     window.AboutSelfsovereignidentityUtils.promptForPrimaryPassword(
@@ -640,16 +856,12 @@ const NostrTemplate = {
   protocolName: "nostr",
   credentialName: "nsec",
   identifier: "",
-  // npub key
+  // npubkey
   secret: "",
-  // nsec key
+  // raw seckey
   primary: false,
   trustedSites: [],
   properties: {
-    pubkey: "",
-    // raw pubkey
-    seckey: "",
-    // raw seckey
     displayName: ""
   }
 };
@@ -678,20 +890,17 @@ function Nostr$2(props) {
   };
   const handleGenNewKey = (e) => {
     e.preventDefault();
-    const seckey = generateSecretKey();
-    const nseckey = nsecEncode(seckey);
-    const pubkey = getPublicKey(seckey);
-    const npubkey = npubEncode(pubkey);
+    const seckey = BIP340.generateSecretKey();
+    const pubkey = BIP340.generatePublicKey(seckey);
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: nseckey,
+      secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
       trustedSites: DefaultTrustedSites,
       properties: {
-        displayName: npubkey,
-        pubkey,
-        seckey: bytesToHex(seckey)
+        displayName: npubkey
       }
     });
     setNewKey(npubkey);
@@ -707,18 +916,16 @@ function Nostr$2(props) {
       alert("The typed key is existing!");
       return;
     }
-    const { data: seckey } = decode(importedKey);
-    const pubkey = getPublicKey(seckey);
-    const npubkey = npubEncode(pubkey);
+    const { data: seckey } = decodeFromNostrKey(importedKey);
+    const pubkey = BIP340.generatePublicKey(seckey);
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: importedKey,
+      secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
       properties: {
-        displayName: npubkey,
-        pubkey,
-        seckey: bytesToHex(seckey)
+        displayName: npubkey
       }
     });
     setImportedKey("");
@@ -785,6 +992,12 @@ function Nostr$2(props) {
   const onCloseDialog = () => {
     setIsOpenDialog(false);
   };
+  function addInterpretedKeys(item) {
+    const rawSeckey = hexToBytes(item.secret);
+    const nseckey = encodeToNostrKey("nsec", rawSeckey);
+    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    return { ...item, nseckey, rawPubkey };
+  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       VStack,
@@ -845,7 +1058,7 @@ function Nostr$2(props) {
           ] }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "No key is regisitered." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrkeys.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrkeys.map(addInterpretedKeys).map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Editable,
                 {
@@ -874,7 +1087,7 @@ function Nostr$2(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Secret,
                     {
-                      value: item.secret,
+                      value: item.nseckey,
                       onChangeVisibility: () => {
                       },
                       usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
@@ -884,14 +1097,14 @@ function Nostr$2(props) {
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Raw Public Key" }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", isTruncated: true, children: item.properties.pubkey })
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", isTruncated: true, children: item.rawPubkey })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Raw Secret Key" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Secret,
                     {
-                      value: item.properties.seckey,
+                      value: item.secret,
                       onChangeVisibility: () => {
                       },
                       usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
