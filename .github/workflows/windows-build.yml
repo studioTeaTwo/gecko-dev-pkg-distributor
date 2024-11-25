@@ -40,6 +40,9 @@ on:
       out_artifact_name:
         type: string
         default: ""
+      display_version:
+        type: string
+        default: ""
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -170,8 +173,6 @@ jobs:
         ./mach --no-interactive bootstrap --application-choice browser
         echo "export LIB=\"$(cd ~/.mozbuild/clang/lib/clang/* && cd lib/windows && pwd)\"" >> mozconfig
 
-        echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> $GITHUB_ENV
-        echo "INSIDE_VERSION=$(cat ./browser/config/version.txt)" >> $GITHUB_ENV
         echo "UPDATE_CHANNEL=release" >> $GITHUB_ENV
       env:
         GHA_profgen: ${{inputs.profgen}}
@@ -242,11 +243,11 @@ jobs:
         if [[ $GHA_zstd != 'true' ]];then
           cp obj-${arch}-pc-windows-msvc/dist/install/sea/ssb-*.en-US.${arch_inst}.installer-stub.exe ~/output/ssb-stub.installer.exe
           cp obj-${arch}-pc-windows-msvc/dist/ssb-*.en-US.${arch_inst}.zip ~/output/
-          cp obj-${arch}-pc-windows-msvc/dist/install/sea/ssb-*.en-US.${arch_inst}.installer.exe ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.${arch_inst}.installer.exe
+          cp obj-${arch}-pc-windows-msvc/dist/install/sea/ssb-*.en-US.${arch_inst}.installer.exe ~/output/ssb-${GHA_display_version}.${arch_inst}.installer.exe
         else
           cp obj-${arch}-pc-windows-msvc/dist/ssb-*.en-US.${arch_inst}.zip ~/output/
           7z x ~/output/ssb-*.en-US.${arch_inst}.zip
-          tar -I "zstd -T4 -10" --remove-files -cvf ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.en-us.${arch_inst}.tar.zst ssb
+          tar -I "zstd -T4 -10" --remove-files -cvf ~/output/ssb-${GHA_display_version}.en-us.${arch_inst}.tar.zst ssb
           rm ~/output/ssb-*.en-US.${arch_inst}.zip
         fi
         #? Original code used in daily b with update
@@ -254,27 +255,8 @@ jobs:
       env:
         GHA_aarch64: ${{inputs.aarch64}}
         GHA_zstd: ${{inputs.zstd}}
+        GHA_display_version: ${{inputs.display_version}}
 
-    # - name: Create MAR artifact 📦
-    #   id: gen-mar
-    #   if : inputs.mar
-    #   run: |
-    #     if [[ $GHA_aarch64 == 'true' ]];then
-    #       arch="aarch64"
-    #     else
-    #       arch="x86_64"
-    #     fi
-
-    #     touch "obj-${arch}-pc-windows-msvc/dist/floorp/precomplete"
-    #     MAR="obj-${arch}-pc-windows-msvc/dist/host/bin/mar" \
-    #     MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
-    #     MAR_CHANNEL_ID=release \
-    #     ./tools/update-packaging/make_full_update.sh ~/output "obj-${arch}-pc-windows-msvc/dist/floorp"
-
-    #     mv ~/output/*.mar ~/output/WINNT-${arch}.mar
-
-    #     echo "MAR_NAME=WINNT-${arch}.mar" >> $GITHUB_OUTPUT
-    #     echo "MAR_SIZE=$(stat -c "%s" ~/output/WINNT-${arch}.mar)" >> $GITHUB_OUTPUT
     # Publish START
     - name: make name of publish archive
       shell: node {0}

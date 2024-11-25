@@ -9,6 +9,11 @@ name: "release"
 
 on:
   workflow_dispatch:
+    inputs:
+      base-browser-symbol:
+        description: symbol name of base browser
+        type: string
+        default: "esr"
 
 jobs:
   get-display-version:
@@ -23,21 +28,7 @@ jobs:
     - name: Get Display Version
       id: get
       run: |
-        echo "display-version=$(cat browser/config/version_display.txt)" >> $GITHUB_OUTPUT
-
-  get-inside-version:
-    runs-on: ubuntu-latest
-    outputs:
-      inside-version: ${{ steps.get.outputs.inside-version }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.PAT }}
-        sparse-checkout: 'browser/config/version.txt'
-    - name: Get Inside Version
-      id: get
-      run: |
-        echo "inside-version=$(cat browser/config/version.txt)" >> $GITHUB_OUTPUT
+        echo "display-version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ inputs.base-browser-symbol }}" >> $GITHUB_OUTPUT
 
   get-buildid:
     runs-on: ubuntu-latest
@@ -56,11 +47,13 @@ jobs:
 #? It seems in PGO build, branding is not important in NOT deploying binary
 
   Part1-win-x86_64-build-with-profgen-zstd:
+    needs: [get-display-version]
     uses: ./.github/workflows/windows-build.yml
     with:
       profgen: true
       aarch64: false
       zstd: true
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
     secrets:
       PAT: ${{ secrets.PAT }}
 
@@ -74,12 +67,13 @@ jobs:
       PAT: ${{ secrets.PAT }}
 
   Part3-win-x86_64-build-with-profdata-and-jarlog:
-    needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid]
+    needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid, get-display-version]
     uses: ./.github/workflows/windows-build.yml
     with:
       aarch64: false
       profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
       out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       PAT: ${{ secrets.PAT }}
@@ -88,10 +82,11 @@ jobs:
 
   Part1-linux-x86_64-build-with-PGO:
     uses: ./.github/workflows/linux-build.yml
-    needs: [get-buildid]
+    needs: [get-buildid, get-display-version]
     with:
       aarch64: false
       # mar: false
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       PAT: ${{ secrets.PAT }}
@@ -100,10 +95,11 @@ jobs:
 
   Part1-linux-aarch64-build:
     uses: ./.github/workflows/linux-build.yml
-    needs: [get-buildid]
+    needs: [get-buildid, get-display-version]
     with:
       aarch64: true
       # mar: false
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       PAT: ${{ secrets.PAT }}
@@ -136,12 +132,12 @@ jobs:
 
   Part4-macOS-Universal-package-and-sign:
     uses: ./.github/workflows/macOS-integration.yml
-    needs: [get-buildid, get-display-version, get-inside-version, Part3-macOS-Universal-build-with-profdata-and-jarlog]
+    needs: [get-buildid, get-display-version, Part3-macOS-Universal-build-with-profdata-and-jarlog]
     with:
+      # mar: true
       x86_64_artifact_name: ssb-mac-x86_64-package
       aarch64_artifact_name: ssb-mac-aarch64-package
-      display_version: ${{needs.get-display-version.outputs.display-version}}
-      inside_version: ${{needs.get-inside-version.outputs.inside-version}}
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       # macOS_CERTIFICATES_P12_For_App_BASE64: ${{ secrets.macOS_CERTIFICATES_P12_For_App_BASE64 }}
@@ -155,12 +151,12 @@ jobs:
 ################################################ ↑ Mac OS Build ################################################
 
   Deploy-to-installer:
-    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version, get-inside-version]
+    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version]
     runs-on: ubuntu-latest
     steps:
     - name: Release version 📦
       run: |
-        echo "Release version: ${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        echo "version=${{ needs.get-display-version.outputs.display-version }}"
 
     - name: make directory 📁
       run: |
@@ -209,10 +205,10 @@ jobs:
         echo "SHA256 hashes" > hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
         echo "Linux AArch64" >> hashes.txt
-        sha256sum linux-aarch64/ssb-${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr.linux-aarch64.tar.bz2  >> hashes.txt
+        sha256sum linux-aarch64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-aarch64.tar.bz2  >> hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
         echo "Linux x86_64" >> hashes.txt
-        sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr.linux-x86_64.tar.bz2  >> hashes.txt
+        sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-x86_64.tar.bz2  >> hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
 
     - name: Create a tag with signature
@@ -221,7 +217,7 @@ jobs:
       uses: mathieudutour/github-tag-action@v6.2
       with:
         github_token: ${{ secrets.PAT }}
-        custom_tag: "${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        custom_tag: "${{ needs.get-display-version.outputs.display-version }}"
         create_annotated_tag: true
 
     - name: Deploy to GitHub Releases for Stable Version 🚀
@@ -229,13 +225,17 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
+          # /home/runner/downloads/artifacts/linux-x64/LINUX-x86_64.mar
+          # /home/runner/downloads/artifacts/linux-aarch64/LINUX-aarch64.mar
+          # /home/runner/downloads/artifacts/windows-x64/WINNT-x86_64.mar
+          # /home/runner/downloads/artifacts/macOS-x64/DARWIN-Universal.mar
           /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
           /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
           /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
           /home/runner/downloads/artifacts/macOS-x64/ssb-*.macOS-universal.dmg
           /home/runner/downloads/artifacts/hashes.txt
-        tag_name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
-        name: "v${{ needs.get-display-version.outputs.display-version }}-${{ needs.get-inside-version.outputs.inside-version }}esr"
+        tag_name: "v${{ needs.get-display-version.outputs.display-version }}"
+        name: "v${{ needs.get-display-version.outputs.display-version }}"
         draft: true
         prerelease: true
         token: ${{ secrets.PAT }}

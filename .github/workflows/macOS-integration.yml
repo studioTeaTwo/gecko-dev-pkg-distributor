@@ -23,9 +23,6 @@ on:
       display_version:
         type: string
         default: ""
-      inside_version:
-        type: string
-        default: ""
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -66,9 +63,6 @@ on:
       display_version:
         type: string
         default: ""
-      inside_version:
-        type: string
-        default: ""
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -105,7 +99,7 @@ jobs:
 
         - uses: actions/setup-python@v5
           with:
-            python-version: '3.11'
+            python-version: '3.11' 
 
         - name: Create environment 🌲
           shell: bash
@@ -139,7 +133,7 @@ jobs:
           run: |
             export APP_NAME="ssb"
             export INSTALLER_NAME="ssb"
-            export DMG_FILE_NAME=${INSTALLER_NAME}-${{ inputs.display_version }}-${{ inputs.inside_version }}esr.macOS-universal.dmg
+            export DMG_FILE_NAME=${INSTALLER_NAME}-${{ inputs.display_version }}.macOS-universal.dmg
 
             ./mach python -m mozbuild.action.make_dmg ./obj-x86_64-apple-darwin/dist/ssb ${DMG_FILE_NAME}
 

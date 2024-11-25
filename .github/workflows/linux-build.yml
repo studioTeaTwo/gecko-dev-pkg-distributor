@@ -26,6 +26,9 @@ on:
         description: "aarch64 option is not compartiable with deb option"
         type: boolean
         default: false
+      display_version:
+        type: string
+        default: ""
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -184,22 +187,20 @@ jobs:
 
     - name: Package 2 - zip 📦
       run: |
-        export DISPLAY_VERSION=`cat browser/config/version_display.txt`
-        export INSIDE_VERSION=`cat ./browser/config/version.txt`
-
         mkdir ~/output
         if [[ $GHA_aarch64 != 'true' ]];then
-          cp obj-x86_64-pc-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-x86_64.tar.bz2
+          cp obj-x86_64-pc-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${GHA_display_version}.linux-x86_64.tar.bz2
           # echo "OUTPUT=obj-x86_64-pc-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
           # zip -r dist.zip obj-x86_64-pc-linux-gnu/dist/*.tar.bz2
         else
           #aarch64
-          cp obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-aarch64.tar.bz2
+          cp obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${GHA_display_version}.linux-aarch64.tar.bz2
           # echo "OUTPUT=obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
           # zip -r dist.zip obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2
         fi
       env:
         GHA_aarch64: ${{inputs.aarch64}}
+        GHA_display_version: ${{inputs.display_version}}
 
     #PUBLISH START
     - name: Publish🎁
