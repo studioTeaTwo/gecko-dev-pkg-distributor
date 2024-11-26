@@ -85,7 +85,7 @@ jobs:
     needs: [get-buildid, get-display-version]
     with:
       aarch64: false
-      # mar: false
+      mar: true
       display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
@@ -98,7 +98,7 @@ jobs:
     needs: [get-buildid, get-display-version]
     with:
       aarch64: true
-      # mar: false
+      mar: true
       display_version: ${{ needs.get-display-version.outputs.display-version }}
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
@@ -225,9 +225,9 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          # /home/runner/downloads/artifacts/linux-x64/LINUX-x86_64.mar
-          # /home/runner/downloads/artifacts/linux-aarch64/LINUX-aarch64.mar
-          # /home/runner/downloads/artifacts/windows-x64/WINNT-x86_64.mar
+          /home/runner/downloads/artifacts/linux-x64/LINUX-x86_64.mar
+          /home/runner/downloads/artifacts/linux-aarch64/LINUX-aarch64.mar
+          /home/runner/downloads/artifacts/windows-x64/WINNT-x86_64.mar
           # /home/runner/downloads/artifacts/macOS-x64/DARWIN-Universal.mar
           /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
           /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2

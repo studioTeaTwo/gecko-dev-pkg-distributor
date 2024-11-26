@@ -29,6 +29,9 @@ on:
       display_version:
         type: string
         default: ""
+      mar:
+        type: boolean
+        default: false
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -201,6 +204,36 @@ jobs:
       env:
         GHA_aarch64: ${{inputs.aarch64}}
         GHA_display_version: ${{inputs.display_version}}
+
+    - name: Create MAR artifact if mar📦
+      id: gen-mar
+      if: inputs.mar
+      run: |
+        if [[ $GHA_ARCH == 'aarch64' ]];then
+
+          touch "obj-aarch64-unknown-linux-gnu/dist/ssb/precomplete"
+
+          MAR="obj-aarch64-unknown-linux-gnu/dist/host/bin/mar" \
+          MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
+          MAR_CHANNEL_ID=release \
+          ./tools/update-packaging/make_full_update.sh ~/output "obj-aarch64-unknown-linux-gnu/dist/ssb"
+
+          mv ~/output/*.mar ~/output/LINUX-aarch64.mar
+
+        else
+
+          touch "obj-x86_64-pc-linux-gnu/dist/ssb/precomplete"
+
+          MAR="obj-x86_64-pc-linux-gnu/dist/host/bin/mar" \
+          MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
+          MAR_CHANNEL_ID=release \
+          ./tools/update-packaging/make_full_update.sh ~/output "obj-x86_64-pc-linux-gnu/dist/ssb"
+
+          mv ~/output/*.mar ~/output/LINUX-x86_64.mar
+
+        fi
+      env:
+        GHA_ARCH: ${{fromJson('["x86_64","aarch64"]')[inputs.aarch64]}}
 
     #PUBLISH START
     - name: Publish🎁

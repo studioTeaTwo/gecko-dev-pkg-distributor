@@ -46,11 +46,6 @@ on:
       MOZ_BUILD_DATE:
         type: string
         default: ""
-    # outputs:
-    #   mar_name:
-    #     value: ${{jobs.win-build.outputs.mar_name}}
-    #   mar_size:
-    #     value: ${{jobs.win-build.outputs.mar_size}}
     secrets:
       PAT:
         description: "Personal Access Token"
@@ -58,9 +53,6 @@ on:
 jobs:
   win-build:
     runs-on: ubuntu-latest
-    # outputs:
-    #   mar_name: ${{steps.gen-mar.outputs.MAR_NAME}}
-    #   mar_size: ${{steps.gen-mar.outputs.MAR_SIZE}}
     steps:
     - name: Use Node.js
       uses: actions/setup-node@v4
@@ -182,13 +174,13 @@ jobs:
 
     - name: setup Rust 🦀
       run: |
-        rustup toolchain install 1.79
-        rustup default 1.79
+        rustup toolchain install 1.81.0
+        rustup default 1.81.0
 
         if [[ $GHA_aarch64 == 'true' ]];then
-          rustup target add aarch64-pc-windows-msvc --toolchain 1.79
+          rustup target add aarch64-pc-windows-msvc --toolchain 1.81.0
         else
-          rustup target add x86_64-pc-windows-msvc --toolchain 1.79
+          rustup target add x86_64-pc-windows-msvc --toolchain 1.81.0
         fi
 
         #? https://github.com/mozilla/sccache#known-caveats
@@ -255,7 +247,24 @@ jobs:
       env:
         GHA_aarch64: ${{inputs.aarch64}}
         GHA_zstd: ${{inputs.zstd}}
-        GHA_display_version: ${{inputs.display_version}}
+
+    - name: Create MAR artifact 📦
+      id: gen-mar
+      if : inputs.mar
+      run: |
+        if [[ $GHA_aarch64 == 'true' ]];then
+          arch="aarch64"
+        else
+          arch="x86_64"
+        fi
+
+        touch "obj-${arch}-pc-windows-msvc/dist/ssb/precomplete"
+        MAR="obj-${arch}-pc-windows-msvc/dist/host/bin/mar" \
+        MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
+        MAR_CHANNEL_ID=release \
+        ./tools/update-packaging/make_full_update.sh ~/output "obj-${arch}-pc-windows-msvc/dist/ssb"
+
+        mv ~/output/*.mar ~/output/WINNT-${arch}.mar
 
     # Publish START
     - name: make name of publish archive
