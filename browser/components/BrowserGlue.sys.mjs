@@ -524,7 +524,6 @@ let JSWINDOWACTORS = {
         DOMContentLoaded: {},
         L10nMutationsFinished: {},
         SubmitSearchOnionize: { wantUntrusted: true },
-        YECHidden: { wantUntrusted: true },
       },
     },
 
