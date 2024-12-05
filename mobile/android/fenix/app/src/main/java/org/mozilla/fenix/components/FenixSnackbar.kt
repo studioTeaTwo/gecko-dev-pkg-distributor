@@ -100,6 +100,14 @@ class FenixSnackbar private constructor(
         }
     }
 
+    /**
+     * @param textAllCaps Present the text in ALL CAPS. This may use a small-caps form when available.
+     * Overwrites the default value set in fenix_snackbar.xml
+     */
+    fun setAllCapsForActionButton(textAllCaps: Boolean) = this.apply {
+        binding.snackbarBtn.isAllCaps = textAllCaps
+    }
+
     companion object {
         const val LENGTH_LONG = Snackbar.LENGTH_LONG
         const val LENGTH_SHORT = Snackbar.LENGTH_SHORT
