@@ -211,14 +211,18 @@ jobs:
         sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-x86_64.tar.bz2  >> hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
 
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v6
+      with:
+        gpg_private_key: ${{ secrets.GPG_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        fingerprint: "62371C7A964E546257C889DFFF3C5BC82722B62B"
+        git_user_signingkey: true
     - name: Create a tag with signature
       continue-on-error: true
-      id: tag_version
-      uses: mathieudutour/github-tag-action@v6.2
-      with:
-        github_token: ${{ secrets.PAT }}
-        custom_tag: "${{ needs.get-display-version.outputs.display-version }}"
-        create_annotated_tag: true
+      run: |
+        git tag -s v${{ needs.get-display-version.outputs.display-version }} -m 'v${{ needs.get-display-version.outputs.display-version }}'
+        git push origin v${{ needs.get-display-version.outputs.display-version }}
 
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
