@@ -11,6 +11,9 @@
 on:
   workflow_call:
     inputs:
+      mar:
+        type: boolean
+        default: false
       out_artifact_name:
         type: string
         default: ""
@@ -51,6 +54,9 @@ on:
 
   workflow_dispatch:
     inputs:
+      mar:
+        type: boolean
+        default: false
       out_artifact_name:
         type: string
         default: ""
@@ -139,6 +145,20 @@ jobs:
 
             mkdir -p ./output
             mv ./${DMG_FILE_NAME} ./output/${DMG_FILE_NAME}
+
+        - name: Create MAR artifact 📦
+          if : inputs.mar
+          run: |
+            export APP_NAME="Nightly.app"
+
+            brew install tree
+            chmod +x ./.github/workflows/bin/mar
+            chmod +x ./tools/update-packaging/make_full_update.sh
+            touch "obj-x86_64-apple-darwin/dist/ssb/precomplete"
+            MAR=".github/workflows/bin/mar" MOZ_PRODUCT_VERSION=${{ inputs.display_version }} MAR_CHANNEL_ID=release tools/update-packaging/make_full_update.sh ./output/DARWIN-Universal.mar "obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}"
+
+            export MACOS_MAR_SIZE=`stat -f%z ./output/DARWIN-Universal.mar`
+            echo "MACOS_MAR_SIZE=$MACOS_MAR_SIZE" >> $GITHUB_ENV
 
         - name: make name of publish archive
           shell: node {0}

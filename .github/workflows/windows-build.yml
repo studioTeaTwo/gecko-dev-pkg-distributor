@@ -247,6 +247,7 @@ jobs:
       env:
         GHA_aarch64: ${{inputs.aarch64}}
         GHA_zstd: ${{inputs.zstd}}
+        GHA_display_version: ${{inputs.display_version}}
 
     - name: Create MAR artifact 📦
       id: gen-mar

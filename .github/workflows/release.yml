@@ -71,6 +71,7 @@ jobs:
     uses: ./.github/workflows/windows-build.yml
     with:
       aarch64: false
+      mar: true
       profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
       out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
       display_version: ${{ needs.get-display-version.outputs.display-version }}
@@ -134,7 +135,7 @@ jobs:
     uses: ./.github/workflows/macOS-integration.yml
     needs: [get-buildid, get-display-version, Part3-macOS-Universal-build-with-profdata-and-jarlog]
     with:
-      # mar: true
+      mar: true
       x86_64_artifact_name: ssb-mac-x86_64-package
       aarch64_artifact_name: ssb-mac-aarch64-package
       display_version: ${{ needs.get-display-version.outputs.display-version }}
@@ -211,6 +212,7 @@ jobs:
         sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-x86_64.tar.bz2  >> hashes.txt
         echo "****************************************************************************************************" >> hashes.txt
 
+    - uses: actions/checkout@v4
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
@@ -232,7 +234,7 @@ jobs:
           /home/runner/downloads/artifacts/linux-x64/LINUX-x86_64.mar
           /home/runner/downloads/artifacts/linux-aarch64/LINUX-aarch64.mar
           /home/runner/downloads/artifacts/windows-x64/WINNT-x86_64.mar
-          # /home/runner/downloads/artifacts/macOS-x64/DARWIN-Universal.mar
+          /home/runner/downloads/artifacts/macOS-x64/DARWIN-Universal.mar
           /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
           /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
           /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
