@@ -1029,7 +1029,19 @@ function Nostr$2(props) {
     onPrimaryChanged2({ protocolName: "nostr", guid: newPrimaryGuid });
     window.location.reload();
   };
-  const handleDeleteCredential = (item) => {
+  const handleDeleteCredential = async (item) => {
+    if (!confirm("The key can't be restored if no backup. Okay?")) {
+      return;
+    }
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
     if (item.primary === true) {
       const prev = nostrkeys.find((key) => !key.primary);
       if (prev) {
@@ -1045,6 +1057,9 @@ function Nostr$2(props) {
   };
   const handleAllRemove = async (e) => {
     e.preventDefault();
+    if (!confirm("All data will be deleted. Okay?")) {
+      return;
+    }
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
@@ -1053,9 +1068,6 @@ function Nostr$2(props) {
         setIsOpenDialog(true);
         return;
       }
-    }
-    if (!confirm("All data will be deleted. Okay?")) {
-      return;
     }
     removeAllCredentialsToStore2();
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });

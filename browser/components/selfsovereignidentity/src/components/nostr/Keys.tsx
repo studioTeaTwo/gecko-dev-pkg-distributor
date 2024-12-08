@@ -185,7 +185,20 @@ export default function Nostr(props) {
     window.location.reload() // FIXME(ssb)
   }
 
-  const handleDeleteCredential = (item: Credential) => {
+  const handleDeleteCredential = async(item: Credential) => {
+    if (!confirm("The key can't be restored if no backup. Okay?")) {
+      return
+    }
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      )
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true)
+        return
+      }
+    }
+
     if (item.primary === true) {
       // Set the first of current falses to primary
       const prev = nostrkeys.find((key) => !key.primary)
@@ -208,6 +221,9 @@ export default function Nostr(props) {
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault()
+    if (!confirm("All data will be deleted. Okay?")) {
+      return
+    }
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
@@ -216,9 +232,6 @@ export default function Nostr(props) {
         setIsOpenDialog(true)
         return
       }
-    }
-    if (!confirm("All data will be deleted. Okay?")) {
-      return
     }
     removeAllCredentialsToStore()
 
