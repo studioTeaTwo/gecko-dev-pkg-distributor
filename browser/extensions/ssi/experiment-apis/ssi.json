@@ -22,16 +22,34 @@
             "name": "primary",
             "type": "boolean",
             "description": "The primary flag to search"
-          },
-          {
-            "name": "guid",
-            "type": "string",
-            "description": "The guid to search"
           }
         ]
       },
       {
         "name": "askPermission",
+        "type": "function",
+        "description": "Ask the user whether to give a permission to the requsting web app",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name targeted"
+          },
+          {
+            "name": "credentialName",
+            "type": "string",
+            "description": "The credential name targeted"
+          },
+          {
+            "name": "tabId",
+            "type": "number",
+            "description": "The current tab id"
+          }
+        ],
+        "async": true
+      },
+      {
+        "name": "askPermissionChild",
         "type": "function",
         "description": "Ask the user whether to give a permission to the requsting web app",
         "parameters": [

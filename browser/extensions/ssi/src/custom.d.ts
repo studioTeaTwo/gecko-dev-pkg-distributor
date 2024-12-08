@@ -15,29 +15,23 @@ declare namespace browser.ssi {
   const searchCredentialsWithoutSecret: (
     protocolName: ProtocolName,
     credentialName: string,
-    primary: boolean,
-    guid: string
+    primary: boolean
   ) => Promise<Credential[] | null>
+  const askPermission: (protocolName: ProtocolName, credentialName: string, tabId: number) => Promise<boolean>
+  const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>
 
   type commonApis = {
     getPrefs: () => Promise<{
       enabled: boolean
-      "trustedSites.enabled": boolean
       "event.accountChanged.enabled": boolean
       "builtInNip07.enabled": boolean
     } | null>
-    askPermission: () => Promise<boolean>
     onPrimaryChanged: {
       addListener: (callback: (newGuid: string) => void) => {}
       rmoveListener: () => void
       hadListener: Function
     }
     onPrefEnabledChanged: {
-      addListener: (callback: (prefKey: string) => void) => {}
-      rmoveListener: () => void
-      hadListener: Function
-    }
-    onPrefTrustedSitesChanged: {
       addListener: (callback: (prefKey: string) => void) => {}
       rmoveListener: () => void
       hadListener: Function
@@ -50,7 +44,7 @@ declare namespace browser.ssi {
   }
 
   const nostr: {
-    sign: (guid: string, serializedEvent: string) => Promise<string | null>
+    sign: (serializedEvent: string) => Promise<string | null>
     onPrefBuiltInNip07Changed: {
       addListener: (callback: (prefKey: string) => void) => {}
       rmoveListener: () => void

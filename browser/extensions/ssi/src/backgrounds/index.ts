@@ -13,11 +13,14 @@ log("background-script working")
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener(
-  (message: MessageBetweenBackAndContent, sender: FixMe) => {
+  (
+    message: MessageBetweenBackAndContent,
+    sender: browser.runtime.MessageSender
+  ) => {
     log("background received from content", message, sender)
     if (message.action.includes("nostr/")) {
       return Promise.resolve(
-        doNostrAction(message.origin, message.action, message.args)
+        doNostrAction(message.action, message.args, sender.tab.id)
       )
         .then((data) => ({ data }))
         .catch((error) => ({ error }))

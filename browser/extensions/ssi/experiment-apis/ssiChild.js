@@ -11,17 +11,24 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 })
 
-const AUTH_TIMEOUT_MS = 24 * 60 * 60 * 1000 // 1 day
-const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-ssi-required"
-
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
-    let _authExpirationTime = Number.NEGATIVE_INFINITY
+    const { childManager } = context
+    const { tabManager } = context.extension
 
     return {
       ssi: {
-        async askPermission(protocolName) {
-          // TODO(ssb): Not yet implemented
+        // TODO(ssb): Not yet implemented
+        async askPermissionChild(protocolName) {
+          console.dir("here is child")
+          try {
+            // let result = await childManager.callParentAsyncFunction(
+            //   "ssi.askPermission",
+            //   ["nostr"]
+            // )
+          } catch (e) {
+            console.error(e)
+          }
         },
       },
     }

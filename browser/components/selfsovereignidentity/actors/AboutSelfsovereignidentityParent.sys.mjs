@@ -277,45 +277,59 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   }
 
   #prefChanged(changeSet) {
+    if (changeSet.hasOwnProperty("enabled")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignidentity.${changeSet.protocolName}.enabled`,
+        changeSet.enabled
+      )
+    }
+    if (changeSet.hasOwnProperty("usedPrimarypasswordToSettings")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignidentity.${changeSet.protocolName}.primarypassword.toSettings.enabled`,
+        changeSet.usedPrimarypasswordToSettings
+      )
+    }
+    if (changeSet.hasOwnProperty("expiryTimeForPrimarypasswordToSettings")) {
+      Services.prefs.setIntPref(
+        `selfsovereignidentity.${changeSet.protocolName}.primarypassword.toSettings.expiryTime`,
+        changeSet.expiryTimeForPrimarypasswordToSettings
+      )
+    }
+    if (changeSet.hasOwnProperty("usedPrimarypasswordToApps")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignidentity.${changeSet.protocolName}.primarypassword.toApps.enabled`,
+        changeSet.usedPrimarypasswordToApps
+      )
+    }
+    if (changeSet.hasOwnProperty("expiryTimeForPrimarypasswordToApps")) {
+      Services.prefs.setIntPref(
+        `selfsovereignidentity.${changeSet.protocolName}.primarypassword.toApps.expiryTime`,
+        changeSet.expiryTimeForPrimarypasswordToApps
+      )
+    }
+    if (changeSet.hasOwnProperty("usedTrustedSites")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignidentity.${changeSet.protocolName}.trustedSites.enabled`,
+        changeSet.usedTrustedSites
+      )
+    }
+    if (changeSet.hasOwnProperty("usedAccountChanged")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignidentity.${changeSet.protocolName}.event.accountChanged.enabled`,
+        changeSet.usedAccountChanged
+      )
+    }
     if (changeSet.protocolName === "nostr") {
-      if (changeSet.hasOwnProperty("enabled")) {
-        Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.enabled",
-          changeSet.enabled
-        )
-      }
-      if (changeSet.hasOwnProperty("usedPrimarypasswordToSettings")) {
-        Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.primarypassword.toSettings.enabled",
-          changeSet.usedPrimarypasswordToSettings
-        )
-      }
-      if (changeSet.hasOwnProperty("usedPrimarypasswordToApps")) {
-        Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.primarypassword.toApps.enabled",
-          changeSet.usedPrimarypasswordToApps
-        )
-      }
-      if (changeSet.hasOwnProperty("usedTrustedSites")) {
-        Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.trustedSites.enabled",
-          changeSet.usedTrustedSites
-        )
-      }
       if (changeSet.hasOwnProperty("usedBuiltInNip07")) {
         Services.prefs.setBoolPref(
           "selfsovereignidentity.nostr.builtInNip07.enabled",
           changeSet.usedBuiltInNip07
         )
       }
-      if (changeSet.hasOwnProperty("usedAccountChanged")) {
-        Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.event.accountChanged.enabled",
-          changeSet.usedAccountChanged
-        )
-      }
 
-      this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", changeSet)
+      this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", {
+        [changeSet.protocolName]: { ...changeSet },
+      })
     }
   }
 

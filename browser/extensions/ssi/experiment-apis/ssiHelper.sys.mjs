@@ -43,23 +43,6 @@ export const experimentApiSsiHelper = {
       Services.prefs.removeObserver(prefName, callback)
     }
   },
-  onPrefTrustedSitesChangedRegister: (protocolName) => (fire) => {
-    const prefName = `selfsovereignidentity.${protocolName}.trustedSites.enabled`
-
-    const callback = () => {
-      // Check permission
-      const enabled = Services.prefs.getBoolPref(
-        `selfsovereignidentity.${protocolName}.enabled`
-      )
-      if (!enabled) return
-
-      fire.async("trustedSites.enabled").catch(() => {}) // ignore Message Manager disconnects
-    }
-    Services.prefs.addObserver(prefName, callback)
-    return () => {
-      Services.prefs.removeObserver(prefName, callback)
-    }
-  },
   onPrefAccountChangedRegister: (protocolName) => (fire) => {
     const prefName = `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
     const callback = () => {
@@ -76,20 +59,16 @@ export const experimentApiSsiHelper = {
       Services.prefs.removeObserver(prefName, callback)
     }
   },
-  async getPrefs(protocolName) {
+  getPrefs(protocolName) {
     // Check permission
     const enabled = Services.prefs.getBoolPref(
       `selfsovereignidentity.${protocolName}.enabled`
     )
     if (!enabled) return null
 
-    let prefs
     try {
-      prefs = {
+      const prefs = {
         enabled: enabled,
-        "trustedSites.enabled": Services.prefs.getBoolPref(
-          `selfsovereignidentity.${protocolName}.trustedSites.enabled`
-        ),
         "event.accountChanged.enabled": Services.prefs.getBoolPref(
           `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
         ),
@@ -101,7 +80,27 @@ export const experimentApiSsiHelper = {
       }
       return prefs
     } catch (e) {
-      throw e
+      console.error(e)
+      return null
+    }
+  },
+  getInternalPrefs(protocolName) {
+    try {
+      const prefs = {
+        "trustedSites.enabled": Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.trustedSites.enabled`
+        ),
+        "primarypassword.toApps.enabled": Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toApps.enabled`
+        ),
+        "primarypassword.toApps.expiryTime": Services.prefs.getIntPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toApps.expiryTime`
+        ),
+      }
+      return prefs
+    } catch (e) {
+      console.error(e)
+      return null
     }
   },
 }

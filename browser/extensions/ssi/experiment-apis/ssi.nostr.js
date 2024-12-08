@@ -6,7 +6,7 @@
 
 /* globals ExtensionAPI, Services, ChromeUtils */
 
-ChromeUtils.defineESModuleGetters(this, {
+ChromeUtils.defineESModuleGetters(lazy, {
   Nostr: "resource://gre/modules/shared/Nostr.sys.mjs",
 })
 
@@ -21,25 +21,20 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           onPrimaryChanged: new EventManager({
             context,
             name: "ssi.nostr.onPrimaryChanged",
-            register: experimentApiSsiHelper.onPrimaryChangedRegister("nostr"),
+            register:
+              lazy.experimentApiSsiHelper.onPrimaryChangedRegister("nostr"),
           }).api(),
           onPrefEnabledChanged: new EventManager({
             context,
             name: "ssi.nostr.onPrefEnabledChanged",
             register:
-              experimentApiSsiHelper.onPrefEnabledChangedRegister("nostr"),
-          }).api(),
-          onPrefTrustedSitesChanged: new EventManager({
-            context,
-            name: "ssi.nostr.onPrefTrustedSitesChanged",
-            register:
-              experimentApiSsiHelper.onPrefTrustedSitesChangedRegister("nostr"),
+              lazy.experimentApiSsiHelper.onPrefEnabledChangedRegister("nostr"),
           }).api(),
           onPrefAccountChanged: new EventManager({
             context,
             name: "ssi.nostr.onPrefAccountChanged",
             register:
-              experimentApiSsiHelper.onPrefAccountChangedRegister("nostr"),
+              lazy.experimentApiSsiHelper.onPrefAccountChangedRegister("nostr"),
           }).api(),
           onPrefBuiltInNip07Changed: new EventManager({
             context,
@@ -63,9 +58,9 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             },
           }).api(),
           async getPrefs() {
-            return experimentApiSsiHelper.getPrefs("nostr")
+            return lazy.experimentApiSsiHelper.getPrefs("nostr")
           },
-          async sign(message, guid) {
+          async sign(message) {
             // Check permission
             const enabled = Services.prefs.getBoolPref(
               "selfsovereignidentity.nostr.enabled"
@@ -73,10 +68,22 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             if (!enabled) return null
 
             try {
-              const signature = await Nostr.sign(message, guid)
+              const credentials =
+                await lazy.SsiHelper.searchCredentialsWithoutSecret({
+                  protocolName: "nostr",
+                  credentialName: "nsec",
+                  primary: true,
+                })
+              if (credentials.length === 0) return null
+
+              const signature = await lazy.Nostr.sign(
+                message,
+                credentials[0].guid
+              )
               return signature
             } catch (e) {
-              throw e
+              console.error(e)
+              return null
             }
           },
         },

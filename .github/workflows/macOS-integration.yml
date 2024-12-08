@@ -11,6 +11,9 @@
 on:
   workflow_call:
     inputs:
+      mar:
+        type: boolean
+        default: false
       out_artifact_name:
         type: string
         default: ""
@@ -21,9 +24,6 @@ on:
         type: string
         default: ""
       display_version:
-        type: string
-        default: ""
-      inside_version:
         type: string
         default: ""
       MOZ_BUILD_DATE:
@@ -54,6 +54,9 @@ on:
 
   workflow_dispatch:
     inputs:
+      mar:
+        type: boolean
+        default: false
       out_artifact_name:
         type: string
         default: ""
@@ -64,9 +67,6 @@ on:
         type: string
         default: ""
       display_version:
-        type: string
-        default: ""
-      inside_version:
         type: string
         default: ""
       MOZ_BUILD_DATE:
@@ -105,7 +105,7 @@ jobs:
 
         - uses: actions/setup-python@v5
           with:
-            python-version: '3.11'
+            python-version: '3.11' 
 
         - name: Create environment 🌲
           shell: bash
@@ -139,12 +139,26 @@ jobs:
           run: |
             export APP_NAME="ssb"
             export INSTALLER_NAME="ssb"
-            export DMG_FILE_NAME=${INSTALLER_NAME}-${{ inputs.display_version }}-${{ inputs.inside_version }}esr.macOS-universal.dmg
+            export DMG_FILE_NAME=${INSTALLER_NAME}-${{ inputs.display_version }}.macOS-universal.dmg
 
             ./mach python -m mozbuild.action.make_dmg ./obj-x86_64-apple-darwin/dist/ssb ${DMG_FILE_NAME}
 
             mkdir -p ./output
             mv ./${DMG_FILE_NAME} ./output/${DMG_FILE_NAME}
+
+        - name: Create MAR artifact 📦
+          if : inputs.mar
+          run: |
+            export APP_NAME="Nightly.app"
+
+            brew install tree
+            chmod +x ./.github/workflows/bin/mar
+            chmod +x ./tools/update-packaging/make_full_update.sh
+            touch "obj-x86_64-apple-darwin/dist/ssb/precomplete"
+            MAR=".github/workflows/bin/mar" MOZ_PRODUCT_VERSION=${{ inputs.display_version }} MAR_CHANNEL_ID=release tools/update-packaging/make_full_update.sh ./output/DARWIN-Universal.mar "obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}"
+
+            export MACOS_MAR_SIZE=`stat -f%z ./output/DARWIN-Universal.mar`
+            echo "MACOS_MAR_SIZE=$MACOS_MAR_SIZE" >> $GITHUB_ENV
 
         - name: make name of publish archive
           shell: node {0}
