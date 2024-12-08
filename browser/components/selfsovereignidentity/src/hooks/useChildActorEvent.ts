@@ -3,7 +3,6 @@ import {
   Credential,
   CredentialForPayload,
   ProtocolName,
-  SelfsovereignidentityDefaultPrefs,
   SelfsovereignidentityPrefs,
 } from "../custom.type"
 
@@ -146,7 +145,9 @@ export default function useChildActorEvent() {
     nostr: {
       enabled: true,
       usedPrimarypasswordToSettings: true,
+      expiryTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
+      expiryTimeForPrimarypasswordToApps: 86400000,
       usedTrustedSites: false,
       usedBuiltInNip07: true,
       usedAccountChanged: true,
@@ -229,13 +230,31 @@ export default function useChildActorEvent() {
         break
       }
       case "Prefs": {
-        if (event.detail.value.protocolName === "nostr") {
-          setPrefs((prev) => ({
-            ...prev,
-            nostr: { ...prev.nostr, ...event.detail.value },
-          }))
+        if (event.detail.value) {
+          setPrefs((prev) => {
+            const newState = {
+              ...prev,
+            }
+            const keys = Object.keys(event.detail.value)
+            for (const protocolName of keys) {
+              newState[protocolName] = {
+                ...prev[protocolName],
+                ...event.detail.value[protocolName],
+              }
+            }
+
+            return newState
+          })
         }
         break
+      }
+      case "ShowCredentialItemError": {
+        console.error("ShowCredentialItemError", event)
+        alert(`Oops...got error: ${event.detail.value.errorMessage}`)
+        break
+      }
+      default: {
+        console.log(event)
       }
     }
   }

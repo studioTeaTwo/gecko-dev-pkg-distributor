@@ -26,6 +26,12 @@ on:
         description: "aarch64 option is not compartiable with deb option"
         type: boolean
         default: false
+      display_version:
+        type: string
+        default: ""
+      mar:
+        type: boolean
+        default: false
       MOZ_BUILD_DATE:
         type: string
         default: ""
@@ -184,22 +190,50 @@ jobs:
 
     - name: Package 2 - zip 📦
       run: |
-        export DISPLAY_VERSION=`cat browser/config/version_display.txt`
-        export INSIDE_VERSION=`cat ./browser/config/version.txt`
-
         mkdir ~/output
         if [[ $GHA_aarch64 != 'true' ]];then
-          cp obj-x86_64-pc-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-x86_64.tar.bz2
+          cp obj-x86_64-pc-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${GHA_display_version}.linux-x86_64.tar.bz2
           # echo "OUTPUT=obj-x86_64-pc-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
           # zip -r dist.zip obj-x86_64-pc-linux-gnu/dist/*.tar.bz2
         else
           #aarch64
-          cp obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${DISPLAY_VERSION}-${INSIDE_VERSION}esr.linux-aarch64.tar.bz2
+          cp obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2 ~/output/ssb-${GHA_display_version}.linux-aarch64.tar.bz2
           # echo "OUTPUT=obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2" >> $GITHUB_ENV
           # zip -r dist.zip obj-aarch64-unknown-linux-gnu/dist/*.tar.bz2
         fi
       env:
         GHA_aarch64: ${{inputs.aarch64}}
+        GHA_display_version: ${{inputs.display_version}}
+
+    - name: Create MAR artifact if mar📦
+      id: gen-mar
+      if: inputs.mar
+      run: |
+        if [[ $GHA_ARCH == 'aarch64' ]];then
+
+          touch "obj-aarch64-unknown-linux-gnu/dist/ssb/precomplete"
+
+          MAR="obj-aarch64-unknown-linux-gnu/dist/host/bin/mar" \
+          MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
+          MAR_CHANNEL_ID=release \
+          ./tools/update-packaging/make_full_update.sh ~/output "obj-aarch64-unknown-linux-gnu/dist/ssb"
+
+          mv ~/output/*.mar ~/output/LINUX-aarch64.mar
+
+        else
+
+          touch "obj-x86_64-pc-linux-gnu/dist/ssb/precomplete"
+
+          MAR="obj-x86_64-pc-linux-gnu/dist/host/bin/mar" \
+          MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
+          MAR_CHANNEL_ID=release \
+          ./tools/update-packaging/make_full_update.sh ~/output "obj-x86_64-pc-linux-gnu/dist/ssb"
+
+          mv ~/output/*.mar ~/output/LINUX-x86_64.mar
+
+        fi
+      env:
+        GHA_ARCH: ${{fromJson('["x86_64","aarch64"]')[inputs.aarch64]}}
 
     #PUBLISH START
     - name: Publish🎁

@@ -7288,6 +7288,35 @@ function lazyDisclosure(options) {
     return true;
   return false;
 }
+function toNumber(value) {
+  const num = parseFloat(value);
+  return typeof num !== "number" || Number.isNaN(num) ? 0 : num;
+}
+function toPrecision(value, precision) {
+  let nextValue = toNumber(value);
+  const scaleFactor = 10 ** (precision ?? 10);
+  nextValue = Math.round(nextValue * scaleFactor) / scaleFactor;
+  return precision ? nextValue.toFixed(precision) : nextValue.toString();
+}
+function countDecimalPlaces(value) {
+  if (!Number.isFinite(value))
+    return 0;
+  let e2 = 1;
+  let p2 = 0;
+  while (Math.round(value * e2) / e2 !== value) {
+    e2 *= 10;
+    p2 += 1;
+  }
+  return p2;
+}
+function clampValue(value, min, max) {
+  if (value == null)
+    return value;
+  if (max < min) {
+    console.warn("clamp: max cannot be less than min");
+  }
+  return Math.min(Math.max(value, min), max);
+}
 function omit(object, keysToOmit = []) {
   const clone = Object.assign({}, object);
   for (const key of keysToOmit) {
@@ -8095,6 +8124,123 @@ function useControllableState(props) {
   );
   return [value, setValue];
 }
+function useCounter(props = {}) {
+  const {
+    onChange,
+    precision: precisionProp,
+    defaultValue,
+    value: valueProp,
+    step: stepProp = 1,
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    keepWithinRange = true
+  } = props;
+  const onChangeProp = useCallbackRef$1(onChange);
+  const [valueState, setValue] = reactExports.useState(() => {
+    if (defaultValue == null)
+      return "";
+    return cast$1(defaultValue, stepProp, precisionProp) ?? "";
+  });
+  const isControlled = typeof valueProp !== "undefined";
+  const value = isControlled ? valueProp : valueState;
+  const decimalPlaces = getDecimalPlaces(parse$2(value), stepProp);
+  const precision = precisionProp ?? decimalPlaces;
+  const update = reactExports.useCallback(
+    (next2) => {
+      if (next2 === value)
+        return;
+      if (!isControlled) {
+        setValue(next2.toString());
+      }
+      onChangeProp == null ? void 0 : onChangeProp(next2.toString(), parse$2(next2));
+    },
+    [onChangeProp, isControlled, value]
+  );
+  const clamp2 = reactExports.useCallback(
+    (value2) => {
+      let nextValue = value2;
+      if (keepWithinRange) {
+        nextValue = clampValue(nextValue, min, max);
+      }
+      return toPrecision(nextValue, precision);
+    },
+    [precision, keepWithinRange, max, min]
+  );
+  const increment = reactExports.useCallback(
+    (step = stepProp) => {
+      let next2;
+      if (value === "") {
+        next2 = parse$2(step);
+      } else {
+        next2 = parse$2(value) + step;
+      }
+      next2 = clamp2(next2);
+      update(next2);
+    },
+    [clamp2, stepProp, update, value]
+  );
+  const decrement = reactExports.useCallback(
+    (step = stepProp) => {
+      let next2;
+      if (value === "") {
+        next2 = parse$2(-step);
+      } else {
+        next2 = parse$2(value) - step;
+      }
+      next2 = clamp2(next2);
+      update(next2);
+    },
+    [clamp2, stepProp, update, value]
+  );
+  const reset = reactExports.useCallback(() => {
+    let next2;
+    if (defaultValue == null) {
+      next2 = "";
+    } else {
+      next2 = cast$1(defaultValue, stepProp, precisionProp) ?? min;
+    }
+    update(next2);
+  }, [defaultValue, precisionProp, stepProp, update, min]);
+  const castValue = reactExports.useCallback(
+    (value2) => {
+      const nextValue = cast$1(value2, stepProp, precision) ?? min;
+      update(nextValue);
+    },
+    [precision, stepProp, update, min]
+  );
+  const valueAsNumber = parse$2(value);
+  const isOutOfRange = valueAsNumber > max || valueAsNumber < min;
+  const isAtMax = valueAsNumber === max;
+  const isAtMin = valueAsNumber === min;
+  return {
+    isOutOfRange,
+    isAtMax,
+    isAtMin,
+    precision,
+    value,
+    valueAsNumber,
+    update,
+    reset,
+    increment,
+    decrement,
+    clamp: clamp2,
+    cast: castValue,
+    setValue
+  };
+}
+function parse$2(value) {
+  return parseFloat(value.toString().replace(/[^\w.-]+/g, ""));
+}
+function getDecimalPlaces(value, step) {
+  return Math.max(countDecimalPlaces(step), countDecimalPlaces(value));
+}
+function cast$1(value, step, precision) {
+  const parsedValue = parse$2(value);
+  if (Number.isNaN(parsedValue))
+    return void 0;
+  const decimalPlaces = getDecimalPlaces(parsedValue, step);
+  return toPrecision(parsedValue, precision ?? decimalPlaces);
+}
 const useSafeLayoutEffect$2 = Boolean(globalThis == null ? void 0 : globalThis.document) ? reactExports.useLayoutEffect : reactExports.useEffect;
 const useUpdateEffect = (effect2, deps) => {
   const renderCycleRef = reactExports.useRef(false);
@@ -8147,6 +8293,21 @@ function useFocusOnPointerDown(props) {
       target.focus();
     }
   });
+}
+function useInterval(callback, delay2) {
+  const fn = useCallbackRef$1(callback);
+  reactExports.useEffect(() => {
+    let intervalId = null;
+    const tick = () => fn();
+    if (delay2 !== null) {
+      intervalId = window.setInterval(tick, delay2);
+    }
+    return () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
+  }, [delay2, fn]);
 }
 function assignRef$1(ref, value) {
   if (ref == null)
@@ -28105,6 +28266,555 @@ function AlertDialog(props) {
 const AlertDialogContent = forwardRef(
   (props, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(ModalContent, { ref, role: "alertdialog", ...props })
 );
+const TriangleDownIcon = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { viewBox: "0 0 24 24", ...props, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  "path",
+  {
+    fill: "currentColor",
+    d: "M21,5H3C2.621,5,2.275,5.214,2.105,5.553C1.937,5.892,1.973,6.297,2.2,6.6l9,12 c0.188,0.252,0.485,0.4,0.8,0.4s0.611-0.148,0.8-0.4l9-12c0.228-0.303,0.264-0.708,0.095-1.047C21.725,5.214,21.379,5,21,5z"
+  }
+) });
+const TriangleUpIcon = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { viewBox: "0 0 24 24", ...props, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  "path",
+  {
+    fill: "currentColor",
+    d: "M12.8,5.4c-0.377-0.504-1.223-0.504-1.6,0l-9,12c-0.228,0.303-0.264,0.708-0.095,1.047 C2.275,18.786,2.621,19,3,19h18c0.379,0,0.725-0.214,0.895-0.553c0.169-0.339,0.133-0.744-0.095-1.047L12.8,5.4z"
+  }
+) });
+function useAttributeObserver(ref, attributes, fn, enabled) {
+  reactExports.useEffect(() => {
+    if (!ref.current || !enabled)
+      return;
+    const win = ref.current.ownerDocument.defaultView ?? window;
+    const attrs = Array.isArray(attributes) ? attributes : [attributes];
+    const obs = new win.MutationObserver((changes) => {
+      for (const change of changes) {
+        if (change.type === "attributes" && change.attributeName && attrs.includes(change.attributeName)) {
+          fn(change);
+        }
+      }
+    });
+    obs.observe(ref.current, { attributes: true, attributeFilter: attrs });
+    return () => obs.disconnect();
+  });
+}
+const CONTINUOUS_CHANGE_INTERVAL = 50;
+const CONTINUOUS_CHANGE_DELAY = 300;
+function useSpinner(increment, decrement) {
+  const [isSpinning, setIsSpinning] = reactExports.useState(false);
+  const [action, setAction] = reactExports.useState(null);
+  const [runOnce, setRunOnce] = reactExports.useState(true);
+  const timeoutRef = reactExports.useRef(null);
+  const removeTimeout = () => clearTimeout(timeoutRef.current);
+  useInterval(
+    () => {
+      if (action === "increment") {
+        increment();
+      }
+      if (action === "decrement") {
+        decrement();
+      }
+    },
+    isSpinning ? CONTINUOUS_CHANGE_INTERVAL : null
+  );
+  const up = reactExports.useCallback(() => {
+    if (runOnce) {
+      increment();
+    }
+    timeoutRef.current = setTimeout(() => {
+      setRunOnce(false);
+      setIsSpinning(true);
+      setAction("increment");
+    }, CONTINUOUS_CHANGE_DELAY);
+  }, [increment, runOnce]);
+  const down = reactExports.useCallback(() => {
+    if (runOnce) {
+      decrement();
+    }
+    timeoutRef.current = setTimeout(() => {
+      setRunOnce(false);
+      setIsSpinning(true);
+      setAction("decrement");
+    }, CONTINUOUS_CHANGE_DELAY);
+  }, [decrement, runOnce]);
+  const stop = reactExports.useCallback(() => {
+    setRunOnce(true);
+    setIsSpinning(false);
+    removeTimeout();
+  }, []);
+  reactExports.useEffect(() => {
+    return () => removeTimeout();
+  }, []);
+  return { up, down, stop, isSpinning };
+}
+const FLOATING_POINT_REGEX = /^[Ee0-9+\-.]$/;
+function isFloatingPointNumericCharacter(character2) {
+  return FLOATING_POINT_REGEX.test(character2);
+}
+function isValidNumericKeyboardEvent(event, isValid) {
+  if (event.key == null)
+    return true;
+  const isModifierKey = event.ctrlKey || event.altKey || event.metaKey;
+  const isSingleCharacterKey = event.key.length === 1;
+  if (!isSingleCharacterKey || isModifierKey)
+    return true;
+  return isValid(event.key);
+}
+function useNumberInput(props = {}) {
+  const {
+    focusInputOnChange = true,
+    clampValueOnBlur = true,
+    keepWithinRange = true,
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    step: stepProp = 1,
+    isReadOnly,
+    isDisabled,
+    isRequired,
+    isInvalid,
+    pattern = "[0-9]*(.[0-9]+)?",
+    inputMode = "decimal",
+    allowMouseWheel,
+    id: id2,
+    onChange: _,
+    precision,
+    name,
+    "aria-describedby": ariaDescBy,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledBy,
+    onFocus: onFocusProp,
+    onBlur: onBlurProp,
+    onInvalid: onInvalidProp,
+    getAriaValueText: getAriaValueTextProp,
+    isValidCharacter: isValidCharacterProp,
+    format: formatValue,
+    parse: parseValue,
+    ...htmlProps
+  } = props;
+  const onFocus3 = useCallbackRef$1(onFocusProp);
+  const onBlur3 = useCallbackRef$1(onBlurProp);
+  const onInvalid = useCallbackRef$1(onInvalidProp);
+  const isValidCharacter = useCallbackRef$1(
+    isValidCharacterProp ?? isFloatingPointNumericCharacter
+  );
+  const getAriaValueText = useCallbackRef$1(getAriaValueTextProp);
+  const counter2 = useCounter(props);
+  const {
+    update: updateFn,
+    increment: incrementFn,
+    decrement: decrementFn
+  } = counter2;
+  const [isFocused, setFocused] = reactExports.useState(false);
+  const isInteractive = !(isReadOnly || isDisabled);
+  const inputRef = reactExports.useRef(null);
+  const inputSelectionRef = reactExports.useRef(null);
+  const incrementButtonRef = reactExports.useRef(null);
+  const decrementButtonRef = reactExports.useRef(null);
+  const sanitize2 = reactExports.useCallback(
+    (value) => value.split("").filter(isValidCharacter).join(""),
+    [isValidCharacter]
+  );
+  const parse2 = reactExports.useCallback(
+    (value) => (parseValue == null ? void 0 : parseValue(value)) ?? value,
+    [parseValue]
+  );
+  const format = reactExports.useCallback(
+    (value) => ((formatValue == null ? void 0 : formatValue(value)) ?? value).toString(),
+    [formatValue]
+  );
+  useUpdateEffect(() => {
+    if (counter2.valueAsNumber > max) {
+      onInvalid == null ? void 0 : onInvalid("rangeOverflow", format(counter2.value), counter2.valueAsNumber);
+    } else if (counter2.valueAsNumber < min) {
+      onInvalid == null ? void 0 : onInvalid("rangeOverflow", format(counter2.value), counter2.valueAsNumber);
+    }
+  }, [counter2.valueAsNumber, counter2.value, format, onInvalid]);
+  useSafeLayoutEffect$2(() => {
+    if (!inputRef.current)
+      return;
+    const notInSync = inputRef.current.value != counter2.value;
+    if (notInSync) {
+      const parsedInput = parse2(inputRef.current.value);
+      counter2.setValue(sanitize2(parsedInput));
+    }
+  }, [parse2, sanitize2]);
+  const increment = reactExports.useCallback(
+    (step = stepProp) => {
+      if (isInteractive) {
+        incrementFn(step);
+      }
+    },
+    [incrementFn, isInteractive, stepProp]
+  );
+  const decrement = reactExports.useCallback(
+    (step = stepProp) => {
+      if (isInteractive) {
+        decrementFn(step);
+      }
+    },
+    [decrementFn, isInteractive, stepProp]
+  );
+  const spinner = useSpinner(increment, decrement);
+  useAttributeObserver(
+    incrementButtonRef,
+    "disabled",
+    spinner.stop,
+    spinner.isSpinning
+  );
+  useAttributeObserver(
+    decrementButtonRef,
+    "disabled",
+    spinner.stop,
+    spinner.isSpinning
+  );
+  const onChange = reactExports.useCallback(
+    (event) => {
+      const evt = event.nativeEvent;
+      if (evt.isComposing)
+        return;
+      const parsedInput = parse2(event.currentTarget.value);
+      updateFn(sanitize2(parsedInput));
+      inputSelectionRef.current = {
+        start: event.currentTarget.selectionStart,
+        end: event.currentTarget.selectionEnd
+      };
+    },
+    [updateFn, sanitize2, parse2]
+  );
+  const _onFocus = reactExports.useCallback(
+    (event) => {
+      var _a2;
+      onFocus3 == null ? void 0 : onFocus3(event);
+      if (!inputSelectionRef.current)
+        return;
+      event.currentTarget.selectionStart = inputSelectionRef.current.start ?? ((_a2 = event.currentTarget.value) == null ? void 0 : _a2.length);
+      event.currentTarget.selectionEnd = inputSelectionRef.current.end ?? event.currentTarget.selectionStart;
+    },
+    [onFocus3]
+  );
+  const onKeyDown = reactExports.useCallback(
+    (e2) => {
+      if (e2.nativeEvent.isComposing)
+        return;
+      if (!isValidNumericKeyboardEvent(e2, isValidCharacter)) {
+        e2.preventDefault();
+      }
+      const stepFactor = getStepFactor(e2) * stepProp;
+      const eventKey = e2.key;
+      const keyMap = {
+        ArrowUp: () => increment(stepFactor),
+        ArrowDown: () => decrement(stepFactor),
+        Home: () => updateFn(min),
+        End: () => updateFn(max)
+      };
+      const action = keyMap[eventKey];
+      if (action) {
+        e2.preventDefault();
+        action(e2);
+      }
+    },
+    [isValidCharacter, stepProp, increment, decrement, updateFn, min, max]
+  );
+  const getStepFactor = (event) => {
+    let ratio = 1;
+    if (event.metaKey || event.ctrlKey) {
+      ratio = 0.1;
+    }
+    if (event.shiftKey) {
+      ratio = 10;
+    }
+    return ratio;
+  };
+  const ariaValueText = reactExports.useMemo(() => {
+    const text = getAriaValueText == null ? void 0 : getAriaValueText(counter2.value);
+    if (text != null)
+      return text;
+    const defaultText = counter2.value.toString();
+    return !defaultText ? void 0 : defaultText;
+  }, [counter2.value, getAriaValueText]);
+  const validateAndClamp = reactExports.useCallback(() => {
+    let next2 = counter2.value;
+    if (counter2.value === "")
+      return;
+    const valueStartsWithE = /^[eE]/.test(counter2.value.toString());
+    if (valueStartsWithE) {
+      counter2.setValue("");
+    } else {
+      if (counter2.valueAsNumber < min) {
+        next2 = min;
+      }
+      if (counter2.valueAsNumber > max) {
+        next2 = max;
+      }
+      counter2.cast(next2);
+    }
+  }, [counter2, max, min]);
+  const onInputBlur = reactExports.useCallback(() => {
+    setFocused(false);
+    if (clampValueOnBlur) {
+      validateAndClamp();
+    }
+  }, [clampValueOnBlur, setFocused, validateAndClamp]);
+  const focusInput = reactExports.useCallback(() => {
+    if (focusInputOnChange) {
+      requestAnimationFrame(() => {
+        var _a2;
+        (_a2 = inputRef.current) == null ? void 0 : _a2.focus();
+      });
+    }
+  }, [focusInputOnChange]);
+  const spinUp = reactExports.useCallback(
+    (event) => {
+      event.preventDefault();
+      spinner.up();
+      focusInput();
+    },
+    [focusInput, spinner]
+  );
+  const spinDown = reactExports.useCallback(
+    (event) => {
+      event.preventDefault();
+      spinner.down();
+      focusInput();
+    },
+    [focusInput, spinner]
+  );
+  useEventListener(
+    () => inputRef.current,
+    "wheel",
+    (event) => {
+      var _a2;
+      const doc = ((_a2 = inputRef.current) == null ? void 0 : _a2.ownerDocument) ?? document;
+      const isInputFocused = doc.activeElement === inputRef.current;
+      if (!allowMouseWheel || !isInputFocused)
+        return;
+      event.preventDefault();
+      const stepFactor = getStepFactor(event) * stepProp;
+      const direction2 = Math.sign(event.deltaY);
+      if (direction2 === -1) {
+        increment(stepFactor);
+      } else if (direction2 === 1) {
+        decrement(stepFactor);
+      }
+    },
+    { passive: false }
+  );
+  const getIncrementButtonProps = reactExports.useCallback(
+    (props2 = {}, ref = null) => {
+      const disabled = isDisabled || keepWithinRange && counter2.isAtMax;
+      return {
+        ...props2,
+        ref: mergeRefs(ref, incrementButtonRef),
+        role: "button",
+        tabIndex: -1,
+        onPointerDown: callAllHandlers(props2.onPointerDown, (event) => {
+          if (event.button !== 0 || disabled)
+            return;
+          spinUp(event);
+        }),
+        onPointerLeave: callAllHandlers(props2.onPointerLeave, spinner.stop),
+        onPointerUp: callAllHandlers(props2.onPointerUp, spinner.stop),
+        disabled,
+        "aria-disabled": ariaAttr(disabled)
+      };
+    },
+    [counter2.isAtMax, keepWithinRange, spinUp, spinner.stop, isDisabled]
+  );
+  const getDecrementButtonProps = reactExports.useCallback(
+    (props2 = {}, ref = null) => {
+      const disabled = isDisabled || keepWithinRange && counter2.isAtMin;
+      return {
+        ...props2,
+        ref: mergeRefs(ref, decrementButtonRef),
+        role: "button",
+        tabIndex: -1,
+        onPointerDown: callAllHandlers(props2.onPointerDown, (event) => {
+          if (event.button !== 0 || disabled)
+            return;
+          spinDown(event);
+        }),
+        onPointerLeave: callAllHandlers(props2.onPointerLeave, spinner.stop),
+        onPointerUp: callAllHandlers(props2.onPointerUp, spinner.stop),
+        disabled,
+        "aria-disabled": ariaAttr(disabled)
+      };
+    },
+    [counter2.isAtMin, keepWithinRange, spinDown, spinner.stop, isDisabled]
+  );
+  const getInputProps = reactExports.useCallback(
+    (props2 = {}, ref = null) => ({
+      name,
+      inputMode,
+      type: "text",
+      pattern,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescBy,
+      id: id2,
+      disabled: isDisabled,
+      ...props2,
+      readOnly: props2.readOnly ?? isReadOnly,
+      "aria-readonly": props2.readOnly ?? isReadOnly,
+      "aria-required": props2.required ?? isRequired,
+      required: props2.required ?? isRequired,
+      ref: mergeRefs(inputRef, ref),
+      value: format(counter2.value),
+      role: "spinbutton",
+      "aria-valuemin": min,
+      "aria-valuemax": max,
+      "aria-valuenow": Number.isNaN(counter2.valueAsNumber) ? void 0 : counter2.valueAsNumber,
+      "aria-invalid": ariaAttr(isInvalid ?? counter2.isOutOfRange),
+      "aria-valuetext": ariaValueText,
+      autoComplete: "off",
+      autoCorrect: "off",
+      onChange: callAllHandlers(props2.onChange, onChange),
+      onKeyDown: callAllHandlers(props2.onKeyDown, onKeyDown),
+      onFocus: callAllHandlers(
+        props2.onFocus,
+        _onFocus,
+        () => setFocused(true)
+      ),
+      onBlur: callAllHandlers(props2.onBlur, onBlur3, onInputBlur)
+    }),
+    [
+      name,
+      inputMode,
+      pattern,
+      ariaLabelledBy,
+      ariaLabel,
+      format,
+      ariaDescBy,
+      id2,
+      isDisabled,
+      isRequired,
+      isReadOnly,
+      isInvalid,
+      counter2.value,
+      counter2.valueAsNumber,
+      counter2.isOutOfRange,
+      min,
+      max,
+      ariaValueText,
+      onChange,
+      onKeyDown,
+      _onFocus,
+      onBlur3,
+      onInputBlur
+    ]
+  );
+  return {
+    value: format(counter2.value),
+    valueAsNumber: counter2.valueAsNumber,
+    isFocused,
+    isDisabled,
+    isReadOnly,
+    getIncrementButtonProps,
+    getDecrementButtonProps,
+    getInputProps,
+    htmlProps
+  };
+}
+const [NumberInputStylesProvider, useNumberInputStyles] = createContext({
+  name: `NumberInputStylesContext`,
+  errorMessage: `useNumberInputStyles returned is 'undefined'. Seems you forgot to wrap the components in "<NumberInput />" `
+});
+const [NumberInputProvider, useNumberInputContext] = createContext({
+  name: "NumberInputContext",
+  errorMessage: "useNumberInputContext: `context` is undefined. Seems you forgot to wrap number-input's components within <NumberInput />"
+});
+const NumberInput = forwardRef(
+  function NumberInput2(props, ref) {
+    const styles2 = useMultiStyleConfig("NumberInput", props);
+    const ownProps = omitThemingProps(props);
+    const controlProps = useFormControlProps(ownProps);
+    const { htmlProps, ...context } = useNumberInput(controlProps);
+    const ctx = reactExports.useMemo(() => context, [context]);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputProvider, { value: ctx, children: /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputStylesProvider, { value: styles2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        ...htmlProps,
+        ref,
+        className: cx("chakra-numberinput", props.className),
+        __css: {
+          position: "relative",
+          zIndex: 0,
+          ...styles2.root
+        }
+      }
+    ) }) });
+  }
+);
+NumberInput.displayName = "NumberInput";
+const NumberInputStepper = forwardRef(
+  function NumberInputStepper2(props, ref) {
+    const styles2 = useNumberInputStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        "aria-hidden": true,
+        ref,
+        ...props,
+        __css: {
+          display: "flex",
+          flexDirection: "column",
+          position: "absolute",
+          top: "0",
+          insetEnd: "0px",
+          margin: "1px",
+          height: "calc(100% - 2px)",
+          zIndex: 1,
+          ...styles2.stepperGroup
+        }
+      }
+    );
+  }
+);
+NumberInputStepper.displayName = "NumberInputStepper";
+const NumberInputField = forwardRef(
+  function NumberInputField2(props, ref) {
+    const { getInputProps } = useNumberInputContext();
+    const input = getInputProps(props, ref);
+    const styles2 = useNumberInputStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.input,
+      {
+        ...input,
+        className: cx("chakra-numberinput__field", props.className),
+        __css: {
+          width: "100%",
+          ...styles2.field
+        }
+      }
+    );
+  }
+);
+NumberInputField.displayName = "NumberInputField";
+const StyledStepper = chakra("div", {
+  baseStyle: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    transitionProperty: "common",
+    transitionDuration: "normal",
+    userSelect: "none",
+    cursor: "pointer",
+    lineHeight: "normal"
+  }
+});
+const NumberDecrementStepper = forwardRef(function NumberDecrementStepper2(props, ref) {
+  const styles2 = useNumberInputStyles();
+  const { getDecrementButtonProps } = useNumberInputContext();
+  const decrement = getDecrementButtonProps(props, ref);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(StyledStepper, { ...decrement, __css: styles2.stepper, children: props.children ?? /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleDownIcon, {}) });
+});
+NumberDecrementStepper.displayName = "NumberDecrementStepper";
+const NumberIncrementStepper = forwardRef(function NumberIncrementStepper2(props, ref) {
+  const { getIncrementButtonProps } = useNumberInputContext();
+  const increment = getIncrementButtonProps(props, ref);
+  const styles2 = useNumberInputStyles();
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(StyledStepper, { ...increment, __css: styles2.stepper, children: props.children ?? /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleUpIcon, {}) });
+});
+NumberIncrementStepper.displayName = "NumberIncrementStepper";
 const StackItem = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   chakra.div,
   {
@@ -30864,19 +31574,24 @@ export {
   AlertDialog as A,
   Button as B,
   Card as C,
-  TabPanel as D,
+  Tabs as D,
   Editable as E,
   Flex as F,
   GridItem as G,
   HStack as H,
   IconButton as I,
-  createRoot as J,
-  ChakraProvider as K,
+  TabList as J,
+  Tab as K,
   Link as L,
   ModalOverlay as M,
+  NumberInput as N,
+  TabPanels as O,
+  TabPanel as P,
+  createRoot as Q,
   React as R,
   StackDivider as S,
   Text as T,
+  ChakraProvider as U,
   VStack as V,
   bech32 as a,
   bytesToHex$1 as b,
@@ -30890,18 +31605,18 @@ export {
   jsxRuntimeExports as j,
   Grid as k,
   Switch as l,
-  InputGroup as m,
-  Input as n,
-  CardHeader as o,
-  EditablePreview as p,
-  EditableInput as q,
+  NumberInputField as m,
+  NumberInputStepper as n,
+  NumberIncrementStepper as o,
+  NumberDecrementStepper as p,
+  InputGroup as q,
   reactExports as r,
   schnorr as s,
-  CardBody as t,
-  CardFooter as u,
-  hexToBytes$1 as v,
-  Tabs as w,
-  TabList as x,
-  Tab as y,
-  TabPanels as z
+  Input as t,
+  CardHeader as u,
+  EditablePreview as v,
+  EditableInput as w,
+  CardBody as x,
+  CardFooter as y,
+  hexToBytes$1 as z
 };

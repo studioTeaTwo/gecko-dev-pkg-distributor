@@ -10,7 +10,6 @@ const SafeProtocols = ["http", "https", "moz-extension"]
 
 const MapBetweenPrefAndState = {
   enabled: "enabled",
-  usedTrustedSites: "trustedSites.enabled",
   usedBuiltInNip07: "builtInNip07.enabled",
   usedAccountChanged: "event.accountChanged.enabled",
 }
@@ -24,14 +23,15 @@ const ERR_MSG_NOT_TRUSTED =
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`
 
 // Proceed calls from contents
-export const doNostrAction = async (origin, action, args) => {
+export const doNostrAction = async (action, args, tabId) => {
   if (!state.nostr.prefs.enabled) {
     throw new Error(ERR_MSG_NOT_ENABLED)
   }
   if (!supported(origin)) {
     throw new Error(ERR_MSG_NOT_SUPPORTED)
   }
-  if (!trusted(origin)) {
+  const trusted = await browser.ssi.askPermission("nostr", "nsec", tabId)
+  if (!trusted) {
     throw new Error(ERR_MSG_NOT_TRUSTED)
   }
   if (!state.nostr.npub) {
@@ -50,10 +50,7 @@ export const doNostrAction = async (origin, action, args) => {
       const eventHash = bytesToHex(
         sha256(new TextEncoder().encode(serializeEvent(event)))
       )
-      const signature = await browser.ssi.nostr.sign(
-        eventHash,
-        state.nostr.guid
-      )
+      const signature = await browser.ssi.nostr.sign(eventHash)
       event.id = eventHash
       event.sig = signature
 
@@ -69,15 +66,12 @@ export async function init() {
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
     "nsec",
-    true,
-    ""
+    true
   )
   if (credentials.length > 0) {
     state.nostr = {
       ...state.nostr,
       npub: credentials[0].identifier,
-      trustedSites: credentials[0].trustedSites,
-      guid: credentials[0].guid,
     }
   }
 
@@ -98,20 +92,17 @@ export async function init() {
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(
   async (detail) => {
-    log(
-      "nostr init to tab",
-      state.nostr.prefs.enabled && supported(detail.url) && trusted(detail.url)
-    )
-
-    // Notify init to the contents
-    const tab = await browser.tabs.get(detail.tabId)
-
-    log("send to tab", tab)
+    const trusted = await browser.ssi.askPermission("nostr", "nsec", detail.tabId)
     const injecting =
       state.nostr.prefs.enabled &&
       state.nostr.prefs.usedBuiltInNip07 &&
       supported(detail.url) &&
-      trusted(detail.url)
+      trusted
+    log("nostr init to tab", injecting)
+
+    // Notify init to the contents
+    const tab = await browser.tabs.get(detail.tabId)
+    log("send to tab", tab)
     sendTab(tab, "nostr/init", injecting)
   },
   { url: [{ schemes: SafeProtocols }] }
@@ -119,40 +110,30 @@ browser.webNavigation.onDOMContentLoaded.addListener(
 
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
-const onPrimaryChangedCallback = async (newGuid: string) => {
+const onPrimaryChangedCallback = async () => {
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
     "nsec",
-    true,
-    newGuid
+    true
   )
-  log("primary changed!", newGuid, credentials)
+  log("primary changed!", credentials)
 
   // That means it's all been removed
   if (credentials.length === 0) {
     state.nostr = {
       ...state.nostr,
-      guid: "",
       npub: "",
-      trustedSites: [],
     }
     return
   }
 
-  const changedTrustedSites = state.nostr.guid === newGuid // TODO(ssb): make TrustedSitesChanged a separate event.
   state.nostr = {
     ...state.nostr,
-    guid: credentials[0].guid,
     npub: credentials[0].identifier,
-    trustedSites: credentials[0].trustedSites,
   }
 
   // Send the message to the contents
-  if (
-    state.nostr.prefs.enabled &&
-    state.nostr.prefs.usedAccountChanged &&
-    !changedTrustedSites
-  ) {
+  if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
       status: "complete",
       discarded: false,
@@ -187,7 +168,6 @@ const onPrefChangedCallback = async (prefKey: string) => {
   }
 }
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
-browser.ssi.nostr.onPrefTrustedSitesChanged.addListener(onPrefChangedCallback)
 browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback)
 browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback)
 
@@ -196,12 +176,13 @@ browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback)
  *
  */
 
-function sendTab(tab, action, data) {
+async function sendTab(tab, action, data) {
   if (!supported(tab.url)) {
     // browser origin event is not sent anything
     return
   }
-  if (!trusted(tab.url)) {
+  const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id)
+  if (!trusted) {
     browser.tabs
       .sendMessage(tab.id, {
         action,
@@ -221,15 +202,6 @@ function sendTab(tab, action, data) {
 
 function supported(tabUrl: string): boolean {
   return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol))
-}
-
-// TODO(ssb): move to experimental API.
-function trusted(tabUrl: string): boolean {
-  // Return true unconditionally
-  if (!state.nostr.prefs.usedTrustedSites) return true
-
-  // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-  return state.nostr.trustedSites.some((site) => tabUrl.includes(site.url))
 }
 
 function decodeNpub(npub) {
