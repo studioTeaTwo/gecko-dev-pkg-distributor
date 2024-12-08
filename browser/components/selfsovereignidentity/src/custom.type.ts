@@ -7,7 +7,9 @@ export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
 export interface SelfsovereignidentityDefaultPrefs {
   enabled: boolean // selfsovereignidentity.[protocolName].enabled
   usedPrimarypasswordToSettings: boolean // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
+  expiryTimeForPrimarypasswordToSettings: number // selfsovereignidentity.[protocolName].primarypassword.toSettings.expiryTime
   usedPrimarypasswordToApps: boolean // selfsovereignidentity.[protocolName].primarypassword.toApps.enabled
+  expiryTimeForPrimarypasswordToApps: number // selfsovereignidentity.[protocolName].primarypassword.ToApps.expiryTime
   usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
   usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
 }

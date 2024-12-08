@@ -112,7 +112,9 @@ export default function Nostr(props) {
     setNewKey(npubkey)
 
     // Notifying to the buit-in extension will be done in hooks,
-    // because there is no guid yet.
+    // because here is no guid yet.
+
+    window.location.reload() // FIXME(ssb)
   }
 
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value)
@@ -143,6 +145,8 @@ export default function Nostr(props) {
     })
 
     setImportedKey("")
+
+    window.location.reload() // FIXME(ssb)
   }
 
   const handleChangePrimary = (checked, item: Credential) => {
@@ -161,11 +165,13 @@ export default function Nostr(props) {
     } else {
       // Set the first of current falses to primary
       const prev = nostrkeys.find((key) => !key.primary)
-      modifyCredentialToStore({
-        ...prev,
-        primary: true,
-      })
-      newPrimaryGuid = prev.guid
+      if (prev) {
+        modifyCredentialToStore({
+          ...prev,
+          primary: true,
+        })
+        newPrimaryGuid = prev.guid
+      }
     }
 
     modifyCredentialToStore({
@@ -183,15 +189,14 @@ export default function Nostr(props) {
     if (item.primary === true) {
       // Set the first of current falses to primary
       const prev = nostrkeys.find((key) => !key.primary)
-      if (!prev) {
-        // Notify to the buit-in extension
-        onPrimaryChanged({ protocolName: "nostr", guid: "" })
-      } else {
+      if (prev) {
         modifyCredentialToStore({
           ...prev,
           primary: true,
         })
       }
+      // Notify to the buit-in extension
+      onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" })
     }
 
     deleteCredentialToStore(item, nostrkeys)
@@ -219,6 +224,8 @@ export default function Nostr(props) {
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "nostr", guid: "" })
+
+    window.location.reload() // FIXME(ssb)
   }
 
   const cancelRef = React.useRef()

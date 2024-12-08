@@ -3,11 +3,8 @@
 export const state = {
   nostr: {
     npub: "",
-    guid: "",
-    trustedSites: [], // TODO(ssb): move to experimental API.
     prefs: {
       enabled: true,
-      usedTrustedSites: false, // TODO(ssb): move to experimental API.
       usedBuiltInNip07: true,
       usedAccountChanged: true,
     },

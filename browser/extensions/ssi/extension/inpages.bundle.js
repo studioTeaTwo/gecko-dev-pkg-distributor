@@ -212,7 +212,6 @@ exports.WindowSSI = {
             return Promise.resolve("publickey");
         },
         getPublicKey(option) {
-            console.log("ssi getpubkey");
             return (0, postMessage_1.postMessage)("nostr", "getPublicKey", undefined);
         },
         sign(message, option) {

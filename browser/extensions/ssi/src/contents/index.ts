@@ -7,10 +7,7 @@
 import { log } from "../shared/logger"
 import { init as nostrInit } from "./nostr"
 
-log(
-  "content-script working",
-  browser.runtime.getURL("inpages.bundle.js")
-)
+log("content-script working", browser.runtime.getURL("inpages.bundle.js"))
 
 function loadInpageScript(url) {
   try {

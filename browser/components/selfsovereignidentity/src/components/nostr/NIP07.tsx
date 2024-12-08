@@ -7,6 +7,11 @@ import {
   Heading,
   Input,
   InputGroup,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   StackDivider,
   Switch,
   Text,
@@ -35,10 +40,11 @@ export const DefaultTrustedSites = [
   },
 ]
 
+const OneDay = 24 * 60 * 60 * 1000
+
 export default function NIP07(props) {
   const { prefs, credentials } = useChildActorEvent()
-  const { modifyCredentialToStore, onPrefChanged, onPrimaryChanged } =
-    dispatchEvents
+  const { modifyCredentialToStore, onPrefChanged } = dispatchEvents
 
   const [newSite, setNewSite] = useState("")
   const [isOpenDialog, setIsOpenDialog] = useState(false)
@@ -68,7 +74,9 @@ export default function NIP07(props) {
 
   const handleNewSiteChange = (e) => setNewSite(e.target.value)
   const handleRegistSite = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.KeyboardEvent<HTMLInputElement>
   ) => {
     e.preventDefault()
 
@@ -110,12 +118,7 @@ export default function NIP07(props) {
       })
     }
 
-    // Notify to the buit-in extension
-    // TODO(ssb): make TrustedSitesChanged a separate event.
-    setTimeout(() => {
-      const primary = nostrkeys.find((key) => key.primary)
-      onPrimaryChanged({ protocolName: "nostr", guid: primary.guid })
-    }, 100)
+    window.location.reload() // FIXME(ssb)
   }
 
   const handleRemoveSite = async (removedSite) => {
@@ -138,12 +141,7 @@ export default function NIP07(props) {
       })
     }
 
-    // Notify to the buit-in extension
-    // TODO(ssb): make TrustedSitesChanged a separate event.
-    setTimeout(() => {
-      const primary = nostrkeys.find((key) => key.primary)
-      onPrimaryChanged({ protocolName: "nostr", guid: primary.guid })
-    }, 100)
+    window.location.reload() // FIXME(ssb)
   }
 
   const getTrustedSites = useCallback(() => {
@@ -199,6 +197,23 @@ export default function NIP07(props) {
 
     onPrefChanged({ protocolName: "nostr", usedPrimarypasswordToApps: checked })
   }
+  const handleExpiryTimeForPrimarypasswordToApps = async (
+    valueAsString: string,
+    valueAsNumber: number
+  ) => {
+    const primaryPasswordAuth = await promptForPrimaryPassword(
+      "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
+    )
+    if (!primaryPasswordAuth) {
+      setIsOpenDialog(true)
+      return
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneDay,
+    })
+  }
 
   const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
@@ -240,18 +255,47 @@ export default function NIP07(props) {
                 onChange={handleUsedBuiltInNip07}
               />
             </GridItem>
-            {/* <GridItem>
-            <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
-              Use primary password to Web apps
-            </label>
-          </GridItem>
-          <GridItem>
-            <Switch
-              id="nostr-pref-usedPrimarypasswordToApps"
-              isChecked={prefs.nostr.usedPrimarypasswordToApps}
-              onChange={(e) => handleUsedPrimarypasswordToApps(e.target.checked)}
-            />
-          </GridItem> */}
+            <GridItem>
+              <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
+                Use primary password to Web apps
+              </label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedPrimarypasswordToApps"
+                isChecked={prefs.nostr.usedPrimarypasswordToApps}
+                onChange={(e) =>
+                  handleUsedPrimarypasswordToApps(e.target.checked)
+                }
+              />
+            </GridItem>
+            {prefs.nostr.usedPrimarypasswordToApps && (
+              <>
+                <GridItem>
+                  <label htmlFor="nostr-pref-expiryTimeForPrimarypasswordToApps">
+                    Expiry Day
+                  </label>
+                </GridItem>
+                <GridItem>
+                  <NumberInput
+                    id="nostr-pref-expiryTimeForPrimarypasswordToApps"
+                    value={
+                      prefs.nostr.expiryTimeForPrimarypasswordToApps / OneDay
+                    }
+                    onChange={handleExpiryTimeForPrimarypasswordToApps}
+                    min={1}
+                    size="sm"
+                    maxW={20}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </GridItem>
+              </>
+            )}
             <GridItem>
               <label htmlFor="nostr-pref-usedAccountChanged">
                 Notify &quot;Account Changed&quot; to Web apps

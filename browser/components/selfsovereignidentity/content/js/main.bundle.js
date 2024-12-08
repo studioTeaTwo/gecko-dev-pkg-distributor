@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, m as InputGroup, n as Input, F as Flex, C as Card, o as CardHeader, E as Editable, p as EditablePreview, q as EditableInput, t as CardBody, u as CardFooter, v as hexToBytes, w as Tabs, x as TabList, y as Tab, z as TabPanels, D as TabPanel, J as createRoot, K as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, N as NumberInput, m as NumberInputField, n as NumberInputStepper, o as NumberIncrementStepper, p as NumberDecrementStepper, q as InputGroup, t as Input, F as Flex, C as Card, u as CardHeader, E as Editable, v as EditablePreview, w as EditableInput, x as CardBody, y as CardFooter, z as hexToBytes, D as Tabs, J as TabList, K as Tab, O as TabPanels, P as TabPanel, Q as createRoot, U as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -431,7 +431,9 @@ function useChildActorEvent() {
     nostr: {
       enabled: true,
       usedPrimarypasswordToSettings: true,
+      expiryTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
+      expiryTimeForPrimarypasswordToApps: 864e5,
       usedTrustedSites: false,
       usedBuiltInNip07: true,
       usedAccountChanged: true
@@ -506,13 +508,30 @@ function useChildActorEvent() {
         break;
       }
       case "Prefs": {
-        if (event.detail.value.protocolName === "nostr") {
-          setPrefs((prev) => ({
-            ...prev,
-            nostr: { ...prev.nostr, ...event.detail.value }
-          }));
+        if (event.detail.value) {
+          setPrefs((prev) => {
+            const newState = {
+              ...prev
+            };
+            const keys = Object.keys(event.detail.value);
+            for (const protocolName of keys) {
+              newState[protocolName] = {
+                ...prev[protocolName],
+                ...event.detail.value[protocolName]
+              };
+            }
+            return newState;
+          });
         }
         break;
+      }
+      case "ShowCredentialItemError": {
+        console.error("ShowCredentialItemError", event);
+        alert(`Oops...got error: ${event.detail.value.errorMessage}`);
+        break;
+      }
+      default: {
+        console.log(event);
       }
     }
   };
@@ -650,9 +669,10 @@ const DefaultTrustedSites = [
     permissions: { read: true, write: true, admin: true }
   }
 ];
+const OneDay = 24 * 60 * 60 * 1e3;
 function NIP07(props) {
   const { prefs, credentials } = useChildActorEvent();
-  const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2, onPrimaryChanged: onPrimaryChanged2 } = dispatchEvents;
+  const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
@@ -710,10 +730,7 @@ function NIP07(props) {
         ])
       });
     }
-    setTimeout(() => {
-      const primary = nostrkeys.find((key) => key.primary);
-      onPrimaryChanged2({ protocolName: "nostr", guid: primary.guid });
-    }, 100);
+    window.location.reload();
   };
   const handleRemoveSite = async (removedSite) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
@@ -733,10 +750,7 @@ function NIP07(props) {
         )
       });
     }
-    setTimeout(() => {
-      const primary = nostrkeys.find((key) => key.primary);
-      onPrimaryChanged2({ protocolName: "nostr", guid: primary.guid });
-    }, 100);
+    window.location.reload();
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
@@ -761,6 +775,31 @@ function NIP07(props) {
     e.preventDefault();
     const checked = e.target.checked;
     onPrefChanged2({ protocolName: "nostr", usedBuiltInNip07: checked });
+  };
+  const handleUsedPrimarypasswordToApps = async (checked) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    onPrefChanged2({ protocolName: "nostr", usedPrimarypasswordToApps: checked });
+  };
+  const handleExpiryTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
+    const primaryPasswordAuth = await promptForPrimaryPassword(
+      "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
+    );
+    if (!primaryPasswordAuth) {
+      setIsOpenDialog(true);
+      return;
+    }
+    onPrefChanged2({
+      protocolName: "nostr",
+      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneDay
+    });
   };
   const handleUsedAccountChanged = (e) => {
     e.preventDefault();
@@ -790,6 +829,36 @@ function NIP07(props) {
                 onChange: handleUsedBuiltInNip07
               }
             ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Use primary password to Web apps" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Switch,
+              {
+                id: "nostr-pref-usedPrimarypasswordToApps",
+                isChecked: prefs.nostr.usedPrimarypasswordToApps,
+                onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
+              }
+            ) }),
+            prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Day" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                NumberInput,
+                {
+                  id: "nostr-pref-expiryTimeForPrimarypasswordToApps",
+                  value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneDay,
+                  onChange: handleExpiryTimeForPrimarypasswordToApps,
+                  min: 1,
+                  size: "sm",
+                  maxW: 20,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
+                    ] })
+                  ]
+                }
+              ) })
+            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedAccountChanged", children: 'Notify "Account Changed" to Web apps' }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Switch,
@@ -904,6 +973,7 @@ function Nostr$2(props) {
       }
     });
     setNewKey(npubkey);
+    window.location.reload();
   };
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value);
   const handleSave = (e) => {
@@ -929,6 +999,7 @@ function Nostr$2(props) {
       }
     });
     setImportedKey("");
+    window.location.reload();
   };
   const handleChangePrimary = (checked, item) => {
     let newPrimaryGuid = "";
@@ -943,11 +1014,13 @@ function Nostr$2(props) {
       newPrimaryGuid = item.guid;
     } else {
       const prev = nostrkeys.find((key) => !key.primary);
-      modifyCredentialToStore2({
-        ...prev,
-        primary: true
-      });
-      newPrimaryGuid = prev.guid;
+      if (prev) {
+        modifyCredentialToStore2({
+          ...prev,
+          primary: true
+        });
+        newPrimaryGuid = prev.guid;
+      }
     }
     modifyCredentialToStore2({
       ...item,
@@ -959,14 +1032,13 @@ function Nostr$2(props) {
   const handleDeleteCredential = (item) => {
     if (item.primary === true) {
       const prev = nostrkeys.find((key) => !key.primary);
-      if (!prev) {
-        onPrimaryChanged2({ protocolName: "nostr", guid: "" });
-      } else {
+      if (prev) {
         modifyCredentialToStore2({
           ...prev,
           primary: true
         });
       }
+      onPrimaryChanged2({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
     deleteCredentialToStore2(item, nostrkeys);
     window.location.reload();
@@ -987,6 +1059,7 @@ function Nostr$2(props) {
     }
     removeAllCredentialsToStore2();
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });
+    window.location.reload();
   };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {

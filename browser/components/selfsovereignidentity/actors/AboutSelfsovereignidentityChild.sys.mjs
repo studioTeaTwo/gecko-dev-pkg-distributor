@@ -113,28 +113,44 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
       }
     )
 
-    const nostr = {
-      protocolName: "nostr",
-      enabled: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.enabled"
-      ),
-      usedPrimarypasswordToSettings: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.primarypassword.toSettings.enabled"
-      ),
-      usedPrimarypasswordToApps: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.primarypassword.toApps.enabled"
-      ),
-      usedTrustedSites: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.trustedSites.enabled"
-      ),
-      usedBuiltInNip07: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.builtInNip07.enabled"
-      ),
-      usedAccountChanged: Services.prefs.getBoolPref(
-        "selfsovereignidentity.nostr.event.accountChanged.enabled"
-      ),
+    let prefs = {}
+    for (const protocolName of ["nostr"]) {
+      const defaults = {
+        enabled: Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.enabled`
+        ),
+        usedPrimarypasswordToSettings: Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toSettings.enabled`
+        ),
+        expiryTimeForPrimarypasswordToSettings: Services.prefs.getIntPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toSettings.expiryTime`
+        ),
+        usedPrimarypasswordToApps: Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toApps.enabled`
+        ),
+        expiryTimeForPrimarypasswordToApps: Services.prefs.getIntPref(
+          `selfsovereignidentity.${protocolName}.primarypassword.toApps.expiryTime`
+        ),
+        usedTrustedSites: Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.trustedSites.enabled`
+        ),
+        usedAccountChanged: Services.prefs.getBoolPref(
+          `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
+        ),
+      }
+
+      if (protocolName === "nostr") {
+        prefs.nostr = {
+          protocolName: "nostr",
+          ...defaults,
+          usedBuiltInNip07: Services.prefs.getBoolPref(
+            "selfsovereignidentity.nostr.builtInNip07.enabled"
+          ),
+        }
+      }
     }
-    this.sendToContent("Prefs", nostr)
+
+    this.sendToContent("Prefs", prefs)
   }
 
   #aboutIdentityGetAllCredentials() {

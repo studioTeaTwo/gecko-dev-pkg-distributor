@@ -33,7 +33,6 @@ export const WindowSSI: WindowSSI = {
       return Promise.resolve("publickey")
     },
     getPublicKey(option) {
-      console.log("ssi getpubkey")
       return postMessage("nostr", "getPublicKey", undefined)
     },
     sign(message, option) {
