@@ -1149,11 +1149,10 @@ async function init() {
 exports.init = init;
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", detail.tabId);
+    // It's only injecting functions and doesn't need trusted.
     const injecting = state_1.state.nostr.prefs.enabled &&
         state_1.state.nostr.prefs.usedBuiltInNip07 &&
-        supported(detail.url) &&
-        trusted;
+        supported(detail.url);
     (0, logger_1.log)("nostr init to tab", injecting);
     // Notify init to the contents
     const tab = await browser.tabs.get(detail.tabId);
@@ -1178,6 +1177,8 @@ const onPrimaryChangedCallback = async () => {
         npub: credentials[0].identifier,
     };
     // Send the message to the contents
+    // usedBuiltInNip07 doen't need for window.ssi
+    // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
     if (state_1.state.nostr.prefs.enabled && state_1.state.nostr.prefs.usedAccountChanged) {
         const tabs = await browser.tabs.query({
             status: "complete",
@@ -1199,6 +1200,7 @@ const onPrefChangedCallback = async (prefKey) => {
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents
+    // AccountChanged should only be held in the background.
     if (["enabled", "builtInNip07.enabled"].includes(prefKey)) {
         const tabs = await browser.tabs.query({
             status: "complete",
@@ -1222,15 +1224,17 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id);
-    if (!trusted) {
-        browser.tabs
-            .sendMessage(tab.id, {
-            action,
-            args: { error: ERR_MSG_NOT_TRUSTED },
-        })
-            .catch();
-        return;
+    if (!(action === "nostr/init")) {
+        const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id);
+        if (!trusted) {
+            browser.tabs
+                .sendMessage(tab.id, {
+                action,
+                args: { error: ERR_MSG_NOT_TRUSTED },
+            })
+                .catch();
+            return;
+        }
     }
     browser.tabs
         .sendMessage(tab.id, {
