@@ -111,10 +111,8 @@ export default function Nostr(props) {
 
     setNewKey(npubkey)
 
-    // Notifying to the buit-in extension will be done in hooks,
+    // Notifying "PrimaryChanged" to the buit-in extension when this is the first key will be done in hooks,
     // because here is no guid yet.
-
-    window.location.reload() // FIXME(ssb)
   }
 
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value)
@@ -146,7 +144,8 @@ export default function Nostr(props) {
 
     setImportedKey("")
 
-    window.location.reload() // FIXME(ssb)
+    // Notifying "PrimaryChanged" to the buit-in extension when this is the first key will be done in hooks,
+    // because here is no guid yet.
   }
 
   const handleChangePrimary = (checked, item: Credential) => {
@@ -181,11 +180,9 @@ export default function Nostr(props) {
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid })
-
-    window.location.reload() // FIXME(ssb)
   }
 
-  const handleDeleteCredential = async(item: Credential) => {
+  const handleDeleteCredential = async (item: Credential) => {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
       return
     }
@@ -213,8 +210,6 @@ export default function Nostr(props) {
     }
 
     deleteCredentialToStore(item, nostrkeys)
-
-    window.location.reload() // FIXME(ssb)
   }
 
   const handleAllRemove = async (
@@ -237,8 +232,6 @@ export default function Nostr(props) {
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "nostr", guid: "" })
-
-    window.location.reload() // FIXME(ssb)
   }
 
   const cancelRef = React.useRef()
