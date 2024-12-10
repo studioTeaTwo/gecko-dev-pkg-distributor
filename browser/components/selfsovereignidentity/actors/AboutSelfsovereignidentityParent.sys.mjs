@@ -539,10 +539,10 @@ class AboutSelfsovereignidentityInternal {
     for (let subscriber of subscribers) {
       let browser = subscriber.embedderElement
       if (
-        browser?.remoteType !=
-          EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE ||
-        browser?.contentPrincipal?.originNoSuffix !=
-          ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN
+        browser?.remoteType != EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE
+        // FIXME(ssb): not working because `URI_SAFE_FOR_UNTRUSTED_CONTENT` has been removed from AboutSelfsovereignidentity process.
+        // || browser?.contentPrincipal?.originNoSuffix !=
+        //   ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN
       ) {
         this.subscribers.delete(subscriber)
         continue

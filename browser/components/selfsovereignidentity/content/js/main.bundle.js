@@ -730,7 +730,6 @@ function NIP07(props) {
         ])
       });
     }
-    window.location.reload();
   };
   const handleRemoveSite = async (removedSite) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
@@ -750,7 +749,6 @@ function NIP07(props) {
         )
       });
     }
-    window.location.reload();
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
@@ -973,7 +971,6 @@ function Nostr$2(props) {
       }
     });
     setNewKey(npubkey);
-    window.location.reload();
   };
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value);
   const handleSave = (e) => {
@@ -999,7 +996,6 @@ function Nostr$2(props) {
       }
     });
     setImportedKey("");
-    window.location.reload();
   };
   const handleChangePrimary = (checked, item) => {
     let newPrimaryGuid = "";
@@ -1027,7 +1023,6 @@ function Nostr$2(props) {
       primary: checked
     });
     onPrimaryChanged2({ protocolName: "nostr", guid: newPrimaryGuid });
-    window.location.reload();
   };
   const handleDeleteCredential = async (item) => {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
@@ -1053,7 +1048,6 @@ function Nostr$2(props) {
       onPrimaryChanged2({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
     deleteCredentialToStore2(item, nostrkeys);
-    window.location.reload();
   };
   const handleAllRemove = async (e) => {
     e.preventDefault();
@@ -1071,7 +1065,6 @@ function Nostr$2(props) {
     }
     removeAllCredentialsToStore2();
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });
-    window.location.reload();
   };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
