@@ -92,12 +92,11 @@ export async function init() {
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(
   async (detail) => {
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", detail.tabId)
+    // It's only injecting functions and doesn't need trusted.
     const injecting =
       state.nostr.prefs.enabled &&
       state.nostr.prefs.usedBuiltInNip07 &&
-      supported(detail.url) &&
-      trusted
+      supported(detail.url)
     log("nostr init to tab", injecting)
 
     // Notify init to the contents
@@ -133,6 +132,8 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
+  // usedBuiltInNip07 doen't need for window.ssi
+  // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
   if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
       status: "complete",
@@ -156,6 +157,7 @@ const onPrefChangedCallback = async (prefKey: string) => {
   log("pref changed!", prefKey, newVal, state.nostr)
 
   // Send the message to the contents
+  // AccountChanged should only be held in the background.
   if (["enabled", "builtInNip07.enabled"].includes(prefKey)) {
     const tabs = await browser.tabs.query({
       status: "complete",
@@ -181,15 +183,17 @@ async function sendTab(tab, action, data) {
     // browser origin event is not sent anything
     return
   }
-  const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id)
-  if (!trusted) {
-    browser.tabs
-      .sendMessage(tab.id, {
-        action,
-        args: { error: ERR_MSG_NOT_TRUSTED },
-      })
-      .catch()
-    return
+  if (!(action === "nostr/init")) {
+    const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id)
+    if (!trusted) {
+      browser.tabs
+        .sendMessage(tab.id, {
+          action,
+          args: { error: ERR_MSG_NOT_TRUSTED },
+        })
+        .catch()
+      return
+    }
   }
 
   browser.tabs
