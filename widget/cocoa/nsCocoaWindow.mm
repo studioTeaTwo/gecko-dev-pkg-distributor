@@ -123,6 +123,7 @@ nsCocoaWindow::nsCocoaWindow()
     : mParent(nullptr),
       mAncestorLink(nullptr),
       mWindow(nil),
+      mClosedRetainedWindow(nil),
       mDelegate(nil),
       mPopupContentView(nil),
       mFullscreenTransitionAnimation(nil),
@@ -168,7 +169,16 @@ void nsCocoaWindow::DestroyNativeWindow() {
   // We want to unhook the delegate here because we don't want events
   // sent to it after this object has been destroyed.
   mWindow.delegate = nil;
+
+  // Closing the window will also release it. Our second reference will
+  // keep it alive through our destructor. Release any reference we might
+  // have from an earlier call to DestroyNativeWindow, then create a new
+  // one.
+  [mClosedRetainedWindow autorelease];
+  mClosedRetainedWindow = [mWindow retain];
+  MOZ_ASSERT(mWindow.releasedWhenClosed);
   [mWindow close];
+
   mWindow = nil;
   [mDelegate autorelease];
 
@@ -201,6 +211,8 @@ nsCocoaWindow::~nsCocoaWindow() {
     CancelAllTransitions();
     DestroyNativeWindow();
   }
+
+  [mClosedRetainedWindow release];
 
   NS_IF_RELEASE(mPopupContentView);
   NS_OBJC_END_TRY_IGNORE_BLOCK;
@@ -580,20 +592,14 @@ void nsCocoaWindow::Destroy() {
   // (Bug 891424)
   Show(false);
 
-  if (mPopupContentView) mPopupContentView->Destroy();
+  if (mPopupContentView) {
+    mPopupContentView->Destroy();
+  }
 
   if (mFullscreenTransitionAnimation) {
     [mFullscreenTransitionAnimation stopAnimation];
     ReleaseFullscreenTransitionAnimation();
   }
-
-  nsBaseWidget::Destroy();
-  // nsBaseWidget::Destroy() calls GetParent()->RemoveChild(this). But we
-  // don't implement GetParent(), so we need to do the equivalent here.
-  if (mParent) {
-    mParent->RemoveChild(this);
-  }
-  nsBaseWidget::OnDestroy();
 
   if (mInFullScreenMode && !mInNativeFullScreenMode) {
     // Keep these calls balanced for emulated fullscreen.
@@ -607,6 +613,17 @@ void nsCocoaWindow::Destroy() {
   if (mWindow && mWindowMadeHere) {
     CancelAllTransitions();
     DestroyNativeWindow();
+  }
+
+  nsCOMPtr<nsIWidget> kungFuDeathGrip(this);
+
+  nsBaseWidget::OnDestroy();
+  nsBaseWidget::Destroy();
+
+  // nsBaseWidget::Destroy() calls GetParent()->RemoveChild(this). But we
+  // don't implement GetParent(), so we need to do the equivalent here.
+  if (mParent) {
+    mParent->RemoveChild(this);
   }
 }
 
@@ -1288,10 +1305,11 @@ void nsCocoaWindow::HideWindowChrome(bool aShouldHide) {
 
   // Recreate the window with the right border style.
   NSRect frameRect = mWindow.frame;
+  BOOL restorable = mWindow.restorable;
   DestroyNativeWindow();
   nsresult rv = CreateNativeWindow(
       frameRect, aShouldHide ? BorderStyle::None : mBorderStyle, true,
-      mWindow.restorable);
+      restorable);
   NS_ENSURE_SUCCESS_VOID(rv);
 
   // Re-import state.
@@ -3205,6 +3223,7 @@ static NSMutableSet* gSwizzledFrameViewClasses = nil;
   mState = nil;
   mDisabledNeedsDisplay = NO;
   mTrackingArea = nil;
+  mViewWithTrackingArea = nil;
   mDirtyRect = NSZeroRect;
   mBeingShown = NO;
   mDrawTitle = NO;
@@ -3417,25 +3436,28 @@ static const NSString* kStateWantsTitleDrawn = @"wantsTitleDrawn";
 }
 
 - (void)removeTrackingArea {
-  if (mTrackingArea) {
-    [self.trackingAreaView removeTrackingArea:mTrackingArea];
-    [mTrackingArea release];
-    mTrackingArea = nil;
-  }
+  [mViewWithTrackingArea removeTrackingArea:mTrackingArea];
+
+  [mTrackingArea release];
+  mTrackingArea = nil;
+
+  [mViewWithTrackingArea release];
+  mViewWithTrackingArea = nil;
 }
 
 - (void)updateTrackingArea {
   [self removeTrackingArea];
 
-  NSView* view = self.trackingAreaView;
+  mViewWithTrackingArea = [self.trackingAreaView retain];
   const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
                                         NSTrackingMouseMoved |
                                         NSTrackingActiveAlways;
-  mTrackingArea = [[NSTrackingArea alloc] initWithRect:[view bounds]
-                                               options:options
-                                                 owner:self
-                                              userInfo:nil];
-  [view addTrackingArea:mTrackingArea];
+  mTrackingArea =
+      [[NSTrackingArea alloc] initWithRect:[mViewWithTrackingArea bounds]
+                                   options:options
+                                     owner:self
+                                  userInfo:nil];
+  [mViewWithTrackingArea addTrackingArea:mTrackingArea];
 }
 
 - (void)mouseEntered:(NSEvent*)aEvent {
