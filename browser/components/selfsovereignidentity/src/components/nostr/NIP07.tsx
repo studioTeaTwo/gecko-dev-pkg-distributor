@@ -117,8 +117,6 @@ export default function NIP07(props) {
         ]),
       })
     }
-
-    window.location.reload() // FIXME(ssb)
   }
 
   const handleRemoveSite = async (removedSite) => {
@@ -140,8 +138,6 @@ export default function NIP07(props) {
         ),
       })
     }
-
-    window.location.reload() // FIXME(ssb)
   }
 
   const getTrustedSites = useCallback(() => {
