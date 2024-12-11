@@ -930,6 +930,9 @@ class TelemetryHandler {
     }
 
     let queries = new URLSearchParams(url.split("#")[0].split("?")[1]);
+    queries.forEach((v, k) => {
+      queries.set(k.toLowerCase(), v);
+    });
 
     let isSPA = !!searchProviderInfo.isSPA;
     if (isSPA) {
@@ -965,7 +968,7 @@ class TelemetryHandler {
     let type = "organic";
     let code;
     if (searchProviderInfo.codeParamName) {
-      code = queries.get(searchProviderInfo.codeParamName);
+      code = queries.get(searchProviderInfo.codeParamName.toLowerCase());
       if (code) {
         // The code is only included if it matches one of the specific ones.
         if (searchProviderInfo.taggedCodes.includes(code)) {
@@ -987,7 +990,9 @@ class TelemetryHandler {
         // Especially Bing requires lots of extra work related to cookies.
         for (let followOnCookie of searchProviderInfo.followOnCookies) {
           if (followOnCookie.extraCodeParamName) {
-            let eCode = queries.get(followOnCookie.extraCodeParamName);
+            let eCode = queries.get(
+              followOnCookie.extraCodeParamName.toLowerCase()
+            );
             if (
               !eCode ||
               !followOnCookie.extraCodePrefixes.some(p => eCode.startsWith(p))
@@ -1007,7 +1012,9 @@ class TelemetryHandler {
               continue;
             }
 
+            // Cookie values may take the form of "foo=bar&baz=1".
             let [cookieParam, cookieValue] = cookie.value
+              .split("&")[0]
               .split("=")
               .map(p => p.trim());
             if (

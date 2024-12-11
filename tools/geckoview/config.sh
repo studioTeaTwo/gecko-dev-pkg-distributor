@@ -6,4 +6,4 @@ ARCH=$2
 source android-env.sh
 
 cd $DEV_ROOT
-MOZCONFIG=mozconfig-android-$ARCH  ./mach configure  --without-wasm-sandboxed-libraries
+MOZCONFIG=mozconfig-android-$ARCH ./mach configure --without-wasm-sandboxed-libraries
