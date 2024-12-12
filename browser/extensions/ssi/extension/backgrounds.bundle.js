@@ -1087,6 +1087,12 @@ const MapBetweenPrefAndState = {
     usedBuiltInNip07: "builtInNip07.enabled",
     usedAccountChanged: "event.accountChanged.enabled",
 };
+const DialogMessage = {
+    "nostr/getPublicKey": "read Nostr public key",
+    "nostr/signEvent": "sign with Nostr",
+    "nostr/accountChanged": "notify account changed",
+    "nostr/providerChanged": "notify provider changed",
+};
 // TODO(ssb): conceal as much information as possible
 const ERR_MSG_NOT_ENABLED = "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
@@ -1100,12 +1106,12 @@ const doNostrAction = async (action, args, tabId) => {
     if (!supported(origin)) {
         throw new Error(ERR_MSG_NOT_SUPPORTED);
     }
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", tabId);
-    if (!trusted) {
-        throw new Error(ERR_MSG_NOT_TRUSTED);
-    }
     if (!state_1.state.nostr.npub) {
         throw new Error(ERR_MSG_NOT_REGISTERED);
+    }
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tabId, DialogMessage[action]);
+    if (!trusted) {
+        throw new Error(ERR_MSG_NOT_TRUSTED);
     }
     switch (action) {
         case "nostr/getPublicKey": {
@@ -1127,10 +1133,12 @@ exports.doNostrAction = doNostrAction;
 async function init() {
     (0, logger_1.log)("experimental-api start...");
     // Get the existing credential from the ssi store.
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", "nsec", true);
+    const credentialName = "nsec";
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", credentialName, true);
     if (credentials.length > 0) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
+            credentialName,
             npub: credentials[0].identifier,
         };
     }
@@ -1162,7 +1170,7 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", "nsec", true);
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
     (0, logger_1.log)("primary changed!", credentials);
     // That means it's all been removed
     if (credentials.length === 0) {
@@ -1177,7 +1185,7 @@ const onPrimaryChangedCallback = async () => {
         npub: credentials[0].identifier,
     };
     // Send the message to the contents
-    // usedBuiltInNip07 doen't need for window.ssi
+    // window.ssi doen't need usedBuiltInNip07
     // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
     if (state_1.state.nostr.prefs.enabled && state_1.state.nostr.prefs.usedAccountChanged) {
         const tabs = await browser.tabs.query({
@@ -1225,7 +1233,7 @@ async function sendTab(tab, action, data) {
         return;
     }
     if (!(action === "nostr/init")) {
-        const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id);
+        const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tab.id, DialogMessage[action]);
         if (!trusted) {
             browser.tabs
                 .sendMessage(tab.id, {
@@ -1302,6 +1310,7 @@ exports.state = void 0;
 // But don't expose them to the contents, so that Peter Todd is not suspected of being Satoshi Nakamoto.
 exports.state = {
     nostr: {
+        credentialName: "",
         npub: "",
         prefs: {
             enabled: true,

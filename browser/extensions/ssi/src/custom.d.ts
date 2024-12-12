@@ -17,7 +17,12 @@ declare namespace browser.ssi {
     credentialName: string,
     primary: boolean
   ) => Promise<Credential[] | null>
-  const askPermission: (protocolName: ProtocolName, credentialName: string, tabId: number) => Promise<boolean>
+  const askPermission: (
+    protocolName: ProtocolName,
+    credentialName: string,
+    tabId: number,
+    message?: string
+  ) => Promise<boolean>
   const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>
 
   type commonApis = {

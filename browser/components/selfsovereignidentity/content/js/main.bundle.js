@@ -594,20 +594,21 @@ function AlertPrimaryPassword(props) {
             {
               color: "teal.500",
               href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US",
-              isExternal: true,
               children: "primary password"
             }
           ),
           " ",
           ', or turn off "Use primary password to setting page".'
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(ModalFooter, { children: [
-          "NEXT ACTION",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-          'To set, go to "about:preferences#privacy"',
-          /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-          'To turn off, open "More" tab'
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ModalFooter, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { align: "stretch", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: "NEXT ACTION" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            "To set, go to",
+            " ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { color: "teal.500", href: "about:preferences#privacy", children: "about:preferences#privacy" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: 'To turn off, open "More" tab' })
+        ] }) })
       ] }) })
     }
   );

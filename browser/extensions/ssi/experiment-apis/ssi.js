@@ -38,6 +38,8 @@ this.ssi = class extends ExtensionAPI {
             ),
           }
 
+          // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
+          // TODO(ssb): validate params
           const params = {}
           if (protocolName) {
             if (!enabled[protocolName]) return []
@@ -77,7 +79,8 @@ this.ssi = class extends ExtensionAPI {
               return filteredVal
             })
         },
-        async askPermission(protocolName, credentialName, tabId) {
+        async askPermission(protocolName, credentialName, tabId, message) {
+          // TODO(ssb): validate params
           // TODO(ssb): validate tabId
           // TODO(ssb): how to make tabId unnecessary
           // const tabs = Array.from(
@@ -125,8 +128,10 @@ this.ssi = class extends ExtensionAPI {
             }
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
-              const messageText = { value: "AUTH LOCK" }
-              const captionText = { value: "" }
+              const messageText = {
+                value: `${message || "AUTH LOCK"} ${origin}`,
+              }
+              const captionText = { value: "" } // FIXME(ssb): not displayed. want to set the origin here.
 
               const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
                 lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF

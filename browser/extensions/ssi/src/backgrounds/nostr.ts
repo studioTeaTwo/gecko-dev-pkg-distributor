@@ -14,6 +14,13 @@ const MapBetweenPrefAndState = {
   usedAccountChanged: "event.accountChanged.enabled",
 }
 
+const DialogMessage = {
+  "nostr/getPublicKey": "read Nostr public key",
+  "nostr/signEvent": "sign with Nostr",
+  "nostr/accountChanged": "notify account changed",
+  "nostr/providerChanged": "notify provider changed",
+}
+
 // TODO(ssb): conceal as much information as possible
 const ERR_MSG_NOT_ENABLED =
   "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'."
@@ -30,12 +37,17 @@ export const doNostrAction = async (action, args, tabId) => {
   if (!supported(origin)) {
     throw new Error(ERR_MSG_NOT_SUPPORTED)
   }
-  const trusted = await browser.ssi.askPermission("nostr", "nsec", tabId)
-  if (!trusted) {
-    throw new Error(ERR_MSG_NOT_TRUSTED)
-  }
   if (!state.nostr.npub) {
     throw new Error(ERR_MSG_NOT_REGISTERED)
+  }
+  const trusted = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    tabId,
+    DialogMessage[action]
+  )
+  if (!trusted) {
+    throw new Error(ERR_MSG_NOT_TRUSTED)
   }
 
   switch (action) {
@@ -63,14 +75,16 @@ export async function init() {
   log("experimental-api start...")
 
   // Get the existing credential from the ssi store.
+  const credentialName = "nsec"
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
-    "nsec",
+    credentialName,
     true
   )
   if (credentials.length > 0) {
     state.nostr = {
       ...state.nostr,
+      credentialName,
       npub: credentials[0].identifier,
     }
   }
@@ -112,7 +126,7 @@ browser.webNavigation.onDOMContentLoaded.addListener(
 const onPrimaryChangedCallback = async () => {
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
-    "nsec",
+    state.nostr.credentialName,
     true
   )
   log("primary changed!", credentials)
@@ -132,7 +146,7 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
-  // usedBuiltInNip07 doen't need for window.ssi
+  // window.ssi doen't need usedBuiltInNip07
   // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
   if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
@@ -184,7 +198,12 @@ async function sendTab(tab, action, data) {
     return
   }
   if (!(action === "nostr/init")) {
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id)
+    const trusted = await browser.ssi.askPermission(
+      "nostr",
+      state.nostr.credentialName,
+      tab.id,
+      DialogMessage[action]
+    )
     if (!trusted) {
       browser.tabs
         .sendMessage(tab.id, {

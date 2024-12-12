@@ -11,16 +11,19 @@
           {
             "name": "protocolName",
             "type": "string",
+            "option": true,
             "description": "The protocol name to search"
           },
           {
             "name": "credentialName",
             "type": "string",
+            "option": true,
             "description": "The credential name to search"
           },
           {
             "name": "primary",
             "type": "boolean",
+            "option": true,
             "description": "The primary flag to search"
           }
         ]
@@ -44,6 +47,12 @@
             "name": "tabId",
             "type": "number",
             "description": "The current tab id"
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "option": true,
+            "description": "The message displayed on the Auth dialog"
           }
         ],
         "async": true
