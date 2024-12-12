@@ -3,7 +3,6 @@
 
 import { log } from "../shared/logger"
 import { shouldInject } from "../shared/shouldInject"
-import { postMessage } from "./postMessage"
 
 export function init() {
   if (!shouldInject()) {
@@ -28,30 +27,44 @@ export function init() {
           window.nip07Loaded = Array.isArray(window.nip07Loaded)
             ? window.nip07Loaded.concat({ ssb: true })
             : [{ ssb: true }]
+          window.ssi.nostr.addEventListener(
+            "accountChanged",
+            accountChangedHandler
+          )
         } else {
           // Dispose
           window.nostr && delete window.nostr
           window.nip07Loaded = Array.isArray(window.nip07Loaded)
             ? window.nip07Loaded.concat({ ssb: false })
             : [{ ssb: false }]
+          window.ssi.nostr.removeEventListener(
+            "accountChanged",
+            accountChangedHandler
+          )
         }
+
         log(`inpage ${action} emit`, event)
         window.dispatchEvent(
           new CustomEvent(action, {
             detail: data,
           })
         )
-      } else if (action === "accountChanged") {
-        log(`inpage accountChanged emit`, event)
-        window.nostr.dispatchEvent(
-          new CustomEvent(action, {
-            detail: data,
-            bubbles: false,
-          })
-        )
       }
     }
   })
+}
+
+const accountChangedHandler = (event: MessageEvent<any>) => {
+  const action = event.data.data.action
+  const data = event.data.data.data
+
+  log(`inpage accountChanged emit`, event)
+  window.nostr.dispatchEvent(
+    new CustomEvent(action, {
+      detail: data,
+      bubbles: false,
+    })
+  )
 }
 
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md

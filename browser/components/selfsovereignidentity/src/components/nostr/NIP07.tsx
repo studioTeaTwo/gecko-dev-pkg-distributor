@@ -173,11 +173,11 @@ export default function NIP07(props) {
     )
   }, [nostrkeys])
 
-  const handleUsedBuiltInNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsedBuiltinNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
 
     const checked = e.target.checked
-    onPrefChanged({ protocolName: "nostr", usedBuiltInNip07: checked })
+    onPrefChanged({ protocolName: "nostr", usedBuiltinNip07: checked })
   }
 
   const handleUsedPrimarypasswordToApps = async (checked: boolean) => {
@@ -240,15 +240,15 @@ export default function NIP07(props) {
               </Text>
             </GridItem>
             <GridItem>
-              <label htmlFor="nostr-pref-usedBuiltInNip07">
+              <label htmlFor="nostr-pref-usedBuiltinNip07">
                 Use built-in NIP-07
               </label>
             </GridItem>
             <GridItem>
               <Switch
-                id="nostr-pref-usedBuiltInNip07"
-                isChecked={prefs.nostr.usedBuiltInNip07}
-                onChange={handleUsedBuiltInNip07}
+                id="nostr-pref-usedBuiltinNip07"
+                isChecked={prefs.nostr.usedBuiltinNip07}
+                onChange={handleUsedBuiltinNip07}
               />
             </GridItem>
             <GridItem>

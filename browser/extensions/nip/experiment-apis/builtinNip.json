@@ -1,0 +1,27 @@
+[
+  {
+    "namespace": "builtinNip",
+    "events": [
+      {
+        "name": "onPrefBuiltinNip07Changed",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "getPrefs",
+        "type": "function",
+        "description": "Get preference's values",
+        "parameters": [],
+        "async": true
+      }
+    ]
+  }
+]

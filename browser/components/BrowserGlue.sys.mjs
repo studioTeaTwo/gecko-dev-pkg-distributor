@@ -2339,20 +2339,30 @@ BrowserGlue.prototype = {
 
   async _setupSelfsovereignidentity() {
     // There is no pref for this add-on because it shouldn't be disabled.
-    const ID = "experimentapi-ssi@teatwo.dev";
+    const configs = [{
+      id: "experimentapi-ssi@teatwo.dev",
+      version: "0.0.1",
+      base: "resource://builtin-addons/ssi/"
+    },{
+      id: "builtin-nip@teatwo.dev",
+      version: "0.0.1",
+      base: "resource://builtin-addons/nip/"
+    }];
 
-    let addon = await lazy.AddonManager.getAddonByID(ID);
+    for (const config of configs) {
+      let addon = await lazy.AddonManager.getAddonByID(config.id);
 
-    // first time install of addon and install on firefox update
-    addon =
-    (await lazy.AddonManager.maybeInstallBuiltinAddon(
-      ID,
-      "0.0.1",
-      "resource://builtin-addons/ssi/"
-    )) || addon;
-
-    if (!addon.isActive) {
-      addon.enable({ allowSystemAddons: true });
+      // first time install of addon and install on firefox update
+      addon =
+      (await lazy.AddonManager.maybeInstallBuiltinAddon(
+        config.id,
+        config.version,
+        config.base
+      )) || addon;
+  
+      if (!addon.isActive) {
+        addon.enable({ allowSystemAddons: true });
+      }
     }
   },
 

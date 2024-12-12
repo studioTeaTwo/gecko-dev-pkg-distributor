@@ -54,19 +54,7 @@ async function init() {
     browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
         (0, logger_1.log)("content-script onMessage", request);
         // forward account changed messaged to inpage script
-        if (request.action === "nostr/init" ||
-            request.action === "nostr/providerChanged") {
-            window.postMessage({
-                id: "native",
-                application: "ssb",
-                data: {
-                    action: request.action === "nostr/init" ? "init" : "providerChanged",
-                    data: request.args,
-                },
-                scope: "nostr",
-            }, window.location.origin);
-        }
-        else if (request.action === "nostr/accountChanged") {
+        if (request.action === "nostr/accountChanged") {
             window.postMessage({
                 id: "native",
                 application: "ssb",

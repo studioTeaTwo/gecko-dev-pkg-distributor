@@ -4,4 +4,5 @@
 
 browser.jar:
 %   resource builtin-addons %builtin-addons/  contentaccessible=yes
-    builtin-addons/nip07 (extension/**)
+    builtin-addons/nip (extension/**)
+    builtin-addons/nip/experiment-apis (experiment-apis/**)

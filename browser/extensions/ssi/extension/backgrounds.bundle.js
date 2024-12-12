@@ -1084,7 +1084,6 @@ const state_1 = __webpack_require__(975);
 const SafeProtocols = ["http", "https", "moz-extension"];
 const MapBetweenPrefAndState = {
     enabled: "enabled",
-    usedBuiltInNip07: "builtInNip07.enabled",
     usedAccountChanged: "event.accountChanged.enabled",
 };
 const DialogMessage = {
@@ -1099,7 +1098,7 @@ const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only su
 const ERR_MSG_NOT_TRUSTED = "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`;
 // Proceed calls from contents
-const doNostrAction = async (action, args, tabId) => {
+const doNostrAction = async (action, args, origin, tabId) => {
     if (!state_1.state.nostr.prefs.enabled) {
         throw new Error(ERR_MSG_NOT_ENABLED);
     }
@@ -1155,18 +1154,6 @@ async function init() {
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr, credentials);
 }
 exports.init = init;
-// initial action while the webapps are loading
-browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
-    // It's only injecting functions and doesn't need trusted.
-    const injecting = state_1.state.nostr.prefs.enabled &&
-        state_1.state.nostr.prefs.usedBuiltInNip07 &&
-        supported(detail.url);
-    (0, logger_1.log)("nostr init to tab", injecting);
-    // Notify init to the contents
-    const tab = await browser.tabs.get(detail.tabId);
-    (0, logger_1.log)("send to tab", tab);
-    sendTab(tab, "nostr/init", injecting);
-}, { url: [{ schemes: SafeProtocols }] });
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
@@ -1185,7 +1172,6 @@ const onPrimaryChangedCallback = async () => {
         npub: credentials[0].identifier,
     };
     // Send the message to the contents
-    // window.ssi doen't need usedBuiltInNip07
     // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
     if (state_1.state.nostr.prefs.enabled && state_1.state.nostr.prefs.usedAccountChanged) {
         const tabs = await browser.tabs.query({
@@ -1209,7 +1195,7 @@ const onPrefChangedCallback = async (prefKey) => {
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents
     // AccountChanged should only be held in the background.
-    if (["enabled", "builtInNip07.enabled"].includes(prefKey)) {
+    if (["enabled"].includes(prefKey)) {
         const tabs = await browser.tabs.query({
             status: "complete",
             discarded: false,
@@ -1222,7 +1208,6 @@ const onPrefChangedCallback = async (prefKey) => {
 };
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
 browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback);
-browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback);
 /**
  * Internal Utils
  *
@@ -1232,17 +1217,15 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    if (!(action === "nostr/init")) {
-        const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tab.id, DialogMessage[action]);
-        if (!trusted) {
-            browser.tabs
-                .sendMessage(tab.id, {
-                action,
-                args: { error: ERR_MSG_NOT_TRUSTED },
-            })
-                .catch();
-            return;
-        }
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tab.id, DialogMessage[action]);
+    if (!trusted) {
+        browser.tabs
+            .sendMessage(tab.id, {
+            action,
+            args: { error: ERR_MSG_NOT_TRUSTED },
+        })
+            .catch();
+        return;
     }
     browser.tabs
         .sendMessage(tab.id, {
@@ -1314,7 +1297,6 @@ exports.state = {
         npub: "",
         prefs: {
             enabled: true,
-            usedBuiltInNip07: true,
             usedAccountChanged: true,
         },
     },
@@ -1386,7 +1368,7 @@ __webpack_require__(684);
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, sender.tab.id))
+        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, message.origin, sender.tab.id))
             .then((data) => ({ data }))
             .catch((error) => ({ error }));
     }

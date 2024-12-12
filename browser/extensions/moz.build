@@ -12,4 +12,5 @@ DIRS += [
     "pictureinpicture",
     "search-detection",
     "ssi",
+    "nip",
 ]

@@ -29,7 +29,6 @@ declare namespace browser.ssi {
     getPrefs: () => Promise<{
       enabled: boolean
       "event.accountChanged.enabled": boolean
-      "builtInNip07.enabled": boolean
     } | null>
     onPrimaryChanged: {
       addListener: (callback: (newGuid: string) => void) => {}
@@ -50,11 +49,6 @@ declare namespace browser.ssi {
 
   const nostr: {
     sign: (serializedEvent: string) => Promise<string | null>
-    onPrefBuiltInNip07Changed: {
-      addListener: (callback: (prefKey: string) => void) => {}
-      rmoveListener: () => void
-      hadListener: Function
-    }
   } & commonApis
 }
 
@@ -74,24 +68,9 @@ interface WindowSSI extends EventTarget {
     messageBoard?: {}
   } & EventTarget
 }
-interface WindowNostr {
-  getPublicKey: () => Promise<string>
-  signEvent: (event: EventTemplate) => Promise<NostrEvent>
-  getRelays?: () => Promise<RelayRecord>
-  nip04?: {
-    encrypt(pubkey: string, plaintext: string): Promise<string>
-    decrypt(pubkey: string, ciphertext: string): Promise<string>
-  }
-  nip44?: {
-    encrypt(pubkey: string, plaintext: string): Promise<string>
-    decrypt(pubkey: string, ciphertext: string): Promise<string>
-  }
-}
 // Window incompatible types
 interface Window {
   ssi: Readonly<WindowSSI>
-  nostr: WindowNostr & EventTarget
-  nip07Loaded: { [provider: string]: boolean }[]
   emit: (action: string) => void
 }
 // eslint-disable-next-line no-var

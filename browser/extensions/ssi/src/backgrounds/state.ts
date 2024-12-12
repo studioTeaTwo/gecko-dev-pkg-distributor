@@ -6,7 +6,6 @@ export const state = {
     npub: "",
     prefs: {
       enabled: true,
-      usedBuiltInNip07: true,
       usedAccountChanged: true,
     },
   },

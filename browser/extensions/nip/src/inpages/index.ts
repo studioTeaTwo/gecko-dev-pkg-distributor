@@ -5,10 +5,8 @@
 /* eslint-env webextensions */
 
 import { log } from "../shared/logger"
-import { init as sssiInit } from "./ssi"
 import { init as nostrInit } from "./nostr"
 
 log("inpage-script working")
 
-sssiInit()
 nostrInit()

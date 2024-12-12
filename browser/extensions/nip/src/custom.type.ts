@@ -1,10 +1,5 @@
 type ApplicationName = "ssb"
-type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht"
-
-interface SelfsovereignidentityDefaultPrefs {
-  enabled: boolean // selfsovereignidentity.[protocolName].enabled
-  usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
-}
+type ProtocolName = "nostr"
 
 /**
  * Message Property
@@ -44,6 +39,6 @@ type NostrEvent = {
  */
 interface SelfsovereignidentityPrefs {
   nostr: {
-    usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
-  } & SelfsovereignidentityDefaultPrefs
+    usedBuiltinNip07: boolean // selfsovereignidentity.nostr.builtinNip07.enabled
+  }
 }

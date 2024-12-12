@@ -149,7 +149,7 @@ export default function useChildActorEvent() {
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 86400000,
       usedTrustedSites: false,
-      usedBuiltInNip07: true,
+      usedBuiltinNip07: true,
       usedAccountChanged: true,
     },
   })
