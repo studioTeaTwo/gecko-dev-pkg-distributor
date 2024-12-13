@@ -98,6 +98,7 @@
     <command id="History:UndoCloseWindow" />
     <command id="History:RestoreLastClosedTabOrWindowOrSession" />
     <command id="History:SearchHistory" />
+
     <command id="wrCaptureCmd" disabled="true"/>
     <command id="wrToggleCaptureSequenceCmd" disabled="true"/>
 #ifdef NIGHTLY_BUILD

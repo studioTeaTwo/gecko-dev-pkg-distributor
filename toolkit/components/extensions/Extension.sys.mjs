@@ -957,15 +957,6 @@ export class ExtensionData {
   }
 
   /**
-   * Whether this is the NoScript extension.
-   *
-   * @type {boolean}
-   */
-  get isNoScript() {
-    return this.id === "{73a6fe31-595d-460b-a920-fcc0f8843232}";
-  }
-
-  /**
    * A factory function that allows the construction of ExtensionData, with
    * the isPrivileged flag computed asynchronously.
    *
