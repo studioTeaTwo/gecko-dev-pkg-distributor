@@ -73,11 +73,6 @@ export const experimentApiSsiHelper = {
           `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
         ),
       }
-      if (protocolName === "nostr") {
-        prefs["builtInNip07.enabled"] = Services.prefs.getBoolPref(
-          `selfsovereignidentity.${protocolName}.builtInNip07.enabled`
-        )
-      }
       return prefs
     } catch (e) {
       console.error(e)

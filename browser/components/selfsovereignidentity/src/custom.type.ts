@@ -15,7 +15,7 @@ export interface SelfsovereignidentityDefaultPrefs {
 }
 export interface SelfsovereignidentityPrefs {
   nostr: {
-    usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
+    usedBuiltinNip07: boolean // selfsovereignidentity.nostr.builtinNip07.enabled
   } & SelfsovereignidentityDefaultPrefs
 }
 

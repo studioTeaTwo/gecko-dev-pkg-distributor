@@ -43,7 +43,5 @@ type NostrEvent = {
  * Nostr
  */
 interface SelfsovereignidentityPrefs {
-  nostr: {
-    usedBuiltInNip07: boolean // selfsovereignidentity.nostr.builtInNip07.enabled
-  } & SelfsovereignidentityDefaultPrefs
+  nostr: SelfsovereignidentityDefaultPrefs
 }

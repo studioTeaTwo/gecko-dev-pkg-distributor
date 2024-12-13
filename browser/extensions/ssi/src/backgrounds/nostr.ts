@@ -10,8 +10,14 @@ const SafeProtocols = ["http", "https", "moz-extension"]
 
 const MapBetweenPrefAndState = {
   enabled: "enabled",
-  usedBuiltInNip07: "builtInNip07.enabled",
   usedAccountChanged: "event.accountChanged.enabled",
+}
+
+const DialogMessage = {
+  "nostr/getPublicKey": "read Nostr public key",
+  "nostr/signEvent": "sign with Nostr",
+  "nostr/accountChanged": "notify account changed",
+  "nostr/providerChanged": "notify provider changed",
 }
 
 // TODO(ssb): conceal as much information as possible
@@ -23,19 +29,24 @@ const ERR_MSG_NOT_TRUSTED =
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`
 
 // Proceed calls from contents
-export const doNostrAction = async (action, args, tabId) => {
+export const doNostrAction = async (action: string, args: any, origin: string, tabId: number) => {
   if (!state.nostr.prefs.enabled) {
     throw new Error(ERR_MSG_NOT_ENABLED)
   }
   if (!supported(origin)) {
     throw new Error(ERR_MSG_NOT_SUPPORTED)
   }
-  const trusted = await browser.ssi.askPermission("nostr", "nsec", tabId)
-  if (!trusted) {
-    throw new Error(ERR_MSG_NOT_TRUSTED)
-  }
   if (!state.nostr.npub) {
     throw new Error(ERR_MSG_NOT_REGISTERED)
+  }
+  const trusted = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    tabId,
+    DialogMessage[action]
+  )
+  if (!trusted) {
+    throw new Error(ERR_MSG_NOT_TRUSTED)
   }
 
   switch (action) {
@@ -63,14 +74,16 @@ export async function init() {
   log("experimental-api start...")
 
   // Get the existing credential from the ssi store.
+  const credentialName = "nsec"
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
-    "nsec",
+    credentialName,
     true
   )
   if (credentials.length > 0) {
     state.nostr = {
       ...state.nostr,
+      credentialName,
       npub: credentials[0].identifier,
     }
   }
@@ -89,30 +102,12 @@ export async function init() {
   log("nostr inited in background", state.nostr, credentials)
 }
 
-// initial action while the webapps are loading
-browser.webNavigation.onDOMContentLoaded.addListener(
-  async (detail) => {
-    // It's only injecting functions and doesn't need trusted.
-    const injecting =
-      state.nostr.prefs.enabled &&
-      state.nostr.prefs.usedBuiltInNip07 &&
-      supported(detail.url)
-    log("nostr init to tab", injecting)
-
-    // Notify init to the contents
-    const tab = await browser.tabs.get(detail.tabId)
-    log("send to tab", tab)
-    sendTab(tab, "nostr/init", injecting)
-  },
-  { url: [{ schemes: SafeProtocols }] }
-)
-
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
-    "nsec",
+    state.nostr.credentialName,
     true
   )
   log("primary changed!", credentials)
@@ -132,7 +127,6 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
-  // usedBuiltInNip07 doen't need for window.ssi
   // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
   if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
@@ -158,7 +152,7 @@ const onPrefChangedCallback = async (prefKey: string) => {
 
   // Send the message to the contents
   // AccountChanged should only be held in the background.
-  if (["enabled", "builtInNip07.enabled"].includes(prefKey)) {
+  if (["enabled"].includes(prefKey)) {
     const tabs = await browser.tabs.query({
       status: "complete",
       discarded: false,
@@ -171,29 +165,31 @@ const onPrefChangedCallback = async (prefKey: string) => {
 }
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
 browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback)
-browser.ssi.nostr.onPrefBuiltInNip07Changed.addListener(onPrefChangedCallback)
 
 /**
  * Internal Utils
  *
  */
 
-async function sendTab(tab, action, data) {
+async function sendTab(tab: browser.tabs.Tab, action: string, data: any) {
   if (!supported(tab.url)) {
     // browser origin event is not sent anything
     return
   }
-  if (!(action === "nostr/init")) {
-    const trusted = await browser.ssi.askPermission("nostr", "nsec", tab.id)
-    if (!trusted) {
-      browser.tabs
-        .sendMessage(tab.id, {
-          action,
-          args: { error: ERR_MSG_NOT_TRUSTED },
-        })
-        .catch()
-      return
-    }
+  const trusted = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    tab.id,
+    DialogMessage[action]
+  )
+  if (!trusted) {
+    browser.tabs
+      .sendMessage(tab.id, {
+        action,
+        args: { error: ERR_MSG_NOT_TRUSTED },
+      })
+      .catch()
+    return
   }
 
   browser.tabs

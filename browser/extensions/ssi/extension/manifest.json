@@ -9,7 +9,7 @@
     }
   },
 
-  "permissions": ["tabs", "webNavigation", "<all_urls>", "mozillaAddons"],
+  "permissions": ["tabs", "<all_urls>", "mozillaAddons"],
 
   "experiment_apis": {
     "ssi": {

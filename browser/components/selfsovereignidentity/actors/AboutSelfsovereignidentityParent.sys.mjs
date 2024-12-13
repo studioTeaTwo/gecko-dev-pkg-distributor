@@ -320,10 +320,10 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
       )
     }
     if (changeSet.protocolName === "nostr") {
-      if (changeSet.hasOwnProperty("usedBuiltInNip07")) {
+      if (changeSet.hasOwnProperty("usedBuiltinNip07")) {
         Services.prefs.setBoolPref(
-          "selfsovereignidentity.nostr.builtInNip07.enabled",
-          changeSet.usedBuiltInNip07
+          "selfsovereignidentity.nostr.builtinNip07.enabled",
+          changeSet.usedBuiltinNip07
         )
       }
 

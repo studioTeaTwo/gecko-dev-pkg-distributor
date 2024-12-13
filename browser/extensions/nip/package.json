@@ -1,0 +1,36 @@
+{
+  "name": "builtin-nip",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "start": "npm run build && npm run watch",
+    "build": "webpack --config webpack.config.js",
+    "watch": "npm run build -- -w",
+    "lint": "npm-run-all lint:check:*",
+    "lint:check:src": "eslint --config .eslintrc.src.json --ext .ts,.tsx,.mjs src",
+    "lint:check:mozilla": "eslint --config .eslintrc.js --ext .js experiment-apis",
+    "lint:fix": "npm-run-all lint:fix:*",
+    "lint:fix:src": "eslint --fix --config .eslintrc.src.json --ext .ts,.tsx src",
+    "lint:fix:mozilla": "eslint --fix --config .eslintrc.js --ext .js,.mjs experiment-apis",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@types/firefox-webext-browser": "^120.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.5.0",
+    "@scure/base": "^1.1.9"
+  }
+}

@@ -15381,14 +15381,14 @@
   value: false
   mirror: always
 
-# Injecting `window.nostr` by built-in NIP-07
-- name: selfsovereignidentity.nostr.builtInNip07.enabled
+# Permitting to emit `accountChanged` event
+- name: selfsovereignidentity.nostr.event.accountChanged.enabled
   type: bool
   value: true
   mirror: always
 
-# Permitting to emit `accountChanged` event
-- name: selfsovereignidentity.nostr.event.accountChanged.enabled
+# Injecting `window.nostr` by built-in NIP-07
+- name: selfsovereignidentity.nostr.builtinNip07.enabled
   type: bool
   value: true
   mirror: always

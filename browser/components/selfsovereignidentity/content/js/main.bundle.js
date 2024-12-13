@@ -435,7 +435,7 @@ function useChildActorEvent() {
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 864e5,
       usedTrustedSites: false,
-      usedBuiltInNip07: true,
+      usedBuiltinNip07: true,
       usedAccountChanged: true
     }
   });
@@ -594,20 +594,21 @@ function AlertPrimaryPassword(props) {
             {
               color: "teal.500",
               href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US",
-              isExternal: true,
               children: "primary password"
             }
           ),
           " ",
           ', or turn off "Use primary password to setting page".'
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(ModalFooter, { children: [
-          "NEXT ACTION",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-          'To set, go to "about:preferences#privacy"',
-          /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-          'To turn off, open "More" tab'
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ModalFooter, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { align: "stretch", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: "NEXT ACTION" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            "To set, go to",
+            " ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { color: "teal.500", href: "about:preferences#privacy", children: "about:preferences#privacy" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: 'To turn off, open "More" tab' })
+        ] }) })
       ] }) })
     }
   );
@@ -769,10 +770,10 @@ function NIP07(props) {
       ) })
     ] })) });
   }, [nostrkeys]);
-  const handleUsedBuiltInNip07 = (e) => {
+  const handleUsedBuiltinNip07 = (e) => {
     e.preventDefault();
     const checked = e.target.checked;
-    onPrefChanged2({ protocolName: "nostr", usedBuiltInNip07: checked });
+    onPrefChanged2({ protocolName: "nostr", usedBuiltinNip07: checked });
   };
   const handleUsedPrimarypasswordToApps = async (checked) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
@@ -818,13 +819,13 @@ function NIP07(props) {
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "xs", children: 'You can still use these features with your keys on extensions/apps compatible with this browser, if turning off "built-in NIP-07".' }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedBuiltInNip07", children: "Use built-in NIP-07" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedBuiltinNip07", children: "Use built-in NIP-07" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Switch,
               {
-                id: "nostr-pref-usedBuiltInNip07",
-                isChecked: prefs.nostr.usedBuiltInNip07,
-                onChange: handleUsedBuiltInNip07
+                id: "nostr-pref-usedBuiltinNip07",
+                isChecked: prefs.nostr.usedBuiltinNip07,
+                onChange: handleUsedBuiltinNip07
               }
             ) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Use primary password to Web apps" }) }),

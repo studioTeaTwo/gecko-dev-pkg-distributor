@@ -143,8 +143,8 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
         prefs.nostr = {
           protocolName: "nostr",
           ...defaults,
-          usedBuiltInNip07: Services.prefs.getBoolPref(
-            "selfsovereignidentity.nostr.builtInNip07.enabled"
+          usedBuiltinNip07: Services.prefs.getBoolPref(
+            "selfsovereignidentity.nostr.builtinNip07.enabled"
           ),
         }
       }
