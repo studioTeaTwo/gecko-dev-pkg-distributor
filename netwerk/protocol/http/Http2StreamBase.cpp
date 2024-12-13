@@ -1025,10 +1025,6 @@ void Http2StreamBase::UpdatePriority(Http2Session* session) {
     nsHttp::NotifyActiveTabLoadOptimization();
   }
 
-  if (!StaticPrefs::network_http_http2_priority_updates()) {
-    return;
-  }
-
   nsHttpTransaction* trans = HttpTransaction();
   if (!trans) {
     return;
