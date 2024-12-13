@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   Link,
+  VStack,
 } from "@chakra-ui/react"
 
 export default function AlertPrimaryPassword(props) {
@@ -24,23 +25,28 @@ export default function AlertPrimaryPassword(props) {
         <AlertDialogContent>
           <AlertDialogHeader> Sorry!</AlertDialogHeader>
           <AlertDialogCloseButton />
+          {/* FIXME(ssb): location.href control */}
           <AlertDialogBody>
             Please set{" "}
             <Link
               color="teal.500"
               href="https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US"
-              isExternal
             >
               primary password
             </Link>{" "}
             , or turn off &quot;Use primary password to setting page&quot;.
           </AlertDialogBody>
           <AlertDialogFooter>
-            NEXT ACTION
-            <br />
-            To set, go to &quot;about:preferences#privacy&quot;
-            <br />
-            To turn off, open &quot;More&quot; tab
+            <VStack align="stretch">
+              <div>NEXT ACTION</div>
+              <div>
+                To set, go to{" "}
+                <Link color="teal.500" href="about:preferences#privacy">
+                  about:preferences#privacy
+                </Link>
+              </div>
+              <div>To turn off, open &quot;More&quot; tab</div>
+            </VStack>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogOverlay>

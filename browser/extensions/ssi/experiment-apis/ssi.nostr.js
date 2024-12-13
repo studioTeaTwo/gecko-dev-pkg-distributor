@@ -36,27 +36,6 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             register:
               lazy.experimentApiSsiHelper.onPrefAccountChangedRegister("nostr"),
           }).api(),
-          onPrefBuiltInNip07Changed: new EventManager({
-            context,
-            name: "ssi.nostr.onPrefBuiltInNip07Changed",
-            register: (fire) => {
-              const prefName = `selfsovereignidentity.nostr.builtInNip07.enabled`
-
-              const callback = () => {
-                // Check permission
-                const enabled = Services.prefs.getBoolPref(
-                  `selfsovereignidentity.nostr.enabled`
-                )
-                if (!enabled) return
-
-                fire.async("builtInNip07.enabled").catch(() => {}) // ignore Message Manager disconnects
-              }
-              Services.prefs.addObserver(prefName, callback)
-              return () => {
-                Services.prefs.removeObserver(prefName, callback)
-              }
-            },
-          }).api(),
           async getPrefs() {
             return lazy.experimentApiSsiHelper.getPrefs("nostr")
           },
