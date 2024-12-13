@@ -73,24 +73,18 @@ MFCDMChild::MFCDMChild(const nsAString& aKeySystem)
     : mKeySystem(aKeySystem),
       mManagerThread(RemoteDecoderManagerChild::GetManagerThread()),
       mState(NS_ERROR_NOT_INITIALIZED),
-      mShutdown(false) {}
+      mShutdown(false) {
+  mRemotePromise = EnsureRemote();
+}
 
 MFCDMChild::~MFCDMChild() {}
 
-void MFCDMChild::EnsureRemote() {
-  if (mRemotePromise) {
-    LOG("already created remote promise");
-    return;
-  }
-
+RefPtr<MFCDMChild::RemotePromise> MFCDMChild::EnsureRemote() {
   if (!mManagerThread) {
     LOG("no manager thread");
     mState = NS_ERROR_NOT_AVAILABLE;
-    mRemotePromise = RemotePromise::CreateAndReject(mState, __func__);
-    return;
+    return RemotePromise::CreateAndReject(mState, __func__);
   }
-
-  mRemotePromise = mRemotePromiseHolder.Ensure(__func__);
 
   RefPtr<MFCDMChild> self = this;
   RemoteDecoderManagerChild::LaunchUtilityProcessIfNeeded(
@@ -121,6 +115,7 @@ void MFCDMChild::EnsureRemote() {
             mRemotePromiseHolder.RejectIfExists(rv, __func__);
           })
       ->Track(mRemoteRequest);
+  return mRemotePromiseHolder.Ensure(__func__);
 }
 
 void MFCDMChild::Shutdown() {

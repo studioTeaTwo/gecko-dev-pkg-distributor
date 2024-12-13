@@ -574,7 +574,7 @@ static void DestroyBreakIterator(const T* segments) {
   void* brk = segments->getBreakIterator();
   MOZ_ASSERT(brk);
 
-  bool isLatin1 = segments->hasLatin1StringChars();
+  bool isLatin1 = segments->getString()->hasLatin1Chars();
 
   switch (segments->getGranularity()) {
     case SegmenterGranularity::Grapheme: {
@@ -611,16 +611,16 @@ void SegmentsObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(gcx->onMainThread());
 
   auto* segments = &obj->as<SegmentsObject>();
+  bool isLatin1 = segments->getString()->hasLatin1Chars();
 
-  if (auto chars = segments->getStringChars()) {
+  if (void* chars = segments->getStringChars()) {
     size_t length = segments->getString()->length();
-    if (chars.has<JS::Latin1Char>()) {
+    if (isLatin1) {
       intl::RemoveICUCellMemory(gcx, segments, length * sizeof(JS::Latin1Char));
-      js_free(chars.data<JS::Latin1Char>());
     } else {
       intl::RemoveICUCellMemory(gcx, segments, length * sizeof(char16_t));
-      js_free(chars.data<char16_t>());
     }
+    js_free(chars);
   }
 
   if (segments->getBreakIterator()) {
@@ -632,16 +632,16 @@ void SegmentIteratorObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(gcx->onMainThread());
 
   auto* iterator = &obj->as<SegmentIteratorObject>();
+  bool isLatin1 = iterator->getString()->hasLatin1Chars();
 
-  if (auto chars = iterator->getStringChars()) {
+  if (void* chars = iterator->getStringChars()) {
     size_t length = iterator->getString()->length();
-    if (chars.has<JS::Latin1Char>()) {
+    if (isLatin1) {
       intl::RemoveICUCellMemory(gcx, iterator, length * sizeof(JS::Latin1Char));
-      js_free(chars.data<JS::Latin1Char>());
     } else {
       intl::RemoveICUCellMemory(gcx, iterator, length * sizeof(char16_t));
-      js_free(chars.data<char16_t>());
     }
+    js_free(chars);
   }
 
   if (iterator->getBreakIterator()) {
@@ -660,7 +660,7 @@ static Boundaries FindBoundaryFrom(Handle<T*> segments, int32_t index) {
 template <typename T>
 static Boundaries GraphemeBoundaries(Handle<T*> segments, int32_t index) {
 #if defined(MOZ_ICU4X)
-  if (segments->hasLatin1StringChars()) {
+  if (segments->getString()->hasLatin1Chars()) {
     return FindBoundaryFrom<GraphemeClusterSegmenter::BreakIteratorLatin1>(
         segments, index);
   }
@@ -674,7 +674,7 @@ static Boundaries GraphemeBoundaries(Handle<T*> segments, int32_t index) {
 template <typename T>
 static Boundaries WordBoundaries(Handle<T*> segments, int32_t index) {
 #if defined(MOZ_ICU4X)
-  if (segments->hasLatin1StringChars()) {
+  if (segments->getString()->hasLatin1Chars()) {
     return FindBoundaryFrom<WordSegmenter::BreakIteratorLatin1>(segments,
                                                                 index);
   }
@@ -687,7 +687,7 @@ static Boundaries WordBoundaries(Handle<T*> segments, int32_t index) {
 template <typename T>
 static Boundaries SentenceBoundaries(Handle<T*> segments, int32_t index) {
 #if defined(MOZ_ICU4X)
-  if (segments->hasLatin1StringChars()) {
+  if (segments->getString()->hasLatin1Chars()) {
     return FindBoundaryFrom<SentenceSegmenter::BreakIteratorLatin1>(segments,
                                                                     index);
   }
@@ -721,7 +721,7 @@ static bool EnsureStringChars(JSContext* cx, Handle<T*> segments) {
     if (!chars) {
       return false;
     }
-    segments->setStringChars(SegmentsStringChars{chars.release()});
+    segments->setLatin1Chars(chars.release());
 
     intl::AddICUCellMemory(segments, length * sizeof(JS::Latin1Char));
   } else {
@@ -729,7 +729,7 @@ static bool EnsureStringChars(JSContext* cx, Handle<T*> segments) {
     if (!chars) {
       return false;
     }
-    segments->setStringChars(SegmentsStringChars{chars.release()});
+    segments->setTwoByteChars(chars.release());
 
     intl::AddICUCellMemory(segments, length * sizeof(char16_t));
   }
@@ -744,7 +744,7 @@ static auto* CreateBreakIterator(Handle<T*> segments) {
   void* segmenter = segments->getSegmenter()->getSegmenter();
   MOZ_ASSERT(segmenter);
 
-  auto chars = segments->getStringChars();
+  void* chars = segments->getStringChars();
   MOZ_ASSERT(chars);
 
   size_t length = segments->getString()->length();
@@ -753,9 +753,8 @@ static auto* CreateBreakIterator(Handle<T*> segments) {
       typename Interface::Char)>::Type;
 
   auto* seg = static_cast<const typename Interface::Segmenter*>(segmenter);
-  auto* ch = chars.template data<typename Interface::Char>();
-  auto* chUnsigned = reinterpret_cast<Unsigned*>(ch);
-  return Interface::create(seg, chUnsigned, length);
+  auto* ch = static_cast<const Unsigned*>(chars);
+  return Interface::create(seg, ch, length);
 }
 
 /**
@@ -786,7 +785,7 @@ static bool EnsureBreakIterator(JSContext* cx, Handle<T*> segments,
   }
 
 #if defined(MOZ_ICU4X)
-  bool isLatin1 = segments->hasLatin1StringChars();
+  bool isLatin1 = segments->getString()->hasLatin1Chars();
 
   // Create a new break iterator based on the granularity and character type.
   void* brk;
