@@ -1,0 +1,148 @@
+diff --git a/.hgtags b/.hgtags
+index b6e27b56f20c0..21a2b940a9bfc 100644
+--- a/.hgtags
++++ b/.hgtags
+@@ -5087,4 +5087,3 @@ e0c969a3bfc0a23219384269e5b36a589c8f6cc5 FIREFOX_128_3_1esr_BUILD1
+ e0c969a3bfc0a23219384269e5b36a589c8f6cc5 FIREFOX_128_3_1esr_RELEASE
+ c4a5d008ee64fab523384408fa2868e2d028025d FIREFOX_128_4_0esr_BUILD1
+ c4a5d008ee64fab523384408fa2868e2d028025d FIREFOX_128_4_0esr_RELEASE
+-68352da82b95d7114af99b268c179195fd2fead0 FIREFOX_128_5_0esr_BUILD1
+diff --git a/browser/base/content/browser-sets.inc b/browser/base/content/browser-sets.inc
+index e9d7754636eb2..0f454bd39d2ba 100644
+--- a/browser/base/content/browser-sets.inc
++++ b/browser/base/content/browser-sets.inc
+@@ -98,6 +98,7 @@
+     <command id="History:UndoCloseWindow" />
+     <command id="History:RestoreLastClosedTabOrWindowOrSession" />
+     <command id="History:SearchHistory" />
++
+     <command id="wrCaptureCmd" disabled="true"/>
+     <command id="wrToggleCaptureSequenceCmd" disabled="true"/>
+ #ifdef NIGHTLY_BUILD
+diff --git a/browser/base/content/browser.js b/browser/base/content/browser.js
+index 4c3bc9da8aa28..2c7199658ffa5 100644
+--- a/browser/base/content/browser.js
++++ b/browser/base/content/browser.js
+@@ -3,7 +3,7 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-var { XPCOMUtils } = ChromeUtils.importESModule(
++ var { XPCOMUtils } = ChromeUtils.importESModule(
+   "resource://gre/modules/XPCOMUtils.sys.mjs"
+ );
+ var { AppConstants } = ChromeUtils.importESModule(
+diff --git a/toolkit/components/extensions/Extension.sys.mjs b/toolkit/components/extensions/Extension.sys.mjs
+index 05942a9e50d87..b0c44cb776041 100644
+--- a/toolkit/components/extensions/Extension.sys.mjs
++++ b/toolkit/components/extensions/Extension.sys.mjs
+@@ -956,15 +956,6 @@ export class ExtensionData {
+     return this.id === "{73a6fe31-595d-460b-a920-fcc0f8843232}";
+   }
+ 
+-  /**
+-   * Whether this is the NoScript extension.
+-   *
+-   * @type {boolean}
+-   */
+-  get isNoScript() {
+-    return this.id === "{73a6fe31-595d-460b-a920-fcc0f8843232}";
+-  }
+-
+   /**
+    * A factory function that allows the construction of ExtensionData, with
+    * the isPrivileged flag computed asynchronously.
+diff --git a/tools/geckoview/build.sh b/tools/geckoview/build.sh
+deleted file mode 100755
+index 0d791476c89f1..0000000000000
+--- a/tools/geckoview/build.sh
++++ /dev/null
+@@ -1,9 +0,0 @@
+-#!/bin/bash
+-set -e
+-DEV_ROOT=$1
+-ARCH=$2
+-
+-source android-env.sh
+-
+-cd $DEV_ROOT
+-MOZCONFIG=mozconfig-android-$ARCH  ./mach build
+diff --git a/tools/geckoview/fataar.py b/tools/geckoview/fataar.py
+deleted file mode 100755
+index 0cd61a3f8ba9c..0000000000000
+--- a/tools/geckoview/fataar.py
++++ /dev/null
+@@ -1,52 +0,0 @@
+-#!/usr/bin/env python3
+-import os
+-import re
+-import subprocess
+-import sys
+-
+-dev_root = sys.argv[1]
+-archs_in = re.split("\\s+|,", sys.argv[2]) if len(sys.argv) >= 3 else []
+-archs_out = []
+-env = dict(os.environ)
+-
+-env["MOZCONFIG"] = "mozconfig-android-all"
+-if "armv7" in archs_in:
+-    env["MOZ_ANDROID_FAT_AAR_ARMEABI_V7A"] = (
+-        dev_root
+-        + "/obj-arm-linux-androideabi/gradle/build/mobile/android/geckoview/outputs/aar/geckoview-withGeckoBinaries-debug.aar"
+-    )
+-    archs_out.append("armeabi-v7a")
+-if "aarch64" in archs_in:
+-    env["MOZ_ANDROID_FAT_AAR_ARM64_V8A"] = (
+-        dev_root
+-        + "/obj-aarch64-linux-android/gradle/build/mobile/android/geckoview/outputs/aar/geckoview-withGeckoBinaries-debug.aar"
+-    )
+-    archs_out.append("arm64-v8a")
+-if "x86" in archs_in or "i686" in archs_in:
+-    env["MOZ_ANDROID_FAT_AAR_X86"] = (
+-        dev_root
+-        + "/obj-i386-linux-android/gradle/build/mobile/android/geckoview/outputs/aar/geckoview-withGeckoBinaries-debug.aar"
+-    )
+-    archs_out.append("x86")
+-if "x86_64" in archs_in or "x86-64" in archs_in:
+-    env["MOZ_ANDROID_FAT_AAR_X86_64"] = (
+-        dev_root
+-        + "/obj-x86_64-linux-android/gradle/build/mobile/android/geckoview/outputs/aar/geckoview-withGeckoBinaries-debug.aar"
+-    )
+-    archs_out.append("x86_64")
+-env["MOZ_ANDROID_FAT_AAR_ARCHITECTURES"] = ",".join(archs_out)
+-
+-if not archs_out:
+-    print(
+-        "The architectures have not specified or are not valid.",
+-        file=sys.stderr,
+-    )
+-    print('Usage: make fat-aar ARCHS="$archs"', file=sys.stderr)
+-    print(
+-        "Valid architectures are armv7 aarch64 x86 x86_64, and must be separated with a space.",
+-        file=sys.stderr,
+-    )
+-    sys.exit(1)
+-
+-subprocess.run(["./mach", "configure"], cwd=dev_root, env=env, check=True)
+-subprocess.run(["./mach", "build"], cwd=dev_root, env=env, check=True)
+diff --git a/tools/geckoview/package-gradle.sh b/tools/geckoview/package-gradle.sh
+deleted file mode 100755
+index a1f724b5836f4..0000000000000
+--- a/tools/geckoview/package-gradle.sh
++++ /dev/null
+@@ -1,15 +0,0 @@
+-#!/bin/bash
+-set -e
+-DEV_ROOT=$1
+-ARCH=$2
+-
+-source android-env.sh
+-
+-env ARCHS=$ARCH make fataar
+-
+-cd $DEV_ROOT
+-MOZCONFIG=mozconfig-android-$ARCH ./mach build binaries
+-MOZCONFIG=mozconfig-android-$ARCH ./mach gradle geckoview:publishWithGeckoBinariesDebugPublicationToMavenRepository
+-MOZCONFIG=mozconfig-android-all ./mach gradle geckoview:publishWithGeckoBinariesDebugPublicationToMavenLocal exoplayer2:publishDebugPublicationToMavenLocal
+-
+-
