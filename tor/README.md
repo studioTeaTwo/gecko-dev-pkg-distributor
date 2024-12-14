@@ -4,6 +4,8 @@ git apply ssb-merge-1.patch
 git apply ssb-manual-1.patch
 git apply ssb-merge-2.patch
 git apply ssb-merge-3.patch
+git apply ssb-merge-4.patch
+git apply ssb-manual-2.patch
 
 ### ssb-merge-1.patch
 - e312b66b
@@ -14,4 +16,10 @@ git apply ssb-merge-3.patch
 - bc2b46a6
 - ca81f349
 ### ssb-merge-3.patch
-- merge tor-browser-128.5.0esr-14.0-1
+- tor-browser-128.5.0esr-14.0-1
+### ssb-merge-4.patch
+- 715feaaa
+- ddc0acd6
+- 75e43736
+- b9e9c1fb
+- 52f3d251

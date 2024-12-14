@@ -29,7 +29,7 @@ this.ssi = class extends ExtensionAPI {
         async searchCredentialsWithoutSecret(
           protocolName,
           credentialName,
-          primary // TODO(ssb): should remove?
+          primary = true
         ) {
           // Check permission
           const enabled = {
@@ -37,20 +37,22 @@ this.ssi = class extends ExtensionAPI {
               `selfsovereignidentity.nostr.enabled`
             ),
           }
+          const accountChanged = {
+            nostr: Services.prefs.getBoolPref(
+              `selfsovereignidentity.nostr.event.accountChanged.enabled`
+            ),
+          }
 
           // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
           // TODO(ssb): validate params
           const params = {}
           if (protocolName) {
-            if (!enabled[protocolName]) return []
             params.protocolName = protocolName
           }
           if (credentialName) {
             params.credentialName = credentialName
           }
-          if (primary) {
-            params.primary = primary
-          }
+          params.primary = primary
 
           let credentials
           try {
@@ -63,7 +65,11 @@ this.ssi = class extends ExtensionAPI {
 
           return credentials
             .filter((credential) => {
+              // Check permission
               if (!enabled[credential.protocolName]) return false
+              // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
+              if (!params.primary && !accountChanged[credential.protocolName])
+                return credential.primary
 
               return true
             })
@@ -74,7 +80,7 @@ this.ssi = class extends ExtensionAPI {
                 protocolName: credential.protocolName,
                 credentialName: credential.credentialName,
                 identifier: credential.identifier,
-                primary: credential.primary, // TODO(ssb): should remove?
+                primary: credential.primary,
               }
               return filteredVal
             })
@@ -117,9 +123,9 @@ this.ssi = class extends ExtensionAPI {
               const trustedSites = JSON.parse(credentials[0].trustedSites)
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
               const trusted = trustedSites.some((site) =>
-                url.includes(site.url)
+                url.startsWith(site.url)
               )
-              console.log("trusted", trusted)
+              console.log("trusted", trusted, url)
               if (trusted) {
                 return true
               } else {

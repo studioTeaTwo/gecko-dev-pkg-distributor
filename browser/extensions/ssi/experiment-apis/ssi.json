@@ -24,6 +24,7 @@
             "name": "primary",
             "type": "boolean",
             "option": true,
+            "default": true,
             "description": "The primary flag to search"
           }
         ]

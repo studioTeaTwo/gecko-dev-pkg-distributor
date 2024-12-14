@@ -1132,12 +1132,11 @@ exports.doNostrAction = doNostrAction;
 async function init() {
     (0, logger_1.log)("experimental-api start...");
     // Get the existing credential from the ssi store.
-    const credentialName = "nsec";
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", credentialName, true);
+    state_1.state.nostr.credentialName = "nsec";
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
     if (credentials.length > 0) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
-            credentialName,
             npub: credentials[0].identifier,
         };
     }
@@ -1161,10 +1160,7 @@ const onPrimaryChangedCallback = async () => {
     (0, logger_1.log)("primary changed!", credentials);
     // That means it's all been removed
     if (credentials.length === 0) {
-        state_1.state.nostr = {
-            ...state_1.state.nostr,
-            npub: "",
-        };
+        state_1.state.nostr.npub = "";
         return;
     }
     state_1.state.nostr = {
@@ -1172,17 +1168,14 @@ const onPrimaryChangedCallback = async () => {
         npub: credentials[0].identifier,
     };
     // Send the message to the contents
-    // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
-    if (state_1.state.nostr.prefs.enabled && state_1.state.nostr.prefs.usedAccountChanged) {
-        const tabs = await browser.tabs.query({
-            status: "complete",
-            discarded: false,
-        });
-        const pubkey = decodeNpub(state_1.state.nostr.npub);
-        for (const tab of tabs) {
-            (0, logger_1.log)("send to tab", tab);
-            sendTab(tab, "nostr/accountChanged", pubkey);
-        }
+    const tabs = await browser.tabs.query({
+        status: "complete",
+        discarded: false,
+    });
+    const pubkey = decodeNpub(state_1.state.nostr.npub);
+    for (const tab of tabs) {
+        (0, logger_1.log)("send to tab", tab);
+        sendTab(tab, "nostr/accountChanged", pubkey);
     }
 };
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
@@ -1207,7 +1200,6 @@ const onPrefChangedCallback = async (prefKey) => {
     }
 };
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
-browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback);
 /**
  * Internal Utils
  *
@@ -1297,7 +1289,6 @@ exports.state = {
         npub: "",
         prefs: {
             enabled: true,
-            usedAccountChanged: true,
         },
     },
 };

@@ -29,7 +29,12 @@ const ERR_MSG_NOT_TRUSTED =
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`
 
 // Proceed calls from contents
-export const doNostrAction = async (action: string, args: any, origin: string, tabId: number) => {
+export const doNostrAction = async (
+  action: string,
+  args: any,
+  origin: string,
+  tabId: number
+) => {
   if (!state.nostr.prefs.enabled) {
     throw new Error(ERR_MSG_NOT_ENABLED)
   }
@@ -74,16 +79,15 @@ export async function init() {
   log("experimental-api start...")
 
   // Get the existing credential from the ssi store.
-  const credentialName = "nsec"
+  state.nostr.credentialName = "nsec"
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
     "nostr",
-    credentialName,
+    state.nostr.credentialName,
     true
   )
   if (credentials.length > 0) {
     state.nostr = {
       ...state.nostr,
-      credentialName,
       npub: credentials[0].identifier,
     }
   }
@@ -114,10 +118,7 @@ const onPrimaryChangedCallback = async () => {
 
   // That means it's all been removed
   if (credentials.length === 0) {
-    state.nostr = {
-      ...state.nostr,
-      npub: "",
-    }
+    state.nostr.npub = ""
     return
   }
 
@@ -127,17 +128,14 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
-  // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
-  if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
-    const tabs = await browser.tabs.query({
-      status: "complete",
-      discarded: false,
-    })
-    const pubkey = decodeNpub(state.nostr.npub)
-    for (const tab of tabs) {
-      log("send to tab", tab)
-      sendTab(tab, "nostr/accountChanged", pubkey)
-    }
+  const tabs = await browser.tabs.query({
+    status: "complete",
+    discarded: false,
+  })
+  const pubkey = decodeNpub(state.nostr.npub)
+  for (const tab of tabs) {
+    log("send to tab", tab)
+    sendTab(tab, "nostr/accountChanged", pubkey)
   }
 }
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
@@ -164,7 +162,6 @@ const onPrefChangedCallback = async (prefKey: string) => {
   }
 }
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
-browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback)
 
 /**
  * Internal Utils

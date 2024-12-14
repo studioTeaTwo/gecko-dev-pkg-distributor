@@ -28,7 +28,6 @@ declare namespace browser.ssi {
   type commonApis = {
     getPrefs: () => Promise<{
       enabled: boolean
-      "event.accountChanged.enabled": boolean
     } | null>
     onPrimaryChanged: {
       addListener: (callback: (newGuid: string) => void) => {}
@@ -36,11 +35,6 @@ declare namespace browser.ssi {
       hadListener: Function
     }
     onPrefEnabledChanged: {
-      addListener: (callback: (prefKey: string) => void) => {}
-      rmoveListener: () => void
-      hadListener: Function
-    }
-    onPrefAccountChanged: {
       addListener: (callback: (prefKey: string) => void) => {}
       rmoveListener: () => void
       hadListener: Function

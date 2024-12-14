@@ -69,9 +69,6 @@ export const experimentApiSsiHelper = {
     try {
       const prefs = {
         enabled: enabled,
-        "event.accountChanged.enabled": Services.prefs.getBoolPref(
-          `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
-        ),
       }
       return prefs
     } catch (e) {
