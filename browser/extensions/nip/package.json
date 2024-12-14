@@ -6,6 +6,7 @@
     "start": "npm run build && npm run watch",
     "build": "webpack --config webpack.config.js",
     "watch": "npm run build -- -w",
+    "prebuild": "cp ../ssi/src/custom.d.ts src/ssi.d.ts",
     "lint": "npm-run-all lint:check:*",
     "lint:check:src": "eslint --config .eslintrc.src.json --ext .ts,.tsx,.mjs src",
     "lint:check:mozilla": "eslint --config .eslintrc.js --ext .js experiment-apis",
