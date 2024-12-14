@@ -128,15 +128,15 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
-    const tabs = await browser.tabs.query({
-      status: "complete",
-      discarded: false,
-    })
-    const pubkey = decodeNpub(state.nostr.npub)
-    for (const tab of tabs) {
-      log("send to tab", tab)
-      sendTab(tab, "nostr/accountChanged", pubkey)
-    }
+  const tabs = await browser.tabs.query({
+    status: "complete",
+    discarded: false,
+  })
+  const pubkey = decodeNpub(state.nostr.npub)
+  for (const tab of tabs) {
+    log("send to tab", tab)
+    sendTab(tab, "nostr/accountChanged", pubkey)
+  }
 }
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
 

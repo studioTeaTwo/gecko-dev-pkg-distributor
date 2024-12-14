@@ -14,19 +14,6 @@ declare namespace browser.builtinNip {
 type PublicKey = string
 type Signature = any
 type PlainText = string
-interface WindowSSI extends EventTarget {
-  _scope: "ssi"
-  _proxy: EventTarget
-
-  readonly nostr: {
-    _proxy: EventTarget
-    generate: (option?) => Promise<PublicKey>
-    getPublicKey: (option?) => Promise<PublicKey>
-    sign: (message: string, option?) => Promise<Signature>
-    decrypt: (ciphertext: string, option?) => Promise<PlainText>
-    messageBoard?: {}
-  } & EventTarget
-}
 interface WindowNostr {
   getPublicKey: () => Promise<PublicKey>
   signEvent: (event: EventTemplate) => Promise<NostrEvent>
@@ -42,13 +29,9 @@ interface WindowNostr {
 }
 // Window incompatible types
 interface Window {
-  ssi: Readonly<WindowSSI>
   nostr: WindowNostr & EventTarget
   nip07Loaded: { [provider: string]: boolean }[]
   emit: (action: string) => void
 }
 // eslint-disable-next-line no-var
 declare var window: Window
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare type FixMe = any
