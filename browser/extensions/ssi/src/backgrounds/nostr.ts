@@ -127,8 +127,6 @@ const onPrimaryChangedCallback = async () => {
   }
 
   // Send the message to the contents
-  // TODO(ssb): coordinate accountChanged between window.ssi and window.nostr
-  if (state.nostr.prefs.enabled && state.nostr.prefs.usedAccountChanged) {
     const tabs = await browser.tabs.query({
       status: "complete",
       discarded: false,
@@ -138,7 +136,6 @@ const onPrimaryChangedCallback = async () => {
       log("send to tab", tab)
       sendTab(tab, "nostr/accountChanged", pubkey)
     }
-  }
 }
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
 
@@ -164,7 +161,6 @@ const onPrefChangedCallback = async (prefKey: string) => {
   }
 }
 browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
-browser.ssi.nostr.onPrefAccountChanged.addListener(onPrefChangedCallback)
 
 /**
  * Internal Utils
