@@ -67,7 +67,7 @@ this.ssi = class extends ExtensionAPI {
             .filter((credential) => {
               // Check permission
               if (!enabled[credential.protocolName]) return false
-              // If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
+              // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
               if (!params.primary && !accountChanged[credential.protocolName])
                 return credential.primary
 
@@ -80,7 +80,7 @@ this.ssi = class extends ExtensionAPI {
                 protocolName: credential.protocolName,
                 credentialName: credential.credentialName,
                 identifier: credential.identifier,
-                primary: credential.primary, // TODO(ssb): should remove?
+                primary: credential.primary,
               }
               return filteredVal
             })
