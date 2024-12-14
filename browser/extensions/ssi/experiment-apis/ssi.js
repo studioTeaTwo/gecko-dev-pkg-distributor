@@ -123,7 +123,7 @@ this.ssi = class extends ExtensionAPI {
               const trustedSites = JSON.parse(credentials[0].trustedSites)
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
               const trusted = trustedSites.some((site) =>
-                url.includes(site.url)
+                url.startsWith(site.url)
               )
               console.log("trusted", trusted, url)
               if (trusted) {

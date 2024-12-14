@@ -1132,12 +1132,11 @@ exports.doNostrAction = doNostrAction;
 async function init() {
     (0, logger_1.log)("experimental-api start...");
     // Get the existing credential from the ssi store.
-    const credentialName = "nsec";
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", credentialName, true);
+    state_1.state.nostr.credentialName = "nsec";
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
     if (credentials.length > 0) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
-            credentialName,
             npub: credentials[0].identifier,
         };
     }
@@ -1161,10 +1160,7 @@ const onPrimaryChangedCallback = async () => {
     (0, logger_1.log)("primary changed!", credentials);
     // That means it's all been removed
     if (credentials.length === 0) {
-        state_1.state.nostr = {
-            ...state_1.state.nostr,
-            npub: "",
-        };
+        state_1.state.nostr.npub = "";
         return;
     }
     state_1.state.nostr = {
