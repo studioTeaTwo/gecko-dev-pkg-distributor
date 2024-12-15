@@ -135,7 +135,7 @@ this.ssi = class extends ExtensionAPI {
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
               const messageText = {
-                value: `${message || "AUTH LOCK"} ${origin}`,
+                value: `${message || "AUTH LOCK"} \n${origin}`,
               }
               const captionText = { value: "" } // FIXME(ssb): not displayed. want to set the origin here.
 

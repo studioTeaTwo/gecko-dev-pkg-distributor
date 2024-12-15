@@ -1117,14 +1117,18 @@ const doNostrAction = async (action, args, origin, tabId) => {
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
+            if (typeof args !== "string") {
+                throw new Error("Invalid message");
+            }
             const event = JSON.parse(args);
             event.pubkey = decodeNpub(state_1.state.nostr.npub);
             // Sign
             const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
             const signature = await browser.ssi.nostr.sign(eventHash);
-            event.id = eventHash;
-            event.sig = signature;
-            return event;
+            if (!signature) {
+                throw new Error("Failed to sign");
+            }
+            return signature;
         }
     }
 };
@@ -1234,7 +1238,7 @@ function decodeNpub(npub) {
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
     return (0, utils_1.bytesToHex)(new Uint8Array(base_1.bech32.fromWords(words)));
 }
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/b9a7f814aaa08a4b1cec705517b664390abd3f69/event.ts#L95
+// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event) {
     if (!(event instanceof Object))
         return false;
@@ -1244,7 +1248,10 @@ function validateEvent(event) {
         return false;
     if (typeof event.created_at !== "number")
         return false;
-    // ignore pubkey checks because if the pubkey is not set we add it to the event. same for the ID.
+    if (typeof event.pubkey !== "string")
+        return false;
+    if (!event.pubkey.match(/^[a-f0-9]{64}$/))
+        return false;
     if (!Array.isArray(event.tags))
         return false;
     for (let i = 0; i < event.tags.length; i++) {
@@ -1258,7 +1265,7 @@ function validateEvent(event) {
     }
     return true;
 }
-// from: https://github.com/nbd-wtf/nostr-tools/blob/160987472fd4922dd80c75648ca8939dd2d96cc0/event.ts#L42
+// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
 function serializeEvent(event) {
     if (!validateEvent(event))
         throw new Error("can't serialize event with wrong or missing properties");

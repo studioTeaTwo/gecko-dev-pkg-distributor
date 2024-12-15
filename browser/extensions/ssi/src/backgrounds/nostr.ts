@@ -59,6 +59,10 @@ export const doNostrAction = async (
       return decodeNpub(state.nostr.npub)
     }
     case "nostr/signEvent": {
+      if (typeof args !== "string") {
+        throw new Error("Invalid message")
+      }
+
       const event = JSON.parse(args)
       event.pubkey = decodeNpub(state.nostr.npub)
 
@@ -67,10 +71,11 @@ export const doNostrAction = async (
         sha256(new TextEncoder().encode(serializeEvent(event)))
       )
       const signature = await browser.ssi.nostr.sign(eventHash)
-      event.id = eventHash
-      event.sig = signature
+      if (!signature) {
+        throw new Error("Failed to sign")
+      }
 
-      return event
+      return signature
     }
   }
 }
@@ -210,13 +215,14 @@ function decodeNpub(npub) {
   return bytesToHex(new Uint8Array(bech32.fromWords(words)))
 }
 
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/b9a7f814aaa08a4b1cec705517b664390abd3f69/event.ts#L95
+// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event: NostrEvent): boolean {
   if (!(event instanceof Object)) return false
   if (typeof event.kind !== "number") return false
   if (typeof event.content !== "string") return false
   if (typeof event.created_at !== "number") return false
-  // ignore pubkey checks because if the pubkey is not set we add it to the event. same for the ID.
+  if (typeof event.pubkey !== "string") return false
+  if (!event.pubkey.match(/^[a-f0-9]{64}$/)) return false
 
   if (!Array.isArray(event.tags)) return false
   for (let i = 0; i < event.tags.length; i++) {
@@ -230,7 +236,7 @@ function validateEvent(event: NostrEvent): boolean {
   return true
 }
 
-// from: https://github.com/nbd-wtf/nostr-tools/blob/160987472fd4922dd80c75648ca8939dd2d96cc0/event.ts#L42
+// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
 function serializeEvent(event: NostrEvent): string {
   if (!validateEvent(event))
     throw new Error("can't serialize event with wrong or missing properties")

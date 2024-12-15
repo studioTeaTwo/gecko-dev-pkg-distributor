@@ -234,9 +234,9 @@ export default function NIP07(props) {
           <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
             <GridItem colSpan={2}>
               <Text fontSize="xs">
-                You can still use these features with your keys on
-                extensions/apps compatible with this browser, if turning off
-                &quot;built-in NIP-07&quot;.
+                You can still use these features realated to your keys on
+                extensions/apps compatible with this browser, even if turning off
+                &quot;Use built-in NIP-07&quot;.
               </Text>
             </GridItem>
             <GridItem>

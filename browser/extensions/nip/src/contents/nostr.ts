@@ -15,16 +15,15 @@ export async function init() {
     log("content-script onMessage", request)
     // forward account changed messaged to inpage script
     if (
-      request.action === "nostr/init" ||
-      request.action === "nostr/providerChanged"
+      request.action === "nostr/builtinNip07Init" ||
+      request.action === "nostr/builtinNip07Changed"
     ) {
       window.postMessage(
         {
           id: "native",
           application: "nip",
           data: {
-            action:
-              request.action === "nostr/init" ? "init" : "providerChanged",
+            action: request.action.replace("nostr/", ""),
             data: request.args,
           },
           scope: "nostr",

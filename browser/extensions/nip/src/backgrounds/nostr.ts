@@ -37,7 +37,7 @@ browser.webNavigation.onDOMContentLoaded.addListener(
     // Notify init to the contents
     const tab = await browser.tabs.get(detail.tabId)
     log("send to tab", tab)
-    sendTab(tab, "nostr/init", injecting)
+    sendTab(tab, "nostr/builtinNip07Init", injecting)
   },
   { url: [{ schemes: SafeProtocols }] }
 )
@@ -58,7 +58,7 @@ const onPrefChangedCallback = async (prefKey: string) => {
     })
     for (const tab of tabs) {
       log("send to tab", tab)
-      sendTab(tab, "nostr/providerChanged", state.nostr.prefs[stateName])
+      sendTab(tab, "nostr/builtinNip07Changed", state.nostr.prefs[stateName])
     }
   }
 }

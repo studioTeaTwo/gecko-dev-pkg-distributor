@@ -14,7 +14,7 @@ export function init() {
     const data = event.data.data.data
     if (event.data.scope === "nostr") {
       window.ssi.nostr.dispatchEvent(
-        new CustomEvent(`nostr:${action.toLowerCase()}`, {
+        new CustomEvent(action, {
           detail: data,
           bubbles: false,
           composed: true,
@@ -30,7 +30,7 @@ export const WindowSSI: WindowSSI = {
 
   nostr: Object.freeze({
     generate(option) {
-      return Promise.resolve("publickey")
+      return Promise.resolve("Not implemented")
     },
     getPublicKey(option) {
       return postMessage("nostr", "getPublicKey", undefined)
@@ -39,7 +39,7 @@ export const WindowSSI: WindowSSI = {
       return postMessage("nostr", option.type, message)
     },
     decrypt(ciphertext, option) {
-      return Promise.resolve("plaintext")
+      return Promise.resolve("Not implemented")
     },
 
     // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.

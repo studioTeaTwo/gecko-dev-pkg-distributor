@@ -39,7 +39,7 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
     // Notify init to the contents
     const tab = await browser.tabs.get(detail.tabId);
     (0, logger_1.log)("send to tab", tab);
-    sendTab(tab, "nostr/init", injecting);
+    sendTab(tab, "nostr/builtinNip07Init", injecting);
 }, { url: [{ schemes: SafeProtocols }] });
 const onPrefChangedCallback = async (prefKey) => {
     const stateName = Object.entries(MapBetweenPrefAndState)
@@ -56,7 +56,7 @@ const onPrefChangedCallback = async (prefKey) => {
         });
         for (const tab of tabs) {
             (0, logger_1.log)("send to tab", tab);
-            sendTab(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
+            sendTab(tab, "nostr/builtinNip07Changed", state_1.state.nostr.prefs[stateName]);
         }
     }
 };
