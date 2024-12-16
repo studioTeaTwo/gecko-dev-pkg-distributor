@@ -6,6 +6,7 @@ git apply ssb-merge-2.patch
 git apply ssb-merge-3.patch
 git apply ssb-merge-4.patch
 git apply ssb-manual-2.patch
+git apply ssb-merge-5.patch
 
 ### ssb-merge-1.patch
 - e312b66b
@@ -23,3 +24,5 @@ git apply ssb-manual-2.patch
 - 75e43736
 - b9e9c1fb
 - 52f3d251
+### ssb-merge-5.patch
+- 4836c49b
