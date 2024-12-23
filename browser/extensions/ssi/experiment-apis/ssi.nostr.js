@@ -4,9 +4,13 @@
 
 "use strict"
 
-/* globals ExtensionAPI, Services, ChromeUtils */
+/* globals ExtensionCommon, ExtensionAPI, Services, ChromeUtils, lazy */
 
+// lazy is shared with other parent experiment-apis
 ChromeUtils.defineESModuleGetters(lazy, {
+  SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
+  experimentApiSsiHelper:
+    "resource://builtin-addons/ssi/experiment-apis/ssiHelper.sys.mjs",
   Nostr: "resource://gre/modules/shared/Nostr.sys.mjs",
 })
 
@@ -44,7 +48,9 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             const enabled = Services.prefs.getBoolPref(
               "selfsovereignidentity.nostr.enabled"
             )
-            if (!enabled) return null
+            if (!enabled) {
+              return null
+            }
 
             try {
               const credentials =
@@ -53,7 +59,9 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                   credentialName: "nsec",
                   primary: true,
                 })
-              if (credentials.length === 0) return null
+              if (credentials.length === 0) {
+                return null
+              }
 
               const signature = await lazy.Nostr.sign(
                 message,

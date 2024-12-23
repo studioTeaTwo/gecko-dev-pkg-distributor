@@ -4,8 +4,9 @@
 
 "use strict"
 
-/* globals ExtensionAPI, Services, ChromeUtils */
+/* globals ExtensionAPI, Services, ChromeUtils, AppConstants */
 
+// lazy is shared with other parent experiment-apis
 let lazy = {}
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
@@ -72,10 +73,16 @@ this.ssi = class extends ExtensionAPI {
             return credentials
               .filter((credential) => {
                 // Check permission
-                if (!enabled[credential.protocolName]) return false
+                if (!enabled[credential.protocolName]) {
+                  return false
+                }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
-                if (!params.primary && !accountChanged[credential.protocolName])
+                if (
+                  !params.primary &&
+                  !accountChanged[credential.protocolName]
+                ) {
                   return credential.primary
+                }
 
                 return true
               })
@@ -97,12 +104,14 @@ this.ssi = class extends ExtensionAPI {
         },
         async askPermission(protocolName, credentialName, tabId, message) {
           // Validate params
-          if (!lazy.experimentApiSsiHelper.validateProtocolName(protocolName))
+          if (!lazy.experimentApiSsiHelper.validateProtocolName(protocolName)) {
             return false
+          }
           if (
             !lazy.experimentApiSsiHelper.validateCredentialName(credentialName)
-          )
+          ) {
             return false
+          }
           // TODO(ssb): validate tabId
           // TODO(ssb): how to make tabId unnecessary
           // const tabs = Array.from(
@@ -119,7 +128,9 @@ this.ssi = class extends ExtensionAPI {
           const enabled = Services.prefs.getBoolPref(
             `selfsovereignidentity.${protocolName}.enabled`
           )
-          if (!enabled) return false
+          if (!enabled) {
+            return false
+          }
 
           try {
             const { url, browser } = tabManager.get(tabId)
@@ -134,7 +145,9 @@ this.ssi = class extends ExtensionAPI {
                   credentialName,
                   primary: true,
                 })
-              if (credentials.length === 0) return false
+              if (credentials.length === 0) {
+                return false
+              }
 
               const trustedSites = JSON.parse(credentials[0].trustedSites)
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
@@ -144,9 +157,8 @@ this.ssi = class extends ExtensionAPI {
               console.log("trusted", trusted, url)
               if (trusted) {
                 return true
-              } else {
-                // go to primarypassword auth
               }
+              // go to primarypassword auth
             }
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
@@ -194,6 +206,7 @@ this.ssi = class extends ExtensionAPI {
             }
 
             // NOTE(ssb): Returns true if all settings are explicitly turned off.
+            // eslint-disable-next-line no-unneeded-ternary
             return internalPrefs["trustedSites.enabled"] ? false : true
           } catch (e) {
             console.error(e)

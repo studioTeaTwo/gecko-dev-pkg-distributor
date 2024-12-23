@@ -4,7 +4,7 @@
 
 "use strict"
 
-/* globals ExtensionAPI, Services, ChromeUtils */
+/* globals ExtensionAPI, ExtensionCommon, Services, ChromeUtils */
 
 this.builtinNip = class extends ExtensionAPI {
   getAPI(context) {
@@ -23,7 +23,9 @@ this.builtinNip = class extends ExtensionAPI {
               const enabled = Services.prefs.getBoolPref(
                 `selfsovereignidentity.nostr.enabled`
               )
-              if (!enabled) return
+              if (!enabled) {
+                return
+              }
 
               fire.async("builtinNip07.enabled").catch(() => {}) // ignore Message Manager disconnects
             }
@@ -39,7 +41,9 @@ this.builtinNip = class extends ExtensionAPI {
           const enabled = Services.prefs.getBoolPref(
             `selfsovereignidentity.${protocolName}.enabled`
           )
-          if (!enabled) return null
+          if (!enabled) {
+            return null
+          }
 
           try {
             const prefs = {

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* globals exportFunction, Services */
+/* globals Services */
 
 const PROTOCOL_NAMES = ["nostr"]
 const CREDENTIAL_NAMES = ["nsec"]
@@ -11,7 +11,9 @@ export const experimentApiSsiHelper = {
   // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   onPrimaryChangedRegister: (protocolName) => (fire) => {
     // Validate params
-    if (!this.validateProtocolName(protocolName)) return
+    if (!experimentApiSsiHelper.validateProtocolName(protocolName)) {
+      return
+    }
 
     const callback = (newGuidPayload) => {
       // Check permission
@@ -21,7 +23,9 @@ export const experimentApiSsiHelper = {
       const usedAccountChanged = Services.prefs.getBoolPref(
         `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
       )
-      if (!enabled || !usedAccountChanged) return
+      if (!enabled || !usedAccountChanged) {
+        return
+      }
 
       const newGuid = newGuidPayload.data
       fire.async(newGuid).catch(() => {}) // ignore Message Manager disconnects
@@ -33,13 +37,16 @@ export const experimentApiSsiHelper = {
     }
 
     Services.obs.addObserver(callback, obsTopic)
+    // eslint-disable-next-line consistent-return
     return () => {
       Services.obs.removeObserver(callback, obsTopic)
     }
   },
   onPrefEnabledChangedRegister: (protocolName) => (fire) => {
     // Validate params
-    if (!this.validateProtocolName(protocolName)) return
+    if (!experimentApiSsiHelper.validateProtocolName(protocolName)) {
+      return
+    }
 
     const prefName = `selfsovereignidentity.${protocolName}.enabled`
 
@@ -48,13 +55,16 @@ export const experimentApiSsiHelper = {
       fire.async("enabled").catch(() => {}) // ignore Message Manager disconnects
     }
     Services.prefs.addObserver(prefName, callback)
+    // eslint-disable-next-line consistent-return
     return () => {
       Services.prefs.removeObserver(prefName, callback)
     }
   },
   onPrefAccountChangedRegister: (protocolName) => (fire) => {
     // Validate params
-    if (!this.validateProtocolName(protocolName)) return
+    if (!experimentApiSsiHelper.validateProtocolName(protocolName)) {
+      return
+    }
 
     const prefName = `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
 
@@ -63,28 +73,35 @@ export const experimentApiSsiHelper = {
       const enabled = Services.prefs.getBoolPref(
         `selfsovereignidentity.${protocolName}.enabled`
       )
-      if (!enabled) return
+      if (!enabled) {
+        return
+      }
 
       fire.async("event.accountChanged.enabled").catch(() => {}) // ignore Message Manager disconnects
     }
     Services.prefs.addObserver(prefName, callback)
+    // eslint-disable-next-line consistent-return
     return () => {
       Services.prefs.removeObserver(prefName, callback)
     }
   },
   getPrefs(protocolName) {
     // Validate params
-    if (!this.validateProtocolName(protocolName)) return null
+    if (!experimentApiSsiHelper.validateProtocolName(protocolName)) {
+      return null
+    }
 
     // Check permission
     const enabled = Services.prefs.getBoolPref(
       `selfsovereignidentity.${protocolName}.enabled`
     )
-    if (!enabled) return null
+    if (!enabled) {
+      return null
+    }
 
     try {
       const prefs = {
-        enabled: enabled,
+        enabled,
       }
       return prefs
     } catch (e) {
@@ -94,7 +111,9 @@ export const experimentApiSsiHelper = {
   },
   getInternalPrefs(protocolName) {
     // Validate params
-    if (!this.validateProtocolName(protocolName)) return
+    if (!experimentApiSsiHelper.validateProtocolName(protocolName)) {
+      return null
+    }
 
     try {
       const prefs = {
