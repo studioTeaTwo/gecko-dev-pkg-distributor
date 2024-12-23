@@ -15,12 +15,12 @@ export async function init() {
   // Get setting values from the prefs.
   const results = await browser.builtinNip.getPrefs()
   const prefs = {} as FixMe
-  Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-    prefs[state] = results[pref]
+  Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+    prefs[_state] = results[_pref]
   })
   state.nostr = {
     ...state.nostr,
-    prefs: prefs,
+    prefs,
   }
 
   log("nostr inited in background", state.nostr)
@@ -44,8 +44,8 @@ browser.webNavigation.onDOMContentLoaded.addListener(
 
 const onPrefChangedCallback = async (prefKey: string) => {
   const stateName = Object.entries(MapBetweenPrefAndState)
-    .filter(([state, pref]) => pref === prefKey)
-    .map(([state, pref]) => state)[0]
+    .filter(([_state, _pref]) => _pref === prefKey)
+    .map(([_state, _pref]) => _state)[0]
   const newVal = !state.nostr.prefs[stateName]
   state.nostr.prefs[stateName] = newVal
   log("pref changed!", prefKey, newVal, state.nostr)

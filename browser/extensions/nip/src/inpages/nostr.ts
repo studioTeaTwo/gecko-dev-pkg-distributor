@@ -93,10 +93,11 @@ export class NostrProvider {
 
     signedEvent.pubkey = await this.getPublicKey()
     const eventHash = bytesToHex(
-      sha256(new TextEncoder().encode(serializeEvent(event)))
+      sha256(new TextEncoder().encode(serializeEvent(signedEvent)))
     )
     const signature = await window.ssi.nostr.sign(eventHash, {
       type: "signEvent",
+      event,
     })
     signedEvent.id = eventHash
     signedEvent.sig = signature

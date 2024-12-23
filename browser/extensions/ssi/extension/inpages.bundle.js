@@ -111,10 +111,10 @@ exports.WindowSSI = {
             return Promise.resolve("Not implemented");
         },
         getPublicKey(option) {
-            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", undefined);
+            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", option);
         },
         sign(message, option) {
-            return (0, postMessage_1.postMessage)("nostr", option.type, message);
+            return (0, postMessage_1.postMessage)("nostr", option.type, { message, ...option });
         },
         decrypt(ciphertext, option) {
             return Promise.resolve("Not implemented");

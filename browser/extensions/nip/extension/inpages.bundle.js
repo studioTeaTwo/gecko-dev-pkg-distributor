@@ -641,9 +641,10 @@ class NostrProvider {
     async signEvent(event) {
         const signedEvent = { ...event };
         signedEvent.pubkey = await this.getPublicKey();
-        const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
+        const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(signedEvent))));
         const signature = await window.ssi.nostr.sign(eventHash, {
             type: "signEvent",
+            event,
         });
         signedEvent.id = eventHash;
         signedEvent.sig = signature;

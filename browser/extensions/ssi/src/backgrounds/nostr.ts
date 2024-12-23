@@ -31,7 +31,7 @@ const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user ca
 // Proceed calls from contents
 export const doNostrAction = async (
   action: string,
-  args: any,
+  args: FixMe,
   origin: string,
   tabId: number
 ) => {
@@ -59,24 +59,33 @@ export const doNostrAction = async (
       return decodeNpub(state.nostr.npub)
     }
     case "nostr/signEvent": {
-      if (typeof args !== "string") {
+      if (typeof args.message !== "string") {
         throw new Error("Invalid message")
       }
+      if (!validateEvent(args.event)) {
+        throw new Error("Invalid event")
+      }
 
-      const event = JSON.parse(args)
-      event.pubkey = decodeNpub(state.nostr.npub)
-
-      // Sign
+      const message = args.message
+      const event = args.event
+      event.pubkey = decodeNpub(state.nostr.npub) // override to verify
       const eventHash = bytesToHex(
         sha256(new TextEncoder().encode(serializeEvent(event)))
       )
-      const signature = await browser.ssi.nostr.sign(eventHash)
+      if (message !== eventHash) {
+        throw new Error("Invalid message")
+      }
+
+      // Sign
+      const signature = await browser.ssi.nostr.sign(message)
       if (!signature) {
         throw new Error("Failed to sign")
       }
 
       return signature
     }
+    default:
+      throw new Error("Not implemented")
   }
 }
 
@@ -90,7 +99,7 @@ export async function init() {
     state.nostr.credentialName,
     true
   )
-  if (credentials.length > 0) {
+  if (credentials.length) {
     state.nostr = {
       ...state.nostr,
       npub: credentials[0].identifier,
@@ -100,12 +109,12 @@ export async function init() {
   // Get setting values from the prefs.
   const results = await browser.ssi.nostr.getPrefs()
   const prefs = {} as FixMe
-  Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-    prefs[state] = results[pref]
+  Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+    prefs[_state] = results[_pref]
   })
   state.nostr = {
     ...state.nostr,
-    prefs: prefs,
+    prefs,
   }
 
   log("nostr inited in background", state.nostr, credentials)
@@ -147,8 +156,8 @@ browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
 
 const onPrefChangedCallback = async (prefKey: string) => {
   const stateName = Object.entries(MapBetweenPrefAndState)
-    .filter(([state, pref]) => pref === prefKey)
-    .map(([state, pref]) => state)[0]
+    .filter(([_state, _pref]) => _pref === prefKey)
+    .map(([_state, _pref]) => _state)[0]
   const newVal = !state.nostr.prefs[stateName]
   state.nostr.prefs[stateName] = newVal
   log("pref changed!", prefKey, newVal, state.nostr)
@@ -173,7 +182,7 @@ browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
  *
  */
 
-async function sendTab(tab: browser.tabs.Tab, action: string, data: any) {
+async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
   if (!supported(tab.url)) {
     // browser origin event is not sent anything
     return

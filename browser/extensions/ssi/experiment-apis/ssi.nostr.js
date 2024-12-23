@@ -45,6 +45,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           },
           async sign(message) {
             // Check permission
+            // TODO(ssb): call ssi.askPermission
             const enabled = Services.prefs.getBoolPref(
               "selfsovereignidentity.nostr.enabled"
             )

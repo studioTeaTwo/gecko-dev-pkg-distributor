@@ -21,12 +21,12 @@ async function init() {
     // Get setting values from the prefs.
     const results = await browser.builtinNip.getPrefs();
     const prefs = {};
-    Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-        prefs[state] = results[pref];
+    Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+        prefs[_state] = results[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        prefs: prefs,
+        prefs,
     };
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }
@@ -43,8 +43,8 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
 }, { url: [{ schemes: SafeProtocols }] });
 const onPrefChangedCallback = async (prefKey) => {
     const stateName = Object.entries(MapBetweenPrefAndState)
-        .filter(([state, pref]) => pref === prefKey)
-        .map(([state, pref]) => state)[0];
+        .filter(([_state, _pref]) => _pref === prefKey)
+        .map(([_state, _pref]) => _state)[0];
     const newVal = !state_1.state.nostr.prefs[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);

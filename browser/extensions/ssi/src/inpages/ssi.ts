@@ -33,10 +33,10 @@ export const WindowSSI: WindowSSI = {
       return Promise.resolve("Not implemented")
     },
     getPublicKey(option) {
-      return postMessage("nostr", "getPublicKey", undefined)
+      return postMessage("nostr", "getPublicKey", option)
     },
     sign(message, option) {
-      return postMessage("nostr", option.type, message)
+      return postMessage("nostr", option.type, { message, ...option })
     },
     decrypt(ciphertext, option) {
       return Promise.resolve("Not implemented")
