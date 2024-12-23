@@ -4,9 +4,15 @@
 
 /* globals exportFunction, Services */
 
+const PROTOCOL_NAMES = ["nostr"]
+const CREDENTIAL_NAMES = ["nsec"]
+
 export const experimentApiSsiHelper = {
   // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   onPrimaryChangedRegister: (protocolName) => (fire) => {
+    // Validate params
+    if (!this.validateProtocolName(protocolName)) return
+
     const callback = (newGuidPayload) => {
       // Check permission
       const enabled = Services.prefs.getBoolPref(
@@ -32,6 +38,9 @@ export const experimentApiSsiHelper = {
     }
   },
   onPrefEnabledChangedRegister: (protocolName) => (fire) => {
+    // Validate params
+    if (!this.validateProtocolName(protocolName)) return
+
     const prefName = `selfsovereignidentity.${protocolName}.enabled`
 
     const callback = () => {
@@ -44,7 +53,11 @@ export const experimentApiSsiHelper = {
     }
   },
   onPrefAccountChangedRegister: (protocolName) => (fire) => {
+    // Validate params
+    if (!this.validateProtocolName(protocolName)) return
+
     const prefName = `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
+
     const callback = () => {
       // Check permission
       const enabled = Services.prefs.getBoolPref(
@@ -60,6 +73,9 @@ export const experimentApiSsiHelper = {
     }
   },
   getPrefs(protocolName) {
+    // Validate params
+    if (!this.validateProtocolName(protocolName)) return null
+
     // Check permission
     const enabled = Services.prefs.getBoolPref(
       `selfsovereignidentity.${protocolName}.enabled`
@@ -77,6 +93,9 @@ export const experimentApiSsiHelper = {
     }
   },
   getInternalPrefs(protocolName) {
+    // Validate params
+    if (!this.validateProtocolName(protocolName)) return
+
     try {
       const prefs = {
         "trustedSites.enabled": Services.prefs.getBoolPref(
@@ -94,5 +113,11 @@ export const experimentApiSsiHelper = {
       console.error(e)
       return null
     }
+  },
+  validateProtocolName(protocolName) {
+    return PROTOCOL_NAMES.includes(protocolName)
+  },
+  validateCredentialName(credentialName) {
+    return CREDENTIAL_NAMES.includes(credentialName)
   },
 }

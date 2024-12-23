@@ -43,50 +43,66 @@ this.ssi = class extends ExtensionAPI {
             ),
           }
 
-          // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
-          // TODO(ssb): validate params
-          const params = {}
-          if (protocolName) {
-            params.protocolName = protocolName
-          }
-          if (credentialName) {
-            params.credentialName = credentialName
-          }
-          params.primary = primary
-
-          let credentials
           try {
-            credentials =
+            // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
+            const params = {}
+            if (protocolName) {
+              if (
+                !lazy.experimentApiSsiHelper.validateProtocolName(protocolName)
+              ) {
+                return []
+              }
+              params.protocolName = protocolName
+            }
+            if (credentialName) {
+              if (
+                !lazy.experimentApiSsiHelper.validateCredentialName(
+                  credentialName
+                )
+              ) {
+                return []
+              }
+              params.credentialName = credentialName
+            }
+            params.primary = primary
+
+            const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params)
+
+            return credentials
+              .filter((credential) => {
+                // Check permission
+                if (!enabled[credential.protocolName]) return false
+                // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
+                if (!params.primary && !accountChanged[credential.protocolName])
+                  return credential.primary
+
+                return true
+              })
+              .map((credential) => {
+                // Filter only the data to need
+                const filteredVal = {
+                  // credential info
+                  protocolName: credential.protocolName,
+                  credentialName: credential.credentialName,
+                  identifier: credential.identifier,
+                  primary: credential.primary,
+                }
+                return filteredVal
+              })
           } catch (e) {
             console.error(e)
             return []
           }
-
-          return credentials
-            .filter((credential) => {
-              // Check permission
-              if (!enabled[credential.protocolName]) return false
-              // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
-              if (!params.primary && !accountChanged[credential.protocolName])
-                return credential.primary
-
-              return true
-            })
-            .map((credential) => {
-              // Filter only the data to need
-              const filteredVal = {
-                // credential info
-                protocolName: credential.protocolName,
-                credentialName: credential.credentialName,
-                identifier: credential.identifier,
-                primary: credential.primary,
-              }
-              return filteredVal
-            })
         },
         async askPermission(protocolName, credentialName, tabId, message) {
-          // TODO(ssb): validate params
+          // Validate params
+          if (!lazy.experimentApiSsiHelper.validateProtocolName(protocolName))
+            return false
+          if (
+            !lazy.experimentApiSsiHelper.validateCredentialName(credentialName)
+          )
+            return false
           // TODO(ssb): validate tabId
           // TODO(ssb): how to make tabId unnecessary
           // const tabs = Array.from(
