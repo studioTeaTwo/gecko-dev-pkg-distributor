@@ -55,3 +55,8 @@ export type CredentialForPayload = Omit<
   trustedSites: string
   properties: string
 }
+
+export interface SelfsovereignidentityDefaultProps {
+  prefs: SelfsovereignidentityPrefs
+  credentials: Credential[]
+}

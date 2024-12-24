@@ -7,14 +7,13 @@ import {
   Switch,
   VStack,
 } from "@chakra-ui/react"
-import useChildActorEvent, {
-  dispatchEvents,
-} from "../../hooks/useChildActorEvent"
+import { dispatchEvents } from "../../hooks/useChildActorEvent"
 import { promptForPrimaryPassword } from "../../shared/utils"
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
+import { SelfsovereignidentityDefaultProps } from "../../custom.type"
 
-export default function Nostr(props) {
-  const { prefs } = useChildActorEvent()
+export default function Nostr(props: SelfsovereignidentityDefaultProps) {
+  const { prefs } = props
   const { onPrefChanged } = dispatchEvents
 
   const [isOpenDialog, setIsOpenDialog] = useState(false)

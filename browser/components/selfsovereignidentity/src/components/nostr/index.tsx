@@ -12,8 +12,10 @@ import { dispatchEvents } from "../../hooks/useChildActorEvent"
 import Keys from "./Keys"
 import NIP07 from "./NIP07"
 import More from "./More"
+import { SelfsovereignidentityDefaultProps } from "src/custom.type"
 
-export default function Nostr(props) {
+export default function Nostr(props: SelfsovereignidentityDefaultProps) {
+  const { prefs, credentials } = props
   const { initStore } = dispatchEvents
 
   // on mount
@@ -47,13 +49,13 @@ export default function Nostr(props) {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <Keys />
+            <Keys prefs={prefs} credentials={credentials} />
           </TabPanel>
           <TabPanel>
-            <NIP07 />
+            <NIP07 prefs={prefs} credentials={credentials} />
           </TabPanel>
           <TabPanel>
-            <More />
+            <More prefs={prefs} credentials={credentials} />
           </TabPanel>
         </TabPanels>
       </Tabs>

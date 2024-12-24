@@ -1,9 +1,8 @@
 // experiment api
 declare namespace browser.builtinNip {
-  const getPrefs = () =>
-    Promise<{
-      "builtinNip07.enabled": boolean
-    } | null>
+  const getPrefs: () => Promise<{
+    "builtinNip07.enabled": boolean
+  } | null>
   const onPrefBuiltinNip07Changed: {
     addListener: (callback: (prefKey: string) => void) => {}
     rmoveListener: () => void

@@ -36,16 +36,16 @@ this.builtinNip = class extends ExtensionAPI {
           },
         }).api(),
         async getPrefs() {
-          const protocolName = "nostr"
-          // Check permission
-          const enabled = Services.prefs.getBoolPref(
-            `selfsovereignidentity.${protocolName}.enabled`
-          )
-          if (!enabled) {
-            return null
-          }
-
           try {
+            const protocolName = "nostr"
+            // Check permission
+            const enabled = Services.prefs.getBoolPref(
+              `selfsovereignidentity.${protocolName}.enabled`
+            )
+            if (!enabled) {
+              return null
+            }
+
             const prefs = {
               "builtinNip07.enabled": Services.prefs.getBoolPref(
                 `selfsovereignidentity.${protocolName}.builtinNip07.enabled`

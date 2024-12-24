@@ -17,10 +17,11 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import useChildActorEvent, {
-  dispatchEvents,
-} from "../../hooks/useChildActorEvent"
-import { Credential } from "../../custom.type"
+import { dispatchEvents } from "../../hooks/useChildActorEvent"
+import {
+  Credential,
+  SelfsovereignidentityDefaultProps,
+} from "../../custom.type"
 import { promptForPrimaryPassword } from "../../shared/utils"
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
 
@@ -42,8 +43,8 @@ export const DefaultTrustedSites = [
 
 const OneDay = 24 * 60 * 60 * 1000
 
-export default function NIP07(props) {
-  const { prefs, credentials } = useChildActorEvent()
+export default function NIP07(props: SelfsovereignidentityDefaultProps) {
+  const { prefs, credentials } = props
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents
 
   const [newSite, setNewSite] = useState("")
@@ -235,8 +236,8 @@ export default function NIP07(props) {
             <GridItem colSpan={2}>
               <Text fontSize="xs">
                 You can still use these features realated to your keys on
-                extensions/apps compatible with this browser, even if turning off
-                &quot;Use built-in NIP-07&quot;.
+                extensions/apps compatible with this browser, even if turning
+                off &quot;Use built-in NIP-07&quot;.
               </Text>
             </GridItem>
             <GridItem>

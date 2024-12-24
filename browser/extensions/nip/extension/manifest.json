@@ -9,7 +9,14 @@
     }
   },
 
-  "permissions": ["tabs", "webNavigation", "<all_urls>", "mozillaAddons"],
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "<all_urls>",
+    "mozillaAddons",
+    "ssi",
+    "ssi.nostr"
+  ],
 
   "experiment_apis": {
     "builtinNip": {
