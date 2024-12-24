@@ -150,12 +150,10 @@ export class SsiStorage_json {
     const resultCredentials = [];
     for (const [credential, encryptedCredential] of encryptedCredentials) {
       // check for duplicates
-      const existingCredentials = await Services.ssi.searchCredentialsAsync(
-        {
-          protocolName: credential.protocolName,
-          credentialName: credential.credentialName,
-        }
-      );
+      const existingCredentials = await Services.ssi.searchCredentialsAsync({
+        protocolName: credential.protocolName,
+        credentialName: credential.credentialName,
+      });
 
       const matchingCredential = existingCredentials.find(l =>
         credential.matches(l, true)
@@ -203,10 +201,7 @@ export class SsiStorage_json {
       this._store.saveSoon();
     }
 
-    lazy.SsiHelper.notifyStorageChanged(
-      "removeCredential",
-      storedCredential
-    );
+    lazy.SsiHelper.notifyStorageChanged("removeCredential", storedCredential);
   }
 
   modifyCredential(oldCredential, newCredentialData) {
@@ -252,13 +247,8 @@ export class SsiStorage_json {
     }
 
     // Get the encrypted values.
-    let [
-      encSecret,
-      encIdentifier,
-      encProperties,
-      encType,
-      encUnknownFields,
-    ] = this._encryptCredential(newCredential);
+    let [encSecret, encIdentifier, encProperties, encType, encUnknownFields] =
+      this._encryptCredential(newCredential);
 
     for (let credentialItem of this._store.data.credentials) {
       if (credentialItem.id == idToModify && !credentialItem.deleted) {
@@ -318,6 +308,7 @@ export class SsiStorage_json {
    * Public wrapper around _searchCredentials to convert the nsIPropertyBag to a
    * JavaScript object and decrypt the results.
    *
+   * @param matchData
    * @returns {nsICredentialInfo[]} which are decrypted.
    */
   searchCredentials(matchData) {
@@ -352,6 +343,9 @@ export class SsiStorage_json {
    * Returns [credentials, ids] for credentials that match the arguments, where credentials
    * is an array of encrypted nsCredentialInfo and ids is an array of associated
    * ids in the database.
+   *
+   * @param matchData
+   * @param candidateCredentials
    */
   _searchCredentials(
     matchData,
@@ -397,9 +391,9 @@ export class SsiStorage_json {
     for (let credentialItem of candidateCredentials) {
       if (match(credentialItem)) {
         // Create the new nsCredentialInfo object, push to array
-        let credential = Cc[
-          "@mozilla.org/ssi/credentialInfo;1"
-        ].createInstance(Ci.nsICredentialInfo);
+        let credential = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
+          Ci.nsICredentialInfo
+        );
         credential.init(
           credentialItem.protocolName,
           credentialItem.credentialName,
@@ -493,6 +487,8 @@ export class SsiStorage_json {
    * Returns an array with two items: [id, credential]. If the credential was not
    * found, both items will be null. The returned credential contains the actual
    * stored credential (useful for looking at the actual nsICredentialMetaInfo values).
+   *
+   * @param credential
    */
   _getIdForCredential(credential) {
     this._store.ensureDataReady();
@@ -530,6 +526,8 @@ export class SsiStorage_json {
 
   /**
    * Checks to see if the specified GUID already exists.
+   *
+   * @param guid
    */
   _isGuidUnique(guid) {
     this._store.ensureDataReady();
@@ -629,6 +627,8 @@ export class SsiStorage_json {
   /**
    * Returns the encrypted values, and encrypton type for the specified
    * credential. Can throw if the user cancels a primary password entry.
+   *
+   * @param credential
    */
   _encryptCredential(credential) {
     let encSecret = this._crypto.encrypt(credential.secret);
@@ -643,13 +643,7 @@ export class SsiStorage_json {
     }
     let encType = this._crypto.defaultEncType;
 
-    return [
-      encSecret,
-      encIdentifier,
-      encProperties,
-      encType,
-      encUnknownFields,
-    ];
+    return [encSecret, encIdentifier, encProperties, encType, encUnknownFields];
   }
 
   /**
@@ -661,6 +655,8 @@ export class SsiStorage_json {
    * entries are useless), whereas internal callers generally don't want
    * to lose unencrypted entries (eg, because the user clicked Cancel
    * instead of entering their primary password)
+   *
+   * @param credentials
    */
   _decryptCredentials(credentials) {
     let result = [];

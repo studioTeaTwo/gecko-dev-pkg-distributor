@@ -84,6 +84,8 @@ SsiStore.prototype._save = async function () {
 
 /**
  * Synchronously work on the data just loaded into memory.
+ *
+ * @param data
  */
 SsiStore.prototype._dataPostProcessor = function (data) {
   if (data.nextId === undefined) {
