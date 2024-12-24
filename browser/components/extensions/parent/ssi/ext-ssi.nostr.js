@@ -12,6 +12,9 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Nostr: "resource://gre/modules/shared/Nostr.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
+const { ensureBytes } = ChromeUtils.importESModule(
+  "resource://gre/modules/shared/utils-curves.sys.mjs"
+);
 
 this["ssi.nostr"] = class extends ExtensionAPI {
   getAPI(context) {
@@ -42,18 +45,19 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             return lazy.browserSsiHelper.getPrefs("nostr");
           },
           async sign(message) {
-            // TODO(ssb): validate message
-
-            // Check permission
-            // TODO(ssb): call ssi.askPermission
-            const enabled = Services.prefs.getBoolPref(
-              "selfsovereignidentity.nostr.enabled"
-            );
-            if (!enabled) {
-              return null;
-            }
-
             try {
+              // Validate params
+              ensureBytes("message", message); // Will throw error for other types.
+
+              // Check permission
+              // TODO(ssb): call ssi.askPermission
+              const enabled = Services.prefs.getBoolPref(
+                "selfsovereignidentity.nostr.enabled"
+              );
+              if (!enabled) {
+                return null;
+              }
+
               const credentials =
                 await lazy.SsiHelper.searchCredentialsWithoutSecret({
                   protocolName: "nostr",
