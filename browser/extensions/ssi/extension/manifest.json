@@ -9,31 +9,7 @@
     }
   },
 
-  "permissions": ["tabs", "<all_urls>", "mozillaAddons"],
-
-  "experiment_apis": {
-    "ssi": {
-      "schema": "experiment-apis/ssi.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "experiment-apis/ssi.js",
-        "paths": [["ssi"], ["ssiInParent"]]
-      },
-      "child": {
-        "scopes": ["addon_child"],
-        "script": "experiment-apis/ssiChild.js",
-        "paths": [["ssi"]]
-      }
-    },
-    "ssi.nostr": {
-      "schema": "experiment-apis/ssi.nostr.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "experiment-apis/ssi.nostr.js",
-        "paths": [["ssi", "nostr"]]
-      }
-    }
-  },
+  "permissions": ["tabs", "<all_urls>", "mozillaAddons", "ssi", "ssi.nostr"],
 
   "background": {
     "scripts": ["backgrounds.bundle.js"]

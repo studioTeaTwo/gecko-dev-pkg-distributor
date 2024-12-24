@@ -150,6 +150,19 @@
     "manifest": ["sidebar_action"],
     "paths": [["sidebarAction"]]
   },
+  "ssi": {
+    "url": "chrome://browser/content/parent/ext-ssi.js",
+    "schema": "chrome://browser/content/schemas/ssi.json",
+    "scopes": ["addon_parent"],
+    "paths": [["ssi"]]
+  },
+  "ssi.nostr": {
+    "url": "chrome://browser/content/parent/ext-ssi.nostr.js",
+    "schema": "chrome://browser/content/schemas/ssi.nostr.json",
+    "scopes": ["addon_parent"],
+    "permissions": ["ssi"],
+    "paths": [["ssi", "nostr"]]
+  },
   "tabs": {
     "url": "chrome://browser/content/parent/ext-tabs.js",
     "schema": "chrome://browser/content/schemas/tabs.json",

@@ -94,7 +94,7 @@ function init() {
         const action = event.data.data.action;
         const data = event.data.data.data;
         if (event.data.scope === "nostr") {
-            window.ssi.nostr.dispatchEvent(new CustomEvent(`nostr:${action.toLowerCase()}`, {
+            window.ssi.nostr.dispatchEvent(new CustomEvent(action, {
                 detail: data,
                 bubbles: false,
                 composed: true,
@@ -108,16 +108,16 @@ exports.WindowSSI = {
     _proxy: new EventTarget(),
     nostr: Object.freeze({
         generate(option) {
-            return Promise.resolve("publickey");
+            return Promise.resolve("Not implemented");
         },
         getPublicKey(option) {
-            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", undefined);
+            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", option);
         },
         sign(message, option) {
-            return (0, postMessage_1.postMessage)("nostr", option.type, message);
+            return (0, postMessage_1.postMessage)("nostr", option.type, { message, ...option });
         },
         decrypt(ciphertext, option) {
-            return Promise.resolve("plaintext");
+            return Promise.resolve("Not implemented");
         },
         // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
         // ref: https://github.com/nostr-protocol/nips/pull/1174
