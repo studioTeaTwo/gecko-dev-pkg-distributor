@@ -1534,3 +1534,18 @@ browser/app/profile/000-tor-browser.js
 mobile/android/app/000-tor-browser-android.js
 toolkit/content/pt_config.json
 toolkit/components/lox/lox_wasm.jsm
+
+##############################################################################
+# ssb: The list below is built by bundler or copied from npm package
+##############################################################################
+
+browser/components/selfsovereignidentity/content
+browser/extensions/nip/extension/backgrounds.bundle.js
+browser/extensions/nip/extension/contents.bundle.js
+browser/extensions/nip/extension/inpages.bundle.js
+browser/extensions/ssi/extension/backgrounds.bundle.js
+browser/extensions/ssi/extension/contents.bundle.js
+browser/extensions/ssi/extension/inpages.bundle.js
+toolkit/components/ssi/protocols/noble-curves
+toolkit/components/ssi/protocols/noble-hashes
+tsconfig.json

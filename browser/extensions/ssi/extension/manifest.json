@@ -9,7 +9,7 @@
     }
   },
 
-  "permissions": ["tabs", "<all_urls>", "mozillaAddons", "ssi", "ssi.nostr"],
+  "permissions": ["tabs", "<all_urls>", "ssi", "ssi.nostr"],
 
   "background": {
     "scripts": ["backgrounds.bundle.js"]
