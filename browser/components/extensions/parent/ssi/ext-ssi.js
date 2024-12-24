@@ -96,35 +96,35 @@ this.ssi = class extends ExtensionAPI {
           }
         },
         async askPermission(protocolName, credentialName, tabId, message) {
-          // Validate params
-          if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
-            return false;
-          }
-          if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
-            return false;
-          }
-          // TODO(ssb): validate message
-          // TODO(ssb): validate tabId
-          // TODO(ssb): how to make tabId unnecessary
-          // const tabs = Array.from(
-          //   tabManager.query({
-          //     active: true,
-          //     lastFocusedWindow: true,
-          //     url: null,
-          //     cookieStoreId: null,
-          //     title: null,
-          //   })
-          // )
-
-          // Check permission
-          const enabled = Services.prefs.getBoolPref(
-            `selfsovereignidentity.${protocolName}.enabled`
-          );
-          if (!enabled) {
-            return false;
-          }
-
           try {
+            // Validate params
+            if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
+              return false;
+            }
+            if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
+              return false;
+            }
+            // TODO(ssb): validate message
+            // TODO(ssb): validate tabId
+            // TODO(ssb): how to make tabId unnecessary
+            // const tabs = Array.from(
+            //   tabManager.query({
+            //     active: true,
+            //     lastFocusedWindow: true,
+            //     url: null,
+            //     cookieStoreId: null,
+            //     title: null,
+            //   })
+            // )
+
+            // Check permission
+            const enabled = Services.prefs.getBoolPref(
+              `selfsovereignidentity.${protocolName}.enabled`
+            );
+            if (!enabled) {
+              return false;
+            }
+
             const { url, browser } = tabManager.get(tabId);
             const origin = Services.io.newURI(url).displayPrePath;
             const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
@@ -195,12 +195,18 @@ this.ssi = class extends ExtensionAPI {
                 origin,
                 _authExpirationTimes.get(origin)
               );
-              return isAuthorized;
+              if (isAuthorized) {
+                return true;
+              }
+              // go to self-sovereign check
             }
 
             // NOTE(ssb): Returns true if all settings are explicitly turned off.
             // eslint-disable-next-line no-unneeded-ternary
-            return internalPrefs["trustedSites.enabled"] ? false : true;
+            return !internalPrefs["trustedSites.enabled"] &&
+              !internalPrefs["primarypassword.toApps.enabled"]
+              ? true
+              : false;
           } catch (e) {
             console.error(e);
             return false;
