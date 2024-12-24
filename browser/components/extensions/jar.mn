@@ -25,6 +25,8 @@ browser.jar:
     content/browser/parent/ext-search.js (parent/ext-search.js)
     content/browser/parent/ext-sessions.js (parent/ext-sessions.js)
     content/browser/parent/ext-sidebarAction.js (parent/ext-sidebarAction.js)
+    content/browser/parent/ext-ssi.js (parent/ssi/ext-ssi.js)
+    content/browser/parent/ext-ssi.nostr.js (parent/ssi/ext-ssi.nostr.js)
     content/browser/parent/ext-tabs.js (parent/ext-tabs.js)
     content/browser/parent/ext-topSites.js (parent/ext-topSites.js)
     content/browser/parent/ext-url-overrides.js (parent/ext-url-overrides.js)
@@ -39,3 +41,5 @@ browser.jar:
     content/browser/child/ext-menus-child.js (child/ext-menus-child.js)
     content/browser/child/ext-omnibox.js (child/ext-omnibox.js)
     content/browser/child/ext-tabs.js (child/ext-tabs.js)
+%   resource builtin-addons %builtin-addons/  contentaccessible=yes
+    builtin-addons/ssi/browserSsiHelper.sys.mjs (parent/ssi/browserSsiHelper.sys.mjs)

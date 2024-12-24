@@ -31,7 +31,7 @@ const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user ca
 // Proceed calls from contents
 export const doNostrAction = async (
   action: string,
-  args: any,
+  args: FixMe,
   origin: string,
   tabId: number
 ) => {
@@ -59,19 +59,33 @@ export const doNostrAction = async (
       return decodeNpub(state.nostr.npub)
     }
     case "nostr/signEvent": {
-      const event = JSON.parse(args)
-      event.pubkey = decodeNpub(state.nostr.npub)
+      if (typeof args.message !== "string") {
+        throw new Error("Invalid message")
+      }
+      if (!validateEvent(args.event)) {
+        throw new Error("Invalid event")
+      }
 
-      // Sign
+      const message = args.message
+      const event = args.event
+      event.pubkey = decodeNpub(state.nostr.npub) // override to verify
       const eventHash = bytesToHex(
         sha256(new TextEncoder().encode(serializeEvent(event)))
       )
-      const signature = await browser.ssi.nostr.sign(eventHash)
-      event.id = eventHash
-      event.sig = signature
+      if (message !== eventHash) {
+        throw new Error("Invalid message")
+      }
 
-      return event
+      // Sign
+      const signature = await browser.ssi.nostr.sign(message)
+      if (!signature) {
+        throw new Error("Failed to sign")
+      }
+
+      return signature
     }
+    default:
+      throw new Error("Not implemented")
   }
 }
 
@@ -85,7 +99,7 @@ export async function init() {
     state.nostr.credentialName,
     true
   )
-  if (credentials.length > 0) {
+  if (credentials.length) {
     state.nostr = {
       ...state.nostr,
       npub: credentials[0].identifier,
@@ -95,12 +109,12 @@ export async function init() {
   // Get setting values from the prefs.
   const results = await browser.ssi.nostr.getPrefs()
   const prefs = {} as FixMe
-  Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-    prefs[state] = results[pref]
+  Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+    prefs[_state] = results[_pref]
   })
   state.nostr = {
     ...state.nostr,
-    prefs: prefs,
+    prefs,
   }
 
   log("nostr inited in background", state.nostr, credentials)
@@ -142,8 +156,8 @@ browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback)
 
 const onPrefChangedCallback = async (prefKey: string) => {
   const stateName = Object.entries(MapBetweenPrefAndState)
-    .filter(([state, pref]) => pref === prefKey)
-    .map(([state, pref]) => state)[0]
+    .filter(([_state, _pref]) => _pref === prefKey)
+    .map(([_state, _pref]) => _state)[0]
   const newVal = !state.nostr.prefs[stateName]
   state.nostr.prefs[stateName] = newVal
   log("pref changed!", prefKey, newVal, state.nostr)
@@ -168,7 +182,7 @@ browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback)
  *
  */
 
-async function sendTab(tab: browser.tabs.Tab, action: string, data: any) {
+async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
   if (!supported(tab.url)) {
     // browser origin event is not sent anything
     return
@@ -210,13 +224,14 @@ function decodeNpub(npub) {
   return bytesToHex(new Uint8Array(bech32.fromWords(words)))
 }
 
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/b9a7f814aaa08a4b1cec705517b664390abd3f69/event.ts#L95
+// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event: NostrEvent): boolean {
   if (!(event instanceof Object)) return false
   if (typeof event.kind !== "number") return false
   if (typeof event.content !== "string") return false
   if (typeof event.created_at !== "number") return false
-  // ignore pubkey checks because if the pubkey is not set we add it to the event. same for the ID.
+  if (typeof event.pubkey !== "string") return false
+  if (!event.pubkey.match(/^[a-f0-9]{64}$/)) return false
 
   if (!Array.isArray(event.tags)) return false
   for (let i = 0; i < event.tags.length; i++) {
@@ -230,7 +245,7 @@ function validateEvent(event: NostrEvent): boolean {
   return true
 }
 
-// from: https://github.com/nbd-wtf/nostr-tools/blob/160987472fd4922dd80c75648ca8939dd2d96cc0/event.ts#L42
+// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
 function serializeEvent(event: NostrEvent): string {
   if (!validateEvent(event))
     throw new Error("can't serialize event with wrong or missing properties")

@@ -1,0 +1,78 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi", "ssi.nostr"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "ssi.nostr",
+    "description": "Nostr subset of browser.ssi. Requires `ssi.nostr` along with `ssi` to set permissions.",
+    "permissions": ["ssi", "ssi.nostr"],
+    "events": [
+      {
+        "name": "onPrimaryChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "newGuid",
+            "type": "string",
+            "description": "The new guid which changed. If it's empty string, so it means all removed."
+          }
+        ]
+      },
+      {
+        "name": "onPrefEnabledChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      },
+      {
+        "name": "onPrefAccountChanged",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "prefKey",
+            "type": "string",
+            "description": "The pref key name which changed"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "getPrefs",
+        "type": "function",
+        "description": "Get preference's values",
+        "parameters": [],
+        "async": true
+      },
+      {
+        "name": "sign",
+        "type": "function",
+        "description": "Pass message and return the signature by Nostr secret key",
+        "async": true,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string",
+            "description": "The message to sign"
+          }
+        ]
+      }
+    ]
+  }
+]

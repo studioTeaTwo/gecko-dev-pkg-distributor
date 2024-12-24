@@ -10,9 +10,11 @@ import Lightning from "./lightning"
 import Nostr from "./nostr"
 import ECash from "./ecash"
 import { MenuItem } from "../custom.type"
+import useChildActorEvent from "../hooks/useChildActorEvent"
 
 function Selfsovereignidentity(props) {
   const [selectedMenu, setSelectedMenu] = useState<MenuItem>("nostr")
+  const { prefs, credentials } = useChildActorEvent() // Just once to ensure that useeffect is called only once
 
   useEffect(() => {}, [])
 
@@ -28,7 +30,7 @@ function Selfsovereignidentity(props) {
     } else if (selectedMenu === "ecash") {
       return <ECash />
     } else if (selectedMenu === "nostr") {
-      return <Nostr />
+      return <Nostr prefs={prefs} credentials={credentials} />
     }
   }
 

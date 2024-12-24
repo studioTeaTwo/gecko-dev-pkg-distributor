@@ -20,10 +20,11 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import useChildActorEvent, {
-  dispatchEvents,
-} from "../../hooks/useChildActorEvent"
-import { Credential } from "../../custom.type"
+import { dispatchEvents } from "../../hooks/useChildActorEvent"
+import {
+  Credential,
+  SelfsovereignidentityDefaultProps,
+} from "../../custom.type"
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils"
 import {
   BIP340,
@@ -58,8 +59,8 @@ const NostrTemplate: NostrCredential = {
   },
 }
 
-export default function Nostr(props) {
-  const { prefs, credentials } = useChildActorEvent()
+export default function Nostr(props: SelfsovereignidentityDefaultProps) {
+  const { prefs, credentials } = props
   const {
     addCredentialToStore,
     modifyCredentialToStore,

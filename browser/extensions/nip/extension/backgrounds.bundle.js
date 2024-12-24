@@ -14,19 +14,23 @@ const state_1 = __webpack_require__(975);
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
 const SafeProtocols = ["http", "https", "moz-extension"];
 const MapBetweenPrefAndState = {
+    enabled: "enabled",
     usedBuiltinNip07: "builtinNip07.enabled",
 };
 async function init() {
     (0, logger_1.log)("experimental-api start...");
     // Get setting values from the prefs.
-    const results = await browser.builtinNip.getPrefs();
+    const results = {
+        ...(await browser.ssi.nostr.getPrefs()),
+        ...(await browser.builtinNip.getPrefs()),
+    };
     const prefs = {};
-    Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-        prefs[state] = results[pref];
+    Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+        prefs[_state] = results[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        prefs: prefs,
+        prefs,
     };
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }
@@ -34,32 +38,35 @@ exports.init = init;
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
     // It's only injecting functions and doesn't need trusted.
-    const injecting = state_1.state.nostr.prefs.usedBuiltinNip07 && supported(detail.url);
+    const injecting = state_1.state.nostr.prefs.enabled &&
+        state_1.state.nostr.prefs.usedBuiltinNip07 &&
+        supported(detail.url);
     (0, logger_1.log)("nostr init to tab", injecting);
     // Notify init to the contents
     const tab = await browser.tabs.get(detail.tabId);
     (0, logger_1.log)("send to tab", tab);
-    sendTab(tab, "nostr/init", injecting);
+    sendTab(tab, "nostr/builtinNip07Init", injecting);
 }, { url: [{ schemes: SafeProtocols }] });
 const onPrefChangedCallback = async (prefKey) => {
     const stateName = Object.entries(MapBetweenPrefAndState)
-        .filter(([state, pref]) => pref === prefKey)
-        .map(([state, pref]) => state)[0];
+        .filter(([_state, _pref]) => _pref === prefKey)
+        .map(([_state, _pref]) => _state)[0];
     const newVal = !state_1.state.nostr.prefs[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents
-    if (["builtinNip07.enabled"].includes(prefKey)) {
+    if (["enabled", "builtinNip07.enabled"].includes(prefKey)) {
         const tabs = await browser.tabs.query({
             status: "complete",
             discarded: false,
         });
         for (const tab of tabs) {
             (0, logger_1.log)("send to tab", tab);
-            sendTab(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
+            sendTab(tab, "nostr/builtinNip07Changed", state_1.state.nostr.prefs[stateName]);
         }
     }
 };
+browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
 browser.builtinNip.onPrefBuiltinNip07Changed.addListener(onPrefChangedCallback);
 /**
  * Internal Utils
@@ -93,6 +100,7 @@ exports.state = void 0;
 exports.state = {
     nostr: {
         prefs: {
+            enabled: false,
             usedBuiltinNip07: false,
         },
     },

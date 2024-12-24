@@ -59,7 +59,7 @@ export async function init() {
           id: "native",
           application: "ssb",
           data: {
-            action: "accountChanged",
+            action: request.action.replace("nostr/", ""),
             data: request.args,
           },
           scope: "nostr",

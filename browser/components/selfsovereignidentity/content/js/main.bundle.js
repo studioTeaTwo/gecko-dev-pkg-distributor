@@ -672,7 +672,7 @@ const DefaultTrustedSites = [
 ];
 const OneDay = 24 * 60 * 60 * 1e3;
 function NIP07(props) {
-  const { prefs, credentials } = useChildActorEvent();
+  const { prefs, credentials } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
@@ -818,7 +818,7 @@ function NIP07(props) {
         align: "stretch",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "xs", children: 'You can still use these features with your keys on extensions/apps compatible with this browser, if turning off "built-in NIP-07".' }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "xs", children: 'You can still use these features realated to your keys on extensions/apps compatible with this browser, even if turning off "Use built-in NIP-07".' }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedBuiltinNip07", children: "Use built-in NIP-07" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Switch,
@@ -934,7 +934,7 @@ const NostrTemplate = {
   }
 };
 function Nostr$2(props) {
-  const { prefs, credentials } = useChildActorEvent();
+  const { prefs, credentials } = props;
   const {
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
@@ -1231,7 +1231,7 @@ function Nostr$2(props) {
   ] });
 }
 function Nostr$1(props) {
-  const { prefs } = useChildActorEvent();
+  const { prefs } = props;
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
@@ -1285,6 +1285,7 @@ function Nostr$1(props) {
   ] });
 }
 function Nostr(props) {
+  const { prefs, credentials } = props;
   const { initStore: initStore2 } = dispatchEvents;
   reactExports.useEffect(() => {
     initStore2();
@@ -1298,9 +1299,9 @@ function Nostr(props) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }) })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$2, {}) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, {}) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, {}) })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$2, { prefs, credentials }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, { prefs, credentials }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials }) })
       ] })
     ] })
   ] });
@@ -1310,6 +1311,7 @@ function ECash(props) {
 }
 function Selfsovereignidentity(props) {
   const [selectedMenu, setSelectedMenu] = reactExports.useState("nostr");
+  const { prefs, credentials } = useChildActorEvent();
   reactExports.useEffect(() => {
   }, []);
   const setMenu = (menuItem) => {
@@ -1323,7 +1325,7 @@ function Selfsovereignidentity(props) {
     } else if (selectedMenu === "ecash") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(ECash, {});
     } else if (selectedMenu === "nostr") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr, {});
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr, { prefs, credentials });
     }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { m: 10, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { w: "100%", h: "100%", templateColumns: "200px auto", gap: 4, children: [

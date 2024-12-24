@@ -441,7 +441,8 @@ let JSWINDOWACTORS = {
 
   AboutSelfsovereignidentity: {
     parent: {
-      esModuleURI: "resource:///actors/AboutSelfsovereignidentityParent.sys.mjs",
+      esModuleURI:
+        "resource:///actors/AboutSelfsovereignidentityParent.sys.mjs",
     },
     child: {
       esModuleURI: "resource:///actors/AboutSelfsovereignidentityChild.sys.mjs",
@@ -2496,27 +2497,29 @@ BrowserGlue.prototype = {
 
   async _setupSelfsovereignidentity() {
     // There is no pref for this add-on because it shouldn't be disabled.
-    const configs = [{
-      id: "experimentapi-ssi@teatwo.dev",
-      version: "0.0.1",
-      base: "resource://builtin-addons/ssi/"
-    },{
-      id: "builtin-nip@teatwo.dev",
-      version: "0.0.1",
-      base: "resource://builtin-addons/nip/"
-    }];
+    const configs = [
+      {
+        id: "experimentapi-ssi@teatwo.dev",
+        version: "0.0.1",
+        base: "resource://builtin-addons/ssi/",
+      },
+      {
+        id: "builtin-nip@teatwo.dev",
+        version: "0.0.1",
+        base: "resource://builtin-addons/nip/",
+      },
+    ];
 
     for (const config of configs) {
       let addon = await lazy.AddonManager.getAddonByID(config.id);
 
       // first time install of addon and install on firefox update
       addon =
-      (await lazy.AddonManager.maybeInstallBuiltinAddon(
-        config.id,
-        config.version,
-        config.base
-      )) || addon;
-  
+        (await lazy.AddonManager.maybeInstallBuiltinAddon(
+          config.id,
+          config.version,
+          config.base
+        )) || addon;
       if (!addon.isActive) {
         addon.enable({ allowSystemAddons: true });
       }

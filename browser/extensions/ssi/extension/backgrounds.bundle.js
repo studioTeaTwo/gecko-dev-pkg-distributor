@@ -1117,15 +1117,28 @@ const doNostrAction = async (action, args, origin, tabId) => {
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
-            const event = JSON.parse(args);
-            event.pubkey = decodeNpub(state_1.state.nostr.npub);
-            // Sign
+            if (typeof args.message !== "string") {
+                throw new Error("Invalid message");
+            }
+            if (!validateEvent(args.event)) {
+                throw new Error("Invalid event");
+            }
+            const message = args.message;
+            const event = args.event;
+            event.pubkey = decodeNpub(state_1.state.nostr.npub); // override to verify
             const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
-            const signature = await browser.ssi.nostr.sign(eventHash);
-            event.id = eventHash;
-            event.sig = signature;
-            return event;
+            if (message !== eventHash) {
+                throw new Error("Invalid message");
+            }
+            // Sign
+            const signature = await browser.ssi.nostr.sign(message);
+            if (!signature) {
+                throw new Error("Failed to sign");
+            }
+            return signature;
         }
+        default:
+            throw new Error("Not implemented");
     }
 };
 exports.doNostrAction = doNostrAction;
@@ -1134,7 +1147,7 @@ async function init() {
     // Get the existing credential from the ssi store.
     state_1.state.nostr.credentialName = "nsec";
     const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
-    if (credentials.length > 0) {
+    if (credentials.length) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
             npub: credentials[0].identifier,
@@ -1143,12 +1156,12 @@ async function init() {
     // Get setting values from the prefs.
     const results = await browser.ssi.nostr.getPrefs();
     const prefs = {};
-    Object.entries(MapBetweenPrefAndState).map(([state, pref]) => {
-        prefs[state] = results[pref];
+    Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+        prefs[_state] = results[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        prefs: prefs,
+        prefs,
     };
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr, credentials);
 }
@@ -1181,8 +1194,8 @@ const onPrimaryChangedCallback = async () => {
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
     const stateName = Object.entries(MapBetweenPrefAndState)
-        .filter(([state, pref]) => pref === prefKey)
-        .map(([state, pref]) => state)[0];
+        .filter(([_state, _pref]) => _pref === prefKey)
+        .map(([_state, _pref]) => _state)[0];
     const newVal = !state_1.state.nostr.prefs[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
@@ -1234,7 +1247,7 @@ function decodeNpub(npub) {
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
     return (0, utils_1.bytesToHex)(new Uint8Array(base_1.bech32.fromWords(words)));
 }
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/b9a7f814aaa08a4b1cec705517b664390abd3f69/event.ts#L95
+// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event) {
     if (!(event instanceof Object))
         return false;
@@ -1244,7 +1257,10 @@ function validateEvent(event) {
         return false;
     if (typeof event.created_at !== "number")
         return false;
-    // ignore pubkey checks because if the pubkey is not set we add it to the event. same for the ID.
+    if (typeof event.pubkey !== "string")
+        return false;
+    if (!event.pubkey.match(/^[a-f0-9]{64}$/))
+        return false;
     if (!Array.isArray(event.tags))
         return false;
     for (let i = 0; i < event.tags.length; i++) {
@@ -1258,7 +1274,7 @@ function validateEvent(event) {
     }
     return true;
 }
-// from: https://github.com/nbd-wtf/nostr-tools/blob/160987472fd4922dd80c75648ca8939dd2d96cc0/event.ts#L42
+// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
 function serializeEvent(event) {
     if (!validateEvent(event))
         throw new Error("can't serialize event with wrong or missing properties");

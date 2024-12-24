@@ -1,0 +1,92 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "ssi",
+    "description": "That's to realize the self-sovereign identity.",
+    "permissions": ["ssi"],
+    "functions": [
+      {
+        "name": "searchCredentialsWithoutSecret",
+        "type": "function",
+        "description": "return the requested credentials without secret",
+        "async": true,
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "option": true,
+            "description": "The protocol name to search"
+          },
+          {
+            "name": "credentialName",
+            "type": "string",
+            "option": true,
+            "description": "The credential name to search"
+          },
+          {
+            "name": "primary",
+            "type": "boolean",
+            "option": true,
+            "default": true,
+            "description": "The primary flag to search"
+          }
+        ]
+      },
+      {
+        "name": "askPermission",
+        "type": "function",
+        "description": "Ask the user whether to give a permission to the requsting web app",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name targeted"
+          },
+          {
+            "name": "credentialName",
+            "type": "string",
+            "description": "The credential name targeted"
+          },
+          {
+            "name": "tabId",
+            "type": "number",
+            "description": "The current tab id"
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "option": true,
+            "description": "The message displayed on the Auth dialog"
+          }
+        ],
+        "async": true
+      },
+      {
+        "name": "askPermissionChild",
+        "type": "function",
+        "description": "Ask the user whether to give a permission to the requsting web app",
+        "parameters": [
+          {
+            "name": "protocolName",
+            "type": "string",
+            "description": "The protocol name targeted"
+          }
+        ],
+        "async": true
+      }
+    ]
+  }
+]
