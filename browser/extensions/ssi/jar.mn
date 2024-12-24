@@ -5,4 +5,3 @@
 browser.jar:
 %   resource builtin-addons %builtin-addons/  contentaccessible=yes
     builtin-addons/ssi (extension/**)
-    builtin-addons/ssi/experiment-apis (experiment-apis/**)

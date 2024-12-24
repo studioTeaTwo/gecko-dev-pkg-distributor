@@ -1,6 +1,22 @@
 [
   {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi"]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "ssi",
+    "description": "That's to realize the self-sovereign identity.",
+    "permissions": ["ssi"],
     "functions": [
       {
         "name": "searchCredentialsWithoutSecret",

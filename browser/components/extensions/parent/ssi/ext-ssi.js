@@ -2,28 +2,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-"use strict"
+"use strict";
 
 /* globals ExtensionAPI, Services, ChromeUtils, AppConstants */
 
 // lazy is shared with other parent experiment-apis
-let lazy = {}
+let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
-  experimentApiSsiHelper:
-    "resource://builtin-addons/ssi/experiment-apis/ssiHelper.sys.mjs",
-})
+  browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
+});
 
-const AUTH_TIMEOUT_MS = 24 * 60 * 60 * 1000 // 1 day
-const INITIAL_EXPIRATIONTIME = Number.NEGATIVE_INFINITY
-const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-ssi-required"
-const MESSAGE_ID = "experimentapi-ssi-access-authlocked-os-auth-dialog-message"
+const INITIAL_EXPIRATIONTIME = Number.NEGATIVE_INFINITY;
+const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
-    const { tabManager } = context.extension
+    const { tabManager } = context.extension;
     // TODO(ssb): persist
-    let _authExpirationTimes = new Map()
+    let _authExpirationTimes = new Map();
 
     return {
       ssi: {
@@ -37,56 +34,52 @@ this.ssi = class extends ExtensionAPI {
             nostr: Services.prefs.getBoolPref(
               `selfsovereignidentity.nostr.enabled`
             ),
-          }
+          };
           const accountChanged = {
             nostr: Services.prefs.getBoolPref(
               `selfsovereignidentity.nostr.event.accountChanged.enabled`
             ),
-          }
+          };
 
           try {
             // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
-            const params = {}
+            const params = {};
             if (protocolName) {
-              if (
-                !lazy.experimentApiSsiHelper.validateProtocolName(protocolName)
-              ) {
-                return []
+              if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
+                return [];
               }
-              params.protocolName = protocolName
+              params.protocolName = protocolName;
             }
             if (credentialName) {
               if (
-                !lazy.experimentApiSsiHelper.validateCredentialName(
-                  credentialName
-                )
+                !lazy.browserSsiHelper.validateCredentialName(credentialName)
               ) {
-                return []
+                return [];
               }
-              params.credentialName = credentialName
+              params.credentialName = credentialName;
             }
-            params.primary = primary
+            params.primary = primary;
 
             const credentials =
-              await lazy.SsiHelper.searchCredentialsWithoutSecret(params)
+              await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
 
             return credentials
-              .filter((credential) => {
+              .filter(credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
-                  return false
+                  return false;
                 }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
                   !accountChanged[credential.protocolName]
                 ) {
-                  return credential.primary
+                  return credential.primary;
                 }
 
-                return true
+                return true;
               })
-              .map((credential) => {
+              .map(credential => {
                 // Filter only the data to need
                 const filteredVal = {
                   // credential info
@@ -94,24 +87,23 @@ this.ssi = class extends ExtensionAPI {
                   credentialName: credential.credentialName,
                   identifier: credential.identifier,
                   primary: credential.primary,
-                }
-                return filteredVal
-              })
+                };
+                return filteredVal;
+              });
           } catch (e) {
-            console.error(e)
-            return []
+            console.error(e);
+            return [];
           }
         },
         async askPermission(protocolName, credentialName, tabId, message) {
           // Validate params
-          if (!lazy.experimentApiSsiHelper.validateProtocolName(protocolName)) {
-            return false
+          if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
+            return false;
           }
-          if (
-            !lazy.experimentApiSsiHelper.validateCredentialName(credentialName)
-          ) {
-            return false
+          if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
+            return false;
           }
+          // TODO(ssb): validate message
           // TODO(ssb): validate tabId
           // TODO(ssb): how to make tabId unnecessary
           // const tabs = Array.from(
@@ -127,16 +119,17 @@ this.ssi = class extends ExtensionAPI {
           // Check permission
           const enabled = Services.prefs.getBoolPref(
             `selfsovereignidentity.${protocolName}.enabled`
-          )
+          );
           if (!enabled) {
-            return false
+            return false;
           }
 
           try {
-            const { url, browser } = tabManager.get(tabId)
-            const origin = Services.io.newURI(url).displayPrePath
-            const internalPrefs =
-              await lazy.experimentApiSsiHelper.getInternalPrefs(protocolName)
+            const { url, browser } = tabManager.get(tabId);
+            const origin = Services.io.newURI(url).displayPrePath;
+            const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
+              protocolName
+            );
 
             if (internalPrefs["trustedSites.enabled"]) {
               const credentials =
@@ -144,19 +137,19 @@ this.ssi = class extends ExtensionAPI {
                   protocolName,
                   credentialName,
                   primary: true,
-                })
+                });
               if (credentials.length === 0) {
-                return false
+                return false;
               }
 
-              const trustedSites = JSON.parse(credentials[0].trustedSites)
+              const trustedSites = JSON.parse(credentials[0].trustedSites);
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-              const trusted = trustedSites.some((site) =>
+              const trusted = trustedSites.some(site =>
                 url.startsWith(site.url)
-              )
-              console.log("trusted", trusted, url)
+              );
+              console.log("trusted", trusted, url);
               if (trusted) {
-                return true
+                return true;
               }
               // go to primarypassword auth
             }
@@ -164,20 +157,20 @@ this.ssi = class extends ExtensionAPI {
             if (internalPrefs["primarypassword.toApps.enabled"]) {
               const messageText = {
                 value: `${message || "AUTH LOCK"} \n${origin}`,
-              }
-              const captionText = { value: "" } // FIXME(ssb): not displayed. want to set the origin here.
+              };
+              const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
 
               const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
                 lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-              )
+              );
               if (isOSAuthEnabled) {
-                const messageId = MESSAGE_ID + "-" + AppConstants.platform
+                const messageId = MESSAGE_ID + "-" + AppConstants.platform;
               }
 
-              let _authExpirationTime = _authExpirationTimes.get(origin)
+              let _authExpirationTime = _authExpirationTimes.get(origin);
               if (_authExpirationTime === undefined) {
-                _authExpirationTime = INITIAL_EXPIRATIONTIME
-                _authExpirationTimes.set(origin, INITIAL_EXPIRATIONTIME)
+                _authExpirationTime = INITIAL_EXPIRATIONTIME;
+                _authExpirationTimes.set(origin, INITIAL_EXPIRATIONTIME);
               }
 
               const { isAuthorized, telemetryEvent } =
@@ -187,13 +180,13 @@ this.ssi = class extends ExtensionAPI {
                   _authExpirationTime,
                   messageText.value,
                   captionText.value
-                )
+                );
               if (isAuthorized) {
                 _authExpirationTimes.set(
                   origin,
                   Date.now() +
                     internalPrefs["primarypassword.toApps.expiryTime"]
-                )
+                );
               }
               console.log(
                 "primarypassword",
@@ -201,19 +194,19 @@ this.ssi = class extends ExtensionAPI {
                 telemetryEvent,
                 origin,
                 _authExpirationTimes.get(origin)
-              )
-              return isAuthorized
+              );
+              return isAuthorized;
             }
 
             // NOTE(ssb): Returns true if all settings are explicitly turned off.
             // eslint-disable-next-line no-unneeded-ternary
-            return internalPrefs["trustedSites.enabled"] ? false : true
+            return internalPrefs["trustedSites.enabled"] ? false : true;
           } catch (e) {
-            console.error(e)
-            return false
+            console.error(e);
+            return false;
           }
         },
       },
-    }
+    };
   }
-}
+};
