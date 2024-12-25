@@ -97,7 +97,7 @@ export class NostrProvider {
     )
     const signature = await window.ssi.nostr.sign(eventHash, {
       type: "signEvent",
-      event,
+      event: signedEvent,
     })
     signedEvent.id = eventHash
     signedEvent.sig = signature
