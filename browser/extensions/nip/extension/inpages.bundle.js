@@ -644,7 +644,7 @@ class NostrProvider {
         const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(signedEvent))));
         const signature = await window.ssi.nostr.sign(eventHash, {
             type: "signEvent",
-            event,
+            event: signedEvent,
         });
         signedEvent.id = eventHash;
         signedEvent.sig = signature;
