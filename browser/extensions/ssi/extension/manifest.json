@@ -1,6 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Experiment-API Selfsovereignidentity",
+  "hidden": true,
   "version": "0.0.1",
 
   "browser_specific_settings": {
