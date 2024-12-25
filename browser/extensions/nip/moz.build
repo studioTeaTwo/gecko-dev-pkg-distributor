@@ -4,7 +4,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-JAR_MANIFESTS += ["jar.mn"]
+DEFINES["MOZ_APP_VERSION"] = CONFIG["MOZ_APP_VERSION"]
+DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
+
+FINAL_TARGET_FILES.features["builtin-nip@teatwo.dev"] += [
+    "extension/backgrounds.bundle.js",
+    "extension/contents.bundle.js",
+    "extension/inpages.bundle.js",
+    "extension/manifest.json",
+]
+
+FINAL_TARGET_FILES.features["builtin-nip@teatwo.dev"]["experiment-apis"] += [
+    "experiment-apis/builtinNip.js",
+    "experiment-apis/builtinNip.json",
+]
 
 # BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.toml"]
 
