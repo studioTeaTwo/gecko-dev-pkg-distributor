@@ -2364,7 +2364,7 @@ BrowserGlue.prototype = {
           config.base
         )) || addon;
       if (!addon.isActive) {
-        addon.enable({ allowSystemAddons: true });
+        await addon.enable({ allowSystemAddons: true });
       }
     }
   },
