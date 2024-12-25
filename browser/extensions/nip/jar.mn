@@ -1,0 +1,9 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# For Tor browser, built-in packages for the specific protocols
+browser.jar:
+%   resource builtin-addons %builtin-addons/  contentaccessible=yes
+    builtin-addons/nip (extension/**)
+    builtin-addons/nip/experiment-apis (experiment-apis/**)

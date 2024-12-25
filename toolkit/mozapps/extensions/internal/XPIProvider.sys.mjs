@@ -2560,6 +2560,11 @@ export var XPIProvider = {
         "0.0.1",
         "resource://builtin-addons/ssi/"
       );
+      this.maybeInstallBuiltinAddon(
+        "builtin-nip@teatwo.dev",
+        "0.0.1",
+        "resource://builtin-addons/nip/"
+      );
 
       resolveProviderReady(Promise.all(this.startupPromises));
 
