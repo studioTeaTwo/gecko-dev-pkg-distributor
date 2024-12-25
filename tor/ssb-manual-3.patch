@@ -1,0 +1,45 @@
+diff --git a/browser/extensions/nip/jar.mn b/browser/extensions/nip/jar.mn
+new file mode 100644
+index 0000000000000..4c05dde5df9e8
+--- /dev/null
++++ b/browser/extensions/nip/jar.mn
+@@ -0,0 +1,9 @@
++# This Source Code Form is subject to the terms of the Mozilla Public
++# License, v. 2.0. If a copy of the MPL was not distributed with this
++# file, You can obtain one at http://mozilla.org/MPL/2.0/.
++
++# For Tor browser, built-in packages for the specific protocols
++browser.jar:
++%   resource builtin-addons %builtin-addons/  contentaccessible=yes
++    builtin-addons/nip (extension/**)
++    builtin-addons/nip/experiment-apis (experiment-apis/**)
+diff --git a/browser/extensions/nip/moz.build b/browser/extensions/nip/moz.build
+index 39ae3244b5054..2e1cc6e412b70 100644
+--- a/browser/extensions/nip/moz.build
++++ b/browser/extensions/nip/moz.build
+@@ -4,6 +4,9 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
++# For Tor browser, built-in packages for the specific protocols
++JAR_MANIFESTS += ["jar.mn"]
++
+ DEFINES["MOZ_APP_VERSION"] = CONFIG["MOZ_APP_VERSION"]
+ DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
+ 
+diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+index ee7ddfd68bb06..dd5b4e595b742 100644
+--- a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
++++ b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+@@ -2560,6 +2560,11 @@ export var XPIProvider = {
+         "0.0.1",
+         "resource://builtin-addons/ssi/"
+       );
++      this.maybeInstallBuiltinAddon(
++        "builtin-nip@teatwo.dev",
++        "0.0.1",
++        "resource://builtin-addons/nip/"
++      );
+ 
+       resolveProviderReady(Promise.all(this.startupPromises));
+ 
