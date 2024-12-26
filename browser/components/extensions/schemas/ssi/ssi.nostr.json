@@ -20,14 +20,7 @@
     "events": [
       {
         "name": "onPrimaryChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "newGuid",
-            "type": "string",
-            "description": "The new guid which changed. If it's empty string, so it means all removed."
-          }
-        ]
+        "type": "function"
       },
       {
         "name": "onPrefEnabledChanged",
