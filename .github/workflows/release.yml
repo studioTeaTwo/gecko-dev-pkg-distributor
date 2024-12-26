@@ -14,6 +14,13 @@ on:
         description: symbol name of base browser
         type: string
         default: "esr"
+  push:
+    branches:
+      - 'tmp'
+
+env:
+  base-browser-symbol: ${{ inputs.base-browser-symbol || 'esr' }}
+
 
 jobs:
   get-display-version:
@@ -28,7 +35,7 @@ jobs:
     - name: Get Display Version
       id: get
       run: |
-        echo "display-version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ inputs.base-browser-symbol }}" >> $GITHUB_OUTPUT
+        echo "display-version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}" >> $GITHUB_OUTPUT
 
   get-buildid:
     runs-on: ubuntu-latest
@@ -152,6 +159,7 @@ jobs:
 ################################################ ↑ Mac OS Build ################################################
 
   Deploy-to-installer:
+    if:  ${{ github.event_name == 'workflow_dispatch' }}
     needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version]
     runs-on: ubuntu-latest
     steps:
@@ -221,7 +229,6 @@ jobs:
         fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
         git_user_signingkey: true
     - name: Create a tag with signature
-      continue-on-error: true
       run: |
         git tag -s v${{ needs.get-display-version.outputs.display-version }} -m 'v${{ needs.get-display-version.outputs.display-version }}'
         git push origin v${{ needs.get-display-version.outputs.display-version }}
