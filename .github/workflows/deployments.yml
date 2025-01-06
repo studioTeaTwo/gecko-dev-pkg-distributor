@@ -5,7 +5,7 @@
 # Please write our copyright if you use this file.
 # © 2023 Floorp Projects & Contributors
 
-name: "release"
+name: "Deployments"
 
 on:
   workflow_dispatch:
@@ -15,8 +15,8 @@ on:
         type: string
         default: "esr"
   push:
-    branches:
-      - 'tmp'
+    branches-ignore:
+      - '**-tor**' # another workflow
 
 env:
   base-browser-symbol: ${{ inputs.base-browser-symbol || 'esr' }}
@@ -34,8 +34,10 @@ jobs:
         sparse-checkout: 'browser/config/version_display.txt'
     - name: Get Display Version
       id: get
+      shell: bash -xe {0}
       run: |
-        echo "display-version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}" >> $GITHUB_OUTPUT
+        display_version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}
+        echo "display-version=$display_version" >> $GITHUB_OUTPUT
 
   get-buildid:
     runs-on: ubuntu-latest
@@ -159,7 +161,6 @@ jobs:
 ################################################ ↑ Mac OS Build ################################################
 
   Deploy-to-installer:
-    if:  ${{ github.event_name == 'workflow_dispatch' }}
     needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version]
     runs-on: ubuntu-latest
     steps:
@@ -207,19 +208,6 @@ jobs:
         find . -print | sed -e "s;[^/]*/;|____;g;s;____|; |;g"
         echo "****************************************************************************************************"
 
-    - name: Create hashes.txt file 📝
-      run: |
-        cd /home/runner/downloads/artifacts
-        touch hashes.txt
-        echo "SHA256 hashes" > hashes.txt
-        echo "****************************************************************************************************" >> hashes.txt
-        echo "Linux AArch64" >> hashes.txt
-        sha256sum linux-aarch64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-aarch64.tar.bz2  >> hashes.txt
-        echo "****************************************************************************************************" >> hashes.txt
-        echo "Linux x86_64" >> hashes.txt
-        sha256sum linux-x64/ssb-${{ needs.get-display-version.outputs.display-version }}.linux-x86_64.tar.bz2  >> hashes.txt
-        echo "****************************************************************************************************" >> hashes.txt
-
     - uses: actions/checkout@v4
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
@@ -228,10 +216,36 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
         fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
         git_user_signingkey: true
+        trust_level: 4
     - name: Create a tag with signature
       run: |
         git tag -s v${{ needs.get-display-version.outputs.display-version }} -m 'v${{ needs.get-display-version.outputs.display-version }}'
         git push origin v${{ needs.get-display-version.outputs.display-version }}
+
+    - name: Create verification log
+      run: |
+        VERIFICATION_LOG=verification.txt
+
+        exec 1> >(tee -a $VERIFICATION_LOG)
+        exec 2>&1
+
+        echo "workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        echo
+
+        git tag -v v${{ needs.get-display-version.outputs.display-version }}
+        echo
+
+        sha256sum /home/runner/downloads/artifacts/linux-x64/ssb-*.linux-x86_64.tar.bz2
+        sha256sum /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
+        sha256sum /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
+        sha256sum /home/runner/downloads/artifacts/macOS-x64/ssb-*.macOS-universal.dmg
+        sha256sum /home/runner/downloads/artifacts/linux-x64/LINUX-x86_64.mar
+        sha256sum /home/runner/downloads/artifacts/linux-aarch64/LINUX-aarch64.mar
+        sha256sum /home/runner/downloads/artifacts/windows-x64/WINNT-x86_64.mar
+        sha256sum /home/runner/downloads/artifacts/macOS-x64/DARWIN-Universal.mar
+    - name: Sign verification log
+      run: |
+        gpg --clear-sign verification.txt
 
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
@@ -246,7 +260,8 @@ jobs:
           /home/runner/downloads/artifacts/linux-aarch64/ssb-*.linux-aarch64.tar.bz2
           /home/runner/downloads/artifacts/windows-x64/ssb-*.win64.installer.exe
           /home/runner/downloads/artifacts/macOS-x64/ssb-*.macOS-universal.dmg
-          /home/runner/downloads/artifacts/hashes.txt
+          /home/runner/verification.txt.asc
+        body_path: /home/runner/verification.txt.asc
         tag_name: "v${{ needs.get-display-version.outputs.display-version }}"
         name: "v${{ needs.get-display-version.outputs.display-version }}"
         draft: true

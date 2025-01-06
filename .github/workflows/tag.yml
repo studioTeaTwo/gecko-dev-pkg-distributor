@@ -1,4 +1,4 @@
-name: "create tag"
+name: "create tag test"
 
 on:
   workflow_dispatch:
@@ -19,17 +19,35 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
           fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
           git_user_signingkey: true
+          trust_level: 5
       - name: List keys
-        run: gpg -K
+        run: |
+          gpg -K
       - name: Create a tag with signature
-        continue-on-error: true
         run: |
           if [ -z ${{ inputs.tag-name}} ]; then
             export version=$RANDOM
+            echo "version=$version" >> $GITHUB_ENV
           else
-            export version=${{ inputs.tag-name}}
+            echo "version=${{ inputs.tag-name}}" >> $GITHUB_ENV
           fi
 
           git tag -s v${version} -m "v${version}"
           git tag
           git push origin v${version}
+
+      - name: Create verification log
+        run: |
+          VERIFICATION_LOG=verification.txt
+
+          exec 1> >(tee -a $VERIFICATION_LOG)
+          exec 2>&1
+
+          echo "workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo
+
+          git tag -v v${{ env.version }}
+      - name: Sign verification log
+        run: |
+          gpg --clear-sign verification.txt
+          cat verification.txt.asc
