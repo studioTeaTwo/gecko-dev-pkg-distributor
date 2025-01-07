@@ -8,7 +8,6 @@
 #! SELF HOST DOES NOT SUPPORTED
 #TODO: separate Publish to other workflow
 
-name: "(A) ⚒ macOS Universal Build"
 on:
   workflow_call:
     inputs:
@@ -171,7 +170,7 @@ jobs:
         ./mach --no-interactive bootstrap --application-choice browser
 
         echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> "$GITHUB_ENV"
-        echo "UPDATE_CHANNEL='release'" >> "$GITHUB_ENV"
+        echo "UPDATE_CHANNEL=release" >> "$GITHUB_ENV"
       env:
         GHA_profgen: ${{inputs.profgen}}
         GHA_profdata_jarlog_artifact_name : ${{inputs.build-with-profdata-and-jarlog}}

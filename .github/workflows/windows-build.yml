@@ -169,7 +169,7 @@ jobs:
         ./mach --no-interactive bootstrap --application-choice browser
         echo "export LIB=\"$(cd ~/.mozbuild/clang/lib/clang/* && cd lib/windows && pwd)\"" >> mozconfig
 
-        echo "UPDATE_CHANNEL='release'" >> "$GITHUB_ENV"
+        echo "UPDATE_CHANNEL=release" >> "$GITHUB_ENV"
       env:
         GHA_profgen: ${{inputs.profgen}}
         GHA_aarch64: ${{inputs.aarch64}}

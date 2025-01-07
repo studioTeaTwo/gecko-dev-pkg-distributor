@@ -37,9 +37,9 @@ jobs:
         shell: bash
         run: |
           if [[ $GHA_BUILD_MACHINE != 'macos-13' ]]; then
-            echo "ARCH_TYPE='aarch64'" >> "$GITHUB_ENV"
+            echo "ARCH_TYPE=aarch64" >> "$GITHUB_ENV"
           else
-            echo "ARCH_TYPE='x86_64'" >> "$GITHUB_ENV"
+            echo "ARCH_TYPE=x86_64" >> "$GITHUB_ENV"
           fi
         env:
           GHA_BUILD_MACHINE: ${{ matrix.runs-on }}
