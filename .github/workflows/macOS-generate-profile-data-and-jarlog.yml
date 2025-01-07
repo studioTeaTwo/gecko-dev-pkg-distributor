@@ -24,8 +24,7 @@ jobs:
       - name: Init
         run: |
           sysctl machdep.cpu
-          export RUNNER_USERDIR=`echo ~`
-          echo "RUNNER_USERDIR=$RUNNER_USERDIR" >> $GITHUB_ENV
+          echo "RUNNER_USERDIR=$HOME" >> "$GITHUB_ENV"
           mkdir -p ~/downloads/artifacts
 
       - uses: actions/checkout@v4
@@ -38,11 +37,9 @@ jobs:
         shell: bash
         run: |
           if [[ $GHA_BUILD_MACHINE != 'macos-13' ]]; then
-            export ARCH_TYPE=`echo "aarch64"`
-            echo "ARCH_TYPE=$ARCH_TYPE" >> $GITHUB_ENV
+            echo "ARCH_TYPE='aarch64'" >> "$GITHUB_ENV"
           else
-            export ARCH_TYPE=`echo "x86_64"`
-            echo "ARCH_TYPE=$ARCH_TYPE" >> $GITHUB_ENV
+            echo "ARCH_TYPE='x86_64'" >> "$GITHUB_ENV"
           fi
         env:
           GHA_BUILD_MACHINE: ${{ matrix.runs-on }}
@@ -94,7 +91,7 @@ jobs:
       - name: Generate Profdata 📊
         run: |
           export LLVM_PROFDATA=$RUNNER_USERDIR/.mozbuild/clang/bin/llvm-profdata
-          export JARLOG_FILE="en-US.log"
+          export JARLOG_FILE='en-US.log'
           ./mach python build/pgo/profileserver.py --binary ./obj-${ARCH_TYPE}-apple-darwin/dist/ssb/Nightly.app/Contents/MacOS/ssb
         env:
           GHA_BUILD_MACHINE: ${{ matrix.runs-on }}
