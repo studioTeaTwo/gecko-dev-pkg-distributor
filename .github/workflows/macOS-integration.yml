@@ -111,7 +111,7 @@ jobs:
           shell: bash
           run: |
             ./mach --no-interactive bootstrap --application-choice browser
-            echo -e "ac_add_options --enable-bootstrap" >> mozconfig
+            echo -e 'ac_add_options --enable-bootstrap' >> mozconfig
 
             echo 'mozconfig: **********************'
             cat ./mozconfig
@@ -121,24 +121,24 @@ jobs:
             ls -l ./
             echo '*********************************'
 
-            echo "****************************************************************************************************"
-            echo "folder structure: x86_64-apple-darwin"
+            echo '****************************************************************************************************'
+            echo 'folder structure: x86_64-apple-darwin'
             ls -l ./obj-x86_64-apple-darwin/dist/
-            echo "****************************************************************************************************"
-            echo "folder structure: aarch64-apple-darwin"
+            echo '****************************************************************************************************'
+            echo 'folder structure: aarch64-apple-darwin'
             ls -l ./obj-aarch64-apple-darwin/dist/
-            echo "****************************************************************************************************"
+            echo '****************************************************************************************************'
 
         - name: Integration 🗃
           run: |
-            export APP_NAME="Nightly"
+            export APP_NAME='Nightly'
 
-            ./mach python "./toolkit/mozapps/installer/unify.py" "./obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}.app" "./obj-aarch64-apple-darwin/dist/ssb/${APP_NAME}.app"
+            ./mach python ./toolkit/mozapps/installer/unify.py ./obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}.app ./obj-aarch64-apple-darwin/dist/ssb/${APP_NAME}.app
 
         - name: Create DMG 📦
           run: |
-            export APP_NAME="ssb"
-            export INSTALLER_NAME="ssb"
+            export APP_NAME='ssb'
+            export INSTALLER_NAME='ssb'
             export DMG_FILE_NAME=${INSTALLER_NAME}-${{ inputs.display_version }}.macOS-universal.dmg
 
             ./mach python -m mozbuild.action.make_dmg ./obj-x86_64-apple-darwin/dist/ssb ${DMG_FILE_NAME}
@@ -149,16 +149,16 @@ jobs:
         - name: Create MAR artifact 📦
           if : inputs.mar
           run: |
-            export APP_NAME="Nightly.app"
+            export APP_NAME='Nightly.app'
 
             brew install tree
             chmod +x ./.github/workflows/bin/mar
             chmod +x ./tools/update-packaging/make_full_update.sh
-            touch "obj-x86_64-apple-darwin/dist/ssb/precomplete"
-            MAR=".github/workflows/bin/mar" MOZ_PRODUCT_VERSION=${{ inputs.display_version }} MAR_CHANNEL_ID=release tools/update-packaging/make_full_update.sh ./output/DARWIN-Universal.mar "obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}"
+            touch obj-x86_64-apple-darwin/dist/ssb/precomplete
+            MAR='.github/workflows/bin/mar' MOZ_PRODUCT_VERSION=${{ inputs.display_version }} MAR_CHANNEL_ID='release' tools/update-packaging/make_full_update.sh ./output/DARWIN-Universal.mar obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}
 
-            export MACOS_MAR_SIZE=`stat -f%z ./output/DARWIN-Universal.mar`
-            echo "MACOS_MAR_SIZE=$MACOS_MAR_SIZE" >> $GITHUB_ENV
+            MACOS_MAR_SIZE=$(stat -f%z ./output/DARWIN-Universal.mar)
+            echo "MACOS_MAR_SIZE=$MACOS_MAR_SIZE" >> "$GITHUB_ENV"
 
         - name: make name of publish archive
           shell: node {0}

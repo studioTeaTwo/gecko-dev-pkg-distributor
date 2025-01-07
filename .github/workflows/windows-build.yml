@@ -137,16 +137,20 @@ jobs:
         if [[ $GHA_profgen == 'true' ]]; then
           echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
         elif [[ -n $GHA_profdata_jarlog_artifact_name ]]; then
-          echo 'ac_add_options --enable-profile-use=cross' >> mozconfig
-          echo 'ac_add_options --with-pgo-profile-path=$(echo ~)/artifact/merged.profdata' >> mozconfig
-          echo 'ac_add_options --with-pgo-jarlog=$(echo ~)/artifact/en-US.log' >> mozconfig
+          {
+            echo 'ac_add_options --enable-profile-use=cross'
+            echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
+            echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
+          } >> mozconfig
         fi
 
         # SCCACHE START
-        echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'" >> mozconfig
-        echo "mk_add_options 'export CCACHE_CPP2=yes'" >> mozconfig
-        echo "ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache" >> mozconfig
-        echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'" >> mozconfig
+        {
+          echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
+          echo "mk_add_options 'export CCACHE_CPP2=yes'"
+          echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
+          echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
+        } >> mozconfig
         # SCCACHE END
 
         echo Setup wine
@@ -157,7 +161,7 @@ jobs:
         echo Setup Visual Studio
         sudo apt install -y msitools python3-pip
         ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py build/vs/vs2022.yaml ~/win-cross/vs2022
-        chmod -R +x "$(echo ~)/win-cross/vs2022"
+        chmod -R +x "$HOME/win-cross/vs2022"
         #? from daily-build-with-update
         #? for resolve some problems relate to VCRuntime
         #? from end
@@ -165,7 +169,7 @@ jobs:
         ./mach --no-interactive bootstrap --application-choice browser
         echo "export LIB=\"$(cd ~/.mozbuild/clang/lib/clang/* && cd lib/windows && pwd)\"" >> mozconfig
 
-        echo "UPDATE_CHANNEL=release" >> $GITHUB_ENV
+        echo "UPDATE_CHANNEL='release'" >> "$GITHUB_ENV"
       env:
         GHA_profgen: ${{inputs.profgen}}
         GHA_aarch64: ${{inputs.aarch64}}
@@ -225,11 +229,11 @@ jobs:
       run: |
         mkdir ~/output
         if [[ $GHA_aarch64 == 'true' ]];then
-          arch="aarch64"
-          arch_inst="win64-aarch64"
+          arch='aarch64'
+          arch_inst='win64-aarch64'
         else
-          arch="x86_64"
-          arch_inst="win64"
+          arch='x86_64'
+          arch_inst='win64'
         fi
 
         if [[ $GHA_zstd != 'true' ]];then
@@ -254,16 +258,16 @@ jobs:
       if : inputs.mar
       run: |
         if [[ $GHA_aarch64 == 'true' ]];then
-          arch="aarch64"
+          arch='aarch64'
         else
-          arch="x86_64"
+          arch='x86_64'
         fi
 
-        touch "obj-${arch}-pc-windows-msvc/dist/ssb/precomplete"
-        MAR="obj-${arch}-pc-windows-msvc/dist/host/bin/mar" \
+        touch obj-${arch}-pc-windows-msvc/dist/ssb/precomplete
+        MAR=obj-${arch}-pc-windows-msvc/dist/host/bin/mar \
         MOZ_PRODUCT_VERSION=$(cat browser/config/version_display.txt) \
-        MAR_CHANNEL_ID=release \
-        ./tools/update-packaging/make_full_update.sh ~/output "obj-${arch}-pc-windows-msvc/dist/ssb"
+        MAR_CHANNEL_ID='release' \
+        ./tools/update-packaging/make_full_update.sh ~/output obj-${arch}-pc-windows-msvc/dist/ssb
 
         mv ~/output/*.mar ~/output/WINNT-${arch}.mar
 
