@@ -30,7 +30,7 @@ declare namespace browser.ssi {
       enabled: boolean
     } | null>
     onPrimaryChanged: {
-      addListener: (callback: (newGuid: string) => void) => {}
+      addListener: (callback: () => void) => {}
       rmoveListener: () => void
       hadListener: Function
     }

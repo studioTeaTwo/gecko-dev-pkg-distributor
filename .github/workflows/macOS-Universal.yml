@@ -152,22 +152,26 @@ jobs:
         if [[ $GHA_profgen == 'true' ]]; then
           echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
         elif [[ $GHA_profdata_jarlog_artifact_name == 'true' ]]; then
-          echo 'ac_add_options --enable-profile-use=cross' >> mozconfig
-          echo 'ac_add_options --with-pgo-profile-path=$(echo ~)/artifact/merged.profdata' >> mozconfig
-          echo 'ac_add_options --with-pgo-jarlog=$(echo ~)/artifact/en-US.log' >> mozconfig
+          {
+            echo 'ac_add_options --enable-profile-use=cross'
+            echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
+            echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
+          } >> mozconfig
         fi
 
         # SCCACHE START
-        echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'" >> mozconfig
-        echo "mk_add_options 'export CCACHE_CPP2=yes'" >> mozconfig
-        echo "ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache" >> mozconfig
-        echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'" >> mozconfig
+        {
+          echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
+          echo "mk_add_options 'export CCACHE_CPP2=yes'"
+          echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
+          echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
+        } >> mozconfig
         # SCCACHE END
 
         ./mach --no-interactive bootstrap --application-choice browser
 
-        echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> $GITHUB_ENV
-        echo "UPDATE_CHANNEL=release" >> $GITHUB_ENV
+        echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> "$GITHUB_ENV"
+        echo "UPDATE_CHANNEL='release'" >> "$GITHUB_ENV"
       env:
         GHA_profgen: ${{inputs.profgen}}
         GHA_profdata_jarlog_artifact_name : ${{inputs.build-with-profdata-and-jarlog}}
@@ -223,9 +227,9 @@ jobs:
       run: |
         mkdir ~/output
         if [[ $GHA_ARCH == 'aarch64' ]];then
-          arch="aarch64"
+          arch='aarch64'
         else
-          arch="x86_64"
+          arch='x86_64'
         fi
 
         if [[ $GHA_profgen = 'true' ]];then

@@ -15,7 +15,7 @@ export const browserSsiHelper = {
       return;
     }
 
-    const callback = newGuidPayload => {
+    const callback = () => {
       // Check permission
       const enabled = Services.prefs.getBoolPref(
         `selfsovereignidentity.${protocolName}.enabled`
@@ -27,8 +27,7 @@ export const browserSsiHelper = {
         return;
       }
 
-      const newGuid = newGuidPayload.data;
-      fire.async(newGuid).catch(() => {}); // ignore Message Manager disconnects
+      fire.async().catch(() => {}); // ignore Message Manager disconnects
     };
 
     let obsTopic;
