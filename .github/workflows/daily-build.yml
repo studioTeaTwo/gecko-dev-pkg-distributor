@@ -1,0 +1,13 @@
+name: "Daily build"
+
+on:
+  schedule:
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  daily-build:
+    uses: ./.github/workflows/deployments.yml
+    with:
+      daily-build: true
+    secrets: inherit

@@ -43,7 +43,7 @@ jobs:
           exec 1> >(tee -a $VERIFICATION_LOG)
           exec 2>&1
 
-          echo "workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "workflow run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo
 
           git tag -v v${{ env.version }}
