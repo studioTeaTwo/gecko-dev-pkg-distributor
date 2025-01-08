@@ -34,5 +34,6 @@ git apply ssb-merge-7.patch
 - 80962183
 - 41b8d787
 ### ssb-merge-7.patch
-- 6e7a0fc2
-- 26a03202
+- tor-browser-128.6.0esr-14.0-1-build1
+- eba508a4
+- 628b15ac
