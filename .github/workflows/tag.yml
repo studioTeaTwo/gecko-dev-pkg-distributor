@@ -6,6 +6,13 @@ on:
       tag-name:
         description: 'tag name to create. ex: 0.0.0mvp-128.5.0esr'
         type: string
+      base-browser-symbol:
+        description: symbol name of base browser
+        type: string
+        default: "esr"
+
+env:
+  base-browser-symbol: ${{ inputs.base-browser-symbol || 'esr' }}
 
 jobs:
   tag-creation:
@@ -23,14 +30,19 @@ jobs:
       - name: List keys
         run: |
           gpg -K
+      - name: Get previous tag
+        run: |
+          git fetch origin 'refs/tags/*:refs/tags/*'
+          previous_tag=$(git ls-remote --tags --sort=v:refname origin "v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
+          echo "previous_tag=$previous_tag" >> "$GITHUB_ENV"
       - name: Create a tag with signature
         run: |
           if [ -z ${{ inputs.tag-name}} ]; then
             version=$RANDOM
-            echo "version=$version" >> "$GITHUB_ENV"
           else
-            echo "version=${{ inputs.tag-name}}" >> "$GITHUB_ENV"
+            version=${{ inputs.tag-name}}
           fi
+          echo "version=$version" >> "$GITHUB_ENV"
 
           git tag -s "v${version}" -m "v${version}"
           git tag
@@ -43,10 +55,13 @@ jobs:
           exec 1> >(tee -a $VERIFICATION_LOG)
           exec 2>&1
 
-          echo "workflow run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo 'Distributer: GitHub'
+          echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${version}"
+          echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
           echo
 
-          git tag -v v${{ env.version }}
+          git tag -v v${version}
       - name: Sign verification log
         run: |
           gpg --clear-sign verification.txt
