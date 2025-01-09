@@ -41,6 +41,11 @@ extensions.registerModules({
     scopes: ["addon_child"],
     paths: [["omnibox"]],
   },
+  ssi: {
+    url: "chrome://browser/content/child/ext-ssi.js",
+    scopes: ["addon_child"],
+    paths: [["ssi"]],
+  },
   tabs: {
     url: "chrome://browser/content/child/ext-tabs.js",
     scopes: ["addon_child"],

@@ -1108,7 +1108,7 @@ const doNostrAction = async (action, args, origin, tabId) => {
     if (!state_1.state.nostr.npub) {
         throw new Error(ERR_MSG_NOT_REGISTERED);
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tabId, DialogMessage[action]);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action]);
     if (!trusted) {
         throw new Error(ERR_MSG_NOT_TRUSTED);
     }
@@ -1222,7 +1222,7 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, tab.id, DialogMessage[action]);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action]);
     if (!trusted) {
         browser.tabs
             .sendMessage(tab.id, {

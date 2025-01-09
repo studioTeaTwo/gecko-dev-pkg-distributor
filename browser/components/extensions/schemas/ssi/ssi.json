@@ -61,11 +61,6 @@
             "description": "The credential name targeted"
           },
           {
-            "name": "tabId",
-            "type": "number",
-            "description": "The current tab id"
-          },
-          {
             "name": "message",
             "type": "string",
             "option": true,

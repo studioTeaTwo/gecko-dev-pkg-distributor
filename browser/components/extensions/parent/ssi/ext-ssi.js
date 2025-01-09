@@ -95,27 +95,16 @@ this.ssi = class extends ExtensionAPI {
             return [];
           }
         },
-        async askPermission(protocolName, credentialName, tabId, message) {
+        async askPermission(protocolName, credentialName, message) {
           try {
             // Validate params
+            // TODO(ssb): validate message
             if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
               return false;
             }
             if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
               return false;
             }
-            // TODO(ssb): validate message
-            // TODO(ssb): validate tabId
-            // TODO(ssb): how to make tabId unnecessary
-            // const tabs = Array.from(
-            //   tabManager.query({
-            //     active: true,
-            //     lastFocusedWindow: true,
-            //     url: null,
-            //     cookieStoreId: null,
-            //     title: null,
-            //   })
-            // )
 
             // Check permission
             const enabled = Services.prefs.getBoolPref(
@@ -124,8 +113,11 @@ this.ssi = class extends ExtensionAPI {
             if (!enabled) {
               return false;
             }
+            // TODO(ssb): Background exec check
+            const activeTabId = tabTracker.getId(tabTracker.activeTab);
 
-            const { url, browser } = tabManager.get(tabId);
+            // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
+            const { url, browser } = tabManager.get(activeTabId);
             const origin = Services.io.newURI(url).displayPrePath;
             const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
               protocolName

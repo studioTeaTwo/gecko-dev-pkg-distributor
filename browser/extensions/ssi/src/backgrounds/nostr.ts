@@ -47,7 +47,6 @@ export const doNostrAction = async (
   const trusted = await browser.ssi.askPermission(
     "nostr",
     state.nostr.credentialName,
-    tabId,
     DialogMessage[action]
   )
   if (!trusted) {
@@ -190,7 +189,6 @@ async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
   const trusted = await browser.ssi.askPermission(
     "nostr",
     state.nostr.credentialName,
-    tab.id,
     DialogMessage[action]
   )
   if (!trusted) {

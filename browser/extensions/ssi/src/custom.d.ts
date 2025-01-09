@@ -20,7 +20,6 @@ declare namespace browser.ssi {
   const askPermission: (
     protocolName: ProtocolName,
     credentialName: string,
-    tabId: number,
     message?: string
   ) => Promise<boolean>
   const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>
