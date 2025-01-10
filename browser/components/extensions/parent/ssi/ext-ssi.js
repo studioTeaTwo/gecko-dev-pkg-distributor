@@ -117,8 +117,10 @@ this.ssi = class extends ExtensionAPI {
             const activeTabId = tabTracker.getId(tabTracker.activeTab);
 
             // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
-            const { url, browser } = tabManager.get(activeTabId);
-            const origin = Services.io.newURI(url).displayPrePath;
+            const { browser } = tabManager.get(activeTabId);
+            const originSite = browser.contentPrincipal.originNoSuffix;
+            const originExtension =
+              context.xulBrowser.contentPrincipal.originNoSuffix;
             const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
               protocolName
             );
@@ -136,10 +138,13 @@ this.ssi = class extends ExtensionAPI {
 
               const trustedSites = JSON.parse(credentials[0].trustedSites);
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-              const trusted = trustedSites.some(site =>
-                url.startsWith(site.url)
+              // TODO(ssb): Number of cases for sites and extensions
+              const trusted = trustedSites.some(
+                site =>
+                  originSite.startsWith(site.url) &&
+                  originExtension.startsWith(site.url)
               );
-              console.log("trusted", trusted, url);
+              console.log("trusted", trusted, originSite, originExtension);
               if (trusted) {
                 return true;
               }
@@ -148,7 +153,7 @@ this.ssi = class extends ExtensionAPI {
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
               const messageText = {
-                value: `${message || "AUTH LOCK"} \n${origin}`,
+                value: `${message || "AUTH LOCK"} \n${originSite}`,
               };
               const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
 
@@ -159,10 +164,10 @@ this.ssi = class extends ExtensionAPI {
                 const messageId = MESSAGE_ID + "-" + AppConstants.platform;
               }
 
-              let _authExpirationTime = _authExpirationTimes.get(origin);
+              let _authExpirationTime = _authExpirationTimes.get(originSite);
               if (_authExpirationTime === undefined) {
                 _authExpirationTime = INITIAL_EXPIRATIONTIME;
-                _authExpirationTimes.set(origin, INITIAL_EXPIRATIONTIME);
+                _authExpirationTimes.set(originSite, INITIAL_EXPIRATIONTIME);
               }
 
               const { isAuthorized, telemetryEvent } =
@@ -175,7 +180,7 @@ this.ssi = class extends ExtensionAPI {
                 );
               if (isAuthorized) {
                 _authExpirationTimes.set(
-                  origin,
+                  originSite,
                   Date.now() +
                     internalPrefs["primarypassword.toApps.expiryTime"]
                 );
@@ -184,8 +189,8 @@ this.ssi = class extends ExtensionAPI {
                 "primarypassword",
                 isAuthorized,
                 telemetryEvent,
-                origin,
-                _authExpirationTimes.get(origin)
+                originSite,
+                _authExpirationTimes.get(originSite)
               );
               if (isAuthorized) {
                 return true;

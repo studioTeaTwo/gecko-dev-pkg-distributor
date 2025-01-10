@@ -82,6 +82,21 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
     [credentials]
   )
+  const defaultTrustedSites = useMemo(
+    () => [
+      ...DefaultTrustedSites,
+      ...prefs.addons.map((addon) => ({
+        name: addon.name,
+        url: addon.url,
+        permissions: {
+          read: true,
+          write: true,
+          admin: true,
+        },
+      })),
+    ],
+    [prefs.addons]
+  )
 
   const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
@@ -104,7 +119,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       identifier: npubkey,
       secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
-      trustedSites: DefaultTrustedSites,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
       },
@@ -138,6 +153,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       identifier: npubkey,
       secret: bytesToHex(seckey as Uint8Array),
       primary: nostrkeys.length === 0,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
       },
@@ -149,7 +165,17 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     // because here is no guid yet.
   }
 
-  const handleChangePrimary = (checked, item: Credential) => {
+  const handleChangePrimary = async (checked, item: Credential) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      )
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true)
+        return
+      }
+    }
+
     let newPrimaryGuid = ""
 
     if (checked === true) {
@@ -157,7 +183,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       const prevs = nostrkeys.filter((key) => key.primary)
       for (const prev of prevs) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: false,
         })
       }
@@ -167,7 +193,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       const prev = nostrkeys.find((key) => !key.primary)
       if (prev) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: true,
         })
         newPrimaryGuid = prev.guid
@@ -175,7 +201,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     }
 
     modifyCredentialToStore({
-      ...item,
+      guid: item.guid,
       primary: checked,
     })
 
@@ -202,7 +228,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       const prev = nostrkeys.find((key) => !key.primary)
       if (prev) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: true,
         })
       }
@@ -321,7 +347,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                       defaultValue={item.properties.displayName}
                       onSubmit={(value) =>
                         modifyCredentialToStore({
-                          ...item,
+                          guid: item.guid,
                           properties: {
                             ...item.properties,
                             displayName: value,

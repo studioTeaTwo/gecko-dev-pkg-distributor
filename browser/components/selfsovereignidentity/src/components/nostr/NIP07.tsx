@@ -36,12 +36,13 @@ interface NostrCredential extends Credential {
 const SafeProtocols = ["http", "https", "moz-extension"]
 export const DefaultTrustedSites = [
   {
+    name: "",
     url: "http://localhost",
     permissions: { read: true, write: true, admin: true },
   },
 ]
 
-const OneDay = 24 * 60 * 60 * 1000
+const OneHour = 60 * 60 * 1000
 
 export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props
@@ -74,7 +75,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   }
 
   const handleNewSiteChange = (e) => setNewSite(e.target.value)
-  const handleRegistSite = async (
+  const handleRegisterSite = async (
     e:
       | React.MouseEvent<HTMLButtonElement, MouseEvent>
       | React.KeyboardEvent<HTMLInputElement>
@@ -104,19 +105,23 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     }
 
     for (const item of nostrkeys) {
-      modifyCredentialToStore({
-        ...item,
-        trustedSites: item.trustedSites.concat([
-          {
+      modifyCredentialToStore(
+        {
+          guid: item.guid,
+          trustedSites: item.trustedSites.concat({
+            name: "",
             url: newSite,
             permissions: {
               read: true,
               write: true,
               admin: true,
             },
-          },
-        ]),
-      })
+          }),
+        },
+        newSite.startsWith("moz-extension")
+          ? { newExtensionForTrustedSite: newSite }
+          : null
+      )
     }
   }
 
@@ -133,7 +138,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
     for (const item of nostrkeys) {
       modifyCredentialToStore({
-        ...item,
+        guid: item.guid,
         trustedSites: item.trustedSites.filter(
           (site) => site.url !== removedSite.url
         ),
@@ -157,6 +162,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             <GridItem>
               <Heading as="h5" size="sm">
                 {site.url}
+                {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
               </Heading>
             </GridItem>
             <GridItem>
@@ -165,7 +171,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                 colorScheme="blue"
                 onClick={() => handleRemoveSite(site)}
               >
-                remove
+                Remove from All keys
               </Button>
             </GridItem>
           </>
@@ -208,7 +214,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
     onPrefChanged({
       protocolName: "nostr",
-      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneDay,
+      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour,
     })
   }
 
@@ -270,17 +276,17 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
               <>
                 <GridItem>
                   <label htmlFor="nostr-pref-expiryTimeForPrimarypasswordToApps">
-                    Expiry Day
+                    Expiry Hour
                   </label>
                 </GridItem>
                 <GridItem>
                   <NumberInput
                     id="nostr-pref-expiryTimeForPrimarypasswordToApps"
                     value={
-                      prefs.nostr.expiryTimeForPrimarypasswordToApps / OneDay
+                      prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour
                     }
                     onChange={handleExpiryTimeForPrimarypasswordToApps}
-                    min={1}
+                    min={0}
                     size="sm"
                     maxW={20}
                   >
@@ -335,7 +341,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   onChange={handleNewSiteChange}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
-                      handleRegistSite(e)
+                      handleRegisterSite(e)
                     }
                   }}
                   maxW="500px"
@@ -343,9 +349,9 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                 <Button
                   variant="outline"
                   colorScheme="blue"
-                  onClick={handleRegistSite}
+                  onClick={handleRegisterSite}
                 >
-                  Regist
+                  Register to All keys
                 </Button>
               </InputGroup>
             </GridItem>

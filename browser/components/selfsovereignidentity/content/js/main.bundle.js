@@ -349,11 +349,11 @@ function addCredentialToStore(credential) {
     })
   );
 }
-function modifyCredentialToStore(credential) {
+function modifyCredentialToStore(credential, options) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityUpdateCredential", {
       bubbles: true,
-      detail: transformToPayload(credential)
+      detail: { credential: transformToPayload(credential), options }
     })
   );
 }
@@ -409,8 +409,12 @@ const dispatchEvents = {
 };
 function transformToPayload(credential) {
   const newVal = { ...credential };
-  newVal.trustedSites = JSON.stringify(credential.trustedSites);
-  newVal.properties = JSON.stringify(credential.properties);
+  if (credential.trustedSites) {
+    newVal.trustedSites = JSON.stringify(credential.trustedSites);
+  }
+  if (credential.properties) {
+    newVal.properties = JSON.stringify(credential.properties);
+  }
   return newVal;
 }
 function transformCredentialsFromStore(credentialForPayloads) {
@@ -437,7 +441,8 @@ function useChildActorEvent() {
       usedTrustedSites: false,
       usedBuiltinNip07: true,
       usedAccountChanged: true
-    }
+    },
+    addons: []
   });
   const [credentials, setCredentials] = reactExports.useState([]);
   const [credentialsFromStore, setCredentialsFromStore] = reactExports.useState([null, []]);
@@ -487,6 +492,7 @@ function useChildActorEvent() {
           event.detail.value.credentials
         );
         setCredentialsFromStore(["get", newState]);
+        setPrefs((prev) => ({ ...prev, addons: event.detail.value.addons }));
         break;
       }
       case "CredentialAdded": {
@@ -666,11 +672,12 @@ function Secret(props) {
 const SafeProtocols = ["http", "https", "moz-extension"];
 const DefaultTrustedSites = [
   {
+    name: "",
     url: "http://localhost",
     permissions: { read: true, write: true, admin: true }
   }
 ];
-const OneDay = 24 * 60 * 60 * 1e3;
+const OneHour = 60 * 60 * 1e3;
 function NIP07(props) {
   const { prefs, credentials } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
@@ -694,7 +701,7 @@ function NIP07(props) {
     onPrefChanged2({ protocolName: "nostr", usedTrustedSites: checked });
   };
   const handleNewSiteChange = (e) => setNewSite(e.target.value);
-  const handleRegistSite = async (e) => {
+  const handleRegisterSite = async (e) => {
     e.preventDefault();
     if (!SafeProtocols.some((protocol) => newSite.startsWith(protocol))) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
@@ -717,19 +724,21 @@ function NIP07(props) {
       }
     }
     for (const item of nostrkeys) {
-      modifyCredentialToStore2({
-        ...item,
-        trustedSites: item.trustedSites.concat([
-          {
+      modifyCredentialToStore2(
+        {
+          guid: item.guid,
+          trustedSites: item.trustedSites.concat({
+            name: "",
             url: newSite,
             permissions: {
               read: true,
               write: true,
               admin: true
             }
-          }
-        ])
-      });
+          })
+        },
+        newSite.startsWith("moz-extension") ? { newExtensionForTrustedSite: newSite } : null
+      );
     }
   };
   const handleRemoveSite = async (removedSite) => {
@@ -744,7 +753,7 @@ function NIP07(props) {
     }
     for (const item of nostrkeys) {
       modifyCredentialToStore2({
-        ...item,
+        guid: item.guid,
         trustedSites: item.trustedSites.filter(
           (site) => site.url !== removedSite.url
         )
@@ -758,14 +767,21 @@ function NIP07(props) {
       )
     ).map((site) => JSON.parse(site));
     return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "sm", children: site.url }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
+        site.url,
+        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          " (",
+          site.name,
+          ")"
+        ] })
+      ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         Button,
         {
           variant: "outline",
           colorScheme: "blue",
           onClick: () => handleRemoveSite(site),
-          children: "remove"
+          children: "Remove from All keys"
         }
       ) })
     ] })) });
@@ -797,7 +813,7 @@ function NIP07(props) {
     }
     onPrefChanged2({
       protocolName: "nostr",
-      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneDay
+      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour
     });
   };
   const handleUsedAccountChanged = (e) => {
@@ -838,14 +854,14 @@ function NIP07(props) {
               }
             ) }),
             prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Day" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Hour" }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 NumberInput,
                 {
                   id: "nostr-pref-expiryTimeForPrimarypasswordToApps",
-                  value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneDay,
+                  value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour,
                   onChange: handleExpiryTimeForPrimarypasswordToApps,
-                  min: 1,
+                  min: 0,
                   size: "sm",
                   maxW: 20,
                   children: [
@@ -889,7 +905,7 @@ function NIP07(props) {
                   onChange: handleNewSiteChange,
                   onKeyPress: (e) => {
                     if (e.key === "Enter") {
-                      handleRegistSite(e);
+                      handleRegisterSite(e);
                     }
                   },
                   maxW: "500px"
@@ -900,8 +916,8 @@ function NIP07(props) {
                 {
                   variant: "outline",
                   colorScheme: "blue",
-                  onClick: handleRegistSite,
-                  children: "Regist"
+                  onClick: handleRegisterSite,
+                  children: "Register to All keys"
                 }
               )
             ] }) }),
@@ -951,6 +967,21 @@ function Nostr$2(props) {
     () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
     [credentials]
   );
+  const defaultTrustedSites = reactExports.useMemo(
+    () => [
+      ...DefaultTrustedSites,
+      ...prefs.addons.map((addon) => ({
+        name: addon.name,
+        url: addon.url,
+        permissions: {
+          read: true,
+          write: true,
+          admin: true
+        }
+      }))
+    ],
+    [prefs.addons]
+  );
   const handleEnable = (e) => {
     e.preventDefault();
     const checked = e.target.checked;
@@ -966,7 +997,7 @@ function Nostr$2(props) {
       identifier: npubkey,
       secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
-      trustedSites: DefaultTrustedSites,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey
       }
@@ -992,19 +1023,29 @@ function Nostr$2(props) {
       identifier: npubkey,
       secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey
       }
     });
     setImportedKey("");
   };
-  const handleChangePrimary = (checked, item) => {
+  const handleChangePrimary = async (checked, item) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
     let newPrimaryGuid = "";
     if (checked === true) {
       const prevs = nostrkeys.filter((key) => key.primary);
       for (const prev of prevs) {
         modifyCredentialToStore2({
-          ...prev,
+          guid: prev.guid,
           primary: false
         });
       }
@@ -1013,14 +1054,14 @@ function Nostr$2(props) {
       const prev = nostrkeys.find((key) => !key.primary);
       if (prev) {
         modifyCredentialToStore2({
-          ...prev,
+          guid: prev.guid,
           primary: true
         });
         newPrimaryGuid = prev.guid;
       }
     }
     modifyCredentialToStore2({
-      ...item,
+      guid: item.guid,
       primary: checked
     });
     onPrimaryChanged2({ protocolName: "nostr", guid: newPrimaryGuid });
@@ -1042,7 +1083,7 @@ function Nostr$2(props) {
       const prev = nostrkeys.find((key) => !key.primary);
       if (prev) {
         modifyCredentialToStore2({
-          ...prev,
+          guid: prev.guid,
           primary: true
         });
       }
@@ -1143,7 +1184,7 @@ function Nostr$2(props) {
                 {
                   defaultValue: item.properties.displayName,
                   onSubmit: (value) => modifyCredentialToStore2({
-                    ...item,
+                    guid: item.guid,
                     properties: {
                       ...item.properties,
                       displayName: value

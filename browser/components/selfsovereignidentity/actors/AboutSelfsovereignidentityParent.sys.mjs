@@ -11,6 +11,7 @@ import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs"
 const lazy = {}
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  Extension: "resource://gre/modules/Extension.sys.mjs",
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 })
 
@@ -22,7 +23,7 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
 //   return new Localization(["branding/brand.ftl", "browser/aboutSelfsovereignidentity.ftl"])
 // })
 
-const ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN = "about:selfsovereignidentity"
+const ABOUT_SELFSOVEREIGNIDENTITY_ORIGIN = "about:selfsovereignidentity"
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 const PRIMARY_PASSWORD_NOTIFICATION_ID = "primary-password-login-required"
 
@@ -81,7 +82,7 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
         break
       }
       case "AboutSelfsovereignidentity:UpdateCredential": {
-        this.#updateCredential(message.data.credential)
+        this.#updateCredential(message.data.changeSet)
         break
       }
       case "AboutSelfsovereignidentity:RemoveAllCredentials": {
@@ -205,9 +206,13 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     AboutSelfsovereignidentity.addObservers()
 
     const credentials = await AboutSelfsovereignidentity.getAllCredentials()
+    const ssi = WebExtensionPolicy.getByID(
+      "experimentapi-ssi@teatwo.dev"
+    )?.extension
     try {
       this.sendAsyncMessage("AboutSelfsovereignidentity:Setup", {
         credentials,
+        addons: [{ id: ssi.id, name: ssi.name, url: ssi.getURL() }],
         primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
         passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
       })
@@ -224,33 +229,45 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     }
   }
 
-  async #updateCredential(credentialUpdates) {
+  async #updateCredential(changeSet) {
     let credentials = await Services.ssi.searchCredentialsAsync({
-      guid: credentialUpdates.guid,
+      guid: changeSet.credential.guid,
     })
     if (credentials.length != 1) {
       lazy.log.warn(
-        `AboutSelfsovereignidentity:UpdateCredential: expected to find a credential for guid: ${credentialUpdates.guid} but found ${credentials.length}`
+        `AboutSelfsovereignidentity:UpdateCredential: expected to find a credential for guid: ${changeSet.credential.guid} but found ${credentials.length}`
       )
       return
     }
 
     let modifiedCredential = credentials[0].clone()
-    if (credentialUpdates.hasOwnProperty("primary")) {
-      modifiedCredential.primary = credentialUpdates.primary
+    if (changeSet.credential.hasOwnProperty("primary")) {
+      modifiedCredential.primary = changeSet.credential.primary
     }
-    if (credentialUpdates.hasOwnProperty("secret")) {
-      modifiedCredential.secret = credentialUpdates.secret
+    if (changeSet.credential.hasOwnProperty("secret")) {
+      modifiedCredential.secret = changeSet.credential.secret
     }
-    if (credentialUpdates.hasOwnProperty("identifier")) {
-      modifiedCredential.identifier = credentialUpdates.identifier
+    if (changeSet.credential.hasOwnProperty("identifier")) {
+      modifiedCredential.identifier = changeSet.credential.identifier
     }
-    if (credentialUpdates.hasOwnProperty("trustedSites")) {
-      modifiedCredential.trustedSites = credentialUpdates.trustedSites
+    if (changeSet.credential.hasOwnProperty("trustedSites")) {
+      if (changeSet.options && changeSet.options.newExtensionForTrustedSite) {
+        const policy = WebExtensionPolicy.getByURI(
+          Services.io.newURI(changeSet.options.newExtensionForTrustedSite)
+        )
+        const parsed = JSON.parse(changeSet.credential.trustedSites)
+        const idx = parsed.findIndex(
+          (site) => site.url === changeSet.options.newExtensionForTrustedSite
+        )
+        parsed[idx].name = policy ? policy.extension.name : "N/A"
+        changeSet.credential.trustedSites = JSON.stringify(parsed)
+      }
+      modifiedCredential.trustedSites = changeSet.credential.trustedSites
     }
-    if (credentialUpdates.hasOwnProperty("properties")) {
-      modifiedCredential.properties = credentialUpdates.properties
+    if (changeSet.credential.hasOwnProperty("properties")) {
+      modifiedCredential.properties = changeSet.credential.properties
     }
+
     try {
       Services.ssi.modifyCredential(credentials[0], modifiedCredential)
     } catch (error) {
@@ -380,7 +397,7 @@ class AboutSelfsovereignidentityInternal {
       case "ssi-storage-changed": {
         switch (type) {
           case "addCredential": {
-            await this.#addCredential(subject)
+            this.#addCredential(subject)
             break
           }
           case "modifyCredential": {
@@ -400,7 +417,7 @@ class AboutSelfsovereignidentityInternal {
     }
   }
 
-  async #addCredential(subject) {
+  #addCredential(subject) {
     const credential = convertSubjectToCredential(subject)
     if (!credential) {
       return
@@ -412,7 +429,7 @@ class AboutSelfsovereignidentityInternal {
     )
   }
 
-  async #modifyCredential(subject) {
+  #modifyCredential(subject) {
     subject.QueryInterface(Ci.nsIArrayExtensions)
     const credential = convertSubjectToCredential(subject.GetElementAt(1))
     if (!credential) {
@@ -542,7 +559,7 @@ class AboutSelfsovereignidentityInternal {
         browser?.remoteType != EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE
         // FIXME(ssb): not working because `URI_SAFE_FOR_UNTRUSTED_CONTENT` has been removed from AboutSelfsovereignidentity process.
         // || browser?.contentPrincipal?.originNoSuffix !=
-        //   ABOUT_ABOUTSELFSOVEREIGNIDENTITY_ORIGIN
+        //   ABOUT_SELFSOVEREIGNIDENTITY_ORIGIN
       ) {
         this.subscribers.delete(subscriber)
         continue

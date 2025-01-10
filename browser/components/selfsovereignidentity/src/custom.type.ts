@@ -17,6 +17,7 @@ export interface SelfsovereignidentityPrefs {
   nostr: {
     usedBuiltinNip07: boolean // selfsovereignidentity.nostr.builtinNip07.enabled
   } & SelfsovereignidentityDefaultPrefs
+  addons: { id: string; name: string; url: string }[] // built-in addons list
 }
 
 /**
@@ -37,6 +38,7 @@ export interface Credential {
   secret: string
   identifier: string
   trustedSites: {
+    name: string
     url: string
     permissions: {
       read: boolean

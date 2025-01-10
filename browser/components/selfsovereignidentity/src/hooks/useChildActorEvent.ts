@@ -36,11 +36,14 @@ function addCredentialToStore(credential: Credential) {
   )
 }
 
-function modifyCredentialToStore(credential: Credential) {
+function modifyCredentialToStore(
+  credential: Partial<Credential>,
+  options?: { newExtensionForTrustedSite: string }
+) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityUpdateCredential", {
       bubbles: true,
-      detail: transformToPayload(credential),
+      detail: { credential: transformToPayload(credential), options },
     })
   )
 }
@@ -115,10 +118,14 @@ export const dispatchEvents = {
  *
  */
 
-function transformToPayload(credential: Credential) {
+function transformToPayload(credential: Partial<Credential>) {
   const newVal = { ...credential } as unknown as CredentialForPayload
-  newVal.trustedSites = JSON.stringify(credential.trustedSites)
-  newVal.properties = JSON.stringify(credential.properties)
+  if (credential.trustedSites) {
+    newVal.trustedSites = JSON.stringify(credential.trustedSites)
+  }
+  if (credential.properties) {
+    newVal.properties = JSON.stringify(credential.properties)
+  }
   return newVal
 }
 
@@ -152,6 +159,7 @@ export default function useChildActorEvent() {
       usedBuiltinNip07: true,
       usedAccountChanged: true,
     },
+    addons: [],
   })
   const [credentials, setCredentials] = useState<Credential[]>([])
   const [credentialsFromStore, setCredentialsFromStore] = useState<
@@ -209,6 +217,7 @@ export default function useChildActorEvent() {
           event.detail.value.credentials
         )
         setCredentialsFromStore(["get", newState])
+        setPrefs((prev) => ({ ...prev, addons: event.detail.value.addons }))
         break
       }
       case "CredentialAdded": {

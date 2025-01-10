@@ -197,9 +197,9 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
     this.sendAsyncMessage("AboutSelfsovereignidentity:RemoveAllCredentials")
   }
 
-  #aboutIdentityUpdateCredential(credential) {
+  #aboutIdentityUpdateCredential(changeSet) {
     this.sendAsyncMessage("AboutSelfsovereignidentity:UpdateCredential", {
-      credential,
+      changeSet,
     })
   }
 
