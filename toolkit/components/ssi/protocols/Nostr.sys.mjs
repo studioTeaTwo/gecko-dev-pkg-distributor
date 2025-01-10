@@ -8,5 +8,5 @@ export const Nostr = {
   async sign(message, guid) {
     const signature = await Bitcoin.BIP340.sign(message, guid);
     return signature;
-  },
-};
+  }
+}

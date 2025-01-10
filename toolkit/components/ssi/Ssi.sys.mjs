@@ -114,7 +114,10 @@ Ssi.prototype = {
           await this._ssi._storage.terminate();
           this._ssi._initStorage();
           await this._ssi.initializationPromise;
-          Services.obs.notifyObservers(null, "ssi-storage-replace-complete");
+          Services.obs.notifyObservers(
+            null,
+            "ssi-storage-replace-complete"
+          );
         })();
       } else if (topic == "gather-telemetry") {
         // When testing, the "data" parameter is a string containing the
@@ -229,8 +232,6 @@ Ssi.prototype = {
 
   /**
    * Add a new credential to credential storage.
-   *
-   * @param credential
    */
   async addCredentialAsync(credential) {
     this._checkCredential(credential);
@@ -244,8 +245,6 @@ Ssi.prototype = {
 
   /**
    * Remove the specified credential from the stored credentials.
-   *
-   * @param credential
    */
   removeCredential(credential) {
     lazy.log.debug(
@@ -257,9 +256,6 @@ Ssi.prototype = {
 
   /**
    * Change the specified credential to match the new credential or new properties.
-   *
-   * @param oldCredential
-   * @param newCredential
    */
   modifyCredential(oldCredential, newCredential) {
     lazy.log.debug(
@@ -281,8 +277,6 @@ Ssi.prototype = {
 
   /**
    * Get a dump of all stored credentials asynchronously. Used by the credential detection service.
-   *
-   * @param aCallback
    */
   getAllCredentialsWithCallback(aCallback) {
     lazy.log.debug("Searching a list of all credentials asynchronously.");
@@ -308,9 +302,6 @@ Ssi.prototype = {
   /**
    * Search for the known credentials for entries matching the specified criteria,
    * returns only the count.
-   *
-   * @param protocolName
-   * @param credentialName
    */
   countCredentials(protocolName, credentialName) {
     const credentialsCount = this._storage.countCredentials(

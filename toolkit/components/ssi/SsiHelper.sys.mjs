@@ -10,7 +10,7 @@
  * of nsISsi.
  */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -64,7 +64,6 @@ export const SsiHelper = {
    * be parsed incorrectly. These characters can cause problems in other
    * formats/languages too so reject credentials that may not be stored correctly.
    *
-   * @param aCredential
    * @throws String with English message in case validation failed.
    */
   checkCredentialValues(aCredential) {
@@ -97,10 +96,7 @@ export const SsiHelper = {
     if (!aCredential.secret || typeof aCredential.secret != "string") {
       throw new Error("secret must be non-empty strings");
     }
-    if (
-      !aCredential.trustedSites ||
-      typeof aCredential.trustedSites != "string"
-    ) {
+    if (!aCredential.trustedSites || typeof aCredential.trustedSites != "string") {
       throw new Error("trustedSites must be non-empty strings");
     }
 
@@ -277,13 +273,8 @@ export const SsiHelper = {
     if (newCredential.secret == null || !newCredential.secret.length) {
       throw new Error("Can't add a credential with a null or empty secret.");
     }
-    if (
-      newCredential.trustedSites == null ||
-      !newCredential.trustedSites.length
-    ) {
-      throw new Error(
-        "Can't add a credential with a null or empty  trustedSites."
-      );
+    if (newCredential.trustedSites == null || !newCredential.trustedSites.length) {
+      throw new Error("Can't add a credential with a null or empty  trustedSites.");
     }
 
     // For credentials w/o a optional property, set to "", not null.
@@ -342,8 +333,6 @@ export const SsiHelper = {
     let credentialsByKeys = new Map();
 
     /**
-     * @param existingCredential
-     * @param credential
      * @returns {bool} whether `credential` is preferred over its duplicate (considering `uniqueKeys`)
      *                `existingCredential`.
      *
@@ -400,8 +389,6 @@ export const SsiHelper = {
    * sending over IPC. Avoid using this in other cases.
    *
    * NB: All members of nsICredentialInfo (not nsICredentialMetaInfo) are strings.
-   *
-   * @param credentials
    */
   credentialsToVanillaObjects(credentials) {
     return credentials.map(this.credentialToVanillaObject);
@@ -409,8 +396,6 @@ export const SsiHelper = {
 
   /**
    * Same as above, but for a single credential.
-   *
-   * @param credential
    */
   credentialToVanillaObject(credential) {
     let obj = {};
@@ -424,13 +409,11 @@ export const SsiHelper = {
 
   /**
    * Convert an object received from IPC into an nsICredentialInfo (with guid).
-   *
-   * @param credential
    */
   vanillaObjectToCredential(credential) {
-    let formCredential = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
-      Ci.nsICredentialInfo
-    );
+    let formCredential = Cc[
+      "@mozilla.org/ssi/credentialInfo;1"
+    ].createInstance(Ci.nsICredentialInfo);
     formCredential.init(
       credential.protocolName,
       credential.credentialName,
@@ -456,8 +439,6 @@ export const SsiHelper = {
 
   /**
    * As above, but for an array of objects.
-   *
-   * @param vanillaObjects
    */
   vanillaObjectsToCredentials(vanillaObjects) {
     const credentials = [];
@@ -529,7 +510,9 @@ export const SsiHelper = {
     //   lazy.OSKeyStore.canReauth() &&
     //   this.getSecurePref(prefName, "") !== "opt out"
     // );
-    return lazy.OSKeyStore.canReauth();
+    return (
+      lazy.OSKeyStore.canReauth()
+    );
   },
 
   /**
@@ -561,7 +544,7 @@ export const SsiHelper = {
           generateKeyIfNotAvailable
         )
       ).authenticated;
-      return result;
+      return result
     } catch (ex) {
       // Since Win throws an exception whereas Mac resolves to false upon cancelling.
       if (ex.result !== Cr.NS_ERROR_FAILURE) {
@@ -685,9 +668,6 @@ export const SsiHelper = {
 
   /**
    * Send a notification when stored data is changed.
-   *
-   * @param changeType
-   * @param data
    */
   notifyStorageChanged(changeType, data) {
     let dataObject = data;
@@ -705,7 +685,11 @@ export const SsiHelper = {
       );
       dataObject.data = data;
     }
-    Services.obs.notifyObservers(dataObject, "ssi-storage-changed", changeType);
+    Services.obs.notifyObservers(
+      dataObject,
+      "ssi-storage-changed",
+      changeType
+    );
   },
 
   getAllCredentials() {
@@ -733,10 +717,10 @@ export const SsiHelper = {
   },
 
   async searchCredentialsWithoutSecret(matchData) {
-    const credentials = await Services.ssi.searchCredentialsAsync(matchData);
+    const credentials = await Services.ssi.searchCredentialsAsync(matchData)
     return credentials.map(credential => {
       // Exclude the secret properties
-      const { secret, properties, unknownFields, ...rest } = credential;
+      const {secret, properties, unknownFields, ...rest} = credential
       return rest;
     });
   },
