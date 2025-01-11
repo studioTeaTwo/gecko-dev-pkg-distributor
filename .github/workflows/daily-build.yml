@@ -11,3 +11,56 @@ jobs:
     with:
       daily-build: true
     secrets: inherit
+
+  eslint-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+        cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
+        (cd browser/components/selfsovereignidentity && npm i)
+        (cd browser/extensions/ssi && npm i)
+        (cd browser/extensions/nip && npm i)
+    - name: eslint
+      run: |
+        ./mach lint -l eslint .
+
+  tslint-check:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        target-dir: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+    - name: tslint - ${{ matrix.target-dir }}
+      run: |
+        cd ${{ matrix.target-dir }}
+        npm i
+        npm run lint
+
+  mozlint-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+        cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
+        (cd browser/components/selfsovereignidentity && npm i)
+        (cd browser/extensions/ssi && npm i)
+        (cd browser/extensions/nip && npm i)
+    - name: mozlint
+      run: |
+        ./mach lint .

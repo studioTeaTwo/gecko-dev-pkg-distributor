@@ -258,9 +258,7 @@ jobs:
 
         echo
 
-        cd ${{ github.workspace }}
-        git tag -v v${{ needs.get-display-version.outputs.display-version }}
-        cd /home/runner/downloads/artifacts
+        (cd ${{ github.workspace }} && git tag -v v${{ needs.get-display-version.outputs.display-version }})
 
         echo
     - name: Sign verification log

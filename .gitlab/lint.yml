@@ -1,0 +1,51 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  auto_cancel:
+    on_new_commit: interruptible
+
+default:
+  interruptible: true
+  before_script:
+    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-pip npm
+    - cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
+
+mozlint_eslint:
+  stage: test
+  script:
+    - (cd browser/components/selfsovereignidentity && npm i)
+    - (cd browser/extensions/ssi && npm i)
+    - (cd browser/extensions/nip && npm i)
+    - ./mach lint -l eslint .
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  #     changes:
+  #       # List copied from: taskcluster/ci/source-test/mozlint.yml
+  #       #
+  #       # Files that are likely audited.
+  #       - '**/*.js'
+  #       - '**/*.jsm'
+  #       - '**/*.json'
+  #       - '**/*.jsx'
+  #       - '**/*.mjs'
+  #       - '**/*.sjs'
+  #       - '**/*.html'
+  #       - '**/*.xhtml'
+  #       - '**/*.xml'
+  #       - 'tools/lint/eslint.yml'
+  #       # Run when eslint policies change.
+  #       - '**/.eslintignore'
+  #       - '**/*eslintrc*'
+  #       # The plugin implementing custom checks.
+  #       - 'tools/lint/eslint/eslint-plugin-mozilla/**'
+  #       - 'tools/lint/eslint/eslint-plugin-spidermonkey-js/**'
+
+tslint:
+  stage: test
+  parallel:
+    matrix:
+      - TARGET: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
+  script:
+    - cd $TARGET
+    - npm i
+    - npm run lint
