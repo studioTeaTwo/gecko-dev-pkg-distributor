@@ -18,7 +18,7 @@ async function init() {
     }
     // The message listener to listen to background calls
     // After, emit event to return the response to the inpages.
-    browser.runtime.onMessage.addListener((request) => {
+    browser.runtime.onMessage.addListener(request => {
         (0, logger_1.log)("content-script onMessage", request);
         // forward account changed messaged to inpage script
         if (request.action === "nostr/builtinNip07Init" ||

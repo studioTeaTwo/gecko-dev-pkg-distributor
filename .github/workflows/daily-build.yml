@@ -11,3 +11,74 @@ jobs:
     with:
       daily-build: true
     secrets: inherit
+
+  eslint-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+        cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
+        (cd browser/components/selfsovereignidentity && npm i)
+        (cd browser/extensions/ssi && npm i)
+        (cd browser/extensions/nip && npm i)
+    - name: eslint
+      id: error_execution_eslint
+      continue-on-error: true
+      run: |
+        ./mach lint -l eslint .
+    - name: End normally due to check-only
+      if: ${{ steps.error_execution_eslint.outcome == 'failure' }}
+      run: |
+        exit 0
+
+  tslint-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-dir: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+    - name: tslint - ${{ matrix.target-dir }}
+      id: error_execution_tslint
+      continue-on-error: true
+      run: |
+        cd ${{ matrix.target-dir }}
+        npm i
+        npm run lint
+    - name: End normally due to check-only
+      if: ${{ steps.error_execution_tslint.outcome == 'failure' }}
+      run: |
+        exit 0
+
+  mozlint-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+    - name: Prepare
+      run: |
+        sudo apt-get update
+        cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
+        ./mach --no-interactive bootstrap --application-choice browser
+        (cd browser/components/selfsovereignidentity && npm i)
+        (cd browser/extensions/ssi && npm i)
+        (cd browser/extensions/nip && npm i)
+    - name: mozlint
+      id: error_execution_mozlint
+      continue-on-error: true
+      run: |
+        ./mach lint .
+    - name: End normally due to check-only
+      if: ${{ steps.error_execution_mozlint.outcome == 'failure' }}
+      run: |
+        exit 0
