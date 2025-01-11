@@ -4,9 +4,9 @@
 
 /* eslint-env webextensions */
 
-import { log } from "../shared/logger"
-import { init as nostrInit } from "./nostr"
+import { log } from "../shared/logger";
+import { init as nostrInit } from "./nostr";
 
-log("inpage-script working")
+log("inpage-script working");
 
-nostrInit()
+nostrInit();

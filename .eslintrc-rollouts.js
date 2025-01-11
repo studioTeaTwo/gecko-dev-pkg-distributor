@@ -385,6 +385,7 @@ const rollouts = [
       "toolkit/components/prompts/**",
       "toolkit/components/reader/**",
       "toolkit/components/reputationservice/test/unit/test_app_rep_windows.js",
+      "toolkit/components/ssi/**", // TODO(ssb): Added to reduce diff with passwordmgr, but will enable later
       "toolkit/components/taskscheduler/TaskScheduler*.*",
       "toolkit/components/telemetry/**",
       "toolkit/components/thumbnails/**",
@@ -548,6 +549,7 @@ const rollouts = [
       "toolkit/components/resistfingerprinting/**",
       "toolkit/components/satchel/**",
       "toolkit/components/shopping/content/ShoppingProduct.mjs",
+      "toolkit/components/ssi/**", // TODO(ssb): Added to reduce diff with passwordmgr, but will enable later
       "toolkit/components/taskscheduler/TaskScheduler*.*",
       "toolkit/components/telemetry/**",
       "toolkit/components/thumbnails/**",

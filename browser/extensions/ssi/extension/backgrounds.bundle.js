@@ -1098,7 +1098,7 @@ const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only su
 const ERR_MSG_NOT_TRUSTED = "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`;
 // Proceed calls from contents
-const doNostrAction = async (action, args, origin, tabId) => {
+const doNostrAction = async (action, args, origin) => {
     if (!state_1.state.nostr.prefs.enabled) {
         throw new Error(ERR_MSG_NOT_ENABLED);
     }
@@ -1240,44 +1240,57 @@ async function sendTab(tab, action, data) {
         .catch();
 }
 function supported(tabUrl) {
-    return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol));
+    return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
 }
 function decodeNpub(npub) {
     const Bech32MaxSize = 5000;
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
+    if (prefix !== "npub") {
+        throw new Error("Not npub!");
+    }
     return (0, utils_1.bytesToHex)(new Uint8Array(base_1.bech32.fromWords(words)));
 }
 // based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event) {
-    if (!(event instanceof Object))
+    if (!(event instanceof Object)) {
         return false;
-    if (typeof event.kind !== "number")
+    }
+    if (typeof event.kind !== "number") {
         return false;
-    if (typeof event.content !== "string")
+    }
+    if (typeof event.content !== "string") {
         return false;
-    if (typeof event.created_at !== "number")
+    }
+    if (typeof event.created_at !== "number") {
         return false;
-    if (typeof event.pubkey !== "string")
+    }
+    if (typeof event.pubkey !== "string") {
         return false;
-    if (!event.pubkey.match(/^[a-f0-9]{64}$/))
+    }
+    if (!event.pubkey.match(/^[a-f0-9]{64}$/)) {
         return false;
-    if (!Array.isArray(event.tags))
+    }
+    if (!Array.isArray(event.tags)) {
         return false;
+    }
     for (let i = 0; i < event.tags.length; i++) {
         const tag = event.tags[i];
-        if (!Array.isArray(tag))
+        if (!Array.isArray(tag)) {
             return false;
+        }
         for (let j = 0; j < tag.length; j++) {
-            if (typeof tag[j] === "object")
+            if (typeof tag[j] === "object") {
                 return false;
+            }
         }
     }
     return true;
 }
 // from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
 function serializeEvent(event) {
-    if (!validateEvent(event))
+    if (!validateEvent(event)) {
         throw new Error("can't serialize event with wrong or missing properties");
+    }
     return JSON.stringify([
         0,
         event.pubkey,
@@ -1365,7 +1378,6 @@ var __webpack_unused_export__;
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
-/* eslint-env webextensions */
 const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(684);
 __webpack_require__(684);
@@ -1375,9 +1387,9 @@ __webpack_require__(684);
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, message.origin, sender.tab.id))
-            .then((data) => ({ data }))
-            .catch((error) => ({ error }));
+        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, message.origin))
+            .then(data => ({ data }))
+            .catch(error => ({ error }));
     }
     return false;
 });

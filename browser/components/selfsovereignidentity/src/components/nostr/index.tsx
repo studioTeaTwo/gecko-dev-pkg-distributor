@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect } from "react";
 import {
   Heading,
   Tab,
@@ -7,21 +7,21 @@ import {
   TabPanels,
   Tabs,
   Text,
-} from "@chakra-ui/react"
-import { dispatchEvents } from "../../hooks/useChildActorEvent"
-import Keys from "./Keys"
-import NIP07 from "./NIP07"
-import More from "./More"
-import { SelfsovereignidentityDefaultProps } from "src/custom.type"
+} from "@chakra-ui/react";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
+import Keys from "./Keys";
+import NIP07 from "./NIP07";
+import More from "./More";
+import { SelfsovereignidentityDefaultProps } from "src/custom.type";
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
-  const { prefs, credentials } = props
-  const { initStore } = dispatchEvents
+  const { prefs, credentials } = props;
+  const { initStore } = dispatchEvents;
 
   // on mount
   useEffect(() => {
-    initStore()
-  }, [])
+    initStore();
+  }, []);
 
   return (
     <div>
@@ -60,5 +60,5 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         </TabPanels>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Credential,
   CredentialForPayload,
   ProtocolName,
   SelfsovereignidentityPrefs,
-} from "../custom.type"
+} from "../custom.type";
 
 /**
  * Send to child actor
@@ -16,7 +16,7 @@ function initStore() {
     new CustomEvent("AboutSelfsovereignidentityInit", {
       bubbles: true,
     })
-  )
+  );
 }
 
 function getAllCredentialsToStore() {
@@ -24,7 +24,7 @@ function getAllCredentialsToStore() {
     new CustomEvent("AboutSelfsovereignidentityGetAllCredentials", {
       bubbles: true,
     })
-  )
+  );
 }
 
 function addCredentialToStore(credential: Credential) {
@@ -33,7 +33,7 @@ function addCredentialToStore(credential: Credential) {
       bubbles: true,
       detail: transformToPayload(credential),
     })
-  )
+  );
 }
 
 function modifyCredentialToStore(
@@ -45,7 +45,7 @@ function modifyCredentialToStore(
       bubbles: true,
       detail: { credential: transformToPayload(credential), options },
     })
-  )
+  );
 }
 
 function deleteCredentialToStore(
@@ -55,10 +55,10 @@ function deleteCredentialToStore(
   if (credentials.length <= 2) {
     if (credentials.length === 2) {
       const leftCredential = credentials.find(
-        (credential) => credential.guid !== deletedCredential.guid
-      )
-      leftCredential.primary = true
-      modifyCredentialToStore(leftCredential)
+        credential => credential.guid !== deletedCredential.guid
+      );
+      leftCredential.primary = true;
+      modifyCredentialToStore(leftCredential);
     }
   }
   window.dispatchEvent(
@@ -66,7 +66,7 @@ function deleteCredentialToStore(
       bubbles: true,
       detail: transformToPayload(deletedCredential),
     })
-  )
+  );
 }
 
 function removeAllCredentialsToStore() {
@@ -74,24 +74,24 @@ function removeAllCredentialsToStore() {
     new CustomEvent("AboutSelfsovereignidentityRemoveAllCredentials", {
       bubbles: true,
     })
-  )
+  );
 }
 
 function onPrimaryChanged(changeSet: {
-  protocolName: ProtocolName
-  guid: string
+  protocolName: ProtocolName;
+  guid: string;
 }) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityPrimaryChanged", {
       bubbles: true,
       detail: changeSet,
     })
-  )
+  );
 }
 
 function onPrefChanged(
   changeSet: {
-    protocolName: ProtocolName
+    protocolName: ProtocolName;
   } & Partial<SelfsovereignidentityPrefs["nostr"]>
 ) {
   window.dispatchEvent(
@@ -99,7 +99,7 @@ function onPrefChanged(
       bubbles: true,
       detail: changeSet,
     })
-  )
+  );
 }
 
 export const dispatchEvents = {
@@ -111,7 +111,7 @@ export const dispatchEvents = {
   removeAllCredentialsToStore,
   onPrimaryChanged,
   onPrefChanged,
-}
+};
 
 /**
  * Utils
@@ -119,33 +119,33 @@ export const dispatchEvents = {
  */
 
 function transformToPayload(credential: Partial<Credential>) {
-  const newVal = { ...credential } as unknown as CredentialForPayload
+  const newVal = { ...credential } as unknown as CredentialForPayload;
   if (credential.trustedSites) {
-    newVal.trustedSites = JSON.stringify(credential.trustedSites)
+    newVal.trustedSites = JSON.stringify(credential.trustedSites);
   }
   if (credential.properties) {
-    newVal.properties = JSON.stringify(credential.properties)
+    newVal.properties = JSON.stringify(credential.properties);
   }
-  return newVal
+  return newVal;
 }
 
 function transformCredentialsFromStore(
   credentialForPayloads: CredentialForPayload[]
 ) {
-  return credentialForPayloads.map((credential) => {
+  return credentialForPayloads.map(credential => {
     const trustedSites = JSON.parse(
       credential.trustedSites.replace(/^''$/g, '"')
-    )
-    const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'))
+    );
+    const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {
       ...credential,
       trustedSites,
       properties,
-    }
-  })
+    };
+  });
 }
 
-type Op = "get" | "add" | "update" | "remove" | "removeAll" | null
+type Op = "get" | "add" | "update" | "remove" | "removeAll" | null;
 
 export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
@@ -160,116 +160,116 @@ export default function useChildActorEvent() {
       usedAccountChanged: true,
     },
     addons: [],
-  })
-  const [credentials, setCredentials] = useState<Credential[]>([])
+  });
+  const [credentials, setCredentials] = useState<Credential[]>([]);
   const [credentialsFromStore, setCredentialsFromStore] = useState<
     [Op, Credential[]]
-  >([null, []])
+  >([null, []]);
 
   // Only do once
   useEffect(() => {
     window.addEventListener(
       "AboutSelfsovereignidentityChromeToContent",
       receiveFromChildActor
-    )
+    );
     return () => {
       window.removeEventListener(
         "AboutSelfsovereignidentityChromeToContent",
         receiveFromChildActor
-      )
-    }
-  }, [])
+      );
+    };
+  }, []);
 
   useEffect(() => {
-    const [op, state] = credentialsFromStore
+    const [op, state] = credentialsFromStore;
     if (op === "add") {
       if (state[0].primary) {
         // emit becase of the fisrt register
         onPrimaryChanged({
           protocolName: state[0].protocolName,
           guid: state[0].guid,
-        })
+        });
       }
-      setCredentials((prev) => [...prev, ...state])
+      setCredentials(prev => [...prev, ...state]);
     } else if (op === "update") {
-      setCredentials((prev) =>
-        prev.map((credential) =>
+      setCredentials(prev =>
+        prev.map(credential =>
           credential.guid === state[0].guid ? state[0] : credential
         )
-      )
+      );
     } else if (op === "remove") {
-      setCredentials((prev) =>
-        prev.filter((credential) => credential.guid !== state[0].guid)
-      )
+      setCredentials(prev =>
+        prev.filter(credential => credential.guid !== state[0].guid)
+      );
     } else if (op === "removeAll") {
-      setCredentials([])
+      setCredentials([]);
     } else {
-      setCredentials((prev) => [...prev, ...state])
+      setCredentials(prev => [...prev, ...state]);
     }
-  }, [credentialsFromStore])
+  }, [credentialsFromStore]);
 
   // one-way listner to receive the event
-  const receiveFromChildActor = (event) => {
+  const receiveFromChildActor = event => {
     switch (event.detail.messageType) {
       case "Setup":
       case "AllCredentials": {
         const newState = transformCredentialsFromStore(
           event.detail.value.credentials
-        )
-        setCredentialsFromStore(["get", newState])
-        setPrefs((prev) => ({ ...prev, addons: event.detail.value.addons }))
-        break
+        );
+        setCredentialsFromStore(["get", newState]);
+        setPrefs(prev => ({ ...prev, addons: event.detail.value.addons }));
+        break;
       }
       case "CredentialAdded": {
-        const newState = transformCredentialsFromStore([event.detail.value])
-        setCredentialsFromStore(["add", newState])
-        break
+        const newState = transformCredentialsFromStore([event.detail.value]);
+        setCredentialsFromStore(["add", newState]);
+        break;
       }
       case "CredentialModified": {
-        const newState = transformCredentialsFromStore([event.detail.value])
-        setCredentialsFromStore(["update", newState])
-        break
+        const newState = transformCredentialsFromStore([event.detail.value]);
+        setCredentialsFromStore(["update", newState]);
+        break;
       }
       case "CredentialRemoved": {
-        setCredentialsFromStore(["remove", [event.detail.value]])
-        break
+        setCredentialsFromStore(["remove", [event.detail.value]]);
+        break;
       }
       case "RemoveAllCredentials": {
-        setCredentialsFromStore(["removeAll", []])
-        break
+        setCredentialsFromStore(["removeAll", []]);
+        break;
       }
       case "Prefs": {
         if (event.detail.value) {
-          setPrefs((prev) => {
+          setPrefs(prev => {
             const newState = {
               ...prev,
-            }
-            const keys = Object.keys(event.detail.value)
+            };
+            const keys = Object.keys(event.detail.value);
             for (const protocolName of keys) {
               newState[protocolName] = {
                 ...prev[protocolName],
                 ...event.detail.value[protocolName],
-              }
+              };
             }
 
-            return newState
-          })
+            return newState;
+          });
         }
-        break
+        break;
       }
       case "ShowCredentialItemError": {
-        console.error("ShowCredentialItemError", event)
-        alert(`Oops...got error: ${event.detail.value.errorMessage}`)
-        break
+        console.error("ShowCredentialItemError", event);
+        alert(`Oops...got error: ${event.detail.value.errorMessage}`);
+        break;
       }
       default: {
-        console.log(event)
+        console.log(event);
       }
     }
-  }
+  };
 
   return {
     prefs,
     credentials,
-  }
+  };
 }

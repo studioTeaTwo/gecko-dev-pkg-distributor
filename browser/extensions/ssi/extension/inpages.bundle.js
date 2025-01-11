@@ -87,7 +87,7 @@ const postMessage_1 = __webpack_require__(323);
 function init() {
     // It envisions browser-native API, so the object is persisted.
     window.ssi = Object.freeze(exports.WindowSSI);
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", event => {
         if (event.source !== window || event.data.id !== "native") {
             return;
         }

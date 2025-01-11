@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function ECash(props) {
   return (
@@ -7,5 +7,5 @@ export default function ECash(props) {
       underway, as can be seen by the variety and growth of electronic banking
       services available to consumers.&quot;
     </div>
-  )
+  );
 }

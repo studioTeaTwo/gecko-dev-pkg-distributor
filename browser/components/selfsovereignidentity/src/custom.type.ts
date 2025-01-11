@@ -1,23 +1,23 @@
-export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr"
+export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr";
 
 /**
  * Selfsovereignidentity prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
 export interface SelfsovereignidentityDefaultPrefs {
-  enabled: boolean // selfsovereignidentity.[protocolName].enabled
-  usedPrimarypasswordToSettings: boolean // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
-  expiryTimeForPrimarypasswordToSettings: number // selfsovereignidentity.[protocolName].primarypassword.toSettings.expiryTime
-  usedPrimarypasswordToApps: boolean // selfsovereignidentity.[protocolName].primarypassword.toApps.enabled
-  expiryTimeForPrimarypasswordToApps: number // selfsovereignidentity.[protocolName].primarypassword.ToApps.expiryTime
-  usedTrustedSites: boolean // selfsovereignidentity.[protocolName].trustedSites.enabled
-  usedAccountChanged: boolean // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+  enabled: boolean; // selfsovereignidentity.[protocolName].enabled
+  usedPrimarypasswordToSettings: boolean; // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
+  expiryTimeForPrimarypasswordToSettings: number; // selfsovereignidentity.[protocolName].primarypassword.toSettings.expiryTime
+  usedPrimarypasswordToApps: boolean; // selfsovereignidentity.[protocolName].primarypassword.toApps.enabled
+  expiryTimeForPrimarypasswordToApps: number; // selfsovereignidentity.[protocolName].primarypassword.ToApps.expiryTime
+  usedTrustedSites: boolean; // selfsovereignidentity.[protocolName].trustedSites.enabled
+  usedAccountChanged: boolean; // selfsovereignidentity.[protocolName].event.accountChanged.enabled
 }
 export interface SelfsovereignidentityPrefs {
   nostr: {
-    usedBuiltinNip07: boolean // selfsovereignidentity.nostr.builtinNip07.enabled
-  } & SelfsovereignidentityDefaultPrefs
-  addons: { id: string; name: string; url: string }[] // built-in addons list
+    usedBuiltinNip07: boolean; // selfsovereignidentity.nostr.builtinNip07.enabled
+  } & SelfsovereignidentityDefaultPrefs;
+  addons: { id: string; name: string; url: string }[]; // built-in addons list
 }
 
 /**
@@ -29,36 +29,36 @@ export type ProtocolName =
   | "lightning"
   | "ecash"
   | "nostr"
-  | "did:dht"
-export type CredentialName = "bip39" | "lnc" | "nsec"
+  | "did:dht";
+export type CredentialName = "bip39" | "lnc" | "nsec";
 export interface Credential {
-  protocolName: ProtocolName
-  credentialName: CredentialName
-  primary: boolean
-  secret: string
-  identifier: string
+  protocolName: ProtocolName;
+  credentialName: CredentialName;
+  primary: boolean;
+  secret: string;
+  identifier: string;
   trustedSites: {
-    name: string
-    url: string
+    name: string;
+    url: string;
     permissions: {
-      read: boolean
-      write: boolean
-      admin: boolean
-    }
-  }[]
-  properties: object
-  guid?: string
+      read: boolean;
+      write: boolean;
+      admin: boolean;
+    };
+  }[];
+  properties: object;
+  guid?: string;
 }
 // Pass object type through JSON.stringify for IPC & JSONstorage
 export type CredentialForPayload = Omit<
   Credential,
   "properties" | "trustedSites"
 > & {
-  trustedSites: string
-  properties: string
-}
+  trustedSites: string;
+  properties: string;
+};
 
 export interface SelfsovereignidentityDefaultProps {
-  prefs: SelfsovereignidentityPrefs
-  credentials: Credential[]
+  prefs: SelfsovereignidentityPrefs;
+  credentials: Credential[];
 }

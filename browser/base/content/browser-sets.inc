@@ -90,7 +90,7 @@
     <command id="Tools:Search" />
     <command id="Tools:Downloads" />
     <command id="Tools:Addons" />
-    <command id="Tools:Selfsovereignidentity" oncommand="BrowserOpenSelfsovereignidentity();"/>
+    <command id="Tools:Selfsovereignidentity" />
     <command id="Tools:Sanitize" />
     <command id="Tools:PrivateBrowsing" />
     <command id="Browser:Screenshot" />

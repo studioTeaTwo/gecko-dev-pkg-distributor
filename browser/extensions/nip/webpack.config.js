@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 /* eslint-env node */
-"use strict"
+"use strict";
 
-const webpack = require("webpack")
+const webpack = require("webpack");
 
-module.exports = (env, argv) => {
+module.exports = env => {
   return {
     mode: "production",
     entry: {
@@ -42,5 +42,5 @@ module.exports = (env, argv) => {
     optimization: {
       minimize: false,
     },
-  }
-}
+  };
+};

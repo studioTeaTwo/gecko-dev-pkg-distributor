@@ -85,7 +85,7 @@ async function sendTab(tab, action, data) {
         .catch();
 }
 function supported(tabUrl) {
-    return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol));
+    return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
 }
 
 

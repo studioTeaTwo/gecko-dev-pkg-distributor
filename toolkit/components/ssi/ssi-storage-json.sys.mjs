@@ -150,12 +150,10 @@ export class SsiStorage_json {
     const resultCredentials = [];
     for (const [credential, encryptedCredential] of encryptedCredentials) {
       // check for duplicates
-      const existingCredentials = await Services.ssi.searchCredentialsAsync(
-        {
-          protocolName: credential.protocolName,
-          credentialName: credential.credentialName,
-        }
-      );
+      const existingCredentials = await Services.ssi.searchCredentialsAsync({
+        protocolName: credential.protocolName,
+        credentialName: credential.credentialName,
+      });
 
       const matchingCredential = existingCredentials.find(l =>
         credential.matches(l, true)
@@ -203,10 +201,7 @@ export class SsiStorage_json {
       this._store.saveSoon();
     }
 
-    lazy.SsiHelper.notifyStorageChanged(
-      "removeCredential",
-      storedCredential
-    );
+    lazy.SsiHelper.notifyStorageChanged("removeCredential", storedCredential);
   }
 
   modifyCredential(oldCredential, newCredentialData) {
@@ -252,13 +247,8 @@ export class SsiStorage_json {
     }
 
     // Get the encrypted values.
-    let [
-      encSecret,
-      encIdentifier,
-      encProperties,
-      encType,
-      encUnknownFields,
-    ] = this._encryptCredential(newCredential);
+    let [encSecret, encIdentifier, encProperties, encType, encUnknownFields] =
+      this._encryptCredential(newCredential);
 
     for (let credentialItem of this._store.data.credentials) {
       if (credentialItem.id == idToModify && !credentialItem.deleted) {
@@ -397,9 +387,9 @@ export class SsiStorage_json {
     for (let credentialItem of candidateCredentials) {
       if (match(credentialItem)) {
         // Create the new nsCredentialInfo object, push to array
-        let credential = Cc[
-          "@mozilla.org/ssi/credentialInfo;1"
-        ].createInstance(Ci.nsICredentialInfo);
+        let credential = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
+          Ci.nsICredentialInfo
+        );
         credential.init(
           credentialItem.protocolName,
           credentialItem.credentialName,
@@ -643,13 +633,7 @@ export class SsiStorage_json {
     }
     let encType = this._crypto.defaultEncType;
 
-    return [
-      encSecret,
-      encIdentifier,
-      encProperties,
-      encType,
-      encUnknownFields,
-    ];
+    return [encSecret, encIdentifier, encProperties, encType, encUnknownFields];
   }
 
   /**

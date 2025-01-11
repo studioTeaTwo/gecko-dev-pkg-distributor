@@ -584,7 +584,7 @@ function init() {
     }
     // The message listener to listen to content calls
     // After, emit event to return the reponse to the web apps.
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", event => {
         if (event.source !== window || event.data.id !== "native") {
             return;
         }

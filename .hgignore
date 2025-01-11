@@ -351,3 +351,6 @@ toolkit/themes/shared/design-system/node_modules/
 
 # Ignore generated log files under media/libvpx
 ^media/libvpx/config/.*/config.log
+
+# Ignore binary base of Tor Browser
+.binaries

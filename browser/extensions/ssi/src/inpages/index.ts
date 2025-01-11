@@ -4,9 +4,9 @@
 
 /* eslint-env webextensions */
 
-import { log } from "../shared/logger"
-import { init as sssiInit } from "./ssi"
+import { log } from "../shared/logger";
+import { init as sssiInit } from "./ssi";
 
-log("inpage-script working")
+log("inpage-script working");
 
-sssiInit()
+sssiInit();

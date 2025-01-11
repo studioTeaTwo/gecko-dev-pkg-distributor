@@ -1,11 +1,11 @@
-import * as React from "react"
+import * as React from "react";
 
-import { IconContext, DefaultContext } from "./iconContext"
+import { IconContext, DefaultContext } from "./iconContext";
 
 export interface IconTree {
-  tag: string
-  attr: { [key: string]: string }
-  child: IconTree[]
+  tag: string;
+  attr: { [key: string]: string };
+  child: IconTree[];
 }
 
 function Tree2Element(tree: IconTree[]): React.ReactElement[] {
@@ -18,34 +18,34 @@ function Tree2Element(tree: IconTree[]): React.ReactElement[] {
         Tree2Element(node.child)
       )
     )
-  )
+  );
 }
 export function GenIcon(data: IconTree) {
   return (props: IconBaseProps) => (
     <IconBase attr={{ ...data.attr }} {...props}>
       {Tree2Element(data.child)}
     </IconBase>
-  )
+  );
 }
 
 export interface IconBaseProps extends React.SVGAttributes<SVGElement> {
-  children?: React.ReactNode
-  size?: string | number
-  color?: string
-  title?: string
+  children?: React.ReactNode;
+  size?: string | number;
+  color?: string;
+  title?: string;
 }
 
-export type IconType = (props: IconBaseProps) => JSX.Element
+export type IconType = (props: IconBaseProps) => JSX.Element;
 export function IconBase(
   props: IconBaseProps & { attr?: Record<string, string> }
 ): JSX.Element {
   const elem = (conf: IconContext) => {
-    const { attr, size, title, ...svgProps } = props
-    const computedSize = size || conf.size || "1em"
-    let className
-    if (conf.className) className = conf.className
+    const { attr, size, title, ...svgProps } = props;
+    const computedSize = size || conf.size || "1em";
+    let className;
+    if (conf.className) className = conf.className;
     if (props.className)
-      className = (className ? className + " " : "") + props.className
+      className = (className ? className + " " : "") + props.className;
 
     return (
       <svg
@@ -68,8 +68,8 @@ export function IconBase(
         {title && <title>{title}</title>}
         {props.children}
       </svg>
-    )
-  }
+    );
+  };
 
   return IconContext !== undefined ? (
     <IconContext.Consumer>
@@ -77,5 +77,5 @@ export function IconBase(
     </IconContext.Consumer>
   ) : (
     elem(DefaultContext)
-  )
+  );
 }

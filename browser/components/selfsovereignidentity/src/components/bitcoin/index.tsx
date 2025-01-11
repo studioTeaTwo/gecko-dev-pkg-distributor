@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function Bitcoin(props) {
   return (
@@ -6,5 +6,5 @@ export default function Bitcoin(props) {
       &quot;The Times 03/Jan/2009 Chancellor on brink of second bailout for
       banks&quot;
     </div>
-  )
+  );
 }

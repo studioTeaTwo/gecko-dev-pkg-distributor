@@ -10,7 +10,7 @@
  * of nsISsi.
  */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs"
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -32,7 +32,7 @@ export const SsiHelper = {
   OS_AUTH_FOR_PASSWORDS_PREF,
 
   init() {
-    // Services.telemetry.setEventRecordingEnabled("ssi", true);
+    Services.telemetry.setEventRecordingEnabled("ssi", true);
   },
 
   createLogger(aLogPrefix) {
@@ -96,7 +96,13 @@ export const SsiHelper = {
     if (!aCredential.secret || typeof aCredential.secret != "string") {
       throw new Error("secret must be non-empty strings");
     }
-    if (!aCredential.trustedSites || typeof aCredential.trustedSites != "string") {
+    if (!aCredential.identifier || typeof aCredential.identifier != "string") {
+      throw new Error("identifier must be non-empty strings");
+    }
+    if (
+      !aCredential.trustedSites ||
+      typeof aCredential.trustedSites != "string"
+    ) {
       throw new Error("trustedSites must be non-empty strings");
     }
 
@@ -151,6 +157,7 @@ export const SsiHelper = {
       aCredential1.protocolName != aCredential2.protocolName ||
       aCredential1.credentialName != aCredential2.credentialName ||
       aCredential1.secret != aCredential2.secret ||
+      aCredential1.identifier != aCredential2.identifier ||
       aCredential1.trustedSites != aCredential2.trustedSites
     ) {
       return false;
@@ -273,14 +280,21 @@ export const SsiHelper = {
     if (newCredential.secret == null || !newCredential.secret.length) {
       throw new Error("Can't add a credential with a null or empty secret.");
     }
-    if (newCredential.trustedSites == null || !newCredential.trustedSites.length) {
-      throw new Error("Can't add a credential with a null or empty  trustedSites.");
+    if (newCredential.identifier == null || !newCredential.identifier.length) {
+      throw new Error(
+        "Can't add a credential with a null or empty identifier."
+      );
+    }
+    if (
+      newCredential.trustedSites == null ||
+      !newCredential.trustedSites.length
+    ) {
+      throw new Error(
+        "Can't add a credential with a null or empty  trustedSites."
+      );
     }
 
     // For credentials w/o a optional property, set to "", not null.
-    if (newCredential.identifier == null) {
-      throw new Error("Can't add a credential with a null identifier.");
-    }
     if (newCredential.properties == null) {
       throw new Error("Can't add a credential with a null properties.");
     }
@@ -362,6 +376,11 @@ export const SsiHelper = {
 
             return credentialDate > storedCredentialDate;
           }
+          default: {
+            throw new Error(
+              "dedupeLogins: Invalid resolveBy preference: " + preference
+            );
+          }
         }
       }
 
@@ -411,9 +430,9 @@ export const SsiHelper = {
    * Convert an object received from IPC into an nsICredentialInfo (with guid).
    */
   vanillaObjectToCredential(credential) {
-    let formCredential = Cc[
-      "@mozilla.org/ssi/credentialInfo;1"
-    ].createInstance(Ci.nsICredentialInfo);
+    let formCredential = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
+      Ci.nsICredentialInfo
+    );
     formCredential.init(
       credential.protocolName,
       credential.credentialName,
@@ -510,9 +529,7 @@ export const SsiHelper = {
     //   lazy.OSKeyStore.canReauth() &&
     //   this.getSecurePref(prefName, "") !== "opt out"
     // );
-    return (
-      lazy.OSKeyStore.canReauth()
-    );
+    return lazy.OSKeyStore.canReauth();
   },
 
   /**
@@ -536,7 +553,7 @@ export const SsiHelper = {
       promptMessage = false;
     }
     try {
-      const result = (
+      return (
         await lazy.OSKeyStore.ensureLoggedIn(
           promptMessage,
           captionDialog,
@@ -544,7 +561,6 @@ export const SsiHelper = {
           generateKeyIfNotAvailable
         )
       ).authenticated;
-      return result
     } catch (ex) {
       // Since Win throws an exception whereas Mac resolves to false upon cancelling.
       if (ex.result !== Cr.NS_ERROR_FAILURE) {
@@ -557,7 +573,6 @@ export const SsiHelper = {
   /**
    * Shows the Primary Password prompt if enabled, or the
    * OS auth dialog otherwise.
-   *
    * @param {Element} browser
    *        The <browser> that the prompt should be shown on
    * @param OSReauthEnabled Boolean indicating if OS reauth should be tried
@@ -685,11 +700,7 @@ export const SsiHelper = {
       );
       dataObject.data = data;
     }
-    Services.obs.notifyObservers(
-      dataObject,
-      "ssi-storage-changed",
-      changeType
-    );
+    Services.obs.notifyObservers(dataObject, "ssi-storage-changed", changeType);
   },
 
   getAllCredentials() {
@@ -717,10 +728,11 @@ export const SsiHelper = {
   },
 
   async searchCredentialsWithoutSecret(matchData) {
-    const credentials = await Services.ssi.searchCredentialsAsync(matchData)
+    const credentials = await Services.ssi.searchCredentialsAsync(matchData);
     return credentials.map(credential => {
       // Exclude the secret properties
-      const {secret, properties, unknownFields, ...rest} = credential
+      // eslint-disable-next-line no-unused-vars
+      const { secret, properties, unknownFields, ...rest } = credential;
       return rest;
     });
   },

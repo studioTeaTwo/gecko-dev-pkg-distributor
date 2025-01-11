@@ -801,7 +801,10 @@ function NIP07(props) {
         return;
       }
     }
-    onPrefChanged2({ protocolName: "nostr", usedPrimarypasswordToApps: checked });
+    onPrefChanged2({
+      protocolName: "nostr",
+      usedPrimarypasswordToApps: checked
+    });
   };
   const handleExpiryTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
     const primaryPasswordAuth = await promptForPrimaryPassword(

@@ -1,17 +1,17 @@
 // Interface for window.ssi prototype
-import { postMessage } from "./postMessage"
+import { postMessage } from "./postMessage";
 
 export function init() {
   // It envisions browser-native API, so the object is persisted.
-  window.ssi = Object.freeze(WindowSSI)
+  window.ssi = Object.freeze(WindowSSI);
 
-  window.addEventListener("message", (event) => {
+  window.addEventListener("message", event => {
     if (event.source !== window || event.data.id !== "native") {
-      return
+      return;
     }
 
-    const action = event.data.data.action
-    const data = event.data.data.data
+    const action = event.data.data.action;
+    const data = event.data.data.data;
     if (event.data.scope === "nostr") {
       window.ssi.nostr.dispatchEvent(
         new CustomEvent(action, {
@@ -19,9 +19,9 @@ export function init() {
           bubbles: false,
           composed: true,
         })
-      )
+      );
     }
-  })
+  });
 }
 
 export const WindowSSI: WindowSSI = {
@@ -30,16 +30,16 @@ export const WindowSSI: WindowSSI = {
 
   nostr: Object.freeze({
     generate(option) {
-      return Promise.resolve("Not implemented")
+      return Promise.resolve("Not implemented");
     },
     getPublicKey(option) {
-      return postMessage("nostr", "getPublicKey", option)
+      return postMessage("nostr", "getPublicKey", option);
     },
     sign(message, option) {
-      return postMessage("nostr", option.type, { message, ...option })
+      return postMessage("nostr", option.type, { message, ...option });
     },
     decrypt(ciphertext, option) {
-      return Promise.resolve("Not implemented")
+      return Promise.resolve("Not implemented");
     },
 
     // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
@@ -48,39 +48,43 @@ export const WindowSSI: WindowSSI = {
 
     _proxy: new EventTarget(),
     dispatchEvent(event) {
-      return WindowSSI.nostr._proxy.dispatchEvent(event)
+      return WindowSSI.nostr._proxy.dispatchEvent(event);
     },
     addEventListener(
       type: string,
       callback: EventListenerOrEventListenerObject | null,
       options?: AddEventListenerOptions | boolean
     ) {
-      return WindowSSI.nostr._proxy.addEventListener(type, callback, options)
+      return WindowSSI.nostr._proxy.addEventListener(type, callback, options);
     },
     removeEventListener(
       type: string,
       callback: EventListenerOrEventListenerObject | null,
       options?: EventListenerOptions | boolean
     ) {
-      return WindowSSI.nostr._proxy.removeEventListener(type, callback, options)
+      return WindowSSI.nostr._proxy.removeEventListener(
+        type,
+        callback,
+        options
+      );
     },
   }),
 
   dispatchEvent(event: Event) {
-    return WindowSSI._proxy.dispatchEvent(event)
+    return WindowSSI._proxy.dispatchEvent(event);
   },
   addEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: AddEventListenerOptions | boolean
   ) {
-    return WindowSSI._proxy.addEventListener(type, callback, options)
+    return WindowSSI._proxy.addEventListener(type, callback, options);
   },
   removeEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: EventListenerOptions | boolean
   ) {
-    return WindowSSI._proxy.removeEventListener(type, callback, options)
+    return WindowSSI._proxy.removeEventListener(type, callback, options);
   },
-}
+};

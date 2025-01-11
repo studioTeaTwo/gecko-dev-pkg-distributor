@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -16,91 +16,91 @@ import {
   Switch,
   Text,
   VStack,
-} from "@chakra-ui/react"
-import { dispatchEvents } from "../../hooks/useChildActorEvent"
+} from "@chakra-ui/react";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
   Credential,
   SelfsovereignidentityDefaultProps,
-} from "../../custom.type"
-import { promptForPrimaryPassword } from "../../shared/utils"
-import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
+} from "../../custom.type";
+import { promptForPrimaryPassword } from "../../shared/utils";
+import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 
 interface NostrCredential extends Credential {
   properties: {
-    pubkey: string
-    seckey: string
-    displayName: string
-  }
+    pubkey: string;
+    seckey: string;
+    displayName: string;
+  };
 }
 
-const SafeProtocols = ["http", "https", "moz-extension"]
+const SafeProtocols = ["http", "https", "moz-extension"];
 export const DefaultTrustedSites = [
   {
     name: "",
     url: "http://localhost",
     permissions: { read: true, write: true, admin: true },
   },
-]
+];
 
-const OneHour = 60 * 60 * 1000
+const OneHour = 60 * 60 * 1000;
 
 export default function NIP07(props: SelfsovereignidentityDefaultProps) {
-  const { prefs, credentials } = props
-  const { modifyCredentialToStore, onPrefChanged } = dispatchEvents
+  const { prefs, credentials } = props;
+  const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
-  const [newSite, setNewSite] = useState("")
-  const [isOpenDialog, setIsOpenDialog] = useState(false)
-  const [error, setError] = useState("")
+  const [newSite, setNewSite] = useState("");
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [error, setError] = useState("");
 
   const nostrkeys = useMemo(
     () =>
       credentials
-        .filter((credential) => credential.protocolName === "nostr")
+        .filter(credential => credential.protocolName === "nostr")
         .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
     [credentials]
-  )
+  );
 
   const handleUsedTrustedSites = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
-    onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked })
-  }
+    onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked });
+  };
 
-  const handleNewSiteChange = (e) => setNewSite(e.target.value)
+  const handleNewSiteChange = e => setNewSite(e.target.value);
   const handleRegisterSite = async (
     e:
       | React.MouseEvent<HTMLButtonElement, MouseEvent>
       | React.KeyboardEvent<HTMLInputElement>
   ) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!SafeProtocols.some((protocol) => newSite.startsWith(protocol))) {
-      alert(`Currently, only supports ${SafeProtocols.join(",")}.`)
-      return
+    if (!SafeProtocols.some(protocol => newSite.startsWith(protocol))) {
+      alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
+      return;
     }
     // TODO(ssb): improve the match method, such as supporting glob.
-    const found = nostrkeys.some((site) =>
-      site.trustedSites.some((site) => site.url === newSite)
-    )
+    const found = nostrkeys.some(site =>
+      site.trustedSites.some(site => site.url === newSite)
+    );
     if (found) {
-      alert("The url exists already.")
-      return
+      alert("The url exists already.");
+      return;
     }
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
@@ -121,18 +121,18 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         newSite.startsWith("moz-extension")
           ? { newExtensionForTrustedSite: newSite }
           : null
-      )
+      );
     }
-  }
+  };
 
-  const handleRemoveSite = async (removedSite) => {
+  const handleRemoveSite = async removedSite => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
@@ -140,24 +140,24 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       modifyCredentialToStore({
         guid: item.guid,
         trustedSites: item.trustedSites.filter(
-          (site) => site.url !== removedSite.url
+          site => site.url !== removedSite.url
         ),
-      })
+      });
     }
-  }
+  };
 
   const getTrustedSites = useCallback(() => {
     const trustedSites = Array.from(
       new Set(
         nostrkeys
-          .map((key) => key.trustedSites)
+          .map(key => key.trustedSites)
           .flat()
-          .map((site) => JSON.stringify(site))
+          .map(site => JSON.stringify(site))
       )
-    ).map((site) => JSON.parse(site))
+    ).map(site => JSON.parse(site));
     return (
       <>
-        {trustedSites.map((site) => (
+        {trustedSites.map(site => (
           <>
             <GridItem>
               <Heading as="h5" size="sm">
@@ -177,58 +177,61 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
           </>
         ))}
       </>
-    )
-  }, [nostrkeys])
+    );
+  }, [nostrkeys]);
 
   const handleUsedBuiltinNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const checked = e.target.checked
-    onPrefChanged({ protocolName: "nostr", usedBuiltinNip07: checked })
-  }
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", usedBuiltinNip07: checked });
+  };
 
   const handleUsedPrimarypasswordToApps = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
-    onPrefChanged({ protocolName: "nostr", usedPrimarypasswordToApps: checked })
-  }
+    onPrefChanged({
+      protocolName: "nostr",
+      usedPrimarypasswordToApps: checked,
+    });
+  };
   const handleExpiryTimeForPrimarypasswordToApps = async (
     valueAsString: string,
     valueAsNumber: number
   ) => {
     const primaryPasswordAuth = await promptForPrimaryPassword(
       "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-    )
+    );
     if (!primaryPasswordAuth) {
-      setIsOpenDialog(true)
-      return
+      setIsOpenDialog(true);
+      return;
     }
 
     onPrefChanged({
       protocolName: "nostr",
       expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour,
-    })
-  }
+    });
+  };
 
   const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const checked = e.target.checked
-    onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked })
-  }
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked });
+  };
 
-  const cancelRef = React.useRef()
+  const cancelRef = React.useRef();
   const onCloseDialog = () => {
-    setIsOpenDialog(false)
-  }
+    setIsOpenDialog(false);
+  };
 
   return (
     <>
@@ -267,7 +270,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
               <Switch
                 id="nostr-pref-usedPrimarypasswordToApps"
                 isChecked={prefs.nostr.usedPrimarypasswordToApps}
-                onChange={(e) =>
+                onChange={e =>
                   handleUsedPrimarypasswordToApps(e.target.checked)
                 }
               />
@@ -327,7 +330,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
               <Switch
                 id="nostr-pref-usedTrustedSites"
                 isChecked={prefs.nostr.usedTrustedSites}
-                onChange={(e) => handleUsedTrustedSites(e.target.checked)}
+                onChange={e => handleUsedTrustedSites(e.target.checked)}
               />
             </GridItem>
             <GridItem>
@@ -339,9 +342,9 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   placeholder="https://example/"
                   value={newSite}
                   onChange={handleNewSiteChange}
-                  onKeyPress={(e) => {
+                  onKeyPress={e => {
                     if (e.key === "Enter") {
-                      handleRegisterSite(e)
+                      handleRegisterSite(e);
                     }
                   }}
                   maxW="500px"
@@ -365,5 +368,5 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         cancelRef={cancelRef}
       />
     </>
-  )
+  );
 }

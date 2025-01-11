@@ -5,4 +5,4 @@ export const state = {
       usedBuiltinNip07: false,
     },
   },
-}
+};

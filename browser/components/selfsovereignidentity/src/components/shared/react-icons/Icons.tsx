@@ -236,7 +236,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { GenIcon } from "./iconBase"
+import { GenIcon } from "./iconBase";
 
 export function LuEyeOff(props) {
   return GenIcon({
@@ -271,7 +271,7 @@ export function LuEyeOff(props) {
         child: [],
       },
     ],
-  })(props)
+  })(props);
 }
 export function LuEye(props) {
   return GenIcon({
@@ -292,7 +292,7 @@ export function LuEye(props) {
       },
       { tag: "circle", attr: { cx: "12", cy: "12", r: "3" }, child: [] },
     ],
-  })(props)
+  })(props);
 }
 export function LuPinOff(props) {
   return GenIcon({
@@ -329,7 +329,7 @@ export function LuPinOff(props) {
         child: [],
       },
     ],
-  })(props)
+  })(props);
 }
 export function LuPin(props) {
   return GenIcon({
@@ -356,7 +356,7 @@ export function LuPin(props) {
         child: [],
       },
     ],
-  })(props)
+  })(props);
 }
 export function GiBirdTwitter(props) {
   return GenIcon({
@@ -371,7 +371,7 @@ export function GiBirdTwitter(props) {
         child: [],
       },
     ],
-  })(props)
+  })(props);
 }
 export function MdElectricBolt(props) {
   return GenIcon({
@@ -387,5 +387,5 @@ export function MdElectricBolt(props) {
         child: [],
       },
     ],
-  })(props)
+  })(props);
 }

@@ -84,7 +84,7 @@ export const browserSsiHelper = {
   getPrefs(protocolName) {
     // Since this is obtained passively and is not something that the user explicitly takes action on,
     // askPermission is not called. The user controls whether or not to disclose it in the settings.
-    // Here, only values ​​that are based on such assumptions should be returned.
+    // Here, only values that are based on such assumptions should be returned.
 
     // Validate params
     if (!browserSsiHelper.validateProtocolName(protocolName)) {

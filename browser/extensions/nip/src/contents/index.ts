@@ -4,25 +4,29 @@
 
 /* eslint-env webextensions */
 
-import { log } from "../shared/logger"
-import { init as nostrInit } from "./nostr"
+import { log } from "../shared/logger";
+import { init as nostrInit } from "./nostr";
 
-log("content-script working", browser.runtime.getURL("inpages.bundle.js"))
+log("content-script working", browser.runtime.getURL("inpages.bundle.js"));
 
 function loadInpageScript(url) {
   try {
-    if (!document) throw new Error("No document")
-    const container = document.head || document.documentElement
-    if (!container) throw new Error("No container element")
-    const scriptEl = document.createElement("script")
-    scriptEl.setAttribute("async", "false")
-    scriptEl.setAttribute("type", "text/javascript")
-    scriptEl.setAttribute("src", url)
-    container.appendChild(scriptEl)
+    if (!document) {
+      throw new Error("No document");
+    }
+    const container = document.head || document.documentElement;
+    if (!container) {
+      throw new Error("No container element");
+    }
+    const scriptEl = document.createElement("script");
+    scriptEl.setAttribute("async", "false");
+    scriptEl.setAttribute("type", "text/javascript");
+    scriptEl.setAttribute("src", url);
+    container.appendChild(scriptEl);
   } catch (err) {
-    console.error("injection failed", err)
+    console.error("injection failed", err);
   }
 }
-loadInpageScript(browser.runtime.getURL("inpages.bundle.js"))
+loadInpageScript(browser.runtime.getURL("inpages.bundle.js"));
 
-nostrInit()
+nostrInit();

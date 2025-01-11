@@ -7,8 +7,8 @@
     "start": "npm run build && npm run watch",
     "build": "vite build",
     "watch": "npm run build -- --watch",
-    "lint": "eslint --ext .ts,.tsx,mjs ./{src,actors}",
-    "lint:fix": "eslint --fix --ext .ts,.tsx,mjs ./{src,actors}",
+    "lint": "eslint --config .eslintrc.json --ext .ts,.tsx,.js ./src",
+    "lint:fix": "eslint --fix --config .eslintrc.json --ext .ts,.tsx,.js ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",

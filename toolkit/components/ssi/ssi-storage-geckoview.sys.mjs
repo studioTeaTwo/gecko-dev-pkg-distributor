@@ -47,15 +47,15 @@ export class SsiStorage extends SsiStorage_json {
    */
   terminate() {}
 
-  async addCredentialsAsync(selfsovereignidentities, continueOnDuplicates = false) {
+  async addCredentialsAsync(_credentials, _continueOnDuplicates = false) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  removeCredential(selfsovereignidentity) {
+  removeCredential(_credential) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  modifyCredential(oldCredential, newCredentialData) {
+  modifyCredential(_oldCredential, _newCredential) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
@@ -116,7 +116,7 @@ export class SsiStorage extends SsiStorage_json {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  countCredentials(protocol, credential, secret) {
+  countCredentials(_protocolName, _credentialName) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 

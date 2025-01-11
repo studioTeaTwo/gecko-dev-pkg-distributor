@@ -4,9 +4,9 @@
 
 /* eslint-env webextensions */
 
-import { log } from "../shared/logger"
-import { init as nostrInit } from "./nostr"
+import { log } from "../shared/logger";
+import { init as nostrInit } from "./nostr";
 
-log("background-script working")
+log("background-script working");
 
-nostrInit()
+nostrInit();

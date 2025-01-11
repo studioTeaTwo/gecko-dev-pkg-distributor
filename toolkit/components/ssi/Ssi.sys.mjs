@@ -114,10 +114,7 @@ Ssi.prototype = {
           await this._ssi._storage.terminate();
           this._ssi._initStorage();
           await this._ssi.initializationPromise;
-          Services.obs.notifyObservers(
-            null,
-            "ssi-storage-replace-complete"
-          );
+          Services.obs.notifyObservers(null, "ssi-storage-replace-complete");
         })();
       } else if (topic == "gather-telemetry") {
         // When testing, the "data" parameter is a string containing the
