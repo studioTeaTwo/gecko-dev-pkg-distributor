@@ -25,6 +25,7 @@ XPIDL_SOURCES += [
 XPIDL_MODULE = "ssi"
 
 EXTRA_JS_MODULES += [
+    "AuthCache.sys.mjs",
     "CredentialInfo.sys.mjs",
     "ssi-crypto-SDR.sys.mjs",
     "ssi-storage-json.sys.mjs",

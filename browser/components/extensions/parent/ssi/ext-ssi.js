@@ -12,15 +12,15 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
+const { AuthCache } = ChromeUtils.importESModule(
+  "resource://gre/modules/AuthCache.sys.mjs"
+);
 
-const INITIAL_EXPIRATIONTIME = Number.NEGATIVE_INFINITY;
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
     const { tabManager } = context.extension;
-    // TODO(ssb): persist
-    let _authExpirationTimes = new Map();
 
     return {
       ssi: {
@@ -82,12 +82,18 @@ this.ssi = class extends ExtensionAPI {
               .map(credential => {
                 // Filter only the data to need
                 const filteredVal = {
-                  // credential info
                   protocolName: credential.protocolName,
                   credentialName: credential.credentialName,
-                  identifier: credential.identifier,
                   primary: credential.primary,
                 };
+                if (
+                  !(
+                    credential.protocolName === "bitcoin" &&
+                    credential.credentialName === "bip39"
+                  )
+                ) {
+                  filteredVal.identifier = credential.identifier;
+                }
                 return filteredVal;
               });
           } catch (e) {
@@ -116,30 +122,33 @@ this.ssi = class extends ExtensionAPI {
             // TODO(ssb): Background exec check
             const activeTabId = tabTracker.getId(tabTracker.activeTab);
 
+            // Prepare condition
             // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
             const { browser } = tabManager.get(activeTabId);
             const originSite = browser.contentPrincipal.originNoSuffix;
             const originExtension =
               context.xulBrowser.contentPrincipal.originNoSuffix;
+
+            // Prepare internal state
             const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
               protocolName
             );
+            const credentials =
+              await lazy.SsiHelper.searchCredentialsWithoutSecret({
+                protocolName,
+                credentialName,
+                primary: true,
+              });
+            if (credentials.length === 0) {
+              return false;
+            }
+            const authKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
+            const auth = AuthCache.get(authKey);
 
             if (internalPrefs["trustedSites.enabled"]) {
-              const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  protocolName,
-                  credentialName,
-                  primary: true,
-                });
-              if (credentials.length === 0) {
-                return false;
-              }
-
-              const trustedSites = JSON.parse(credentials[0].trustedSites);
               // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
               // TODO(ssb): Number of cases for sites and extensions
-              const trusted = trustedSites.some(
+              const trusted = auth.trustedSites.some(
                 site =>
                   originSite.startsWith(site.url) &&
                   originExtension.startsWith(site.url)
@@ -152,24 +161,28 @@ this.ssi = class extends ExtensionAPI {
             }
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
+              // Prepare stuff
               const messageText = {
                 value: `${message || "AUTH LOCK"} \n${originSite}`,
               };
               const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
-
               const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
                 lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
               );
               if (isOSAuthEnabled) {
                 const messageId = MESSAGE_ID + "-" + AppConstants.platform;
               }
-
-              let _authExpirationTime = _authExpirationTimes.get(originSite);
+              let _authExpirationTime = auth.passwordAuthorizedSites.filter(
+                site => site.url === originSite
+              )[0]?.expiryTime;
               if (_authExpirationTime === undefined) {
-                _authExpirationTime = INITIAL_EXPIRATIONTIME;
-                _authExpirationTimes.set(originSite, INITIAL_EXPIRATIONTIME);
+                _authExpirationTime = 0;
+                AuthCache.set(authKey, {
+                  passwordAuthorizedSites: [{ url: originSite, expiryTime: 0 }],
+                });
               }
 
+              // Auth
               const { isAuthorized, telemetryEvent } =
                 await lazy.SsiHelper.requestReauth(
                   browser.browsingContext.embedderElement,
@@ -178,19 +191,26 @@ this.ssi = class extends ExtensionAPI {
                   messageText.value,
                   captionText.value
                 );
-              if (isAuthorized) {
-                _authExpirationTimes.set(
-                  originSite,
-                  Date.now() +
-                    internalPrefs["primarypassword.toApps.expiryTime"]
-                );
+
+              // Update expiry time if password is newly entered.
+              const isEntered = [
+                "success",
+                "success_unsupported_platform",
+              ].includes(telemetryEvent.value);
+              if (isAuthorized && isEntered) {
+                const preference =
+                  internalPrefs["primarypassword.toApps.expiryTime"];
+                const expiryTime = preference > 0 ? Date.now() + preference : 0;
+                AuthCache.set(authKey, {
+                  passwordAuthorizedSites: [{ url: originSite, expiryTime }],
+                });
               }
               console.log(
                 "primarypassword",
                 isAuthorized,
                 telemetryEvent,
                 originSite,
-                _authExpirationTimes.get(originSite)
+                AuthCache.get(authKey)
               );
               if (isAuthorized) {
                 return true;

@@ -208,6 +208,12 @@ Ssi.prototype = {
     if (credential.trustedSites == null) {
       throw new Error("Can't add a credential with a null trustedSites.");
     }
+    // For credentials w/o a trustedSites, set to [], not null.
+    if (credential.passwordAuthorizedSites == null) {
+      throw new Error(
+        "Can't add a credential with a null passwordAuthorizedSites."
+      );
+    }
 
     credential.QueryInterface(Ci.nsICredentialMetaInfo);
     for (let pname of ["timeCreated", "timeLastUsed", "timeSecretChanged"]) {

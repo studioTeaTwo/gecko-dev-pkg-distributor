@@ -71,6 +71,8 @@ export const SsiHelper = {
       return (
         l.secret.includes(c) ||
         l.identifier.includes(c) ||
+        l.trustedSites.includes(c) ||
+        l.passwordAuthorizedSites.includes(c) ||
         l.properties.includes(c)
       );
     }
@@ -105,6 +107,12 @@ export const SsiHelper = {
     ) {
       throw new Error("trustedSites must be non-empty strings");
     }
+    if (
+      !aCredential.passwordAuthorizedSites ||
+      typeof aCredential.passwordAuthorizedSites != "string"
+    ) {
+      throw new Error("passwordAuthorizedSites must be non-empty strings");
+    }
 
     // In theory these nulls should just be rolled up into the encrypted
     // values, but nsISecretDecoderRing doesn't use nsStrings, so the
@@ -113,6 +121,8 @@ export const SsiHelper = {
     if (
       aCredential.secret.includes("\0") ||
       aCredential.identifier.includes("\0") ||
+      aCredential.trustedSites.includes("\0") ||
+      aCredential.passwordAuthorizedSites.includes("\0") ||
       aCredential.properties.includes("\0")
     ) {
       throw new Error("credential values can't contain nulls");
@@ -158,7 +168,9 @@ export const SsiHelper = {
       aCredential1.credentialName != aCredential2.credentialName ||
       aCredential1.secret != aCredential2.secret ||
       aCredential1.identifier != aCredential2.identifier ||
-      aCredential1.trustedSites != aCredential2.trustedSites
+      aCredential1.trustedSites != aCredential2.trustedSites ||
+      aCredential1.passwordAuthorizedSites !=
+        aCredential2.passwordAuthorizedSites
     ) {
       return false;
     }
@@ -199,9 +211,10 @@ export const SsiHelper = {
         aNewCredentialData.protocolName,
         aNewCredentialData.credentialName,
         aNewCredentialData.primary,
-        aNewCredentialData.trustedSites,
         aNewCredentialData.secret,
         aNewCredentialData.identifier,
+        aNewCredentialData.trustedSites,
+        aNewCredentialData.passwordAuthorizedSites,
         aNewCredentialData.properties
       );
       newCredential.unknownFields = aNewCredentialData.unknownFields;
@@ -235,6 +248,7 @@ export const SsiHelper = {
           case "secret":
           case "identifier":
           case "trustedSites":
+          case "passwordAuthorizedSites":
           case "properties":
           case "unknownFields":
           // nsICredentialMetaInfo (fall through)
@@ -290,7 +304,15 @@ export const SsiHelper = {
       !newCredential.trustedSites.length
     ) {
       throw new Error(
-        "Can't add a credential with a null or empty  trustedSites."
+        "Can't add a credential with a null or empty trustedSites."
+      );
+    }
+    if (
+      newCredential.passwordAuthorizedSites == null ||
+      !newCredential.passwordAuthorizedSites.length
+    ) {
+      throw new Error(
+        "Can't add a credential with a null or empty passwordAuthorizedSites."
       );
     }
 
@@ -437,9 +459,10 @@ export const SsiHelper = {
       credential.protocolName,
       credential.credentialName,
       credential.primary,
-      credential.trustedSites,
       credential.secret,
       credential.identifier,
+      credential.trustedSites,
+      credential.passwordAuthorizedSites,
       credential.properties
     );
 

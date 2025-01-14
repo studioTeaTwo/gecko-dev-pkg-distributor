@@ -54,6 +54,7 @@ const NostrTemplate: NostrCredential = {
   secret: "", // raw seckey
   primary: false,
   trustedSites: [],
+  passwordAuthorizedSites: [],
   properties: {
     displayName: "",
   },

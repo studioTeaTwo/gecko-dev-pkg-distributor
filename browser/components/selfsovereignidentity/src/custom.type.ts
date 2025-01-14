@@ -38,8 +38,17 @@ export interface Credential {
   secret: string;
   identifier: string;
   trustedSites: {
-    name: string;
     url: string;
+    name: string;
+    permissions: {
+      read: boolean;
+      write: boolean;
+      admin: boolean;
+    };
+  }[];
+  passwordAuthorizedSites: {
+    url: string;
+    expiryTime: number;
     permissions: {
       read: boolean;
       write: boolean;
@@ -52,9 +61,10 @@ export interface Credential {
 // Pass object type through JSON.stringify for IPC & JSONstorage
 export type CredentialForPayload = Omit<
   Credential,
-  "properties" | "trustedSites"
+  "trustedSites" | "passwordAuthorizedSites" | "properties"
 > & {
   trustedSites: string;
+  passwordAuthorizedSites: string;
   properties: string;
 };
 

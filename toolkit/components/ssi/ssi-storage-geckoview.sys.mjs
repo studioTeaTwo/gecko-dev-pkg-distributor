@@ -105,6 +105,9 @@ export class SsiStorage extends SsiStorage_json {
       ...vanillaCredential,
       encryptedSecret: vanillaCredential.seret,
       encryptedIdentifier: vanillaCredential.identifier,
+      encryptedTrustedSites: vanillaCredential.trustedSites,
+      encryptedPasswordAuthorizedSites:
+        vanillaCredential.passwordAuthorizedSites,
       encryptedProperties: vanillaCredential.properties,
     };
   }

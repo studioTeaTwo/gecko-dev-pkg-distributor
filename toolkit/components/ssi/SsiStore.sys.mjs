@@ -15,9 +15,10 @@
  *       "protocolName": "bitcoin",
  *       "credentialName": "bip39",
  *       "primary": "true",
- *       "trustedSites": [{ url: "http://localhost", permissions: { read: true, write: true, admin: true }}],
  *       "encryptedSecret": "...",
  *       "encryptedIdentifier": "...",
+ *       "encryptedTrustedSites": [{ url: "http://localhost", name: "site name", permissions: { read: true, write: true, admin: true }}],
+ *       "encryptedPasswordAuthorizedSites": [{ url: "http://localhost", expiryTime: 1736756527899, permissions: {...}}],
  *       "encryptedProperties": "...",
  *       "guid": "...",
  *       "encType": 1,
@@ -53,9 +54,7 @@ import { JSONFile } from "resource://gre/modules/JSONFile.sys.mjs";
  * For example, this number should NOT be changed when a new optional field is
  * added to a credential entry.
  */
-const kDataVersion = 3;
-
-const MAX_DATE_MS = 8640000000000000;
+const kDataVersion = 1;
 
 // SsiStore
 
@@ -95,26 +94,9 @@ SsiStore.prototype._dataPostProcessor = function (data) {
     data.credentials = [];
   }
 
-  // sanitize dates in credentials
-  if (!("version" in data) || data.version < 3) {
-    let dateProperties = ["timeCreated", "timeLastUsed", "timeSecretChanged"];
-    let now = Date.now();
-    function getEarliestDate(credential, defaultDate) {
-      let earliestDate = dateProperties.reduce((earliest, pname) => {
-        let ts = credential[pname];
-        return !ts ? earliest : Math.min(ts, earliest);
-      }, defaultDate);
-      return earliestDate;
-    }
-    for (let credential of data.credentials) {
-      for (let pname of dateProperties) {
-        let earliestDate;
-        if (!credential[pname] || credential[pname] > MAX_DATE_MS) {
-          credential[pname] =
-            earliestDate || (earliestDate = getEarliestDate(credential, now));
-        }
-      }
-    }
+  // Migrate
+  if (!("version" in data) || data.version < 1) {
+    /* empty */
   }
 
   // Indicate that the current version of the code has touched the file.
