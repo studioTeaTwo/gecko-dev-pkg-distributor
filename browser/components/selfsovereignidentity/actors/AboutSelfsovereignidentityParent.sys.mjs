@@ -7,7 +7,7 @@ import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs";
-import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs";
+import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs"; // Treat AuthCache as a singleton
 
 const lazy = {};
 
@@ -229,7 +229,9 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     try {
       this.sendAsyncMessage("AboutSelfsovereignidentity:Setup", {
         credentials,
-        addons: [{ id: ssi.id, name: ssi.name, url: ssi.getURL() }],
+        addons: [
+          { id: ssi.id, name: ssi.name, url: ssi.getURL().slice(0, -1) },
+        ],
         primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
         passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
       });

@@ -24804,6 +24804,54 @@ function stopEvent(event) {
   event.preventDefault();
   event.stopPropagation();
 }
+const Divider = forwardRef(
+  function Divider2(props, ref) {
+    const {
+      borderLeftWidth,
+      borderBottomWidth,
+      borderTopWidth,
+      borderRightWidth,
+      borderWidth,
+      borderStyle,
+      borderColor,
+      ...styles2
+    } = useStyleConfig("Divider", props);
+    const {
+      className,
+      orientation = "horizontal",
+      __css,
+      ...rest
+    } = omitThemingProps(props);
+    const dividerStyles = {
+      vertical: {
+        borderLeftWidth: borderLeftWidth || borderRightWidth || borderWidth || "1px",
+        height: "100%"
+      },
+      horizontal: {
+        borderBottomWidth: borderBottomWidth || borderTopWidth || borderWidth || "1px",
+        width: "100%"
+      }
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.hr,
+      {
+        ref,
+        "aria-orientation": orientation,
+        ...rest,
+        __css: {
+          ...styles2,
+          border: "0",
+          borderColor,
+          borderStyle,
+          ...dividerStyles[orientation],
+          ...__css
+        },
+        className: cx("chakra-divider", className)
+      }
+    );
+  }
+);
+Divider.displayName = "Divider";
 const [EditableStylesProvider, useEditableStyles] = createContext({
   name: `EditableStylesContext`,
   errorMessage: `useEditableStyles returned is 'undefined'. Seems you forgot to wrap the components in "<Editable />" `
@@ -31574,25 +31622,26 @@ export {
   AlertDialog as A,
   Button as B,
   Card as C,
-  Tabs as D,
+  Divider as D,
   Editable as E,
   Flex as F,
   GridItem as G,
   HStack as H,
   IconButton as I,
-  TabList as J,
-  Tab as K,
+  EditablePreview as J,
+  EditableInput as K,
   Link as L,
   ModalOverlay as M,
   NumberInput as N,
-  TabPanels as O,
-  TabPanel as P,
-  createRoot as Q,
+  CardBody as O,
+  CardFooter as P,
+  hexToBytes$1 as Q,
   React as R,
   StackDivider as S,
   Text as T,
-  ChakraProvider as U,
+  createRoot as U,
   VStack as V,
+  ChakraProvider as W,
   bech32 as a,
   bytesToHex$1 as b,
   AlertDialogContent as c,
@@ -31605,18 +31654,18 @@ export {
   jsxRuntimeExports as j,
   Grid as k,
   Switch as l,
-  NumberInputField as m,
-  NumberInputStepper as n,
-  NumberIncrementStepper as o,
-  NumberDecrementStepper as p,
-  InputGroup as q,
+  Tabs as m,
+  TabList as n,
+  Tab as o,
+  TabPanels as p,
+  TabPanel as q,
   reactExports as r,
   schnorr as s,
-  Input as t,
-  CardHeader as u,
-  EditablePreview as v,
-  EditableInput as w,
-  CardBody as x,
-  CardFooter as y,
-  hexToBytes$1 as z
+  InputGroup as t,
+  Input as u,
+  NumberInputField as v,
+  NumberInputStepper as w,
+  NumberIncrementStepper as x,
+  NumberDecrementStepper as y,
+  CardHeader as z
 };

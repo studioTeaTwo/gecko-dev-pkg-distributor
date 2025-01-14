@@ -12,6 +12,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
+// Treat AuthCache as a singleton
 const { AuthCache } = ChromeUtils.importESModule(
   "resource://gre/modules/AuthCache.sys.mjs"
 );
@@ -20,8 +21,6 @@ const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
-    const { tabManager } = context.extension;
-
     return {
       ssi: {
         async searchCredentialsWithoutSecret(
@@ -119,20 +118,15 @@ this.ssi = class extends ExtensionAPI {
             if (!enabled) {
               return false;
             }
-            // TODO(ssb): Background exec check
-            const activeTabId = tabTracker.getId(tabTracker.activeTab);
 
-            // Prepare condition
-            // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
-            const { browser } = tabManager.get(activeTabId);
-            const originSite = browser.contentPrincipal.originNoSuffix;
-            const originExtension =
-              context.xulBrowser.contentPrincipal.originNoSuffix;
-
-            // Prepare internal state
-            const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
-              protocolName
-            );
+            // Prepare stuff
+            const { originSite, originExtension, browsingContext } =
+              lazy.browserSsiHelper.getOrigin(context, tabTracker);
+            if (!originSite || !originExtension) {
+              return false;
+            }
+            const internalPrefs =
+              lazy.browserSsiHelper.getInternalPrefs(protocolName);
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret({
                 protocolName,
@@ -146,12 +140,10 @@ this.ssi = class extends ExtensionAPI {
             const auth = AuthCache.get(authKey);
 
             if (internalPrefs["trustedSites.enabled"]) {
-              // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-              // TODO(ssb): Number of cases for sites and extensions
-              const trusted = auth.trustedSites.some(
-                site =>
-                  originSite.startsWith(site.url) &&
-                  originExtension.startsWith(site.url)
+              const trusted = lazy.browserSsiHelper.isTrusted(
+                originSite,
+                originExtension,
+                auth.trustedSites
               );
               console.log("trusted", trusted, originSite, originExtension);
               if (trusted) {
@@ -185,7 +177,7 @@ this.ssi = class extends ExtensionAPI {
               // Auth
               const { isAuthorized, telemetryEvent } =
                 await lazy.SsiHelper.requestReauth(
-                  browser.browsingContext.embedderElement,
+                  browsingContext.embedderElement,
                   isOSAuthEnabled,
                   _authExpirationTime,
                   messageText.value,
@@ -218,12 +210,7 @@ this.ssi = class extends ExtensionAPI {
               // go to self-sovereign check
             }
 
-            // NOTE(ssb): Returns true if all settings are explicitly turned off.
-            // eslint-disable-next-line no-unneeded-ternary
-            return !internalPrefs["trustedSites.enabled"] &&
-              !internalPrefs["primarypassword.toApps.enabled"]
-              ? true
-              : false;
+            return lazy.browserSsiHelper.isSelfsovereignty(protocolName);
           } catch (e) {
             console.error(e);
             return false;

@@ -338,7 +338,9 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
           </Grid>
         </Box>
         <Box>
-          {nostrkeys.length === 0 && <p>No key is regisitered.</p>}
+          {nostrkeys.length === 0 && (
+            <Text fontSize="sm">No key regisitered</Text>
+          )}
           <Flex gap={6} wrap="wrap">
             {nostrkeys.map(addInterpretedKeys).map((item, i) => (
               <Card maxW="md" overflow="hidden" key={i}>

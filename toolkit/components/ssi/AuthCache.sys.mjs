@@ -4,7 +4,7 @@
 
 /**
  * A key-value, on-memory store to use for authorization in API internal layer
- * (and cache update from about:selfsovereignidentity).
+ * (and cache sync from about:selfsovereignidentity).
  * It's singleton instance and should ideally be only on parent process.
  *
  * key: `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
@@ -44,13 +44,13 @@ class _AuthCache {
   }
 
   /**
-   * Update the kv cache together with the json file.
-   * If previous value is the same, don't update the json file. This becomes important when expiration preference
-   * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.enabled) is 0.
+   * Update the kv cache together with the persistence (ssi store).
+   * If previous value is the same, don't update the ssi store. This becomes important when expiration preference
+   * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.expiryTime) is 0.
    *
    * @param {string} key
    * @param {Object} value - Only new values from the API, all values from about:selfsovereignidentity
-   * @param {boolean} [fromAbout=false] - Cache updates from about:selfsovereignidentity
+   * @param {boolean} [fromAbout=false] - Updates from about:selfsovereignidentity. In this case don't need to persist.
    */
   async set(key, value, fromAbout = false) {
     const prevValue = this.get(key);
@@ -59,7 +59,9 @@ class _AuthCache {
     }
 
     // Build the new value
-    const newValue = JSON.parse(JSON.stringify(prevValue));
+    const newValue = JSON.parse(
+      JSON.stringify(prevValue).replace(/^''$/g, '"')
+    ); // TODO(ssb): investigate
     const keys = key.split(":");
     let count = 0;
     const notPersistent = [];
@@ -119,10 +121,12 @@ class _AuthCache {
     Services.ssi.modifyCredential(old[0], modifiedCredential);
   }
 
+  // Only for cach sync from about:selfsovereignidentity, don't need to persist.
   delete(key) {
     this._cache.delete(key);
   }
 
+  // Only for cach sync from about:selfsovereignidentity, don't need to persist.
   reset() {
     this._cache = new Map();
   }

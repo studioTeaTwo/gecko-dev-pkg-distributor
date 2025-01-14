@@ -50,14 +50,12 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               ensureBytes("message", message); // Will throw error for other types.
 
               // Check permission
-              // TODO(ssb): call ssi.askPermission
               const enabled = Services.prefs.getBoolPref(
                 "selfsovereignidentity.nostr.enabled"
               );
               if (!enabled) {
                 return null;
               }
-
               const credentials =
                 await lazy.SsiHelper.searchCredentialsWithoutSecret({
                   protocolName: "nostr",
@@ -65,6 +63,18 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                   primary: true,
                 });
               if (credentials.length === 0) {
+                return null;
+              }
+              const { originSite, originExtension } =
+                lazy.browserSsiHelper.getOrigin(context, tabTracker);
+              const isAuthorized = lazy.browserSsiHelper.isAuthorized(
+                "nostr",
+                "nsec",
+                credentials[0].identifier,
+                originSite,
+                originExtension
+              );
+              if (!isAuthorized) {
                 return null;
               }
 

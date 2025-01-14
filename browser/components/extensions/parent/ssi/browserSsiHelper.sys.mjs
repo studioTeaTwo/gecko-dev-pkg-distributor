@@ -4,6 +4,8 @@
 
 /* globals Services */
 
+import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs"; // Treat AuthCache as a singleton
+
 const PROTOCOL_NAMES = ["nostr"];
 const CREDENTIAL_NAMES = ["nsec"];
 
@@ -138,5 +140,78 @@ export const browserSsiHelper = {
   },
   validateCredentialName(credentialName) {
     return CREDENTIAL_NAMES.includes(credentialName);
+  },
+  getOrigin(context, tabTracker) {
+    // TODO(ssb): Background exec check
+    const activeTabId = tabTracker.getId(tabTracker.activeTab);
+
+    // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
+    const { browser } = context.extension.tabManager.get(activeTabId);
+    const originSite = browser.contentPrincipal.originNoSuffix;
+    const originExtension = context.xulBrowser.contentPrincipal.originNoSuffix;
+
+    return {
+      browsingContext: browser.browsingContext,
+      originSite,
+      originExtension,
+    };
+  },
+  isAuthorized(
+    protocolName,
+    credentialName,
+    identifier,
+    originSite,
+    originExtension
+  ) {
+    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
+
+    const authKey = `${protocolName}:${credentialName}:${identifier}`;
+    const auth = AuthCache.get(authKey);
+    if (!auth) {
+      return false;
+    }
+
+    if (internalPrefs["primarypassword.toApps.enabled"]) {
+      const trusted = browserSsiHelper.isTrusted(
+        originSite,
+        originExtension,
+        auth.trustedSites
+      );
+      if (trusted) {
+        return true;
+      }
+      // go to primarypassword auth
+    }
+
+    if (internalPrefs["primarypassword.toApps.enabled"]) {
+      let _authExpirationTime = auth.passwordAuthorizedSites.filter(
+        site => site.url === originSite
+      )[0]?.expiryTime;
+      if (_authExpirationTime && _authExpirationTime > Date.now()) {
+        return true;
+      }
+      // go to self-sovereign check
+    }
+
+    return browserSsiHelper.isSelfsovereignty(protocolName);
+  },
+  isTrusted(originSite, originExtension, trustedSites) {
+    // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
+    // TODO(ssb): Number of cases for sites and extensions
+    const trusted = trustedSites.some(
+      site =>
+        originSite.startsWith(site.url) && originExtension.startsWith(site.url)
+    );
+    return trusted;
+  },
+  isSelfsovereignty(protocolName) {
+    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
+
+    // NOTE(ssb): Returns true if all settings are explicitly turned off.
+    // eslint-disable-next-line no-unneeded-ternary
+    return !internalPrefs["trustedSites.enabled"] &&
+      !internalPrefs["primarypassword.toApps.enabled"]
+      ? true
+      : false;
   },
 };

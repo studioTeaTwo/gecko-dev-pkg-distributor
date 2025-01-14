@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, N as NumberInput, m as NumberInputField, n as NumberInputStepper, o as NumberIncrementStepper, p as NumberDecrementStepper, q as InputGroup, t as Input, F as Flex, C as Card, u as CardHeader, E as Editable, v as EditablePreview, w as EditableInput, x as CardBody, y as CardFooter, z as hexToBytes, D as Tabs, J as TabList, K as Tab, O as TabPanels, P as TabPanel, Q as createRoot, U as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, H as HStack, B as Button, I as IconButton, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, m as Tabs, n as TabList, o as Tab, p as TabPanels, q as TabPanel, t as InputGroup, u as Input, D as Divider, N as NumberInput, v as NumberInputField, w as NumberInputStepper, x as NumberIncrementStepper, y as NumberDecrementStepper, F as Flex, C as Card, z as CardHeader, E as Editable, J as EditablePreview, K as EditableInput, O as CardBody, P as CardFooter, Q as hexToBytes, U as createRoot, W as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -769,32 +769,6 @@ function NIP07(props) {
       });
     }
   };
-  const getTrustedSites = reactExports.useCallback(() => {
-    const trustedSites = Array.from(
-      new Set(
-        nostrkeys.map((key) => key.trustedSites).flat().map((site) => JSON.stringify(site))
-      )
-    ).map((site) => JSON.parse(site));
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
-        site.url,
-        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          " (",
-          site.name,
-          ")"
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button,
-        {
-          variant: "outline",
-          colorScheme: "blue",
-          onClick: () => handleRemoveSite(site),
-          children: "Remove from All keys"
-        }
-      ) })
-    ] })) });
-  }, [nostrkeys]);
   const handleUsedBuiltinNip07 = (e) => {
     e.preventDefault();
     const checked = e.target.checked;
@@ -828,11 +802,93 @@ function NIP07(props) {
       expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour
     });
   };
+  const handleRevokeSite = async (revokedSite) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    for (const item of nostrkeys) {
+      modifyCredentialToStore2({
+        guid: item.guid,
+        passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
+          if (site.url === revokedSite.url) {
+            site.expiryTime = 0;
+          }
+          return site;
+        })
+      });
+    }
+  };
   const handleUsedAccountChanged = (e) => {
     e.preventDefault();
     const checked = e.target.checked;
     onPrefChanged2({ protocolName: "nostr", usedAccountChanged: checked });
   };
+  const getTrustedSites = reactExports.useCallback(() => {
+    const trustedSites = Array.from(
+      new Set(
+        nostrkeys.map((key) => key.trustedSites).flat().map((site) => JSON.stringify(site))
+      )
+    ).map((site) => JSON.parse(site));
+    return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
+        site.url,
+        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          " (",
+          site.name,
+          ")"
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: "outline",
+          colorScheme: "blue",
+          onClick: () => handleRemoveSite(site),
+          children: "Remove from All keys"
+        }
+      ) })
+    ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No site registered" });
+  }, [nostrkeys]);
+  const getPasswordAuthorizedSites = reactExports.useCallback(() => {
+    const passwordAuthorizedSites = nostrkeys.map((key) => ({
+      [key.properties.displayName]: key.passwordAuthorizedSites
+    }));
+    return passwordAuthorizedSites.map((site) => {
+      const [key, value] = Object.entries(site)[0];
+      const validSites = value.filter((site2) => site2.expiryTime > Date.now());
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key }) }),
+        validSites.length > 0 ? validSites.map((validSite) => {
+          const expiryTime = new Date(validSite.expiryTime);
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h6", size: "sm", children: [
+              validSite.url,
+              " (until ",
+              expiryTime.toLocaleDateString(),
+              " ",
+              expiryTime.toLocaleTimeString(),
+              ")"
+            ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                variant: "outline",
+                colorScheme: "blue",
+                onClick: () => handleRevokeSite(validSite),
+                children: "Revoke"
+              }
+            ) })
+          ] });
+        }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No site registered" })
+      ] });
+    });
+  }, [nostrkeys]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -845,8 +901,8 @@ function NIP07(props) {
         spacing: 4,
         align: "stretch",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "xs", children: 'You can still use these features realated to your keys on extensions/apps compatible with this browser, even if turning off "Use built-in NIP-07".' }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, alignItems: "center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: 'You can still use these features realated to your keys on extensions/apps compatible with this browser, even if turning off "Use built-in NIP-07".' }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedBuiltinNip07", children: "Use built-in NIP-07" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Switch,
@@ -856,36 +912,6 @@ function NIP07(props) {
                 onChange: handleUsedBuiltinNip07
               }
             ) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Use primary password to Web apps" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Switch,
-              {
-                id: "nostr-pref-usedPrimarypasswordToApps",
-                isChecked: prefs.nostr.usedPrimarypasswordToApps,
-                onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
-              }
-            ) }),
-            prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Hour" }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                NumberInput,
-                {
-                  id: "nostr-pref-expiryTimeForPrimarypasswordToApps",
-                  value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour,
-                  onChange: handleExpiryTimeForPrimarypasswordToApps,
-                  min: 0,
-                  size: "sm",
-                  maxW: 20,
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
-                    ] })
-                  ]
-                }
-              ) })
-            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedAccountChanged", children: 'Notify "Account Changed" to Web apps' }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Switch,
@@ -896,44 +922,104 @@ function NIP07(props) {
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Trusted Sites" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Switch,
-              {
-                id: "nostr-pref-usedTrustedSites",
-                isChecked: prefs.nostr.usedTrustedSites,
-                onChange: (e) => handleUsedTrustedSites(e.target.checked)
-              }
-            ) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Input,
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tabs, { variant: "enclosed", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Trusted Sites" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Authorized Sites by Password" }) })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Grid,
                 {
-                  placeholder: "https://example/",
-                  value: newSite,
-                  onChange: handleNewSiteChange,
-                  onKeyPress: (e) => {
-                    if (e.key === "Enter") {
-                      handleRegisterSite(e);
-                    }
-                  },
-                  maxW: "500px"
+                  gridTemplateColumns: "400px 1fr",
+                  gap: 6,
+                  alignItems: "center",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Switch,
+                      {
+                        id: "nostr-pref-usedTrustedSites",
+                        isChecked: prefs.nostr.usedTrustedSites,
+                        onChange: (e) => handleUsedTrustedSites(e.target.checked)
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Input,
+                        {
+                          placeholder: "https://example/",
+                          value: newSite,
+                          onChange: handleNewSiteChange,
+                          onKeyPress: (e) => {
+                            if (e.key === "Enter") {
+                              handleRegisterSite(e);
+                            }
+                          },
+                          maxW: "500px"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: handleRegisterSite,
+                          children: "Register to All keys"
+                        }
+                      )
+                    ] }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {}),
+                    getTrustedSites()
+                  ]
                 }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Grid,
                 {
-                  variant: "outline",
-                  colorScheme: "blue",
-                  onClick: handleRegisterSite,
-                  children: "Register to All keys"
+                  gridTemplateColumns: "400px 1fr",
+                  gap: 6,
+                  alignItems: "center",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Switch,
+                      {
+                        id: "nostr-pref-usedPrimarypasswordToApps",
+                        isChecked: prefs.nostr.usedPrimarypasswordToApps,
+                        onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
+                      }
+                    ) }),
+                    prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Hour" }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        NumberInput,
+                        {
+                          id: "nostr-pref-expiryTimeForPrimarypasswordToApps",
+                          value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour,
+                          onChange: handleExpiryTimeForPrimarypasswordToApps,
+                          min: 0,
+                          size: "sm",
+                          maxW: 20,
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
+                            ] })
+                          ]
+                        }
+                      ) })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {}),
+                    getPasswordAuthorizedSites()
+                  ]
                 }
-              )
-            ] }) }),
-            getTrustedSites()
+              ) })
+            ] })
           ] }) })
         ]
       }
@@ -1190,7 +1276,7 @@ function Nostr$2(props) {
             ] }) })
           ] }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-            nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "No key is regisitered." }),
+            nostrkeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No key regisitered" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrkeys.map(addInterpretedKeys).map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Editable,

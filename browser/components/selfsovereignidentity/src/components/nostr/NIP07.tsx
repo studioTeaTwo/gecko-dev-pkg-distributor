@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   Box,
   Button,
+  Divider,
   Grid,
   GridItem,
   Heading,
@@ -14,6 +15,11 @@ import {
   NumberInputStepper,
   StackDivider,
   Switch,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -146,40 +152,6 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     }
   };
 
-  const getTrustedSites = useCallback(() => {
-    const trustedSites = Array.from(
-      new Set(
-        nostrkeys
-          .map(key => key.trustedSites)
-          .flat()
-          .map(site => JSON.stringify(site))
-      )
-    ).map(site => JSON.parse(site));
-    return (
-      <>
-        {trustedSites.map(site => (
-          <>
-            <GridItem>
-              <Heading as="h5" size="sm">
-                {site.url}
-                {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
-              </Heading>
-            </GridItem>
-            <GridItem>
-              <Button
-                variant="outline"
-                colorScheme="blue"
-                onClick={() => handleRemoveSite(site)}
-              >
-                Remove from All keys
-              </Button>
-            </GridItem>
-          </>
-        ))}
-      </>
-    );
-  }, [nostrkeys]);
-
   const handleUsedBuiltinNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
@@ -203,6 +175,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       usedPrimarypasswordToApps: checked,
     });
   };
+
   const handleExpiryTimeForPrimarypasswordToApps = async (
     valueAsString: string,
     valueAsNumber: number
@@ -221,12 +194,115 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     });
   };
 
+  const handleRevokeSite = async revokedSite => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    for (const item of nostrkeys) {
+      modifyCredentialToStore({
+        guid: item.guid,
+        passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
+          if (site.url === revokedSite.url) {
+            site.expiryTime = 0;
+          }
+          return site;
+        }),
+      });
+    }
+  };
+
   const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     const checked = e.target.checked;
     onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked });
   };
+
+  const getTrustedSites = useCallback(() => {
+    const trustedSites = Array.from(
+      new Set(
+        nostrkeys
+          .map(key => key.trustedSites)
+          .flat()
+          .map(site => JSON.stringify(site))
+      )
+    ).map(site => JSON.parse(site));
+    return trustedSites.length > 0 ? (
+      trustedSites.map(site => (
+        <>
+          <GridItem>
+            <Heading as="h5" size="sm">
+              {site.url}
+              {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
+            </Heading>
+          </GridItem>
+          <GridItem>
+            <Button
+              variant="outline"
+              colorScheme="blue"
+              onClick={() => handleRemoveSite(site)}
+            >
+              Remove from All keys
+            </Button>
+          </GridItem>
+        </>
+      ))
+    ) : (
+      <Text fontSize="sm">No site registered</Text>
+    );
+  }, [nostrkeys]);
+
+  const getPasswordAuthorizedSites = useCallback(() => {
+    const passwordAuthorizedSites = nostrkeys.map(key => ({
+      [key.properties.displayName]: key.passwordAuthorizedSites,
+    }));
+    return passwordAuthorizedSites.map(site => {
+      const [key, value] = Object.entries(site)[0];
+      const validSites = value.filter(site => site.expiryTime > Date.now());
+
+      return (
+        <>
+          <GridItem colSpan={2}>
+            <label>{key}</label>
+          </GridItem>
+          {validSites.length > 0 ? (
+            validSites.map(validSite => {
+              const expiryTime = new Date(validSite.expiryTime);
+              return (
+                <>
+                  <GridItem>
+                    <Heading as="h6" size="sm">
+                      {validSite.url}
+                      &nbsp;&#40;until&nbsp;{expiryTime.toLocaleDateString()}
+                      &nbsp;{expiryTime.toLocaleTimeString()}&#41;
+                    </Heading>
+                  </GridItem>
+                  <GridItem>
+                    <Button
+                      variant="outline"
+                      colorScheme="blue"
+                      onClick={() => handleRevokeSite(validSite)}
+                    >
+                      Revoke
+                    </Button>
+                  </GridItem>
+                </>
+              );
+            })
+          ) : (
+            <Text fontSize="sm">No site registered</Text>
+          )}
+        </>
+      );
+    });
+  }, [nostrkeys]);
 
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -241,9 +317,9 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         align="stretch"
       >
         <Box>
-          <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
+          <Grid gridTemplateColumns={"400px 1fr"} gap={6} alignItems={"center"}>
             <GridItem colSpan={2}>
-              <Text fontSize="xs">
+              <Text fontSize="sm">
                 You can still use these features realated to your keys on
                 extensions/apps compatible with this browser, even if turning
                 off &quot;Use built-in NIP-07&quot;.
@@ -262,47 +338,6 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
               />
             </GridItem>
             <GridItem>
-              <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
-                Use primary password to Web apps
-              </label>
-            </GridItem>
-            <GridItem>
-              <Switch
-                id="nostr-pref-usedPrimarypasswordToApps"
-                isChecked={prefs.nostr.usedPrimarypasswordToApps}
-                onChange={e =>
-                  handleUsedPrimarypasswordToApps(e.target.checked)
-                }
-              />
-            </GridItem>
-            {prefs.nostr.usedPrimarypasswordToApps && (
-              <>
-                <GridItem>
-                  <label htmlFor="nostr-pref-expiryTimeForPrimarypasswordToApps">
-                    Expiry Hour
-                  </label>
-                </GridItem>
-                <GridItem>
-                  <NumberInput
-                    id="nostr-pref-expiryTimeForPrimarypasswordToApps"
-                    value={
-                      prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour
-                    }
-                    onChange={handleExpiryTimeForPrimarypasswordToApps}
-                    min={0}
-                    size="sm"
-                    maxW={20}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </GridItem>
-              </>
-            )}
-            <GridItem>
               <label htmlFor="nostr-pref-usedAccountChanged">
                 Notify &quot;Account Changed&quot; to Web apps
               </label>
@@ -317,49 +352,125 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
           </Grid>
         </Box>
         <Box>
-          <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
-            <GridItem colSpan={2}>
-              <Heading as="h4" size="md">
-                Trusted Sites
-              </Heading>
-            </GridItem>
-            <GridItem>
-              <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
-            </GridItem>
-            <GridItem>
-              <Switch
-                id="nostr-pref-usedTrustedSites"
-                isChecked={prefs.nostr.usedTrustedSites}
-                onChange={e => handleUsedTrustedSites(e.target.checked)}
-              />
-            </GridItem>
-            <GridItem>
-              <label>Register</label>
-            </GridItem>
-            <GridItem>
-              <InputGroup>
-                <Input
-                  placeholder="https://example/"
-                  value={newSite}
-                  onChange={handleNewSiteChange}
-                  onKeyPress={e => {
-                    if (e.key === "Enter") {
-                      handleRegisterSite(e);
-                    }
-                  }}
-                  maxW="500px"
-                />
-                <Button
-                  variant="outline"
-                  colorScheme="blue"
-                  onClick={handleRegisterSite}
+          <Tabs variant="enclosed">
+            <TabList>
+              <Tab>
+                <Heading as="h4" size="md">
+                  Trusted Sites
+                </Heading>
+              </Tab>
+              <Tab>
+                <Heading as="h4" size="md">
+                  Authorized Sites by Password
+                </Heading>
+              </Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Grid
+                  gridTemplateColumns={"400px 1fr"}
+                  gap={6}
+                  alignItems={"center"}
                 >
-                  Register to All keys
-                </Button>
-              </InputGroup>
-            </GridItem>
-            {getTrustedSites()}
-          </Grid>
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedTrustedSites"
+                      isChecked={prefs.nostr.usedTrustedSites}
+                      onChange={e => handleUsedTrustedSites(e.target.checked)}
+                    />
+                  </GridItem>
+                  <GridItem>
+                    <label>Register</label>
+                  </GridItem>
+                  <GridItem>
+                    <InputGroup>
+                      <Input
+                        placeholder="https://example/"
+                        value={newSite}
+                        onChange={handleNewSiteChange}
+                        onKeyPress={e => {
+                          if (e.key === "Enter") {
+                            handleRegisterSite(e);
+                          }
+                        }}
+                        maxW="500px"
+                      />
+                      <Button
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={handleRegisterSite}
+                      >
+                        Register to All keys
+                      </Button>
+                    </InputGroup>
+                  </GridItem>
+                  <GridItem>
+                    <Divider />
+                  </GridItem>
+                  <GridItem></GridItem>
+                  {getTrustedSites()}
+                </Grid>
+              </TabPanel>
+              <TabPanel>
+                <Grid
+                  gridTemplateColumns={"400px 1fr"}
+                  gap={6}
+                  alignItems={"center"}
+                >
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
+                      Enable
+                    </label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedPrimarypasswordToApps"
+                      isChecked={prefs.nostr.usedPrimarypasswordToApps}
+                      onChange={e =>
+                        handleUsedPrimarypasswordToApps(e.target.checked)
+                      }
+                    />
+                  </GridItem>
+                  {prefs.nostr.usedPrimarypasswordToApps && (
+                    <>
+                      <GridItem>
+                        <label htmlFor="nostr-pref-expiryTimeForPrimarypasswordToApps">
+                          Expiry Hour
+                        </label>
+                      </GridItem>
+                      <GridItem>
+                        <NumberInput
+                          id="nostr-pref-expiryTimeForPrimarypasswordToApps"
+                          value={
+                            prefs.nostr.expiryTimeForPrimarypasswordToApps /
+                            OneHour
+                          }
+                          onChange={handleExpiryTimeForPrimarypasswordToApps}
+                          min={0}
+                          size="sm"
+                          maxW={20}
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </GridItem>
+                    </>
+                  )}
+                  <GridItem>
+                    <Divider />
+                  </GridItem>
+                  <GridItem></GridItem>
+                  {getPasswordAuthorizedSites()}
+                </Grid>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Box>
       </VStack>
       <AlertPrimaryPassword
