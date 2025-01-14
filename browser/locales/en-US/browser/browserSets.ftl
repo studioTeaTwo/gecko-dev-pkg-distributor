@@ -65,6 +65,9 @@ downloads-shortcut =
 addons-shortcut =
     .key = A
 
+selfsovereignidentity-shortcut =
+    .key = I
+
 file-open-shortcut =
     .key = O
 
