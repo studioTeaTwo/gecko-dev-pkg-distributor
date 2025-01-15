@@ -21,7 +21,7 @@
       {
         "name": "searchCredentialsWithoutSecret",
         "type": "function",
-        "description": "return the requested credentials without secret",
+        "description": "Return the requested credentials without secret",
         "async": true,
         "parameters": [
           {
@@ -64,7 +64,15 @@
             "name": "message",
             "type": "string",
             "option": true,
+            "default": "AUTH LOCK",
             "description": "The message displayed on the Auth dialog"
+          },
+          {
+            "name": "registerExtension",
+            "type": "boolean",
+            "option": true,
+            "default": false,
+            "description": "Set true when registering your extension. If you don't do this first, app authentication will fail."
           }
         ],
         "async": true

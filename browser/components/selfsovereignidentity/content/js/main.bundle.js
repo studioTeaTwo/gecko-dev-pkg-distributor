@@ -249,10 +249,37 @@ function GiBirdTwitter(props) {
   })(props);
 }
 function MdEdit(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24" }, "child": [{ "tag": "path", "attr": { "fill": "none", "d": "M0 0h24v24H0z" }, "child": [] }, { "tag": "path", "attr": { "d": "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" }, "child": [] }] })(props);
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+        },
+        child: []
+      }
+    ]
+  })(props);
 }
 function MdDeleteForever(props) {
-  return GenIcon({ "tag": "svg", "attr": { "viewBox": "0 0 24 24" }, "child": [{ "tag": "path", "attr": { "fill": "none", "d": "M0 0h24v24H0z" }, "child": [] }, { "tag": "path", "attr": { "fill": "none", "d": "M0 0h24v24H0V0z" }, "child": [] }, { "tag": "path", "attr": { "d": "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12 1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" }, "child": [] }] })(props);
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0V0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12 1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"
+        },
+        child: []
+      }
+    ]
+  })(props);
 }
 function initStore() {
   window.dispatchEvent(
@@ -1342,16 +1369,6 @@ function Nostr$2(props) {
                       textProps: { fontSize: "sm", isTruncated: true }
                     }
                   )
-                ] }),
-                item.isEdit && /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Trusted Sites" }),
-                  "aaa"
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Trusted Sites" }),
-                  item.trustedSites.map((site, i2) => {
-                    return /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: site.url }, i2);
-                  })
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
@@ -1369,14 +1386,11 @@ function Nostr$2(props) {
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   IconButton,
                   {
+                    disabled: true,
                     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
                     variant: "transparent",
                     fontSize: "20px",
-                    "aria-label": "Edit Key",
-                    onClick: () => {
-                      item.isEdit = true;
-                      console.log("keys", item, nostrkeys);
-                    }
+                    "aria-label": "Edit Key"
                   }
                 ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(

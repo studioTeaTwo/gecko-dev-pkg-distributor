@@ -145,27 +145,31 @@ export const browserSsiHelper = {
     // TODO(ssb): Background exec check
     const activeTabId = tabTracker.getId(tabTracker.activeTab);
 
-    // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller.
+    // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
+    // example, when pending password dialog and when only extension is executing independently.
     const { browser } = context.extension.tabManager.get(activeTabId);
     const originSite = browser.contentPrincipal.originNoSuffix;
     const originExtension = context.xulBrowser.contentPrincipal.originNoSuffix;
 
     return {
       browsingContext: browser.browsingContext,
-      originSite,
+      originSite, // If only extension is executing independently, return "".
       originExtension,
     };
   },
-  isAuthorized(
-    protocolName,
-    credentialName,
-    identifier,
-    originSite,
-    originExtension
-  ) {
-    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
+  isAuthorized(credential, context, tabTracker, onlyExtension = false) {
+    const internalPrefs = browserSsiHelper.getInternalPrefs(
+      credential.protocolName
+    );
 
-    const authKey = `${protocolName}:${credentialName}:${identifier}`;
+    let { originSite, originExtension } = browserSsiHelper.getOrigin(
+      context,
+      tabTracker
+    );
+    if (onlyExtension) {
+      originSite = "";
+    }
+    const authKey = `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`;
     const auth = AuthCache.get(authKey);
     if (!auth) {
       return false;
@@ -173,8 +177,7 @@ export const browserSsiHelper = {
 
     if (internalPrefs["primarypassword.toApps.enabled"]) {
       const trusted = browserSsiHelper.isTrusted(
-        originSite,
-        originExtension,
+        { site: originSite, extension: originExtension, onlyExtension },
         auth.trustedSites
       );
       if (trusted) {
@@ -184,24 +187,42 @@ export const browserSsiHelper = {
     }
 
     if (internalPrefs["primarypassword.toApps.enabled"]) {
-      let _authExpirationTime = auth.passwordAuthorizedSites.filter(
+      const expiryTimeForSite = auth.passwordAuthorizedSites.filter(
         site => site.url === originSite
       )[0]?.expiryTime;
-      if (_authExpirationTime && _authExpirationTime > Date.now()) {
+      const expiryTimeForExtension = auth.passwordAuthorizedSites.filter(
+        site => site.url === originExtension
+      )[0]?.expiryTime;
+      const validSite = expiryTimeForSite && expiryTimeForSite > Date.now();
+      const validExtension =
+        expiryTimeForExtension && expiryTimeForExtension > Date.now();
+      if ((validSite && validExtension) || (onlyExtension && validExtension)) {
         return true;
       }
       // go to self-sovereign check
     }
 
-    return browserSsiHelper.isSelfsovereignty(protocolName);
+    return browserSsiHelper.isSelfsovereignty(credential.protocolName);
   },
-  isTrusted(originSite, originExtension, trustedSites) {
+  isTrusted(
+    {
+      site, // If onlyExtension is true, set ""
+      extension,
+      onlyExtension = false,
+    },
+    trustedSites
+  ) {
+    if (onlyExtension) {
+      site = "";
+    }
+
     // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-    // TODO(ssb): Number of cases for sites and extensions
-    const trusted = trustedSites.some(
-      site =>
-        originSite.startsWith(site.url) && originExtension.startsWith(site.url)
-    );
+    const trusted = trustedSites.some(_site => {
+      if (onlyExtension) {
+        return extension.startsWith(_site.url);
+      }
+      return site.startsWith(_site.url) && extension.startsWith(_site.url);
+    });
     return trusted;
   },
   isSelfsovereignty(protocolName) {

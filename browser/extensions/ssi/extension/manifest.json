@@ -10,7 +10,7 @@
     }
   },
 
-  "permissions": ["tabs", "<all_urls>", "ssi", "ssi.nostr"],
+  "permissions": ["tabs", "webNavigation", "<all_urls>", "ssi", "ssi.nostr"],
 
   "background": {
     "scripts": ["backgrounds.bundle.js"]

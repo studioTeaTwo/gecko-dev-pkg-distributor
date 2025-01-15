@@ -1108,8 +1108,14 @@ const doNostrAction = async (action, args, origin) => {
     if (!state_1.state.nostr.npub) {
         throw new Error(ERR_MSG_NOT_REGISTERED);
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
-    if (!trusted) {
+    // For extension itself
+    const trustedForExtension = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], true);
+    if (!trustedForExtension) {
+        throw new Error(ERR_MSG_NOT_TRUSTED);
+    }
+    // For tab application
+    const trustedForSite = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
+    if (!trustedForSite) {
         throw new Error(ERR_MSG_NOT_TRUSTED);
     }
     switch (action) {
@@ -1160,7 +1166,7 @@ async function init() {
 exports.init = init;
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
-    // At first, get the permission of extension itself. If you don't do, webapp authentication after will fail.
+    // At first, get the permission of extension itself to get user's public key.
     const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage["nostr/getPublicKey"], true);
     if (!trusted) {
         throw new Error(ERR_MSG_NOT_TRUSTED);

@@ -65,14 +65,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               if (credentials.length === 0) {
                 return null;
               }
-              const { originSite, originExtension } =
-                lazy.browserSsiHelper.getOrigin(context, tabTracker);
               const isAuthorized = lazy.browserSsiHelper.isAuthorized(
-                "nostr",
-                "nsec",
-                credentials[0].identifier,
-                originSite,
-                originExtension
+                credentials[0],
+                context,
+                tabTracker
               );
               if (!isAuthorized) {
                 return null;

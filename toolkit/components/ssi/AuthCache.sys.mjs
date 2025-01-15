@@ -53,6 +53,10 @@ class _AuthCache {
    * @param {boolean} [fromAbout=false] - Updates from about:selfsovereignidentity. In this case don't need to persist.
    */
   async set(key, value, fromAbout = false) {
+    if (!this.has(key)) {
+      throw new Error(`No key exists: ${key}`);
+    }
+
     const prevValue = this.get(key);
     if (JSON.stringify(prevValue) === JSON.stringify(value)) {
       throw new Error("No changed value.");
@@ -85,11 +89,11 @@ class _AuthCache {
         newValue[sort].push(site);
       }
     }
-    if (Object.keys(value).includes("trustedSites")) {
+    if (Object.hasOwn(value, "trustedSites")) {
       count += value.trustedSites.length;
       value.trustedSites.forEach(site => update(site, "trustedSites"));
     }
-    if (Object.keys(value).includes("passwordAuthorizedSites")) {
+    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
       count += value.passwordAuthorizedSites.length;
       value.passwordAuthorizedSites.forEach(site =>
         update(site, "passwordAuthorizedSites")
@@ -110,10 +114,10 @@ class _AuthCache {
       identifier: keys[2],
     });
     let modifiedCredential = old[0].clone();
-    if (Object.keys(value).includes("trustedSites")) {
+    if (Object.hasOwn(value, "trustedSites")) {
       modifiedCredential.trustedSites = JSON.stringify(newValue.trustedSites);
     }
-    if (Object.keys(value).includes("passwordAuthorizedSites")) {
+    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
       modifiedCredential.passwordAuthorizedSites = JSON.stringify(
         newValue.passwordAuthorizedSites
       );
@@ -123,6 +127,9 @@ class _AuthCache {
 
   // Only for cach sync from about:selfsovereignidentity, don't need to persist.
   delete(key) {
+    if (!this.has(key)) {
+      throw new Error(`No key exists: ${key}`);
+    }
     this._cache.delete(key);
   }
 

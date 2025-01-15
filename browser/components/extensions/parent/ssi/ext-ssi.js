@@ -28,7 +28,7 @@ this.ssi = class extends ExtensionAPI {
           credentialName,
           primary = true
         ) {
-          // Check permission
+          // Stuff to check permission
           const enabled = {
             nostr: Services.prefs.getBoolPref(
               `selfsovereignidentity.nostr.enabled`
@@ -68,6 +68,15 @@ this.ssi = class extends ExtensionAPI {
                 if (!enabled[credential.protocolName]) {
                   return false;
                 }
+                const isAuthorized = lazy.browserSsiHelper.isAuthorized(
+                  credential,
+                  context,
+                  tabTracker,
+                  true
+                );
+                if (!isAuthorized) {
+                  return false;
+                }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
@@ -100,7 +109,13 @@ this.ssi = class extends ExtensionAPI {
             return [];
           }
         },
-        async askPermission(protocolName, credentialName, message) {
+        async askPermission(
+          protocolName,
+          credentialName,
+          message = "AUTH LOCK",
+          registerExtension = false
+        ) {
+          console.log("askPermission", message, registerExtension);
           try {
             // Validate params
             // TODO(ssb): validate message
@@ -141,11 +156,13 @@ this.ssi = class extends ExtensionAPI {
 
             if (internalPrefs["trustedSites.enabled"]) {
               const trusted = lazy.browserSsiHelper.isTrusted(
-                originSite,
-                originExtension,
+                {
+                  site: originSite,
+                  extensiton: originExtension,
+                  onlyExtension: registerExtension,
+                },
                 auth.trustedSites
               );
-              console.log("trusted", trusted, originSite, originExtension);
               if (trusted) {
                 return true;
               }
@@ -154,8 +171,11 @@ this.ssi = class extends ExtensionAPI {
 
             if (internalPrefs["primarypassword.toApps.enabled"]) {
               // Prepare stuff
+              const originToAuthorize = !registerExtension
+                ? originSite
+                : originExtension;
               const messageText = {
-                value: `${message || "AUTH LOCK"} \n${originSite}`,
+                value: `${message} \n${originToAuthorize}`,
               };
               const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
               const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
@@ -164,13 +184,21 @@ this.ssi = class extends ExtensionAPI {
               if (isOSAuthEnabled) {
                 const messageId = MESSAGE_ID + "-" + AppConstants.platform;
               }
+              console.log(
+                "check",
+                auth.passwordAuthorizedSites.filter(
+                  site => site.url === originToAuthorize
+                )
+              );
               let _authExpirationTime = auth.passwordAuthorizedSites.filter(
-                site => site.url === originSite
+                site => site.url === originToAuthorize
               )[0]?.expiryTime;
-              if (_authExpirationTime === undefined) {
+              if (_authExpirationTime == null) {
                 _authExpirationTime = 0;
                 AuthCache.set(authKey, {
-                  passwordAuthorizedSites: [{ url: originSite, expiryTime: 0 }],
+                  passwordAuthorizedSites: [
+                    { url: originToAuthorize, expiryTime: 0 },
+                  ],
                 });
               }
 
@@ -185,23 +213,27 @@ this.ssi = class extends ExtensionAPI {
                 );
 
               // Update expiry time if password is newly entered.
-              const isEntered = [
+              const enteredPassword = [
                 "success",
                 "success_unsupported_platform",
               ].includes(telemetryEvent.value);
-              if (isAuthorized && isEntered) {
+              if (isAuthorized && enteredPassword) {
                 const preference =
                   internalPrefs["primarypassword.toApps.expiryTime"];
                 const expiryTime = preference > 0 ? Date.now() + preference : 0;
-                AuthCache.set(authKey, {
-                  passwordAuthorizedSites: [{ url: originSite, expiryTime }],
-                });
+                const passwordAuthorizedSites = [
+                  { url: originToAuthorize, expiryTime },
+                ];
+                if (registerExtension) {
+                  passwordAuthorizedSites[0].name = context.extension.name;
+                }
+                AuthCache.set(authKey, { passwordAuthorizedSites });
               }
               console.log(
                 "primarypassword",
                 isAuthorized,
                 telemetryEvent,
-                originSite,
+                originToAuthorize,
                 AuthCache.get(authKey)
               );
               if (isAuthorized) {

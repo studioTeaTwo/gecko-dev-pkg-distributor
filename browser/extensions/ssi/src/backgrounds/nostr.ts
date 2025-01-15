@@ -44,12 +44,24 @@ export const doNostrAction = async (
   if (!state.nostr.npub) {
     throw new Error(ERR_MSG_NOT_REGISTERED);
   }
-  const trusted = await browser.ssi.askPermission(
+  // For extension itself
+  const trustedForExtension = await browser.ssi.askPermission(
     "nostr",
     state.nostr.credentialName,
-    DialogMessage[action]
+    DialogMessage[action],
+    true
   );
-  if (!trusted) {
+  if (!trustedForExtension) {
+    throw new Error(ERR_MSG_NOT_TRUSTED);
+  }
+  // For tab application
+  const trustedForSite = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    DialogMessage[action],
+    false
+  );
+  if (!trustedForSite) {
     throw new Error(ERR_MSG_NOT_TRUSTED);
   }
 
@@ -91,19 +103,7 @@ export const doNostrAction = async (
 export async function init() {
   log("experimental-api start...");
 
-  // Get the existing credential from the ssi store.
   state.nostr.credentialName = "nsec";
-  const credentials = await browser.ssi.searchCredentialsWithoutSecret(
-    "nostr",
-    state.nostr.credentialName,
-    true
-  );
-  if (credentials.length) {
-    state.nostr = {
-      ...state.nostr,
-      npub: credentials[0].identifier,
-    };
-  }
 
   // Get setting values from the prefs.
   const results = await browser.ssi.nostr.getPrefs();
@@ -116,8 +116,37 @@ export async function init() {
     prefs,
   };
 
-  log("nostr inited in background", state.nostr, credentials);
+  log("nostr inited in background", state.nostr);
 }
+
+// initial action while the webapps are loading
+browser.webNavigation.onDOMContentLoaded.addListener(  async(detail)  => {
+  // At first, get the permission of extension itself to get user's public key.
+  const trusted = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    DialogMessage["nostr/getPublicKey"],
+    true
+  );
+  if (!trusted) {
+    throw new Error(ERR_MSG_NOT_TRUSTED);
+  }
+
+  // Get the existing credential from the ssi store.
+  const credentials = await browser.ssi.searchCredentialsWithoutSecret(
+    "nostr",
+    state.nostr.credentialName,
+    true
+  );
+  if (credentials.length) {
+    state.nostr = {
+      ...state.nostr,
+      npub: credentials[0].identifier,
+    };
+  }
+
+  log(`nostr inited to ${detail.url}`, state.nostr);
+})
 
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
@@ -189,7 +218,8 @@ async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
   const trusted = await browser.ssi.askPermission(
     "nostr",
     state.nostr.credentialName,
-    DialogMessage[action]
+    DialogMessage[action],
+    false
   );
   if (!trusted) {
     browser.tabs
