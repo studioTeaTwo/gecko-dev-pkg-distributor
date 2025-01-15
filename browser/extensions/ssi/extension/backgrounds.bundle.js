@@ -1108,18 +1108,11 @@ const doNostrAction = async (action, args, origin) => {
     if (!state_1.state.nostr.npub) {
         throw new Error(ERR_MSG_NOT_REGISTERED);
     }
-    // For extension itself
-    const trustedForExtension = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], true);
-    if (!trustedForExtension) {
-        throw new Error(ERR_MSG_NOT_TRUSTED);
-    }
-    // For tab application
-    const trustedForSite = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
-    if (!trustedForSite) {
-        throw new Error(ERR_MSG_NOT_TRUSTED);
-    }
     switch (action) {
         case "nostr/getPublicKey": {
+            if (!(await trusted(DialogMessage[action], ""))) {
+                throw new Error(ERR_MSG_NOT_TRUSTED);
+            }
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
@@ -1128,6 +1121,9 @@ const doNostrAction = async (action, args, origin) => {
             }
             if (!validateEvent(args.event)) {
                 throw new Error("Invalid event");
+            }
+            if (!(await trusted(DialogMessage[action], JSON.stringify(args.event, null, 1)))) {
+                throw new Error(ERR_MSG_NOT_TRUSTED);
             }
             const message = args.message;
             const event = args.event;
@@ -1166,8 +1162,11 @@ async function init() {
 exports.init = init;
 // initial action while the webapps are loading
 browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
+    if (!supported(detail.url)) {
+        return;
+    }
     // At first, get the permission of extension itself to get user's public key.
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage["nostr/getPublicKey"], true);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage["nostr/getPublicKey"], "", true);
     if (!trusted) {
         throw new Error(ERR_MSG_NOT_TRUSTED);
     }
@@ -1237,7 +1236,7 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], "", false);
     if (!trusted) {
         browser.tabs
             .sendMessage(tab.id, {
@@ -1253,6 +1252,19 @@ async function sendTab(tab, action, data) {
         args: data,
     })
         .catch();
+}
+async function trusted(dialogMessage, submission) {
+    // For extension itself
+    const trustedForExtension = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, dialogMessage, submission, true);
+    if (!trustedForExtension) {
+        return false;
+    }
+    // For tab application
+    const trustedForSite = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, dialogMessage, submission, false);
+    if (!trustedForSite) {
+        return false;
+    }
+    return true;
 }
 function supported(tabUrl) {
     return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));

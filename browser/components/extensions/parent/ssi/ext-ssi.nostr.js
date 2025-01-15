@@ -65,14 +65,15 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               if (credentials.length === 0) {
                 return null;
               }
-              const isAuthorized = lazy.browserSsiHelper.isAuthorized(
-                credentials[0],
-                context,
-                tabTracker
-              );
-              if (!isAuthorized) {
-                return null;
-              }
+              // TODO(ssb): case expiryTime=0
+              // const isAuthorized = lazy.browserSsiHelper.isAuthorized(
+              //   credentials[0],
+              //   context,
+              //   tabTracker
+              // );
+              // if (!isAuthorized) {
+              //   return null;
+              // }
 
               const signature = await lazy.Nostr.sign(
                 message,

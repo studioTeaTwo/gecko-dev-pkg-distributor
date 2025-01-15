@@ -68,15 +68,16 @@ this.ssi = class extends ExtensionAPI {
                 if (!enabled[credential.protocolName]) {
                   return false;
                 }
-                const isAuthorized = lazy.browserSsiHelper.isAuthorized(
-                  credential,
-                  context,
-                  tabTracker,
-                  true
-                );
-                if (!isAuthorized) {
-                  return false;
-                }
+                // TODO(ssb): case expiryTime=0
+                // const isAuthorized = lazy.browserSsiHelper.isAuthorized(
+                //   credential,
+                //   context,
+                //   tabTracker,
+                //   true
+                // );
+                // if (!isAuthorized) {
+                //   return false;
+                // }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
@@ -113,12 +114,14 @@ this.ssi = class extends ExtensionAPI {
           protocolName,
           credentialName,
           message = "AUTH LOCK",
+          submission = "",
           registerExtension = false
         ) {
-          console.log("askPermission", message, registerExtension);
+          console.log("askPermission", message, submission, registerExtension);
           try {
             // Validate params
             // TODO(ssb): validate message
+            // TODO(ssb): validate submission
             if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
               return false;
             }
@@ -174,22 +177,19 @@ this.ssi = class extends ExtensionAPI {
               const originToAuthorize = !registerExtension
                 ? originSite
                 : originExtension;
+              const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
               const messageText = {
-                value: `${message} \n${originToAuthorize}`,
+                value: `${message}${eol}${originToAuthorize}${
+                  submission ? `${eol}${eol}${submission}` : ``
+                }`,
               };
-              const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
+              const captionText = { value: "" }; // only windows
               const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
                 lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
               );
               if (isOSAuthEnabled) {
                 const messageId = MESSAGE_ID + "-" + AppConstants.platform;
               }
-              console.log(
-                "check",
-                auth.passwordAuthorizedSites.filter(
-                  site => site.url === originToAuthorize
-                )
-              );
               let _authExpirationTime = auth.passwordAuthorizedSites.filter(
                 site => site.url === originToAuthorize
               )[0]?.expiryTime;

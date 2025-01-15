@@ -68,6 +68,13 @@
             "description": "The message displayed on the Auth dialog"
           },
           {
+            "name": "submission",
+            "type": "string",
+            "option": true,
+            "default": "",
+            "description": "The reference data of accepting displayed on the Auth dialog"
+          },
+          {
             "name": "registerExtension",
             "type": "boolean",
             "option": true,
