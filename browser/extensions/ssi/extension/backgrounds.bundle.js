@@ -1108,7 +1108,7 @@ const doNostrAction = async (action, args, origin) => {
     if (!state_1.state.nostr.npub) {
         throw new Error(ERR_MSG_NOT_REGISTERED);
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action]);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
     if (!trusted) {
         throw new Error(ERR_MSG_NOT_TRUSTED);
     }
@@ -1144,15 +1144,7 @@ const doNostrAction = async (action, args, origin) => {
 exports.doNostrAction = doNostrAction;
 async function init() {
     (0, logger_1.log)("experimental-api start...");
-    // Get the existing credential from the ssi store.
     state_1.state.nostr.credentialName = "nsec";
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
-    if (credentials.length) {
-        state_1.state.nostr = {
-            ...state_1.state.nostr,
-            npub: credentials[0].identifier,
-        };
-    }
     // Get setting values from the prefs.
     const results = await browser.ssi.nostr.getPrefs();
     const prefs = {};
@@ -1163,9 +1155,26 @@ async function init() {
         ...state_1.state.nostr,
         prefs,
     };
-    (0, logger_1.log)("nostr inited in background", state_1.state.nostr, credentials);
+    (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }
 exports.init = init;
+// initial action while the webapps are loading
+browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
+    // At first, get the permission of extension itself. If you don't do, webapp authentication after will fail.
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage["nostr/getPublicKey"], true);
+    if (!trusted) {
+        throw new Error(ERR_MSG_NOT_TRUSTED);
+    }
+    // Get the existing credential from the ssi store.
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
+    if (credentials.length) {
+        state_1.state.nostr = {
+            ...state_1.state.nostr,
+            npub: credentials[0].identifier,
+        };
+    }
+    (0, logger_1.log)(`nostr inited to ${detail.url}`, state_1.state.nostr);
+});
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
@@ -1222,7 +1231,7 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action]);
+    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], false);
     if (!trusted) {
         browser.tabs
             .sendMessage(tab.id, {

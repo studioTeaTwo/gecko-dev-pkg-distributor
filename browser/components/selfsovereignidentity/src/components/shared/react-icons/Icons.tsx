@@ -389,3 +389,56 @@ export function MdElectricBolt(props) {
     ],
   })(props);
 }
+export function MdEdit(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
+        },
+        child: [],
+      },
+    ],
+  })(props);
+}
+export function MdEditOff(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      {
+        tag: "path",
+        attr: { fill: "none", d: "M0 0h24v24H0zm0 0h24v24H0z" },
+        child: [],
+      },
+      {
+        tag: "path",
+        attr: {
+          d: "m12.126 8.125 1.937-1.937 3.747 3.747-1.937 1.938zM20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75L20.71 7a1 1 0 0 0 0-1.37zM2 5l6.63 6.63L3 17.25V21h3.75l5.63-5.62L18 21l2-2L4 3 2 5z",
+        },
+        child: [],
+      },
+    ],
+  })(props);
+}
+export function MdDeleteForever(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0V0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12 1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z",
+        },
+        child: [],
+      },
+    ],
+  })(props);
+}

@@ -229,11 +229,13 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     try {
       this.sendAsyncMessage("AboutSelfsovereignidentity:Setup", {
         credentials,
-        addons: [
-          { id: ssi.id, name: ssi.name, url: ssi.getURL().slice(0, -1) },
-        ],
-        primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
-        passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
+        base: {
+          addons: [
+            { id: ssi.id, name: ssi.name, url: ssi.getURL().slice(0, -1) },
+          ],
+          primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
+          passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
+        },
       });
     } catch (ex) {
       if (ex.result != Cr.NS_ERROR_NOT_INITIALIZED) {
@@ -332,6 +334,12 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   }
 
   #prefChanged(changeSet) {
+    if (changeSet.hasOwnProperty("menuPin")) {
+      Services.prefs.setStringPref(
+        `selfsovereignidentity.ui.menuPin`,
+        changeSet.menuPin
+      );
+    }
     if (changeSet.hasOwnProperty("enabled")) {
       Services.prefs.setBoolPref(
         `selfsovereignidentity.${changeSet.protocolName}.enabled`,
@@ -381,11 +389,23 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
           changeSet.usedBuiltinNip07
         );
       }
-
-      this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", {
-        [changeSet.protocolName]: { ...changeSet },
-      });
+      if (changeSet.hasOwnProperty("tabPin")) {
+        Services.prefs.setStringPref(
+          "selfsovereignidentity.nostr.ui.tabPin",
+          changeSet.tabPin
+        );
+      }
+      if (changeSet.hasOwnProperty("tabPinInNip07")) {
+        Services.prefs.setStringPref(
+          "selfsovereignidentity.nostr.ui.nip07.tabPin",
+          changeSet.tabPinInNip07
+        );
+      }
     }
+
+    this.sendAsyncMessage("AboutSelfsovereignidentity:Prefs", {
+      [changeSet.protocolName]: { ...changeSet },
+    });
   }
 
   #handleCredentialStorageErrors(credential, error) {

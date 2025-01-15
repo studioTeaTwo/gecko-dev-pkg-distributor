@@ -13,6 +13,7 @@ import {
   Grid,
   GridItem,
   Heading,
+  IconButton,
   Input,
   InputGroup,
   StackDivider,
@@ -36,6 +37,7 @@ import Secret from "../shared/Secret";
 import { DefaultTrustedSites } from "./NIP07";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 
 interface NostrCredential extends Credential {
   properties: {
@@ -80,13 +82,14 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     () =>
       credentials
         .filter(credential => credential.protocolName === "nostr")
-        .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
+        .map(addInterpretedKeys)
+        .sort((a, b) => (b.primary ? 1 : 0)) as NostrDisplayedCredential[],
     [credentials]
   );
   const defaultTrustedSites = useMemo(
     () => [
       ...DefaultTrustedSites,
-      ...prefs.addons.map(addon => ({
+      ...prefs.base.addons.map(addon => ({
         name: addon.name,
         url: addon.url,
         permissions: {
@@ -96,7 +99,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         },
       })),
     ],
-    [prefs.addons]
+    [prefs.base.addons]
   );
 
   const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,7 +169,10 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     // because here is no guid yet.
   };
 
-  const handleChangePrimary = async (checked, item: Credential) => {
+  const handleChangePrimary = async (
+    checked,
+    item: NostrDisplayedCredential
+  ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
@@ -210,7 +216,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
   };
 
-  const handleDeleteCredential = async (item: Credential) => {
+  const handleDeleteCredential = async (item: NostrDisplayedCredential) => {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
       return;
     }
@@ -271,7 +277,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
     const rawPubkey = BIP340.generatePublicKey(rawSeckey);
-    return { ...item, nseckey, rawPubkey };
+    return { ...item, nseckey, rawPubkey, isEdit: false };
   }
 
   return (
@@ -342,7 +348,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
             <Text fontSize="sm">No key regisitered</Text>
           )}
           <Flex gap={6} wrap="wrap">
-            {nostrkeys.map(addInterpretedKeys).map((item, i) => (
+            {nostrkeys.map((item, i) => (
               <Card maxW="md" overflow="hidden" key={i}>
                 <CardHeader>
                   <Heading size="md">
@@ -421,13 +427,20 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                       {item.primary && <Text>primary now</Text>}
                     </Flex>
                   )}
-                  <Button
-                    variant="ghost"
-                    colorScheme="blue"
+                  <IconButton
+                    disabled
+                    icon={<MdEdit />}
+                    variant="transparent"
+                    fontSize="20px"
+                    aria-label="Edit Key"
+                  />
+                  <IconButton
+                    icon={<MdDeleteForever />}
+                    variant="transparent"
+                    fontSize="20px"
+                    aria-label="Delete Key"
                     onClick={() => handleDeleteCredential(item)}
-                  >
-                    Delete
-                  </Button>
+                  />
                 </CardFooter>
               </Card>
             ))}

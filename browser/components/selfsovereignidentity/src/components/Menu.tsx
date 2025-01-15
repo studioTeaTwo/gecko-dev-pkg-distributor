@@ -1,59 +1,18 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { VStack, Button, HStack, IconButton } from "@chakra-ui/react";
+import React, { useCallback } from "react";
+import { VStack, Button, HStack } from "@chakra-ui/react";
 import { MenuItem } from "../custom.type";
 import BitcoinIcon from "./shared/Logo";
-import { GiBirdTwitter, LuPinOff, LuPin } from "./shared/react-icons/Icons";
-
-const IDB_NAME = "selfsovereignidentity";
-const STORE_NAME = "settings";
-const KEY_NAME = "menuPin";
+import { GiBirdTwitter } from "./shared/react-icons/Icons";
+import TabPin from "./shared/TabPin";
 
 interface Props {
   selectedMenu: MenuItem;
-  setMenu: (menuItem: MenuItem) => void;
+  setSelectedMenu: (menuItem: MenuItem) => void;
+  menuPin: MenuItem;
 }
 
 function Menu(props: Props) {
-  const [menuPin, setMenuPin] = useState<MenuItem>("nostr");
-  const [db, setDb] = useState<IDBDatabase>();
-
-  const { selectedMenu, setMenu } = props;
-
-  useEffect(() => {
-    const request = indexedDB.open(IDB_NAME);
-    request.onerror = event => {
-      console.error(event);
-    };
-    request.onsuccess = event => {
-      setDb(event.target.result);
-      event.target.result
-        .transaction(STORE_NAME)
-        .objectStore(STORE_NAME)
-        .get(KEY_NAME).onsuccess = event => {
-        console.info(event.target.result);
-        const initialMenu =
-          ((event.target.result && event.target.result.value) as MenuItem) ??
-          "nostr";
-        setMenuPin(initialMenu);
-        setMenu(initialMenu);
-      };
-    };
-    request.onupgradeneeded = event => {
-      setDb(event.target.result);
-      event.target.result.createObjectStore(STORE_NAME, { keyPath: "key" });
-    };
-  }, []);
-
-  const handleToggole = (selectedPin: MenuItem) => {
-    setMenuPin(selectedPin);
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.put({ key: KEY_NAME, value: selectedPin });
-    request.onsuccess = event => {};
-    request.onerror = event => {
-      console.error(event);
-    };
-  };
+  const { selectedMenu, setSelectedMenu, menuPin } = props;
 
   const buildMenu = useCallback(() => {
     const list: { name: MenuItem; icon: JSX.Element }[] = [
@@ -71,26 +30,18 @@ function Menu(props: Props) {
               leftIcon={menu.icon}
               onClick={e => {
                 e.preventDefault();
-                setMenu(menu.name);
+                setSelectedMenu(menu.name);
               }}
             >
               {menu.name.charAt(0).toUpperCase() + menu.name.slice(1)}
             </Button>
 
-            <IconButton
-              icon={menuPin === menu.name ? <LuPinOff /> : <LuPin />}
-              variant="transparent"
-              aria-label="Toggle Pin"
-              onClick={e => {
-                e.preventDefault();
-                handleToggole(menu.name);
-              }}
-            />
+            {TabPin(menu.name, { key: "menuPin", value: menuPin }, "base")}
           </HStack>
         ))}
       </>
     );
-  }, [selectedMenu, menuPin, db]);
+  }, [selectedMenu, menuPin]);
 
   return <VStack>{buildMenu()}</VStack>;
 }

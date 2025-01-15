@@ -117,7 +117,13 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
       }
     );
 
-    let prefs = {};
+    const prefs = {
+      base: {
+        menuPin: Services.prefs.getStringPref(
+          "selfsovereignidentity.ui.menuPin"
+        ),
+      },
+    };
     for (const protocolName of ["nostr"]) {
       const defaults = {
         enabled: Services.prefs.getBoolPref(
@@ -145,10 +151,15 @@ export class AboutSelfsovereignidentityChild extends JSWindowActorChild {
 
       if (protocolName === "nostr") {
         prefs.nostr = {
-          protocolName: "nostr",
           ...defaults,
           usedBuiltinNip07: Services.prefs.getBoolPref(
             "selfsovereignidentity.nostr.builtinNip07.enabled"
+          ),
+          tabPin: Services.prefs.getStringPref(
+            "selfsovereignidentity.nostr.ui.tabPin"
+          ),
+          tabPinInNip07: Services.prefs.getStringPref(
+            "selfsovereignidentity.nostr.ui.nip07.tabPin"
           ),
         };
       }

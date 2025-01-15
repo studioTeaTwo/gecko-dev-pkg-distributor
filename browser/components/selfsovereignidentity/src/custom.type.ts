@@ -4,7 +4,7 @@ export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr";
  * Selfsovereignidentity prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
-export interface SelfsovereignidentityDefaultPrefs {
+export interface ProtocolDefaultPrefs {
   enabled: boolean; // selfsovereignidentity.[protocolName].enabled
   usedPrimarypasswordToSettings: boolean; // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
   expiryTimeForPrimarypasswordToSettings: number; // selfsovereignidentity.[protocolName].primarypassword.toSettings.expiryTime
@@ -14,10 +14,17 @@ export interface SelfsovereignidentityDefaultPrefs {
   usedAccountChanged: boolean; // selfsovereignidentity.[protocolName].event.accountChanged.enabled
 }
 export interface SelfsovereignidentityPrefs {
+  base: {
+    menuPin: MenuItem; // selfsovereignidentity.ui.menuPin
+    primaryPasswordEnabled: boolean; // SsiHelper.isPrimaryPasswordSet()
+    passwordRevealVisible: boolean; // Services.policies.isAllowed("passwordReveal")
+    addons: { id: string; name: string; url: string }[]; // built-in addons list
+  };
   nostr: {
+    tabPin: string; // selfsovereignidentity.nostr.ui.tabPin
+    tabPinInNip07: string; // selfsovereignidentity.nostr.ui.nip07.tabPin
     usedBuiltinNip07: boolean; // selfsovereignidentity.nostr.builtinNip07.enabled
-  } & SelfsovereignidentityDefaultPrefs;
-  addons: { id: string; name: string; url: string }[]; // built-in addons list
+  } & ProtocolDefaultPrefs;
 }
 
 /**
@@ -48,6 +55,7 @@ export interface Credential {
   }[];
   passwordAuthorizedSites: {
     url: string;
+    name: string;
     expiryTime: number;
     permissions: {
       read: boolean;

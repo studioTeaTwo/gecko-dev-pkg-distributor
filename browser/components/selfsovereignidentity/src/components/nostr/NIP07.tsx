@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -30,6 +30,7 @@ import {
 } from "../../custom.type";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import TabPin from "../shared/TabPin";
 
 interface NostrCredential extends Credential {
   properties: {
@@ -55,8 +56,20 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
   const [newSite, setNewSite] = useState("");
+  const [tabIndex, setTabIndex] = useState(0);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+  }, [prefs.nostr.tabPinInNip07]);
+
+  const tabPin = (tabId: number) =>
+    TabPin(
+      tabId.toString(),
+      { key: "tabPinInNip07", value: prefs.nostr.tabPinInNip07 },
+      "nostr"
+    );
 
   const nostrkeys = useMemo(
     () =>
@@ -272,7 +285,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
           <GridItem colSpan={2}>
             <label>{key}</label>
           </GridItem>
-          {validSites.length > 0 ? (
+          {validSites.length > 0 &&
             validSites.map(validSite => {
               const expiryTime = new Date(validSite.expiryTime);
               return (
@@ -280,8 +293,9 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   <GridItem>
                     <Heading as="h6" size="sm">
                       {validSite.url}
-                      &nbsp;&#40;until&nbsp;{expiryTime.toLocaleDateString()}
-                      &nbsp;{expiryTime.toLocaleTimeString()}&#41;
+                      {validSite.name && <>&nbsp;&#40;{validSite.name}&#41;</>}
+                      &nbsp;-&nbsp;until&nbsp;{expiryTime.toLocaleDateString()}
+                      &nbsp;{expiryTime.toLocaleTimeString()}
                     </Heading>
                   </GridItem>
                   <GridItem>
@@ -295,10 +309,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   </GridItem>
                 </>
               );
-            })
-          ) : (
-            <Text fontSize="sm">No site registered</Text>
-          )}
+            })}
         </>
       );
     });
@@ -352,17 +363,25 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
           </Grid>
         </Box>
         <Box>
-          <Tabs variant="enclosed">
+          <Tabs
+            variant="enclosed"
+            index={tabIndex}
+            onChange={index => {
+              setTabIndex(index);
+            }}
+          >
             <TabList>
               <Tab>
                 <Heading as="h4" size="md">
                   Trusted Sites
                 </Heading>
+                {tabPin(0)}
               </Tab>
               <Tab>
                 <Heading as="h4" size="md">
-                  Authorized Sites by Password
+                  Password Authorization
                 </Heading>
+                {tabPin(1)}
               </Tab>
             </TabList>
             <TabPanels>

@@ -15345,6 +15345,12 @@
 # Prefs starting with "selfsovereignidentity."
 #---------------------------------------------------------------------------
 
+# Menu pin in about:selfsovereignidentity
+- name: selfsovereignidentity.ui.menuPin
+  type: String
+  value: "nostr"
+  mirror: never
+
 # Enabling to use keys of Nostr
 - name: selfsovereignidentity.nostr.enabled
   type: bool
@@ -15378,7 +15384,7 @@
 # Trusting only registered sites
 - name: selfsovereignidentity.nostr.trustedSites.enabled
   type: bool
-  value: false
+  value: true
   mirror: always
 
 # Permitting to emit `accountChanged` event
@@ -15392,6 +15398,18 @@
   type: bool
   value: true
   mirror: always
+
+# Tab pin in nostr
+- name: selfsovereignidentity.nostr.ui.tabPin
+  type: String
+  value: "0"
+  mirror: never
+
+# Tap pin in nostr.nip-07
+- name: selfsovereignidentity.nostr.ui.nip07.tabPin
+  type: String
+  value: "0"
+  mirror: never
 
 #---------------------------------------------------------------------------
 # Prefs starting with "signon."

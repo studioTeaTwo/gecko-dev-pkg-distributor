@@ -91,8 +91,8 @@ function onPrimaryChanged(changeSet: {
 
 function onPrefChanged(
   changeSet: {
-    protocolName: ProtocolName;
-  } & Partial<SelfsovereignidentityPrefs["nostr"]>
+    protocolName: ProtocolName | "base";
+  } & Partial<SelfsovereignidentityPrefs[keyof SelfsovereignidentityPrefs]>
 ) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityPrefChanged", {
@@ -158,8 +158,16 @@ type Op = "get" | "add" | "update" | "remove" | "removeAll" | null;
 
 export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
+    base: {
+      menuPin: "nostr",
+      addons: [],
+      primaryPasswordEnabled: false,
+      passwordRevealVisible: false,
+    },
     nostr: {
       enabled: true,
+      tabPin: "0",
+      tabPinInNip07: "0",
       usedPrimarypasswordToSettings: true,
       expiryTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
@@ -168,7 +176,6 @@ export default function useChildActorEvent() {
       usedBuiltinNip07: true,
       usedAccountChanged: true,
     },
-    addons: [],
   });
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [credentialsFromStore, setCredentialsFromStore] = useState<
@@ -226,7 +233,10 @@ export default function useChildActorEvent() {
           event.detail.value.credentials
         );
         setCredentialsFromStore(["get", newState]);
-        setPrefs(prev => ({ ...prev, addons: event.detail.value.addons }));
+        setPrefs(prev => ({
+          ...prev,
+          base: { ...prev.base, ...event.detail.value.base },
+        }));
         break;
       }
       case "CredentialAdded": {
@@ -248,22 +258,19 @@ export default function useChildActorEvent() {
         break;
       }
       case "Prefs": {
-        if (event.detail.value) {
-          setPrefs(prev => {
-            const newState = {
-              ...prev,
+        setPrefs(prev => {
+          const newState = {
+            ...prev,
+          };
+          const keys = Object.keys(event.detail.value);
+          for (const protocolName of keys) {
+            newState[protocolName] = {
+              ...prev[protocolName],
+              ...event.detail.value[protocolName],
             };
-            const keys = Object.keys(event.detail.value);
-            for (const protocolName of keys) {
-              newState[protocolName] = {
-                ...prev[protocolName],
-                ...event.detail.value[protocolName],
-              };
-            }
-
-            return newState;
-          });
-        }
+          }
+          return newState;
+        });
         break;
       }
       case "ShowCredentialItemError": {
