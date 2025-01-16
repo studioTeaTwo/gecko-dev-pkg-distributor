@@ -66,7 +66,7 @@ addons-shortcut =
     .key = A
 
 selfsovereignidentity-shortcut =
-    .key = I
+    .key = S
 
 file-open-shortcut =
     .key = O
