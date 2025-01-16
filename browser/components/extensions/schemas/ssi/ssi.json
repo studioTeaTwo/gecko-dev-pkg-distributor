@@ -61,11 +61,18 @@
             "description": "The credential name targeted"
           },
           {
-            "name": "message",
+            "name": "caption",
             "type": "string",
             "option": true,
             "default": "AUTH LOCK",
-            "description": "The message displayed on the Auth dialog"
+            "description": "The text displayed on the Auth dialog"
+          },
+          {
+            "name": "submission",
+            "type": "string",
+            "option": true,
+            "default": "",
+            "description": "The reference data of accepting displayed on the Auth dialog"
           },
           {
             "name": "registerExtension",

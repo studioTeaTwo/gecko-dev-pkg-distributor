@@ -44,29 +44,12 @@ export const doNostrAction = async (
   if (!state.nostr.npub) {
     throw new Error(ERR_MSG_NOT_REGISTERED);
   }
-  // For extension itself
-  const trustedForExtension = await browser.ssi.askPermission(
-    "nostr",
-    state.nostr.credentialName,
-    DialogMessage[action],
-    true
-  );
-  if (!trustedForExtension) {
-    throw new Error(ERR_MSG_NOT_TRUSTED);
-  }
-  // For tab application
-  const trustedForSite = await browser.ssi.askPermission(
-    "nostr",
-    state.nostr.credentialName,
-    DialogMessage[action],
-    false
-  );
-  if (!trustedForSite) {
-    throw new Error(ERR_MSG_NOT_TRUSTED);
-  }
 
   switch (action) {
     case "nostr/getPublicKey": {
+      if (!(await trusted(DialogMessage[action], ""))) {
+        throw new Error(ERR_MSG_NOT_TRUSTED);
+      }
       return decodeNpub(state.nostr.npub);
     }
     case "nostr/signEvent": {
@@ -75,6 +58,9 @@ export const doNostrAction = async (
       }
       if (!validateEvent(args.event)) {
         throw new Error("Invalid event");
+      }
+      if (!(await trusted(DialogMessage[action], JSON.stringify(args.event, null, 1)))) {
+        throw new Error(ERR_MSG_NOT_TRUSTED);
       }
 
       const message = args.message;
@@ -120,12 +106,17 @@ export async function init() {
 }
 
 // initial action while the webapps are loading
-browser.webNavigation.onDOMContentLoaded.addListener(  async(detail)  => {
+browser.webNavigation.onDOMContentLoaded.addListener(async detail => {
+  if (!supported(detail.url)) {
+    return;
+  }
+
   // At first, get the permission of extension itself to get user's public key.
   const trusted = await browser.ssi.askPermission(
     "nostr",
     state.nostr.credentialName,
     DialogMessage["nostr/getPublicKey"],
+    "",
     true
   );
   if (!trusted) {
@@ -146,7 +137,7 @@ browser.webNavigation.onDOMContentLoaded.addListener(  async(detail)  => {
   }
 
   log(`nostr inited to ${detail.url}`, state.nostr);
-})
+});
 
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
@@ -219,6 +210,7 @@ async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
     "nostr",
     state.nostr.credentialName,
     DialogMessage[action],
+    "",
     false
   );
   if (!trusted) {
@@ -237,6 +229,32 @@ async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
       args: data,
     })
     .catch();
+}
+
+async function trusted(dialogMessage: string, submission: string) {
+  // For extension itself
+  const trustedForExtension = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    dialogMessage,
+    submission,
+    true
+  );
+  if (!trustedForExtension) {
+    return false;
+  }
+  // For tab application
+  const trustedForSite = await browser.ssi.askPermission(
+    "nostr",
+    state.nostr.credentialName,
+    dialogMessage,
+    submission,
+    false
+  );
+  if (!trustedForSite) {
+    return false;
+  }
+  return true;
 }
 
 function supported(tabUrl: string): boolean {

@@ -141,6 +141,10 @@ export const browserSsiHelper = {
   validateCredentialName(credentialName) {
     return CREDENTIAL_NAMES.includes(credentialName);
   },
+  validateDialogMessage(input) {
+    const regex = /^[A-Za-z0-9\s.,!?'"-()]{1,144}$/;
+    return regex.test(input);
+  },
   getOrigin(context, tabTracker) {
     // TODO(ssb): Background exec check
     const activeTabId = tabTracker.getId(tabTracker.activeTab);
