@@ -267,6 +267,11 @@ jobs:
         gpg --clear-sign verification.txt
         cat verification.txt.asc
 
+    - name: Create release note
+      working-directory: /home/runner/downloads/artifacts
+      run: |
+        cp verification.txt.asc release_note.txt
+        cat release_note.txt | sed '1i<details close>'
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
       uses: softprops/action-gh-release@v2
@@ -281,7 +286,7 @@ jobs:
           /home/runner/downloads/artifacts/WINNT-x86_64.mar
           /home/runner/downloads/artifacts/DARWIN-Universal.mar
           /home/runner/downloads/artifacts/verification.txt.asc
-        body_path: /home/runner/downloads/artifacts/verification.txt.asc
+        body_path: /home/runner/downloads/artifacts/release_note.txt
         tag_name: "v${{ needs.get-display-version.outputs.display-version }}"
         name: "v${{ needs.get-display-version.outputs.display-version }}"
         draft: true
