@@ -3,7 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useState, useEffect } from "react";
-import { Box, Grid, GridItem } from "@chakra-ui/react";
+import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
 import Menu from "./Menu";
 import Bitcoin from "./bitcoin";
 import Lightning from "./lightning";
@@ -18,7 +18,7 @@ function Selfsovereignidentity(props) {
   const { prefs, credentials } = useChildActorEvent(); // Just once to ensure that useeffect is called only once
   const { initStore } = dispatchEvents;
 
-  const [selectedMenu, setSelectedMenu] = useState<MenuItem>("nostr");
+  const [selectedMenu, setSelectedMenu] = useState<MenuItem>("");
 
   // on mount
   useEffect(() => {
@@ -52,7 +52,9 @@ function Selfsovereignidentity(props) {
             menuPin={prefs.base.menuPin}
           />
         </GridItem>
-        <GridItem colSpan={1}>{switchContent()}</GridItem>
+        <GridItem colSpan={1}>
+          {prefs.base.menuPin ? switchContent() : <Spinner />}
+        </GridItem>
       </Grid>
     </Box>
   );

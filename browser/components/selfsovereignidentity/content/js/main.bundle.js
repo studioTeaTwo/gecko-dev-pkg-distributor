@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, m as Tabs, n as TabList, o as Tab, p as TabPanels, q as TabPanel, t as InputGroup, u as Input, D as Divider, N as NumberInput, v as NumberInputField, w as NumberInputStepper, x as NumberIncrementStepper, y as NumberDecrementStepper, z as hexToBytes, F as Flex, C as Card, E as CardHeader, J as Editable, K as EditablePreview, O as EditableInput, P as CardBody, Q as CardFooter, U as createRoot, W as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, G as GridItem, h as Heading, S as StackDivider, i as Box, k as Grid, l as Switch, m as Tabs, n as TabList, o as Tab, p as TabPanels, q as TabPanel, t as InputGroup, u as Input, D as Divider, N as NumberInput, v as NumberInputField, w as NumberInputStepper, x as NumberIncrementStepper, y as NumberDecrementStepper, z as hexToBytes, F as Flex, C as Card, E as CardHeader, J as Editable, K as EditablePreview, O as EditableInput, P as CardBody, Q as CardFooter, U as Spinner, W as createRoot, X as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -396,15 +396,15 @@ function transformCredentialsFromStore(credentialForPayloads) {
 function useChildActorEvent() {
   const [prefs, setPrefs] = reactExports.useState({
     base: {
-      menuPin: "nostr",
+      menuPin: "",
       addons: [],
       primaryPasswordEnabled: false,
       passwordRevealVisible: false
     },
     nostr: {
       enabled: true,
-      tabPin: "0",
-      tabPinInNip07: "0",
+      tabPin: "",
+      tabPinInNip07: "",
       usedPrimarypasswordToSettings: true,
       expiryTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
@@ -701,7 +701,7 @@ function NIP07(props) {
   const { prefs, credentials } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
-  const [tabIndex, setTabIndex] = reactExports.useState(0);
+  const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
   reactExports.useEffect(() => {
@@ -1476,7 +1476,7 @@ function Nostr$1(props) {
 }
 function Nostr(props) {
   const { prefs, credentials } = props;
-  const [tabIndex, setTabIndex] = reactExports.useState(0);
+  const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPin));
   }, [prefs.nostr.tabPin]);
@@ -1487,7 +1487,7 @@ function Nostr(props) {
   );
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    prefs.nostr.tabPin ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Tabs,
       {
         variant: "enclosed",
@@ -1517,7 +1517,7 @@ function Nostr(props) {
           ] })
         ]
       }
-    )
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
   ] });
 }
 function ECash(props) {
@@ -1526,7 +1526,7 @@ function ECash(props) {
 function Selfsovereignidentity(props) {
   const { prefs, credentials } = useChildActorEvent();
   const { initStore: initStore2 } = dispatchEvents;
-  const [selectedMenu, setSelectedMenu] = reactExports.useState("nostr");
+  const [selectedMenu, setSelectedMenu] = reactExports.useState("");
   reactExports.useEffect(() => {
     initStore2();
   }, []);
@@ -1553,7 +1553,7 @@ function Selfsovereignidentity(props) {
         menuPin: prefs.base.menuPin
       }
     ) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: switchContent() })
+    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: prefs.base.menuPin ? switchContent() : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {}) })
   ] }) });
 }
 var HomeOverlay = function() {

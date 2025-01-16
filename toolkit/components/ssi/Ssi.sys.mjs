@@ -148,7 +148,7 @@ Ssi.prototype = {
     }
 
     clearAndGetHistogram("SSI_NUM_SAVED_SECRETS").add(
-      this.countCredentials("", "", "")
+      this.countCredentials("", "")
     );
     Services.obs.notifyObservers(
       null,

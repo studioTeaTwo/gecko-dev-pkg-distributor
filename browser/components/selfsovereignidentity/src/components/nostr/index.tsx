@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Heading,
+  Spinner,
   Tab,
   TabList,
   TabPanel,
@@ -17,7 +18,7 @@ import TabPin from "../shared/TabPin";
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props;
 
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(-1);
 
   useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPin));
@@ -36,45 +37,49 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         Your keys are stored locally, isolated from and inaccessible to the web
         app.
       </Text>
-      <Tabs
-        variant="enclosed"
-        index={tabIndex}
-        onChange={index => {
-          setTabIndex(index);
-        }}
-      >
-        <TabList>
-          <Tab>
-            <Heading as="h3" size="lg">
-              Keys
-            </Heading>
-            {tabPin(0)}
-          </Tab>
-          <Tab>
-            <Heading as="h3" size="lg">
-              NIP-07
-            </Heading>
-            {tabPin(1)}
-          </Tab>
-          <Tab>
-            <Heading as="h3" size="lg">
-              More
-            </Heading>
-            {tabPin(2)}
-          </Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <Keys prefs={prefs} credentials={credentials} />
-          </TabPanel>
-          <TabPanel>
-            <NIP07 prefs={prefs} credentials={credentials} />
-          </TabPanel>
-          <TabPanel>
-            <More prefs={prefs} credentials={credentials} />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      {prefs.nostr.tabPin ? (
+        <Tabs
+          variant="enclosed"
+          index={tabIndex}
+          onChange={index => {
+            setTabIndex(index);
+          }}
+        >
+          <TabList>
+            <Tab>
+              <Heading as="h3" size="lg">
+                Keys
+              </Heading>
+              {tabPin(0)}
+            </Tab>
+            <Tab>
+              <Heading as="h3" size="lg">
+                NIP-07
+              </Heading>
+              {tabPin(1)}
+            </Tab>
+            <Tab>
+              <Heading as="h3" size="lg">
+                More
+              </Heading>
+              {tabPin(2)}
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <Keys prefs={prefs} credentials={credentials} />
+            </TabPanel>
+            <TabPanel>
+              <NIP07 prefs={prefs} credentials={credentials} />
+            </TabPanel>
+            <TabPanel>
+              <More prefs={prefs} credentials={credentials} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      ) : (
+        <Spinner />
+      )}
     </div>
   );
 }

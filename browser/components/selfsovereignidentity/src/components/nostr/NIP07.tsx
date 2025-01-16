@@ -56,7 +56,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
   const [newSite, setNewSite] = useState("");
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
 

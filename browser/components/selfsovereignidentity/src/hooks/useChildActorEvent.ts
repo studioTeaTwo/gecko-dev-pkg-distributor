@@ -159,15 +159,15 @@ type Op = "get" | "add" | "update" | "remove" | "removeAll" | null;
 export default function useChildActorEvent() {
   const [prefs, setPrefs] = useState<SelfsovereignidentityPrefs>({
     base: {
-      menuPin: "nostr",
+      menuPin: "",
       addons: [],
       primaryPasswordEnabled: false,
       passwordRevealVisible: false,
     },
     nostr: {
       enabled: true,
-      tabPin: "0",
-      tabPinInNip07: "0",
+      tabPin: "",
+      tabPinInNip07: "",
       usedPrimarypasswordToSettings: true,
       expiryTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,

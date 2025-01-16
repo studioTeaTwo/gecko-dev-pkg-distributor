@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { VStack, Button, HStack } from "@chakra-ui/react";
-import { MenuItem } from "../custom.type";
+import { MenuItem, ProtocolName } from "../custom.type";
 import BitcoinIcon from "./shared/Logo";
 import { GiBirdTwitter } from "./shared/react-icons/Icons";
 import TabPin from "./shared/TabPin";
@@ -15,7 +15,7 @@ function Menu(props: Props) {
   const { selectedMenu, setSelectedMenu, menuPin } = props;
 
   const buildMenu = useCallback(() => {
-    const list: { name: MenuItem; icon: JSX.Element }[] = [
+    const list: { name: ProtocolName; icon: JSX.Element }[] = [
       { name: "bitcoin", icon: <BitcoinIcon /> },
       { name: "nostr", icon: <GiBirdTwitter /> },
       // { name: 'lightning', icon: <MdElectricBolt />},

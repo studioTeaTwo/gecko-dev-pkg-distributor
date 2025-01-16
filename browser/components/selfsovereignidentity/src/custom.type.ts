@@ -1,4 +1,4 @@
-export type MenuItem = "bitcoin" | "lightning" | "ecash" | "nostr";
+export type MenuItem = ProtocolName | "";
 
 /**
  * Selfsovereignidentity prefs
