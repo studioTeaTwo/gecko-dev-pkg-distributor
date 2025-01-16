@@ -1092,10 +1092,8 @@ const DialogMessage = {
     "nostr/accountChanged": "notify account changed",
     "nostr/providerChanged": "notify provider changed",
 };
-// TODO(ssb): conceal as much information as possible
-const ERR_MSG_NOT_ENABLED = "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.";
+const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
-const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`;
 // Proceed calls from contents
 const doNostrAction = async (action, args, origin) => {
     if (!state_1.state.nostr.prefs.enabled) {
@@ -1104,11 +1102,20 @@ const doNostrAction = async (action, args, origin) => {
     if (!supported(origin)) {
         throw new Error(ERR_MSG_NOT_SUPPORTED);
     }
-    if (!state_1.state.nostr.npub) {
-        throw new Error(ERR_MSG_NOT_REGISTERED);
-    }
     switch (action) {
         case "nostr/getPublicKey": {
+            const credentials = await browser.ssi.searchCredentialsWithoutSecret({
+                protocolName: "nostr",
+                credentialName: state_1.state.nostr.credentialName,
+                primary: true,
+            }, { caption: DialogMessage[action], submission: "" });
+            if (credentials.length === 0) {
+                throw new Error(ERR_MSG_NOT_ENABLED);
+            }
+            state_1.state.nostr = {
+                ...state_1.state.nostr,
+                npub: credentials[0].identifier,
+            };
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
@@ -1127,7 +1134,7 @@ const doNostrAction = async (action, args, origin) => {
             }
             // Sign
             const signature = await browser.ssi.nostr.sign(message, {
-                caption: DialogMessage["nostr/getPublicKey"],
+                caption: DialogMessage[action],
                 submission: JSON.stringify(args.event, null, 1),
             });
             if (!signature) {
@@ -1156,25 +1163,6 @@ async function init() {
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }
 exports.init = init;
-// initial action while the webapps are loading
-browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
-    if (!supported(detail.url)) {
-        return;
-    }
-    // Get the existing credential from the ssi store.
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret({
-        protocolName: "nostr",
-        credentialName: state_1.state.nostr.credentialName,
-        primary: true,
-    }, { caption: DialogMessage["nostr/getPublicKey"], submission: "" });
-    if (credentials.length) {
-        state_1.state.nostr = {
-            ...state_1.state.nostr,
-            npub: credentials[0].identifier,
-        };
-    }
-    (0, logger_1.log)(`nostr inited to ${detail.url}`, state_1.state.nostr);
-});
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
