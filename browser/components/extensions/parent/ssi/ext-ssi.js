@@ -4,7 +4,7 @@
 
 "use strict";
 
-/* globals ExtensionAPI, Services, ChromeUtils, AppConstants */
+/* globals ExtensionAPI, Services, ChromeUtils */
 
 // lazy is shared with other parent experiment-apis
 let lazy = {};
@@ -12,21 +12,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
-// Treat AuthCache as a singleton
-const { AuthCache } = ChromeUtils.importESModule(
-  "resource://gre/modules/AuthCache.sys.mjs"
-);
-
-const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
     return {
       ssi: {
         async searchCredentialsWithoutSecret(
-          protocolName,
-          credentialName,
-          primary = true
+          { protocolName = "", credentialName = "", primary = true },
+          { caption = "AUTH_LOCK", submission = "" }
         ) {
           // Stuff to check permission
           const enabled = {
@@ -58,26 +51,35 @@ this.ssi = class extends ExtensionAPI {
               params.credentialName = credentialName;
             }
             params.primary = primary;
+            if (caption) {
+              if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                return false;
+              }
+            }
+            // TODO(ssb): validate submission
 
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
 
             return credentials
-              .filter(credential => {
+              .filter(async credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
                   return false;
                 }
-                // TODO(ssb): case expiryTime=0
-                // const isAuthorized = lazy.browserSsiHelper.isAuthorized(
-                //   credential,
-                //   context,
-                //   tabTracker,
-                //   true
-                // );
-                // if (!isAuthorized) {
-                //   return false;
-                // }
+                const isAuthorized = await lazy.browserSsiHelper.authorize(
+                  context,
+                  tabTracker,
+                  {
+                    protocolName: credential.protocolName,
+                    credentialName: credential.credentialName,
+                  },
+                  { caption, submission },
+                  false
+                );
+                if (!isAuthorized) {
+                  return false;
+                }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
@@ -113,11 +115,8 @@ this.ssi = class extends ExtensionAPI {
         async askPermission(
           protocolName,
           credentialName,
-          caption = "AUTH LOCK",
-          submission = "",
-          registerExtension = false
+          { caption = "AUTH_LOCK", submission = "" }
         ) {
-          console.log("askPermission", caption, submission, registerExtension);
           try {
             // Validate params
             // TODO(ssb): validate submission
@@ -139,112 +138,14 @@ this.ssi = class extends ExtensionAPI {
               return false;
             }
 
-            // Prepare stuff
-            const { originSite, originExtension, browsingContext } =
-              lazy.browserSsiHelper.getOrigin(context, tabTracker);
-            if (!originSite || !originExtension) {
-              return false;
-            }
-            const internalPrefs =
-              lazy.browserSsiHelper.getInternalPrefs(protocolName);
-            const credentials =
-              await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                protocolName,
-                credentialName,
-                primary: true,
-              });
-            if (credentials.length === 0) {
-              return false;
-            }
-            const authKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
-            const auth = AuthCache.get(authKey);
-
-            if (internalPrefs["trustedSites.enabled"]) {
-              const trusted = lazy.browserSsiHelper.isTrusted(
-                {
-                  site: originSite,
-                  extensiton: originExtension,
-                  onlyExtension: registerExtension,
-                },
-                auth.trustedSites
-              );
-              if (trusted) {
-                return true;
-              }
-              // go to primarypassword auth
-            }
-
-            if (internalPrefs["primarypassword.toApps.enabled"]) {
-              // Prepare stuff
-              const originToAuthorize = !registerExtension
-                ? originSite
-                : originExtension;
-              const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
-              const messageText = {
-                value: `${caption}${eol}${originToAuthorize}${
-                  submission ? `${eol}${eol}${submission}` : ``
-                }`,
-              };
-              const captionText = { value: "" }; // only windows
-              const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-                lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-              );
-              if (isOSAuthEnabled) {
-                const messageId = MESSAGE_ID + "-" + AppConstants.platform;
-              }
-              let _authExpirationTime = auth.passwordAuthorizedSites.filter(
-                site => site.url === originToAuthorize
-              )[0]?.expiryTime;
-              if (_authExpirationTime == null) {
-                _authExpirationTime = 0;
-                AuthCache.set(authKey, {
-                  passwordAuthorizedSites: [
-                    { url: originToAuthorize, expiryTime: 0 },
-                  ],
-                });
-              }
-
-              // Auth
-              const { isAuthorized, telemetryEvent } =
-                await lazy.SsiHelper.requestReauth(
-                  browsingContext.embedderElement,
-                  isOSAuthEnabled,
-                  _authExpirationTime,
-                  messageText.value,
-                  captionText.value
-                );
-
-              // Update expiry time if password is newly entered.
-              const enteredPassword = [
-                "success",
-                "success_unsupported_platform",
-              ].includes(telemetryEvent.value);
-              if (isAuthorized && enteredPassword) {
-                const preference =
-                  internalPrefs["primarypassword.toApps.expiryTime"];
-                const expiryTime = preference > 0 ? Date.now() + preference : 0;
-                const passwordAuthorizedSites = [
-                  { url: originToAuthorize, expiryTime },
-                ];
-                if (registerExtension) {
-                  passwordAuthorizedSites[0].name = context.extension.name;
-                }
-                AuthCache.set(authKey, { passwordAuthorizedSites });
-              }
-              console.log(
-                "primarypassword",
-                isAuthorized,
-                telemetryEvent,
-                originToAuthorize,
-                AuthCache.get(authKey)
-              );
-              if (isAuthorized) {
-                return true;
-              }
-              // go to self-sovereign check
-            }
-
-            return lazy.browserSsiHelper.isSelfsovereignty(protocolName);
+            const isAuthorized = await lazy.browserSsiHelper.authorize(
+              context,
+              tabTracker,
+              { protocolName, credentialName },
+              { caption, submission },
+              false
+            );
+            return isAuthorized;
           } catch (e) {
             console.error(e);
             return false;

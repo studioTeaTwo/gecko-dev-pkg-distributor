@@ -1095,7 +1095,6 @@ const DialogMessage = {
 // TODO(ssb): conceal as much information as possible
 const ERR_MSG_NOT_ENABLED = "window.nostr is not enabled. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
-const ERR_MSG_NOT_TRUSTED = "This application is not trusted by the user. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_REGISTERED = `The key has not yet been registered. The user can do it in 'about:selfsovereignidentity'.`;
 // Proceed calls from contents
 const doNostrAction = async (action, args, origin) => {
@@ -1110,9 +1109,6 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            if (!(await trusted(DialogMessage[action], ""))) {
-                throw new Error(ERR_MSG_NOT_TRUSTED);
-            }
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
@@ -1122,9 +1118,6 @@ const doNostrAction = async (action, args, origin) => {
             if (!validateEvent(args.event)) {
                 throw new Error("Invalid event");
             }
-            if (!(await trusted(DialogMessage[action], JSON.stringify(args.event, null, 1)))) {
-                throw new Error(ERR_MSG_NOT_TRUSTED);
-            }
             const message = args.message;
             const event = args.event;
             event.pubkey = decodeNpub(state_1.state.nostr.npub); // override to verify
@@ -1133,7 +1126,10 @@ const doNostrAction = async (action, args, origin) => {
                 throw new Error("Invalid message");
             }
             // Sign
-            const signature = await browser.ssi.nostr.sign(message);
+            const signature = await browser.ssi.nostr.sign(message, {
+                caption: DialogMessage["nostr/getPublicKey"],
+                submission: JSON.stringify(args.event, null, 1),
+            });
             if (!signature) {
                 throw new Error("Failed to sign");
             }
@@ -1165,13 +1161,12 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
     if (!supported(detail.url)) {
         return;
     }
-    // At first, get the permission of extension itself to get user's public key.
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage["nostr/getPublicKey"], "", true);
-    if (!trusted) {
-        throw new Error(ERR_MSG_NOT_TRUSTED);
-    }
     // Get the existing credential from the ssi store.
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret({
+        protocolName: "nostr",
+        credentialName: state_1.state.nostr.credentialName,
+        primary: true,
+    }, { caption: DialogMessage["nostr/getPublicKey"], submission: "" });
     if (credentials.length) {
         state_1.state.nostr = {
             ...state_1.state.nostr,
@@ -1183,7 +1178,11 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret("nostr", state_1.state.nostr.credentialName, true);
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret({
+        protocolName: "nostr",
+        credentialName: state_1.state.nostr.credentialName,
+        primary: true,
+    }, { caption: DialogMessage["nostr/getPublicKey"], submission: "" });
     (0, logger_1.log)("primary changed!", credentials);
     // That means it's all been removed
     if (credentials.length === 0) {
@@ -1236,35 +1235,12 @@ async function sendTab(tab, action, data) {
         // browser origin event is not sent anything
         return;
     }
-    const trusted = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, DialogMessage[action], "", false);
-    if (!trusted) {
-        browser.tabs
-            .sendMessage(tab.id, {
-            action,
-            args: { error: ERR_MSG_NOT_TRUSTED },
-        })
-            .catch();
-        return;
-    }
     browser.tabs
         .sendMessage(tab.id, {
         action,
         args: data,
     })
         .catch();
-}
-async function trusted(dialogMessage, submission) {
-    // For extension itself
-    const trustedForExtension = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, dialogMessage, submission, true);
-    if (!trustedForExtension) {
-        return false;
-    }
-    // For tab application
-    const trustedForSite = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, dialogMessage, submission, false);
-    if (!trustedForSite) {
-        return false;
-    }
-    return true;
 }
 function supported(tabUrl) {
     return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));

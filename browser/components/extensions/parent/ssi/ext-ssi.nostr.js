@@ -44,10 +44,14 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           async getPrefs() {
             return lazy.browserSsiHelper.getPrefs("nostr");
           },
-          async sign(message) {
+          async sign(message, { caption = "AUTH_LOCK", submission = "" }) {
             try {
               // Validate params
+              // TODO(ssb): validate submission
               ensureBytes("message", message); // Will throw error for other types.
+              if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                return false;
+              }
 
               // Check permission
               const enabled = Services.prefs.getBoolPref(
@@ -65,15 +69,19 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               if (credentials.length === 0) {
                 return null;
               }
-              // TODO(ssb): case expiryTime=0
-              // const isAuthorized = lazy.browserSsiHelper.isAuthorized(
-              //   credentials[0],
-              //   context,
-              //   tabTracker
-              // );
-              // if (!isAuthorized) {
-              //   return null;
-              // }
+              const isAuthorized = await lazy.browserSsiHelper.authorize(
+                context,
+                tabTracker,
+                {
+                  protocolName: credentials[0].protocolName,
+                  credentialName: credentials[0].credentialName,
+                },
+                { caption, submission },
+                false
+              );
+              if (!isAuthorized) {
+                return null;
+              }
 
               const signature = await lazy.Nostr.sign(
                 message,

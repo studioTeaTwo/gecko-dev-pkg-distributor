@@ -17,6 +17,52 @@
     "namespace": "ssi",
     "description": "That's to realize the self-sovereign identity.",
     "permissions": ["ssi"],
+    "types": [
+      {
+        "id": "SearchCriteria",
+        "type": "object",
+        "description": "Criteria to search credentials. If you want a full search, explicitly set primary to false.",
+        "properties": {
+          "protocolName": {
+            "type": "string",
+            "optional": true,
+            "default": "",
+            "description": "The protocol name to search"
+          },
+          "credentialName": {
+            "type": "string",
+            "optional": true,
+            "default": "",
+            "description": "The credential name to search"
+          },
+          "primary": {
+            "type": "boolean",
+            "optional": true,
+            "default": true,
+            "description": "The primary flag to search"
+          }
+        }
+      },
+      {
+        "id": "DialogInfo",
+        "type": "object",
+        "description": "Parameters to build Auth dialog",
+        "properties": {
+          "caption": {
+            "type": "string",
+            "optional": true,
+            "default": "AUTH LOCK",
+            "description": "A text description of the authentication"
+          },
+          "submission": {
+            "type": "string",
+            "optional": true,
+            "default": "",
+            "description": "Reference data for considering auth"
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "searchCredentialsWithoutSecret",
@@ -25,23 +71,15 @@
         "async": true,
         "parameters": [
           {
-            "name": "protocolName",
-            "type": "string",
-            "option": true,
-            "description": "The protocol name to search"
+            "name": "criteria",
+            "$ref": "SearchCriteria",
+            "description": "Criteria to search credentials"
           },
           {
-            "name": "credentialName",
-            "type": "string",
-            "option": true,
-            "description": "The credential name to search"
-          },
-          {
-            "name": "primary",
-            "type": "boolean",
-            "option": true,
-            "default": true,
-            "description": "The primary flag to search"
+            "name": "dialogOption",
+            "$ref": "DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog"
           }
         ]
       },
@@ -61,25 +99,10 @@
             "description": "The credential name targeted"
           },
           {
-            "name": "caption",
-            "type": "string",
-            "option": true,
-            "default": "AUTH LOCK",
-            "description": "The text displayed on the Auth dialog"
-          },
-          {
-            "name": "submission",
-            "type": "string",
-            "option": true,
-            "default": "",
-            "description": "The reference data of accepting displayed on the Auth dialog"
-          },
-          {
-            "name": "registerExtension",
-            "type": "boolean",
-            "option": true,
-            "default": false,
-            "description": "Set true when registering your extension. If you don't do this first, app authentication will fail."
+            "name": "dialogOptions",
+            "$ref": "DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog"
           }
         ],
         "async": true

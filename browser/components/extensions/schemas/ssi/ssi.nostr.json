@@ -63,6 +63,12 @@
             "name": "message",
             "type": "string",
             "description": "The message to sign"
+          },
+          {
+            "name": "dialogOptions",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog"
           }
         ]
       }

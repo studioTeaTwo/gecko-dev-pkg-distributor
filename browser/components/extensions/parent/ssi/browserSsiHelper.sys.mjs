@@ -4,11 +4,22 @@
 
 /* globals Services */
 
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs"; // Treat AuthCache as a singleton
+
+let lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
+});
 
 const PROTOCOL_NAMES = ["nostr"];
 const CREDENTIAL_NAMES = ["nsec"];
+const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
+/**
+ * Internal Helper for browser.ssi.
+ * Validation of user input params should be already done by the calling browser.ssi, except for eventListener.
+ */
 export const browserSsiHelper = {
   // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   onPrimaryChangedRegister: protocolName => fire => {
@@ -88,11 +99,6 @@ export const browserSsiHelper = {
     // askPermission is not called. The user controls whether or not to disclose it in the settings.
     // Here, only values that are based on such assumptions should be returned.
 
-    // Validate params
-    if (!browserSsiHelper.validateProtocolName(protocolName)) {
-      return null;
-    }
-
     // Check permission
     const enabled = Services.prefs.getBoolPref(
       `selfsovereignidentity.${protocolName}.enabled`
@@ -112,11 +118,6 @@ export const browserSsiHelper = {
     }
   },
   getInternalPrefs(protocolName) {
-    // Validate params
-    if (!browserSsiHelper.validateProtocolName(protocolName)) {
-      return null;
-    }
-
     try {
       const prefs = {
         "trustedSites.enabled": Services.prefs.getBoolPref(
@@ -141,8 +142,8 @@ export const browserSsiHelper = {
   validateCredentialName(credentialName) {
     return CREDENTIAL_NAMES.includes(credentialName);
   },
-  validateDialogMessage(input) {
-    const regex = /^[A-Za-z0-9\s.,!?'"-()]{1,144}$/;
+  validateDialogText(input) {
+    const regex = /^[A-Za-z0-9\s.,!?'"\-_()]{1,144}$/;
     return regex.test(input);
   },
   getOrigin(context, tabTracker) {
@@ -161,76 +162,68 @@ export const browserSsiHelper = {
       originExtension,
     };
   },
-  isAuthorized(credential, context, tabTracker, onlyExtension = false) {
-    const internalPrefs = browserSsiHelper.getInternalPrefs(
-      credential.protocolName
-    );
-
-    let { originSite, originExtension } = browserSsiHelper.getOrigin(
-      context,
-      tabTracker
-    );
-    if (onlyExtension) {
-      originSite = "";
-    }
-    const authKey = `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`;
-    const auth = AuthCache.get(authKey);
-    if (!auth) {
+  async authorize(
+    context,
+    tabTracker,
+    { protocolName, credentialName },
+    { caption, submission }, // dialog
+    onlyExtension
+  ) {
+    console.log("authorize", caption, submission);
+    // Prepare stuff
+    const { originSite, originExtension, browsingContext } =
+      browserSsiHelper.getOrigin(context, tabTracker);
+    if (!originSite || !originExtension) {
       return false;
     }
-
-    if (internalPrefs["primarypassword.toApps.enabled"]) {
-      const trusted = browserSsiHelper.isTrusted(
-        { site: originSite, extension: originExtension, onlyExtension },
-        auth.trustedSites
-      );
-      if (trusted) {
-        return true;
-      }
-      // go to primarypassword auth
-    }
-
-    if (internalPrefs["primarypassword.toApps.enabled"]) {
-      const expiryTimeForSite = auth.passwordAuthorizedSites.filter(
-        site => site.url === originSite
-      )[0]?.expiryTime;
-      const expiryTimeForExtension = auth.passwordAuthorizedSites.filter(
-        site => site.url === originExtension
-      )[0]?.expiryTime;
-      const validSite = expiryTimeForSite && expiryTimeForSite > Date.now();
-      const validExtension =
-        expiryTimeForExtension && expiryTimeForExtension > Date.now();
-      if ((validSite && validExtension) || (onlyExtension && validExtension)) {
-        return true;
-      }
-      // go to self-sovereign check
-    }
-
-    return browserSsiHelper.isSelfsovereignty(credential.protocolName);
-  },
-  isTrusted(
-    {
-      site, // If onlyExtension is true, set ""
-      extension,
-      onlyExtension = false,
-    },
-    trustedSites
-  ) {
-    if (onlyExtension) {
-      site = "";
-    }
-
-    // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-    const trusted = trustedSites.some(_site => {
-      if (onlyExtension) {
-        return extension.startsWith(_site.url);
-      }
-      return site.startsWith(_site.url) && extension.startsWith(_site.url);
-    });
-    return trusted;
-  },
-  isSelfsovereignty(protocolName) {
     const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
+    const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret({
+      protocolName,
+      credentialName,
+      primary: true,
+    });
+    if (credentials.length === 0) {
+      return false;
+    }
+    const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
+    const auth = AuthCache.get(cacheKey);
+
+    // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
+    const prefs = {
+      enabledTrustedSites: internalPrefs["trustedSites.enabled"],
+      enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
+    };
+    const cache = {
+      cacheKey,
+      trustedSites: auth.trustedSites,
+      passwordAuthorizedSites: auth.passwordAuthorizedSites,
+      expiryTimePref: internalPrefs["primarypassword.toApps.expiryTime"],
+    };
+    const dialog = {
+      caption,
+      submission,
+      embedderElement: browsingContext.embedderElement,
+    };
+    const resultExtensiton = await browserSsiHelper.execAuth(
+      originExtension,
+      context.extension.name,
+      prefs,
+      cache,
+      dialog
+    );
+    if (onlyExtension && resultExtensiton) {
+      return true;
+    }
+    const resultSite = await browserSsiHelper.execAuth(
+      originSite,
+      "",
+      prefs,
+      cache,
+      dialog
+    );
+    if (resultExtensiton && resultSite) {
+      return true;
+    }
 
     // NOTE(ssb): Returns true if all settings are explicitly turned off.
     // eslint-disable-next-line no-unneeded-ternary
@@ -238,5 +231,127 @@ export const browserSsiHelper = {
       !internalPrefs["primarypassword.toApps.enabled"]
       ? true
       : false;
+  },
+  async execAuth(
+    origin,
+    extensionName,
+    { enabledTrustedSites, enabledPrimarypassword }, // preference value
+    { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref }, // auth cache
+    { caption, submission, embedderElement } // dialog
+  ) {
+    if (enabledTrustedSites) {
+      const trusted = browserSsiHelper.isTrusted(origin, trustedSites);
+      if (trusted) {
+        return true;
+      }
+      // go to primarypassword auth
+    }
+
+    if (enabledPrimarypassword) {
+      const alreadyAuthorized = browserSsiHelper.isPasswordAuthorized(
+        origin,
+        passwordAuthorizedSites
+      );
+      if (alreadyAuthorized) {
+        return true;
+      }
+
+      // To password dialog
+      const isAuthorized = await browserSsiHelper.authPassword(
+        origin,
+        extensionName,
+        {
+          cacheKey,
+          passwordAuthorizedSites,
+          expiryTimePref,
+        },
+        {
+          caption,
+          submission,
+          embedderElement,
+        }
+      );
+      if (isAuthorized) {
+        return true;
+      }
+    }
+    return false;
+  },
+  isTrusted(origin, trustedSites) {
+    // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
+    const trusted = trustedSites.some(site => {
+      return origin.startsWith(site.url);
+    });
+    console.log("trustedSites", trusted, origin, trustedSites);
+    return trusted;
+  },
+  isPasswordAuthorized(origin, passwordAuthorizedSites) {
+    const expiryTime = passwordAuthorizedSites.filter(
+      site => site.url === origin
+    )[0]?.expiryTime;
+    const validSite = expiryTime && expiryTime > Date.now();
+
+    console.log("primarypassword", origin, validSite, passwordAuthorizedSites);
+    return validSite;
+  },
+  async authPassword(
+    origin,
+    extensionName,
+    { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
+    { caption, submission, embedderElement } // dialog
+  ) {
+    const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
+    const messageText = {
+      value: `${caption}${eol}${origin}${
+        submission ? `${eol}${eol}${submission}` : ``
+      }`,
+    };
+    const captionText = { value: "" }; // only windows
+    const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+      lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    );
+    if (isOSAuthEnabled) {
+      const messageId = MESSAGE_ID + "-" + AppConstants.platform;
+    }
+    let _authExpirationTime = passwordAuthorizedSites.filter(
+      site => site.url === origin
+    )[0]?.expiryTime;
+    if (_authExpirationTime == null) {
+      _authExpirationTime = 0;
+      AuthCache.set(cacheKey, {
+        passwordAuthorizedSites: [{ url: origin, expiryTime: 0 }],
+      });
+    }
+
+    // Auth
+    const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
+      embedderElement,
+      isOSAuthEnabled,
+      _authExpirationTime,
+      messageText.value,
+      captionText.value
+    );
+
+    // Update expiry time if password is newly entered.
+    const enteredPassword = [
+      "success",
+      "success_unsupported_platform",
+    ].includes(telemetryEvent.value);
+    if (isAuthorized && enteredPassword) {
+      const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
+      const passwordAuthorizedSites = [{ url: origin, expiryTime }];
+      if (extensionName) {
+        passwordAuthorizedSites[0].name = extensionName;
+      }
+      AuthCache.set(cacheKey, { passwordAuthorizedSites });
+    }
+    console.log(
+      "primarypassword",
+      isAuthorized,
+      telemetryEvent,
+      origin,
+      AuthCache.get(cacheKey)
+    );
+    return isAuthorized;
   },
 };

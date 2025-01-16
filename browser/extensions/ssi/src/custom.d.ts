@@ -13,16 +13,23 @@ declare namespace browser.ssi {
   }
 
   const searchCredentialsWithoutSecret: (
-    protocolName: ProtocolName,
-    credentialName: string,
-    primary: boolean
+    criteria: {
+      protocolName: ProtocolName;
+      credentialName: string;
+      primary: boolean;
+    },
+    dialogOption?: {
+      caption?: string;
+      submission?: string;
+    }
   ) => Promise<Credential[] | null>;
   const askPermission: (
     protocolName: ProtocolName,
     credentialName: string,
-    caption: string,
-    submission: string,
-    registerExtension: boolean
+    dialogOption?: {
+      caption?: string;
+      submission?: string;
+    }
   ) => Promise<boolean>;
   const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>;
 
@@ -43,7 +50,13 @@ declare namespace browser.ssi {
   };
 
   const nostr: {
-    sign: (serializedEvent: string) => Promise<string | null>;
+    sign: (
+      message: string,
+      dialogOption?: {
+        caption?: string;
+        submission?: string;
+      }
+    ) => Promise<string | null>;
   } & commonApis;
 }
 
