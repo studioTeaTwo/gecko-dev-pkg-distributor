@@ -32,17 +32,6 @@
             "description": "The pref key name which changed"
           }
         ]
-      },
-      {
-        "name": "onPrefAccountChanged",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ]
       }
     ],
     "functions": [

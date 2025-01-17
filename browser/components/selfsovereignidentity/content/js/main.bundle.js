@@ -695,7 +695,7 @@ const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
-    permissions: { read: true, write: true, admin: true }
+    permissions: {}
   }
 ];
 const OneHour = 60 * 60 * 1e3;
@@ -884,7 +884,19 @@ function NIP07(props) {
       const [key, value] = Object.entries(site)[0];
       const validSites = value.filter((site2) => site2.expiryTime > Date.now());
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key }),
+          " ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            IconButton,
+            {
+              disabled: true,
+              icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+              variant: "transparent",
+              "aria-label": "Edit Key"
+            }
+          )
+        ] }),
         validSites.length > 0 && validSites.map((validSite) => {
           const expiryTime = new Date(validSite.expiryTime);
           return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -988,7 +1000,7 @@ function NIP07(props) {
                           /* @__PURE__ */ jsxRuntimeExports.jsx(
                             Input,
                             {
-                              placeholder: "https://example/",
+                              placeholder: "https://example",
                               value: newSite,
                               onChange: handleNewSiteChange,
                               onKeyPress: (e) => {
@@ -1111,13 +1123,9 @@ function Nostr$2(props) {
     () => [
       ...DefaultTrustedSites,
       ...prefs.base.addons.map((addon) => ({
-        name: addon.name,
         url: addon.url,
-        permissions: {
-          read: true,
-          write: true,
-          admin: true
-        }
+        name: addon.name,
+        permissions: {}
       }))
     ],
     [prefs.base.addons]
@@ -1256,7 +1264,7 @@ function Nostr$2(props) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
     const rawPubkey = BIP340.generatePublicKey(rawSeckey);
-    return { ...item, nseckey, rawPubkey, isEdit: false };
+    return { ...item, nseckey, rawPubkey };
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(

@@ -269,13 +269,13 @@ jobs:
         cat verification.txt.asc
 
     - name: Create release note draft
-      working-directory: /home/runner/downloads/artifacts
       run: |
+        dest=/home/runner/downloads/artifacts/
         commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
-        git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > release_note_draft.txt
-        echo '\n<details close>\n' >> release_note_draft.txt
-        cat verification.txt.asc >> release_note_draft.txt
-        cat release_note_draft.txt
+        git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > ${dest}release_note_draft.txt
+        echo -e "\n<details close>\n" >> ${dest}release_note_draft.txt
+        cat ${dest}verification.txt.asc >> ${dest}release_note_draft.txt
+        cat ${dest}release_note_draft.txt
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
       uses: softprops/action-gh-release@v2

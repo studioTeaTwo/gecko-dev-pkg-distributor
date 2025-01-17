@@ -47,21 +47,13 @@ export interface Credential {
   trustedSites: {
     url: string;
     name: string;
-    permissions: {
-      read: boolean;
-      write: boolean;
-      admin: boolean;
-    };
+    permissions: Record<string, never>;
   }[];
   passwordAuthorizedSites: {
     url: string;
     name: string;
     expiryTime: number;
-    permissions: {
-      read: boolean;
-      write: boolean;
-      admin: boolean;
-    };
+    permissions: Record<string, never>;
   }[];
   properties: object;
   guid?: string;

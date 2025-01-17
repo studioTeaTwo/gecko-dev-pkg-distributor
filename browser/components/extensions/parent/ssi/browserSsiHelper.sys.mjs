@@ -70,30 +70,6 @@ export const browserSsiHelper = {
       Services.prefs.removeObserver(prefName, callback);
     };
   },
-  onPrefAccountChangedRegister: protocolName => fire => {
-    // Validate params
-    if (!browserSsiHelper.validateProtocolName(protocolName)) {
-      return;
-    }
-
-    const prefName = `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`;
-
-    const callback = () => {
-      // Check permission
-      const enabled = Services.prefs.getBoolPref(
-        `selfsovereignidentity.${protocolName}.enabled`
-      );
-      if (!enabled) {
-        return;
-      }
-
-      fire.async("event.accountChanged.enabled").catch(() => {}); // ignore Message Manager disconnects
-    };
-    Services.prefs.addObserver(prefName, callback);
-    return () => {
-      Services.prefs.removeObserver(prefName, callback);
-    };
-  },
   getPrefs(protocolName) {
     // Since this is obtained passively and is not something that the user explicitly takes action on,
     // askPermission is not called. The user controls whether or not to disclose it in the settings.

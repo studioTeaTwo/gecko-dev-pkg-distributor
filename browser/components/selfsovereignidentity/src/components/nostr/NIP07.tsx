@@ -6,6 +6,7 @@ import {
   Grid,
   GridItem,
   Heading,
+  IconButton,
   Input,
   InputGroup,
   NumberDecrementStepper,
@@ -31,6 +32,7 @@ import {
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
+import { MdEdit } from "../shared/react-icons/Icons";
 
 interface NostrCredential extends Credential {
   properties: {
@@ -45,7 +47,7 @@ export const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
-    permissions: { read: true, write: true, admin: true },
+    permissions: {},
   },
 ];
 
@@ -283,7 +285,13 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       return (
         <>
           <GridItem colSpan={2}>
-            <label>{key}</label>
+            <label>{key}</label>{" "}
+            <IconButton
+              disabled
+              icon={<MdEdit />}
+              variant="transparent"
+              aria-label="Edit Key"
+            />
           </GridItem>
           {validSites.length > 0 &&
             validSites.map(validSite => {
@@ -407,7 +415,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   <GridItem>
                     <InputGroup>
                       <Input
-                        placeholder="https://example/"
+                        placeholder="https://example"
                         value={newSite}
                         onChange={handleNewSiteChange}
                         onKeyPress={e => {

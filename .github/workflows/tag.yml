@@ -71,6 +71,6 @@ jobs:
         run: |
           commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
           git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > release_note_draft.txt
-          echo '\n<details close>\n' >> release_note_draft.txt
+          echo -e "\n<details close>\n" >> release_note_draft.txt
           cat verification.txt.asc >> release_note_draft.txt
           cat release_note_draft.txt

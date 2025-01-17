@@ -35,12 +35,6 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             register:
               lazy.browserSsiHelper.onPrefEnabledChangedRegister("nostr"),
           }).api(),
-          onPrefAccountChanged: new EventManager({
-            context,
-            name: "ssi.nostr.onPrefAccountChanged",
-            register:
-              lazy.browserSsiHelper.onPrefAccountChangedRegister("nostr"),
-          }).api(),
           async getPrefs() {
             return lazy.browserSsiHelper.getPrefs("nostr");
           },

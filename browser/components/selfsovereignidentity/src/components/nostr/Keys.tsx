@@ -90,13 +90,9 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     () => [
       ...DefaultTrustedSites,
       ...prefs.base.addons.map(addon => ({
-        name: addon.name,
         url: addon.url,
-        permissions: {
-          read: true,
-          write: true,
-          admin: true,
-        },
+        name: addon.name,
+        permissions: {},
       })),
     ],
     [prefs.base.addons]
@@ -277,7 +273,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
     const rawPubkey = BIP340.generatePublicKey(rawSeckey);
-    return { ...item, nseckey, rawPubkey, isEdit: false };
+    return { ...item, nseckey, rawPubkey };
   }
 
   return (
