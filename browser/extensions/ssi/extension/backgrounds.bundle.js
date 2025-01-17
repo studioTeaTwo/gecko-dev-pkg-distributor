@@ -1104,18 +1104,25 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            const credentials = await browser.ssi.searchCredentialsWithoutSecret({
-                protocolName: "nostr",
-                credentialName: state_1.state.nostr.credentialName,
-                primary: true,
-            }, { caption: DialogMessage[action], submission: "" });
-            if (credentials.length === 0) {
-                throw new Error(ERR_MSG_NOT_ENABLED);
+            // FIXME(ssb): Mitigation. Remove the askPermission and !state.nostr.npub condition, if OS auth dialog makes stable.
+            const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: DialogMessage[action], submission: "" });
+            if (!isAuthorized) {
+                throw new Error("Rejected");
             }
-            state_1.state.nostr = {
-                ...state_1.state.nostr,
-                npub: credentials[0].identifier,
-            };
+            if (!state_1.state.nostr.npub) {
+                const credentials = await browser.ssi.searchCredentialsWithoutSecret({
+                    protocolName: "nostr",
+                    credentialName: state_1.state.nostr.credentialName,
+                    primary: true,
+                }, { caption: DialogMessage[action], submission: "" });
+                if (credentials.length === 0) {
+                    throw new Error(ERR_MSG_NOT_ENABLED);
+                }
+                state_1.state.nostr = {
+                    ...state_1.state.nostr,
+                    npub: credentials[0].identifier,
+                };
+            }
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {

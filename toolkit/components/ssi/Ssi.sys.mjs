@@ -285,7 +285,9 @@ Ssi.prototype = {
       `${newCredential.protocolName}:${newCredential.credentialName}:${newCredential.identifier}`,
       {
         trustedSites: JSON.parse(newCredential.trustedSites),
-        passwordAuthorizedSites: JSON.parse(newCredential.trustedSites),
+        passwordAuthorizedSites: JSON.parse(
+          newCredential.passwordAuthorizedSites
+        ),
       },
       true
     );

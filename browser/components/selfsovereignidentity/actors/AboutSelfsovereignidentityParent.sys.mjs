@@ -589,7 +589,7 @@ class AboutSelfsovereignidentityInternal {
       let browser = subscriber.embedderElement;
       if (
         browser?.remoteType != EXPECTED_ABOUTSELFSOVEREIGNIDENTITY_REMOTE_TYPE
-        // FIXME(ssb): not working because `URI_SAFE_FOR_UNTRUSTED_CONTENT` has been removed from AboutSelfsovereignidentity process.
+        // FIXME(ssb): not working because `URI_SAFE_FOR_UNTRUSTED_CONTENT` has been removed from AboutSelfsovereignidentity process. See also bug 1576722.
         // || browser?.contentPrincipal?.originNoSuffix !=
         //   ABOUT_SELFSOVEREIGNIDENTITY_ORIGIN
       ) {

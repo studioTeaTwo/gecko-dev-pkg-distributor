@@ -582,6 +582,8 @@ function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
+    // Inject
+    window.nostr = new NostrProvider();
     // The message listener to listen to content calls
     // After, emit event to return the reponse to the web apps.
     window.addEventListener("message", event => {

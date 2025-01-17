@@ -12,6 +12,9 @@ export function init() {
     return;
   }
 
+  // Inject
+  window.nostr = new NostrProvider();
+
   // The message listener to listen to content calls
   // After, emit event to return the reponse to the web apps.
   window.addEventListener("message", event => {

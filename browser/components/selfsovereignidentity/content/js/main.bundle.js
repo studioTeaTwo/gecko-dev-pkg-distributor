@@ -693,8 +693,8 @@ function Secret(props) {
 const SafeProtocols = ["http", "https", "moz-extension"];
 const DefaultTrustedSites = [
   {
-    name: "",
     url: "http://localhost",
+    name: "",
     permissions: { read: true, write: true, admin: true }
   }
 ];

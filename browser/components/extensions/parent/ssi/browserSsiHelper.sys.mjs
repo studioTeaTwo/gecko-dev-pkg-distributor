@@ -5,6 +5,7 @@
 /* globals Services */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
+import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs";
 
 let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -158,6 +159,7 @@ export const browserSsiHelper = {
       site: {
         origin: browser.contentPrincipal.originNoSuffix,
         url: browser.contentPrincipal.spec,
+        isSystemPrincipal: browser.contentPrincipal.isSystemPrincipal,
       },
       extension: {
         origin: context.xulBrowser.contentPrincipal.originNoSuffix,
@@ -190,6 +192,15 @@ export const browserSsiHelper = {
       context,
       tabTracker
     );
+    console.log("authorize", caption, site.url, site.isSystemPrincipal);
+    if (
+      site.isSystemPrincipal &&
+      browsingContext.embedderElement.remoteType ===
+        E10SUtils.PRIVILEGEDABOUT_REMOTE_TYPE
+    ) {
+      // This is assumed the about:selfsovereignindentity.
+      return true;
+    }
     if (!site.origin || !extension.origin) {
       return false;
     }
@@ -206,6 +217,7 @@ export const browserSsiHelper = {
     const auth = Services.ssi.authCache.get(cacheKey);
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
+    // TODO(ssb): Even if you call it multiple times in one transaction, the dialog will only be called once.
     const prefs = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
@@ -326,7 +338,7 @@ export const browserSsiHelper = {
     const expiryTime = passwordAuthorizedSites.filter(site =>
       url.startsWith(site.url)
     )[0]?.expiryTime;
-    const validSite = expiryTime && expiryTime > Date.now();
+    const validSite = !!expiryTime && expiryTime > Date.now();
 
     console.log(
       "primarypassword-cache",

@@ -43,8 +43,8 @@ interface NostrCredential extends Credential {
 const SafeProtocols = ["http", "https", "moz-extension"];
 export const DefaultTrustedSites = [
   {
-    name: "",
     url: "http://localhost",
+    name: "",
     permissions: { read: true, write: true, admin: true },
   },
 ];
