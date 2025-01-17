@@ -40,7 +40,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           },
           async sign(
             message,
-            { caption = "sign with YOUR KEY", submission = "" }
+            { caption = "sign with YOUR KEY", submission = "", enforce = false }
           ) {
             try {
               // Validate params
@@ -73,7 +73,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                   protocolName: credentials[0].protocolName,
                   credentialName: credentials[0].credentialName,
                 },
-                { caption, submission },
+                { caption, submission, enforce },
                 false
               );
               if (!isAuthorized) {

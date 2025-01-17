@@ -153,6 +153,7 @@ export const browserSsiHelper = {
    * @param {object} dialogInfo
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
+   * @param {boolean} dialogInfo.enforce
    * @param {boolean} onlyExtension
    * @returns {Promise<bool>}
    */
@@ -160,7 +161,7 @@ export const browserSsiHelper = {
     context,
     tabTracker,
     { protocolName, credentialName },
-    { caption, submission },
+    { caption, submission, enforce },
     onlyExtension
   ) {
     // Prepare stuff
@@ -189,8 +190,14 @@ export const browserSsiHelper = {
     if (credentials.length === 0) {
       return false;
     }
-    const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
-    const auth = Services.ssi.authCache.get(cacheKey);
+
+    // NOTE(ssb): Returns true if all settings are explicitly turned off.
+    if (
+      !internalPrefs["trustedSites.enabled"] &&
+      !internalPrefs["primarypassword.toApps.enabled"]
+    ) {
+      return true;
+    }
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
     // TODO(ssb): Even if you call it multiple times in one transaction, the dialog will only be called once.
@@ -198,15 +205,18 @@ export const browserSsiHelper = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
     };
+    const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
+    const auth = Services.ssi.authCache.get(cacheKey);
     const cache = {
       cacheKey,
-      trustedSites: auth.trustedSites,
-      passwordAuthorizedSites: auth.passwordAuthorizedSites,
+      trustedSites: auth ? auth.trustedSites : [],
+      passwordAuthorizedSites: auth ? auth.passwordAuthorizedSites : [],
       expiryTimePref: internalPrefs["primarypassword.toApps.expiryTime"],
     };
     const dialog = {
       caption,
       submission,
+      enforce,
       embedderElement: browsingContext.embedderElement,
     };
     const resultExtensiton = await browserSsiHelper.execAuth(
@@ -230,12 +240,7 @@ export const browserSsiHelper = {
       return true;
     }
 
-    // NOTE(ssb): Returns true if all settings are explicitly turned off.
-    // eslint-disable-next-line no-unneeded-ternary
-    return !internalPrefs["trustedSites.enabled"] &&
-      !internalPrefs["primarypassword.toApps.enabled"]
-      ? true
-      : false;
+    return false;
   },
   /**
    *
@@ -254,6 +259,7 @@ export const browserSsiHelper = {
    * @param {object} dialogInfo
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
+   * @param {boolean} dialogInfo.enforce
    * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
    * @returns {Promise<boolean>}
    */
@@ -262,17 +268,17 @@ export const browserSsiHelper = {
     extensionName,
     { enabledTrustedSites, enabledPrimarypassword },
     { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref },
-    { caption, submission, embedderElement }
+    { caption, submission, enforce, embedderElement }
   ) {
-    if (enabledTrustedSites) {
+    if (enabledTrustedSites && !enforce) {
       const trusted = browserSsiHelper.isTrusted(target.url, trustedSites);
       if (trusted) {
         return true;
       }
-      // go to primarypassword auth
+      // go to primarypassword cache
     }
 
-    if (enabledPrimarypassword) {
+    if (enabledPrimarypassword && !enforce) {
       const alreadyAuthorized = browserSsiHelper.isPasswordAuthorized(
         target.url,
         passwordAuthorizedSites
@@ -280,8 +286,10 @@ export const browserSsiHelper = {
       if (alreadyAuthorized) {
         return true;
       }
+      // go to primarypassword dialog
+    }
 
-      // To password dialog
+    if (enabledPrimarypassword || enforce) {
       const isAuthorized = await browserSsiHelper.authPassword(
         target,
         extensionName,
@@ -293,6 +301,7 @@ export const browserSsiHelper = {
         {
           caption,
           submission,
+          enforce,
           embedderElement,
         }
       );
@@ -300,6 +309,7 @@ export const browserSsiHelper = {
         return true;
       }
     }
+
     return false;
   },
   isTrusted(url, trustedSites) {
@@ -328,7 +338,7 @@ export const browserSsiHelper = {
     { url, origin },
     extensionName,
     { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
-    { caption, submission, embedderElement } // dialog
+    { caption, submission, enforce, embedderElement } // dialog
   ) {
     const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
     const messageText = {
@@ -351,6 +361,9 @@ export const browserSsiHelper = {
       Services.ssi.authCache.set(cacheKey, {
         passwordAuthorizedSites: [{ url: origin, expiryTime: 0 }],
       });
+    }
+    if (enforce) {
+      _authExpirationTime = 0;
     }
 
     // Password prompt

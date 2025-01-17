@@ -59,6 +59,12 @@
             "optional": true,
             "default": "",
             "description": "Reference data for considering auth"
+          },
+          "enforce": {
+            "type": "boolean",
+            "optional": true,
+            "default": false,
+            "description": "Set to true if you want to perform auth dialog even if trusted site or password authorization is valid."
           }
         }
       }

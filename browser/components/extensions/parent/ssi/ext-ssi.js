@@ -22,7 +22,7 @@ this.ssi = class extends ExtensionAPI {
       ssi: {
         async searchCredentialsWithoutSecret(
           { protocolName = "", credentialName = "", primary = true },
-          { caption = "read YOUR KEY", submission = "" }
+          { caption = "read YOUR KEY", submission = "", enforce = false }
         ) {
           // Stuff to check permission
           const enabled = {
@@ -77,7 +77,7 @@ this.ssi = class extends ExtensionAPI {
                     protocolName: credential.protocolName,
                     credentialName: credential.credentialName,
                   },
-                  { caption, submission },
+                  { caption, submission, enforce },
                   false
                 );
                 if (!isAuthorized) {
@@ -118,7 +118,11 @@ this.ssi = class extends ExtensionAPI {
         async askPermission(
           protocolName,
           credentialName,
-          { caption = "get your authorization", submission = "" }
+          {
+            caption = "get your authorization",
+            submission = "",
+            enforce = false,
+          }
         ) {
           try {
             // Validate params
@@ -145,7 +149,7 @@ this.ssi = class extends ExtensionAPI {
               context,
               tabTracker,
               { protocolName, credentialName },
-              { caption, submission },
+              { caption, submission, enforce },
               false
             );
             return isAuthorized;
