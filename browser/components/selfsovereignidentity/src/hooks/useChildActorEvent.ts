@@ -139,10 +139,10 @@ function transformCredentialsFromStore(
 ) {
   return credentialForPayloads.map(credential => {
     const trustedSites = JSON.parse(
-      credential.trustedSites.replace(/^''$/g, '"')
+      credential.trustedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
     const passwordAuthorizedSites = JSON.parse(
-      credential.passwordAuthorizedSites.replace(/^''$/g, '"')
+      credential.passwordAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {

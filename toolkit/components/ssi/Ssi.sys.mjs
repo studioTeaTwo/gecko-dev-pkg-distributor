@@ -5,6 +5,7 @@
 const MAX_DATE_MS = 8640000000000000;
 
 import { SsiStorage } from "resource://ssi/ssistorage.sys.mjs";
+import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs";
 
 const lazy = {};
 
@@ -54,6 +55,7 @@ Ssi.prototype = {
   /* ---------- private members ---------- */
 
   _storage: null, // Storage component which contains the saved credentials
+  _authCache: null, // AuthCache instance
 
   /**
    * Initialize the Ssi Store. Automatically called when service
@@ -86,6 +88,7 @@ Ssi.prototype = {
           "isPrimaryPasswordSet",
           lazy.SsiHelper.isPrimaryPasswordSet()
         );
+        this._authCache = AuthCache.init();
       });
     });
   },
@@ -156,7 +159,6 @@ Ssi.prototype = {
       "SSI_NUM_SAVED_SECRETS"
     );
 
-    // TODO(ssb): consider to remove this _gatherTelemetry itself.
     // Don't try to get credentials if MP is enabled, since we don't want to show a MP prompt.
     if (!this.isLoggedIn) {
       return;
@@ -243,6 +245,16 @@ Ssi.prototype = {
     const [resultCredential] = await this._storage.addCredentialsAsync([
       credential,
     ]);
+    this._authCache.set(
+      `${resultCredential.protocolName}:${resultCredential.credentialName}:${resultCredential.identifier}`,
+      {
+        trustedSites: JSON.parse(resultCredential.trustedSites),
+        passwordAuthorizedSites: JSON.parse(
+          resultCredential.passwordAuthorizedSites
+        ),
+      },
+      true
+    );
     return resultCredential;
   },
 
@@ -254,7 +266,10 @@ Ssi.prototype = {
       "Removing credential",
       credential.QueryInterface(Ci.nsICredentialMetaInfo).guid
     );
-    return this._storage.removeCredential(credential);
+    this._storage.removeCredential(credential);
+    this._authCache.delete(
+      `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
+    );
   },
 
   /**
@@ -265,7 +280,15 @@ Ssi.prototype = {
       "Modifying credential",
       oldCredential.QueryInterface(Ci.nsICredentialMetaInfo).guid
     );
-    return this._storage.modifyCredential(oldCredential, newCredential);
+    this._storage.modifyCredential(oldCredential, newCredential);
+    this._authCache.set(
+      `${newCredential.protocolName}:${newCredential.credentialName}:${newCredential.identifier}`,
+      {
+        trustedSites: JSON.parse(newCredential.trustedSites),
+        passwordAuthorizedSites: JSON.parse(newCredential.trustedSites),
+      },
+      true
+    );
   },
 
   /**
@@ -294,6 +317,7 @@ Ssi.prototype = {
   removeAllCredentials() {
     lazy.log.debug("Removing all credentials from local store.");
     this._storage.removeAllCredentials();
+    this._authCache.reset();
   },
 
   async searchCredentialsAsync(matchData) {
@@ -325,5 +349,9 @@ Ssi.prototype = {
 
   get isLoggedIn() {
     return this._storage.isLoggedIn;
+  },
+
+  get authCache() {
+    return this._authCache;
   },
 }; // end of Ssi implementation

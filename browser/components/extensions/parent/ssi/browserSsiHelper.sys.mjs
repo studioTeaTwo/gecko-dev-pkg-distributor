@@ -5,7 +5,6 @@
 /* globals Services */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs"; // Treat AuthCache as a singleton
 
 let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -153,27 +152,45 @@ export const browserSsiHelper = {
     // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
     // example, when pending password dialog and when only extension is executing independently.
     const { browser } = context.extension.tabManager.get(activeTabId);
-    const originSite = browser.contentPrincipal.originNoSuffix;
-    const originExtension = context.xulBrowser.contentPrincipal.originNoSuffix;
 
     return {
       browsingContext: browser.browsingContext,
-      originSite, // If only extension is executing independently, return "".
-      originExtension,
+      site: {
+        origin: browser.contentPrincipal.originNoSuffix,
+        url: browser.contentPrincipal.spec,
+      },
+      extension: {
+        origin: context.xulBrowser.contentPrincipal.originNoSuffix,
+        url: context.xulBrowser.contentPrincipal.spec,
+      },
     };
   },
+  /**
+   *
+   * @param {Context} context
+   * @param {TabTracker} tabTracker
+   * @param {object} credential
+   * @param {string} credential.protocolName
+   * @param {string} credential.credentialName
+   * @param {object} dialogInfo
+   * @param {string} dialogInfo.caption
+   * @param {string} dialogInfo.submission
+   * @param {boolean} onlyExtension
+   * @returns {Promise<bool>}
+   */
   async authorize(
     context,
     tabTracker,
     { protocolName, credentialName },
-    { caption, submission }, // dialog
+    { caption, submission },
     onlyExtension
   ) {
-    console.log("authorize", caption, submission);
     // Prepare stuff
-    const { originSite, originExtension, browsingContext } =
-      browserSsiHelper.getOrigin(context, tabTracker);
-    if (!originSite || !originExtension) {
+    const { site, extension, browsingContext } = browserSsiHelper.getOrigin(
+      context,
+      tabTracker
+    );
+    if (!site.origin || !extension.origin) {
       return false;
     }
     const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
@@ -186,7 +203,7 @@ export const browserSsiHelper = {
       return false;
     }
     const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
-    const auth = AuthCache.get(cacheKey);
+    const auth = Services.ssi.authCache.get(cacheKey);
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
     const prefs = {
@@ -205,7 +222,7 @@ export const browserSsiHelper = {
       embedderElement: browsingContext.embedderElement,
     };
     const resultExtensiton = await browserSsiHelper.execAuth(
-      originExtension,
+      extension,
       context.extension.name,
       prefs,
       cache,
@@ -215,7 +232,7 @@ export const browserSsiHelper = {
       return true;
     }
     const resultSite = await browserSsiHelper.execAuth(
-      originSite,
+      site,
       "",
       prefs,
       cache,
@@ -232,15 +249,35 @@ export const browserSsiHelper = {
       ? true
       : false;
   },
+  /**
+   *
+   * @param {object} target
+   * @param {string} target.origin contentPrincipal.originNoSuffix
+   * @param {string} target.url contentPrincipal.spec
+   * @param {string} extensionName
+   * @param {object} prefs
+   * @param {boolean} prefs.enabledTrustedSites
+   * @param {boolean} prefs.enabledPrimarypassword
+   * @param {object} authCache
+   * @param {string} authCache.cacheKey
+   * @param {object[]} authCache.trustedSites credential.trustedSites
+   * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
+   * @param {number} authCache.expiryTimePref
+   * @param {object} dialogInfo
+   * @param {string} dialogInfo.caption
+   * @param {string} dialogInfo.submission
+   * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+   * @returns {Promise<boolean>}
+   */
   async execAuth(
-    origin,
+    target,
     extensionName,
-    { enabledTrustedSites, enabledPrimarypassword }, // preference value
-    { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref }, // auth cache
-    { caption, submission, embedderElement } // dialog
+    { enabledTrustedSites, enabledPrimarypassword },
+    { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref },
+    { caption, submission, embedderElement }
   ) {
     if (enabledTrustedSites) {
-      const trusted = browserSsiHelper.isTrusted(origin, trustedSites);
+      const trusted = browserSsiHelper.isTrusted(target.url, trustedSites);
       if (trusted) {
         return true;
       }
@@ -249,7 +286,7 @@ export const browserSsiHelper = {
 
     if (enabledPrimarypassword) {
       const alreadyAuthorized = browserSsiHelper.isPasswordAuthorized(
-        origin,
+        target.url,
         passwordAuthorizedSites
       );
       if (alreadyAuthorized) {
@@ -258,7 +295,7 @@ export const browserSsiHelper = {
 
       // To password dialog
       const isAuthorized = await browserSsiHelper.authPassword(
-        origin,
+        target,
         extensionName,
         {
           cacheKey,
@@ -277,25 +314,30 @@ export const browserSsiHelper = {
     }
     return false;
   },
-  isTrusted(origin, trustedSites) {
+  isTrusted(url, trustedSites) {
     // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
     const trusted = trustedSites.some(site => {
-      return origin.startsWith(site.url);
+      return url.startsWith(site.url);
     });
-    console.log("trustedSites", trusted, origin, trustedSites);
+    console.log("trustedSites", trusted, url, trustedSites);
     return trusted;
   },
-  isPasswordAuthorized(origin, passwordAuthorizedSites) {
-    const expiryTime = passwordAuthorizedSites.filter(
-      site => site.url === origin
+  isPasswordAuthorized(url, passwordAuthorizedSites) {
+    const expiryTime = passwordAuthorizedSites.filter(site =>
+      url.startsWith(site.url)
     )[0]?.expiryTime;
     const validSite = expiryTime && expiryTime > Date.now();
 
-    console.log("primarypassword", origin, validSite, passwordAuthorizedSites);
+    console.log(
+      "primarypassword-cache",
+      validSite,
+      url,
+      passwordAuthorizedSites
+    );
     return validSite;
   },
   async authPassword(
-    origin,
+    { url, origin },
     extensionName,
     { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
     { caption, submission, embedderElement } // dialog
@@ -313,17 +355,17 @@ export const browserSsiHelper = {
     if (isOSAuthEnabled) {
       const messageId = MESSAGE_ID + "-" + AppConstants.platform;
     }
-    let _authExpirationTime = passwordAuthorizedSites.filter(
-      site => site.url === origin
+    let _authExpirationTime = passwordAuthorizedSites.filter(site =>
+      url.startsWith(site.url)
     )[0]?.expiryTime;
     if (_authExpirationTime == null) {
       _authExpirationTime = 0;
-      AuthCache.set(cacheKey, {
+      Services.ssi.authCache.set(cacheKey, {
         passwordAuthorizedSites: [{ url: origin, expiryTime: 0 }],
       });
     }
 
-    // Auth
+    // Password prompt
     const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
       embedderElement,
       isOSAuthEnabled,
@@ -343,14 +385,14 @@ export const browserSsiHelper = {
       if (extensionName) {
         passwordAuthorizedSites[0].name = extensionName;
       }
-      AuthCache.set(cacheKey, { passwordAuthorizedSites });
+      Services.ssi.authCache.set(cacheKey, { passwordAuthorizedSites });
     }
     console.log(
-      "primarypassword",
+      "primarypassword-dialog",
       isAuthorized,
       telemetryEvent,
       origin,
-      AuthCache.get(cacheKey)
+      Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
     );
     return isAuthorized;
   },

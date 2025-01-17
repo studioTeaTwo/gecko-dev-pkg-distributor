@@ -15,11 +15,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
+    // Call it as a dummy to perform initialization
+    // eslint-disable-next-line no-unused-vars
+    const authCache = Services.ssi.authCache;
     return {
       ssi: {
         async searchCredentialsWithoutSecret(
           { protocolName = "", credentialName = "", primary = true },
-          { caption = "AUTH_LOCK", submission = "" }
+          { caption = "read YOUR KEY", submission = "" }
         ) {
           // Stuff to check permission
           const enabled = {
@@ -115,7 +118,7 @@ this.ssi = class extends ExtensionAPI {
         async askPermission(
           protocolName,
           credentialName,
-          { caption = "AUTH_LOCK", submission = "" }
+          { caption = "get your authorization", submission = "" }
         ) {
           try {
             // Validate params

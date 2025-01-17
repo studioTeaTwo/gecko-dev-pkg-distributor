@@ -91,14 +91,14 @@ export class SsiStorage extends SsiStorage_json {
   }
 
   /**
-   * Convert a modern decrypted vanilla credential object to one expected from ssis.json.
+   * Convert a modern decrypted vanilla credential object to one expected from ssi-store.json.
    *
    * The storage credential is usually encrypted but not in this case, this aligns
    * with the `_decryptCredentials` method being a no-op.
    *
-   * @param {object} vanillaCredential using `origin`/`formActionOrigin`/`username` properties.
-   * @returns {object} a vanilla credential for ssi-credentials.json using
-   *                   `hostname`/`formSubmitURL`/`encryptedUsername`.
+   * @param {object} vanillaCredential using properties without `encrypted`.
+   * @returns {object} a vanilla credential for ssi-store.json using
+   *                   properties with `encrypted`.
    */
   _vanillaCredentialToStorageCredential(vanillaCredential) {
     return {

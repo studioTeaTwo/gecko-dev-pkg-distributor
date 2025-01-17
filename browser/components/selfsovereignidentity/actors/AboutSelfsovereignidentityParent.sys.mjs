@@ -7,7 +7,6 @@ import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs";
-import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs"; // Treat AuthCache as a singleton
 
 const lazy = {};
 
@@ -133,16 +132,6 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     newCredential = lazy.SsiHelper.vanillaObjectToCredential(newCredential);
     try {
       await Services.ssi.addCredentialAsync(newCredential);
-      AuthCache.set(
-        `${newCredential.protocolName}:${newCredential.credentialName}:${newCredential.identifier}`,
-        {
-          trustedSites: JSON.parse(newCredential.trustedSites),
-          passwordAuthorizedSites: JSON.parse(
-            newCredential.passwordAuthorizedSites
-          ),
-        },
-        true
-      );
     } catch (error) {
       this.#handleCredentialStorageErrors(newCredential, error);
     }
@@ -151,9 +140,6 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
   #deleteCredential(credentialObject) {
     let credential = lazy.SsiHelper.vanillaObjectToCredential(credentialObject);
     Services.ssi.removeCredential(credential);
-    AuthCache.delete(
-      `${credentialObject.protocolName}:${credentialObject.credentialName}:${credentialObject.identifier}`
-    );
   }
 
   async #primaryPasswordRequest(messageId) {
@@ -167,7 +153,7 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     let messageText =
       messageId ===
       "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-        ? { value: "ACCESS YOUR KEY" }
+        ? { value: "access YOUR KEY" }
         : { value: "AUTH LOCK" };
     let captionText = { value: "" };
 
@@ -284,24 +270,10 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
         changeSet.credential.trustedSites = JSON.stringify(parsed);
       }
       modifiedCredential.trustedSites = changeSet.credential.trustedSites;
-      AuthCache.set(
-        `${modifiedCredential.protocolName}:${modifiedCredential.credentialName}:${modifiedCredential.identifier}`,
-        { trustedSites: JSON.parse(modifiedCredential.trustedSites) },
-        true
-      );
     }
     if (changeSet.credential.hasOwnProperty("passwordAuthorizedSites")) {
       modifiedCredential.passwordAuthorizedSites =
         changeSet.credential.passwordAuthorizedSites;
-      AuthCache.set(
-        `${modifiedCredential.protocolName}:${modifiedCredential.credentialName}:${modifiedCredential.identifier}`,
-        {
-          passwordAuthorizedSites: JSON.parse(
-            modifiedCredential.passwordAuthorizedSites
-          ),
-        },
-        true
-      );
     }
     if (changeSet.credential.hasOwnProperty("properties")) {
       modifiedCredential.properties = changeSet.credential.properties;
@@ -316,7 +288,6 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
 
   #removeAllCredentials() {
     Services.ssi.removeAllCredentials();
-    AuthCache.reset();
   }
 
   #primaryChanged(changeSet) {

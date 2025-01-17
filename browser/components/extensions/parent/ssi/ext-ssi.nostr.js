@@ -44,7 +44,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           async getPrefs() {
             return lazy.browserSsiHelper.getPrefs("nostr");
           },
-          async sign(message, { caption = "AUTH_LOCK", submission = "" }) {
+          async sign(
+            message,
+            { caption = "sign with YOUR KEY", submission = "" }
+          ) {
             try {
               // Validate params
               // TODO(ssb): validate submission

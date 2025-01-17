@@ -4,8 +4,8 @@
 
 /**
  * A key-value, on-memory store to use for authorization in API internal layer
- * (and cache sync from about:selfsovereignidentity).
- * It's singleton instance and should ideally be only on parent process.
+ * (and cache sync from Services.ssi).
+ * It must be a singleton instance and should ideally be only on parent process.
  *
  * key: `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
  * value: {
@@ -15,9 +15,15 @@
  */
 class _AuthCache {
   constructor() {
+    if (_AuthCache.instance) {
+      return _AuthCache.instance;
+    }
+    _AuthCache.instance = this;
     this.initialized = false;
     this._cache = new Map();
+  }
 
+  init() {
     const onSearchComplete = credentials => {
       credentials.forEach(credential => {
         this._cache.set(
@@ -33,13 +39,20 @@ class _AuthCache {
       this.initialized = true;
     };
     Services.ssi.getAllCredentialsWithCallback({ onSearchComplete });
+    return this;
   }
 
   has(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
     return this._cache.has(key);
   }
 
   get(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
     return this._cache.get(key);
   }
 
@@ -49,16 +62,25 @@ class _AuthCache {
    * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.expiryTime) is 0.
    *
    * @param {string} key
-   * @param {Object} value - Only new values from the API, all values from about:selfsovereignidentity
-   * @param {boolean} [fromAbout=false] - Updates from about:selfsovereignidentity. In this case don't need to persist.
+   * @param {Object} value - Only new values from the API, all values from Services.ssi
+   * @param {boolean} [fromStore=false] - Updates from Services.ssi. In this case don't need to persist.
    */
-  async set(key, value, fromAbout = false) {
+  async set(key, value, fromStore = false) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
     if (!this.has(key)) {
-      throw new Error(`No key exists: ${key}`);
+      if (!fromStore) {
+        throw new Error(`No key exists: ${key}`);
+      }
+      this._cache.set(key, { trustedSites: [], passwordAuthorizedSites: [] });
     }
 
     const prevValue = this.get(key);
     if (JSON.stringify(prevValue) === JSON.stringify(value)) {
+      if (fromStore) {
+        return;
+      }
       throw new Error("No changed value.");
     }
 
@@ -103,7 +125,7 @@ class _AuthCache {
     // Update cache
     this._cache.set(key, newValue);
 
-    if (fromAbout || count === notPersistent.length) {
+    if (fromStore || count === notPersistent.length) {
       return;
     }
 
@@ -125,15 +147,18 @@ class _AuthCache {
     Services.ssi.modifyCredential(old[0], modifiedCredential);
   }
 
-  // Only for cach sync from about:selfsovereignidentity, don't need to persist.
+  // Only for cach sync from Services.ssi, don't need to persist.
   delete(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
     if (!this.has(key)) {
       throw new Error(`No key exists: ${key}`);
     }
     this._cache.delete(key);
   }
 
-  // Only for cach sync from about:selfsovereignidentity, don't need to persist.
+  // Only for cach sync from Services.ssi, don't need to persist.
   reset() {
     this._cache = new Map();
   }

@@ -36,7 +36,7 @@ export class SsiStorage_json {
       let profileDir = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
 
       // Set the reference to SsiStore synchronously.
-      let jsonPath = PathUtils.join(profileDir, "ssi-credentials.json");
+      let jsonPath = PathUtils.join(profileDir, "ssi-store.json");
       let backupPath = "";
       // TODO(ssb): reconsider whether it needs.
       // let loginsBackupEnabled = Services.prefs.getBoolPref(
