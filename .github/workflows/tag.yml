@@ -33,8 +33,9 @@ jobs:
       - name: Get previous tag
         run: |
           git fetch origin 'refs/tags/*:refs/tags/*'
-          previous_tag=$(git ls-remote --tags --sort=v:refname origin "v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
-          echo "previous_tag=$previous_tag" >> "$GITHUB_ENV"
+          criteria=v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}
+          previous_tag=$(git ls-remote --tags --sort=v:refname origin "$criteria" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
+          echo "previous_tag=$previous_tag" | tee "$GITHUB_ENV"
       - name: Create a tag with signature
         run: |
           if [ -z ${{ inputs.tag-name}} ]; then
@@ -66,3 +67,10 @@ jobs:
         run: |
           gpg --clear-sign verification.txt
           cat verification.txt.asc
+      - name: Create release note draft
+        run: |
+          commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
+          git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > release_note_draft.txt
+          echo '\n<details close>\n' >> release_note_draft.txt
+          cat verification.txt.asc >> release_note_draft.txt
+          cat release_note_draft.txt
