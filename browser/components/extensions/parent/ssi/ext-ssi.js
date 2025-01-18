@@ -24,24 +24,27 @@ this.ssi = class extends ExtensionAPI {
           { protocolName = "", credentialName = "", primary = true },
           { caption = "", submission = "", enforce = false }
         ) {
-          // Stuff to check permission
-          const enabled = {
-            nostr: Services.prefs.getBoolPref(
-              `selfsovereignidentity.nostr.enabled`
-            ),
-          };
-          const accountChanged = {
-            nostr: Services.prefs.getBoolPref(
-              `selfsovereignidentity.nostr.event.accountChanged.enabled`
-            ),
-          };
+          const errorValue = [];
 
           try {
+            // Stuff to check permission
+            const enabled = {
+              nostr: Services.prefs.getBoolPref(
+                `selfsovereignidentity.nostr.enabled`
+              ),
+            };
+            const accountChanged = {
+              nostr: Services.prefs.getBoolPref(
+                `selfsovereignidentity.nostr.event.accountChanged.enabled`
+              ),
+            };
+
+            // Validate params
             // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
             const params = {};
             if (protocolName) {
               if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
-                return [];
+                return errorValue;
               }
               params.protocolName = protocolName;
             }
@@ -49,17 +52,21 @@ this.ssi = class extends ExtensionAPI {
               if (
                 !lazy.browserSsiHelper.validateCredentialName(credentialName)
               ) {
-                return [];
+                return errorValue;
               }
               params.credentialName = credentialName;
             }
             params.primary = primary;
             if (caption) {
               if (!lazy.browserSsiHelper.validateDialogText(caption)) {
-                return false;
+                return errorValue;
               }
             }
-            // TODO(ssb): validate submission
+            if (submission) {
+              if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                return errorValue;
+              }
+            }
 
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
@@ -112,7 +119,7 @@ this.ssi = class extends ExtensionAPI {
               });
           } catch (e) {
             console.error(e);
-            return [];
+            return errorValue;
           }
         },
         async askPermission(
@@ -120,17 +127,24 @@ this.ssi = class extends ExtensionAPI {
           credentialName,
           { caption = "", submission = "", enforce = false }
         ) {
+          const errorValue = false;
+
           try {
             // Validate params
-            // TODO(ssb): validate submission
             if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
-              return false;
+              return errorValue;
             }
             if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
-              return false;
+              return errorValue;
             }
-            if (!lazy.browserSsiHelper.validateDialogText(caption)) {
-              return false;
+            if (caption && !lazy.browserSsiHelper.validateDialogText(caption)) {
+              return errorValue;
+            }
+            if (
+              submission &&
+              !lazy.browserSsiHelper.validateDialogText(submission)
+            ) {
+              return errorValue;
             }
 
             // Check permission
@@ -138,7 +152,7 @@ this.ssi = class extends ExtensionAPI {
               `selfsovereignidentity.${protocolName}.enabled`
             );
             if (!enabled) {
-              return false;
+              return errorValue;
             }
 
             const isAuthorized = await lazy.browserSsiHelper.authorize(
@@ -151,7 +165,7 @@ this.ssi = class extends ExtensionAPI {
             return isAuthorized;
           } catch (e) {
             console.error(e);
-            return false;
+            return errorValue;
           }
         },
       },

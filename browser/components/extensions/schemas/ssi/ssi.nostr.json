@@ -51,10 +51,21 @@
           {
             "name": "message",
             "type": "string",
-            "description": "The message to sign"
+            "description": "The message to sign. If it's not a string it must be stringified."
           },
           {
-            "name": "dialogOptions",
+            "name": "option",
+            "type": "object",
+            "description": "Direction about sign detail",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "'signEvent'"
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
             "description": "Parameters to build Auth dialog"

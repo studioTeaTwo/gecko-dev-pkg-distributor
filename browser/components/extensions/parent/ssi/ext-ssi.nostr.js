@@ -12,9 +12,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Nostr: "resource://ssi/protocols/Nostr.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
-const { ensureBytes } = ChromeUtils.importESModule(
-  "resource://ssi/protocols/utils-curves.sys.mjs"
-);
 
 this["ssi.nostr"] = class extends ExtensionAPI {
   getAPI(context) {
@@ -40,14 +37,36 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           },
           async sign(
             message,
+            { type },
             { caption = "", submission = "", enforce = false }
           ) {
+            const errorValue = null;
+            let nEvent = {}; // for type=signEvent
+
             try {
               // Validate params
-              // TODO(ssb): validate submission
-              ensureBytes("message", message); // Will throw error for other types.
-              if (!lazy.browserSsiHelper.validateDialogText(caption)) {
-                return false;
+              switch (type) {
+                case "signEvent": {
+                  nEvent = JSON.parse(message);
+                  if (!lazy.Nostr.validateEvent(nEvent)) {
+                    return errorValue;
+                  }
+                  break;
+                }
+                default: {
+                  // Not implemented
+                  return errorValue;
+                }
+              }
+              if (caption) {
+                if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                  return errorValue;
+                }
+              }
+              if (submission) {
+                if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                  return errorValue;
+                }
               }
 
               // Check permission
@@ -55,7 +74,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                 "selfsovereignidentity.nostr.enabled"
               );
               if (!enabled) {
-                return null;
+                return errorValue;
               }
               const credentials =
                 await lazy.SsiHelper.searchCredentialsWithoutSecret({
@@ -64,7 +83,17 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                   primary: true,
                 });
               if (credentials.length === 0) {
-                return null;
+                return errorValue;
+              }
+              if (type === "signEvent") {
+                nEvent = lazy.Nostr.attachPubkey(
+                  credentials[0].identifier,
+                  nEvent
+                );
+                if (!nEvent) {
+                  // caller's pubkey is different from current primary key.
+                  return errorValue;
+                }
               }
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
@@ -73,13 +102,23 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                   protocolName: credentials[0].protocolName,
                   credentialName: credentials[0].credentialName,
                 },
-                { type: "sign", caption, submission, enforce },
+                {
+                  type: "sign",
+                  evidence: JSON.stringify(nEvent, null, 1),
+                  caption,
+                  submission,
+                  enforce,
+                },
                 false
               );
               if (!isAuthorized) {
-                return null;
+                return errorValue;
               }
 
+              // Sign
+              if (type === "signEvent") {
+                message = lazy.Nostr.hashEvent(nEvent);
+              }
               const signature = await lazy.Nostr.sign(
                 message,
                 credentials[0].guid
@@ -87,7 +126,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               return signature;
             } catch (e) {
               console.error(e);
-              return null;
+              return errorValue;
             }
           },
         },

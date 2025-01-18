@@ -162,6 +162,7 @@ export const browserSsiHelper = {
    * @param {string} credential.credentialName
    * @param {object} dialogInfo
    * @param {string} dialogInfo.type - "read" | "sign" | "encrypt" | "decrypt" | "custom"
+   * @param {string} dialogInfo.evidence - NostrEvent etc.
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -172,7 +173,7 @@ export const browserSsiHelper = {
     context,
     tabTracker,
     { protocolName, credentialName },
-    { type, caption, submission, enforce },
+    { type, evidence, caption, submission, enforce },
     onlyExtension
   ) {
     // Prepare stuff
@@ -226,6 +227,7 @@ export const browserSsiHelper = {
     };
     const dialog = {
       system: DIALOG_SYSTEM_MESSAGE(protocolName)[type],
+      evidence,
       caption,
       submission,
       enforce,
@@ -270,6 +272,7 @@ export const browserSsiHelper = {
    * @param {number} authCache.expiryTimePref
    * @param {object} dialogInfo
    * @param {string} dialogInfo.system - DIALOG_SYSTEM_MESSAGE
+   * @param {string} dialogInfo.evidence
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -281,7 +284,7 @@ export const browserSsiHelper = {
     extensionName,
     { enabledTrustedSites, enabledPrimarypassword },
     { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref },
-    { system, caption, submission, enforce, embedderElement }
+    { system, evidence, caption, submission, enforce, embedderElement }
   ) {
     if (enabledTrustedSites && !enforce) {
       const trusted = browserSsiHelper.isTrusted(target.url, trustedSites);
@@ -313,6 +316,7 @@ export const browserSsiHelper = {
         },
         {
           system,
+          evidence,
           caption,
           submission,
           enforce,
@@ -352,12 +356,15 @@ export const browserSsiHelper = {
     { url, origin },
     extensionName,
     { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
-    { system, caption, submission, enforce, embedderElement } // dialog
+    { system, evidence, caption, submission, enforce, embedderElement } // dialog
   ) {
     const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
     const messageText = { value: `${system}${eol}to ${origin}` };
     if (caption) {
       messageText.value += `${eol}${caption}`;
+    }
+    if (evidence) {
+      messageText.value += `${eol}${eol}${evidence}`;
     }
     if (submission) {
       messageText.value += `${eol}${eol}${submission}`;

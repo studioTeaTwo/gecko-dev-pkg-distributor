@@ -12,24 +12,24 @@ declare namespace browser.ssi {
     guid?: string;
   }
 
+  type dialogOption = {
+    caption?: string;
+    submission?: string;
+    enforce?: boolean;
+  };
+
   const searchCredentialsWithoutSecret: (
     criteria: {
       protocolName: ProtocolName;
       credentialName: string;
       primary: boolean;
     },
-    dialogOption?: {
-      caption?: string;
-      submission?: string;
-    }
+    dialogOption?: dialogOption
   ) => Promise<Credential[] | null>;
   const askPermission: (
     protocolName: ProtocolName,
     credentialName: string,
-    dialogOption?: {
-      caption?: string;
-      submission?: string;
-    }
+    dialogOption?: dialogOption
   ) => Promise<boolean>;
   const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>;
 
@@ -52,10 +52,10 @@ declare namespace browser.ssi {
   const nostr: {
     sign: (
       message: string,
-      dialogOption?: {
-        caption?: string;
-        submission?: string;
-      }
+      option: {
+        type: "signEvent";
+      },
+      dialogOption?: dialogOption
     ) => Promise<string | null>;
   } & commonApis;
 }
@@ -71,7 +71,12 @@ interface WindowSSI extends EventTarget {
     _proxy: EventTarget;
     generate: (option?) => Promise<PublicKey>;
     getPublicKey: (option?) => Promise<PublicKey>;
-    sign: (message: string, option?) => Promise<Signature>;
+    sign: (
+      message: string,
+      option: {
+        type: "signEvent";
+      }
+    ) => Promise<Signature>;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
   } & EventTarget;

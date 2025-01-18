@@ -58,149 +58,6 @@ function aoutput(out, instance) {
 
 /***/ }),
 
-/***/ 202:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.HashMD = void 0;
-exports.setBigUint64 = setBigUint64;
-exports.Chi = Chi;
-exports.Maj = Maj;
-/**
- * Internal Merkle-Damgard hash utils.
- * @module
- */
-const _assert_js_1 = __webpack_require__(557);
-const utils_js_1 = __webpack_require__(175);
-/** Polyfill for Safari 14. https://caniuse.com/mdn-javascript_builtins_dataview_setbiguint64 */
-function setBigUint64(view, byteOffset, value, isLE) {
-    if (typeof view.setBigUint64 === 'function')
-        return view.setBigUint64(byteOffset, value, isLE);
-    const _32n = BigInt(32);
-    const _u32_max = BigInt(0xffffffff);
-    const wh = Number((value >> _32n) & _u32_max);
-    const wl = Number(value & _u32_max);
-    const h = isLE ? 4 : 0;
-    const l = isLE ? 0 : 4;
-    view.setUint32(byteOffset + h, wh, isLE);
-    view.setUint32(byteOffset + l, wl, isLE);
-}
-/** Choice: a ? b : c */
-function Chi(a, b, c) {
-    return (a & b) ^ (~a & c);
-}
-/** Majority function, true if any two inputs is true. */
-function Maj(a, b, c) {
-    return (a & b) ^ (a & c) ^ (b & c);
-}
-/**
- * Merkle-Damgard hash construction base class.
- * Could be used to create MD5, RIPEMD, SHA1, SHA2.
- */
-class HashMD extends utils_js_1.Hash {
-    constructor(blockLen, outputLen, padOffset, isLE) {
-        super();
-        this.blockLen = blockLen;
-        this.outputLen = outputLen;
-        this.padOffset = padOffset;
-        this.isLE = isLE;
-        this.finished = false;
-        this.length = 0;
-        this.pos = 0;
-        this.destroyed = false;
-        this.buffer = new Uint8Array(blockLen);
-        this.view = (0, utils_js_1.createView)(this.buffer);
-    }
-    update(data) {
-        (0, _assert_js_1.aexists)(this);
-        const { view, buffer, blockLen } = this;
-        data = (0, utils_js_1.toBytes)(data);
-        const len = data.length;
-        for (let pos = 0; pos < len;) {
-            const take = Math.min(blockLen - this.pos, len - pos);
-            // Fast path: we have at least one block in input, cast it to view and process
-            if (take === blockLen) {
-                const dataView = (0, utils_js_1.createView)(data);
-                for (; blockLen <= len - pos; pos += blockLen)
-                    this.process(dataView, pos);
-                continue;
-            }
-            buffer.set(data.subarray(pos, pos + take), this.pos);
-            this.pos += take;
-            pos += take;
-            if (this.pos === blockLen) {
-                this.process(view, 0);
-                this.pos = 0;
-            }
-        }
-        this.length += data.length;
-        this.roundClean();
-        return this;
-    }
-    digestInto(out) {
-        (0, _assert_js_1.aexists)(this);
-        (0, _assert_js_1.aoutput)(out, this);
-        this.finished = true;
-        // Padding
-        // We can avoid allocation of buffer for padding completely if it
-        // was previously not allocated here. But it won't change performance.
-        const { buffer, view, blockLen, isLE } = this;
-        let { pos } = this;
-        // append the bit '1' to the message
-        buffer[pos++] = 0b10000000;
-        this.buffer.subarray(pos).fill(0);
-        // we have less than padOffset left in buffer, so we cannot put length in
-        // current block, need process it and pad again
-        if (this.padOffset > blockLen - pos) {
-            this.process(view, 0);
-            pos = 0;
-        }
-        // Pad until full block byte with zeros
-        for (let i = pos; i < blockLen; i++)
-            buffer[i] = 0;
-        // Note: sha512 requires length to be 128bit integer, but length in JS will overflow before that
-        // You need to write around 2 exabytes (u64_max / 8 / (1024**6)) for this to happen.
-        // So we just write lowest 64 bits of that value.
-        setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE);
-        this.process(view, 0);
-        const oview = (0, utils_js_1.createView)(out);
-        const len = this.outputLen;
-        // NOTE: we do division by 4 later, which should be fused in single op with modulo by JIT
-        if (len % 4)
-            throw new Error('_sha2: outputLen should be aligned to 32bit');
-        const outLen = len / 4;
-        const state = this.get();
-        if (outLen > state.length)
-            throw new Error('_sha2: outputLen bigger than state');
-        for (let i = 0; i < outLen; i++)
-            oview.setUint32(4 * i, state[i], isLE);
-    }
-    digest() {
-        const { buffer, outputLen } = this;
-        this.digestInto(buffer);
-        const res = buffer.slice(0, outputLen);
-        this.destroy();
-        return res;
-    }
-    _cloneInto(to) {
-        to || (to = new this.constructor());
-        to.set(...this.get());
-        const { blockLen, buffer, length, finished, destroyed, pos } = this;
-        to.length = length;
-        to.pos = pos;
-        to.finished = finished;
-        to.destroyed = destroyed;
-        if (length % blockLen)
-            to.buffer.set(buffer);
-        return to;
-    }
-}
-exports.HashMD = HashMD;
-//# sourceMappingURL=_md.js.map
-
-/***/ }),
-
 /***/ 145:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -209,146 +66,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.crypto = void 0;
 exports.crypto = typeof globalThis === 'object' && 'crypto' in globalThis ? globalThis.crypto : undefined;
 //# sourceMappingURL=crypto.js.map
-
-/***/ }),
-
-/***/ 623:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.sha224 = exports.sha256 = exports.SHA256 = void 0;
-/**
- * SHA2-256 a.k.a. sha256. In JS, it is the fastest hash, even faster than Blake3.
- *
- * To break sha256 using birthday attack, attackers need to try 2^128 hashes.
- * BTC network is doing 2^70 hashes/sec (2^95 hashes/year) as per 2025.
- *
- * Check out [FIPS 180-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf).
- * @module
- */
-const _md_js_1 = __webpack_require__(202);
-const utils_js_1 = __webpack_require__(175);
-/** Round constants: first 32 bits of fractional parts of the cube roots of the first 64 primes 2..311). */
-// prettier-ignore
-const SHA256_K = /* @__PURE__ */ new Uint32Array([
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-]);
-/** Initial state: first 32 bits of fractional parts of the square roots of the first 8 primes 2..19. */
-// prettier-ignore
-const SHA256_IV = /* @__PURE__ */ new Uint32Array([
-    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
-]);
-/**
- * Temporary buffer, not used to store anything between runs.
- * Named this way because it matches specification.
- */
-const SHA256_W = /* @__PURE__ */ new Uint32Array(64);
-class SHA256 extends _md_js_1.HashMD {
-    constructor() {
-        super(64, 32, 8, false);
-        // We cannot use array here since array allows indexing by variable
-        // which means optimizer/compiler cannot use registers.
-        this.A = SHA256_IV[0] | 0;
-        this.B = SHA256_IV[1] | 0;
-        this.C = SHA256_IV[2] | 0;
-        this.D = SHA256_IV[3] | 0;
-        this.E = SHA256_IV[4] | 0;
-        this.F = SHA256_IV[5] | 0;
-        this.G = SHA256_IV[6] | 0;
-        this.H = SHA256_IV[7] | 0;
-    }
-    get() {
-        const { A, B, C, D, E, F, G, H } = this;
-        return [A, B, C, D, E, F, G, H];
-    }
-    // prettier-ignore
-    set(A, B, C, D, E, F, G, H) {
-        this.A = A | 0;
-        this.B = B | 0;
-        this.C = C | 0;
-        this.D = D | 0;
-        this.E = E | 0;
-        this.F = F | 0;
-        this.G = G | 0;
-        this.H = H | 0;
-    }
-    process(view, offset) {
-        // Extend the first 16 words into the remaining 48 words w[16..63] of the message schedule array
-        for (let i = 0; i < 16; i++, offset += 4)
-            SHA256_W[i] = view.getUint32(offset, false);
-        for (let i = 16; i < 64; i++) {
-            const W15 = SHA256_W[i - 15];
-            const W2 = SHA256_W[i - 2];
-            const s0 = (0, utils_js_1.rotr)(W15, 7) ^ (0, utils_js_1.rotr)(W15, 18) ^ (W15 >>> 3);
-            const s1 = (0, utils_js_1.rotr)(W2, 17) ^ (0, utils_js_1.rotr)(W2, 19) ^ (W2 >>> 10);
-            SHA256_W[i] = (s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16]) | 0;
-        }
-        // Compression function main loop, 64 rounds
-        let { A, B, C, D, E, F, G, H } = this;
-        for (let i = 0; i < 64; i++) {
-            const sigma1 = (0, utils_js_1.rotr)(E, 6) ^ (0, utils_js_1.rotr)(E, 11) ^ (0, utils_js_1.rotr)(E, 25);
-            const T1 = (H + sigma1 + (0, _md_js_1.Chi)(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
-            const sigma0 = (0, utils_js_1.rotr)(A, 2) ^ (0, utils_js_1.rotr)(A, 13) ^ (0, utils_js_1.rotr)(A, 22);
-            const T2 = (sigma0 + (0, _md_js_1.Maj)(A, B, C)) | 0;
-            H = G;
-            G = F;
-            F = E;
-            E = (D + T1) | 0;
-            D = C;
-            C = B;
-            B = A;
-            A = (T1 + T2) | 0;
-        }
-        // Add the compressed chunk to the current hash value
-        A = (A + this.A) | 0;
-        B = (B + this.B) | 0;
-        C = (C + this.C) | 0;
-        D = (D + this.D) | 0;
-        E = (E + this.E) | 0;
-        F = (F + this.F) | 0;
-        G = (G + this.G) | 0;
-        H = (H + this.H) | 0;
-        this.set(A, B, C, D, E, F, G, H);
-    }
-    roundClean() {
-        SHA256_W.fill(0);
-    }
-    destroy() {
-        this.set(0, 0, 0, 0, 0, 0, 0, 0);
-        this.buffer.fill(0);
-    }
-}
-exports.SHA256 = SHA256;
-/**
- * Constants taken from https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf.
- */
-class SHA224 extends SHA256 {
-    constructor() {
-        super();
-        this.A = 0xc1059ed8 | 0;
-        this.B = 0x367cd507 | 0;
-        this.C = 0x3070dd17 | 0;
-        this.D = 0xf70e5939 | 0;
-        this.E = 0xffc00b31 | 0;
-        this.F = 0x68581511 | 0;
-        this.G = 0x64f98fa7 | 0;
-        this.H = 0xbefa4fa4 | 0;
-        this.outputLen = 28;
-    }
-}
-/** SHA2-256 hash function */
-exports.sha256 = (0, utils_js_1.wrapConstructor)(() => new SHA256());
-/** SHA2-224 hash function */
-exports.sha224 = (0, utils_js_1.wrapConstructor)(() => new SHA224());
-//# sourceMappingURL=sha256.js.map
 
 /***/ }),
 
@@ -1151,7 +868,6 @@ exports.bytes = exports.stringToBytes;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = exports.doNostrAction = void 0;
-const sha256_1 = __webpack_require__(623);
 const utils_1 = __webpack_require__(175);
 const base_1 = __webpack_require__(203);
 const logger_1 = __webpack_require__(874);
@@ -1178,7 +894,7 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable.
+            // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
             const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
             if (!isAuthorized) {
                 throw new Error("Rejected");
@@ -1203,20 +919,9 @@ const doNostrAction = async (action, args, origin) => {
             if (typeof args.message !== "string") {
                 throw new Error("Invalid message");
             }
-            if (!validateEvent(args.event)) {
-                throw new Error("Invalid event");
-            }
-            const message = args.message;
-            const event = args.event;
-            event.pubkey = decodeNpub(state_1.state.nostr.npub); // override to verify
-            const eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new TextEncoder().encode(serializeEvent(event))));
-            if (message !== eventHash) {
-                throw new Error("Invalid message");
-            }
             // Sign
-            const signature = await browser.ssi.nostr.sign(message, {
+            const signature = await browser.ssi.nostr.sign(args.message, { type: "signEvent" }, {
                 caption: DialogMessage[action],
-                submission: JSON.stringify(args.event, null, 1),
             });
             if (!signature) {
                 throw new Error("Failed to sign");
@@ -1321,56 +1026,6 @@ function decodeNpub(npub) {
         throw new Error("Not npub!");
     }
     return (0, utils_1.bytesToHex)(new Uint8Array(base_1.bech32.fromWords(words)));
-}
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
-function validateEvent(event) {
-    if (!(event instanceof Object)) {
-        return false;
-    }
-    if (typeof event.kind !== "number") {
-        return false;
-    }
-    if (typeof event.content !== "string") {
-        return false;
-    }
-    if (typeof event.created_at !== "number") {
-        return false;
-    }
-    if (typeof event.pubkey !== "string") {
-        return false;
-    }
-    if (!event.pubkey.match(/^[a-f0-9]{64}$/)) {
-        return false;
-    }
-    if (!Array.isArray(event.tags)) {
-        return false;
-    }
-    for (let i = 0; i < event.tags.length; i++) {
-        const tag = event.tags[i];
-        if (!Array.isArray(tag)) {
-            return false;
-        }
-        for (let j = 0; j < tag.length; j++) {
-            if (typeof tag[j] === "object") {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
-function serializeEvent(event) {
-    if (!validateEvent(event)) {
-        throw new Error("can't serialize event with wrong or missing properties");
-    }
-    return JSON.stringify([
-        0,
-        event.pubkey,
-        event.created_at,
-        event.kind,
-        event.tags,
-        event.content,
-    ]);
 }
 
 

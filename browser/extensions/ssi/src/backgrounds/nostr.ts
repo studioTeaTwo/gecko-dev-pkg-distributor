@@ -1,9 +1,7 @@
-import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bech32 } from "@scure/base";
 import { log } from "../shared/logger";
 import { state } from "./state";
-import { type NostrEvent } from "../custom.type";
 
 // NOTE(ssb): Currently firefox does not support externally_connectable.
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
@@ -37,7 +35,7 @@ export const doNostrAction = async (
 
   switch (action) {
     case "nostr/getPublicKey": {
-      // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable.
+      // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
       const isAuthorized = await browser.ssi.askPermission(
         "nostr",
         state.nostr.credentialName,
@@ -69,25 +67,15 @@ export const doNostrAction = async (
       if (typeof args.message !== "string") {
         throw new Error("Invalid message");
       }
-      if (!validateEvent(args.event)) {
-        throw new Error("Invalid event");
-      }
-
-      const message = args.message;
-      const event = args.event;
-      event.pubkey = decodeNpub(state.nostr.npub); // override to verify
-      const eventHash = bytesToHex(
-        sha256(new TextEncoder().encode(serializeEvent(event)))
-      );
-      if (message !== eventHash) {
-        throw new Error("Invalid message");
-      }
 
       // Sign
-      const signature = await browser.ssi.nostr.sign(message, {
-        caption: DialogMessage[action],
-        submission: JSON.stringify(args.event, null, 1),
-      });
+      const signature = await browser.ssi.nostr.sign(
+        args.message,
+        { type: "signEvent" },
+        {
+          caption: DialogMessage[action],
+        }
+      );
       if (!signature) {
         throw new Error("Failed to sign");
       }
@@ -211,59 +199,4 @@ function decodeNpub(npub) {
     throw new Error("Not npub!");
   }
   return bytesToHex(new Uint8Array(bech32.fromWords(words)));
-}
-
-// based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
-function validateEvent(event: NostrEvent): boolean {
-  if (!(event instanceof Object)) {
-    return false;
-  }
-  if (typeof event.kind !== "number") {
-    return false;
-  }
-  if (typeof event.content !== "string") {
-    return false;
-  }
-  if (typeof event.created_at !== "number") {
-    return false;
-  }
-  if (typeof event.pubkey !== "string") {
-    return false;
-  }
-  if (!event.pubkey.match(/^[a-f0-9]{64}$/)) {
-    return false;
-  }
-
-  if (!Array.isArray(event.tags)) {
-    return false;
-  }
-  for (let i = 0; i < event.tags.length; i++) {
-    const tag = event.tags[i];
-    if (!Array.isArray(tag)) {
-      return false;
-    }
-    for (let j = 0; j < tag.length; j++) {
-      if (typeof tag[j] === "object") {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-// from: https://github.com/nbd-wtf/nostr-tools/blob/master/pure.ts#L43
-function serializeEvent(event: NostrEvent): string {
-  if (!validateEvent(event)) {
-    throw new Error("can't serialize event with wrong or missing properties");
-  }
-
-  return JSON.stringify([
-    0,
-    event.pubkey,
-    event.created_at,
-    event.kind,
-    event.tags,
-    event.content,
-  ]);
 }
