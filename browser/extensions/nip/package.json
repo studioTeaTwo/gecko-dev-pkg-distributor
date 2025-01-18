@@ -26,7 +26,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@noble/hashes": "^1.5.0",
-    "@scure/base": "^1.1.9"
+    "@noble/hashes": "^1.7.1",
+    "@scure/base": "^1.2.1"
   }
 }

@@ -1,7 +1,11 @@
-import assert from 'resource://gre/modules/shared/_assert.sys.mjs';
-import { Hash, createView, toBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
-// Polyfill for Safari 14
-function setBigUint64(view, byteOffset, value, isLE) {
+/**
+ * Internal Merkle-Damgard hash utils.
+ * @module
+ */
+import { aexists, aoutput } from 'resource://ssi/protocols/_assert.sys.mjs';
+import { Hash, createView, toBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
+/** Polyfill for Safari 14. https://caniuse.com/mdn-javascript_builtins_dataview_setbiguint64 */
+export function setBigUint64(view, byteOffset, value, isLE) {
     if (typeof view.setBigUint64 === 'function')
         return view.setBigUint64(byteOffset, value, isLE);
     const _32n = BigInt(32);
@@ -13,8 +17,19 @@ function setBigUint64(view, byteOffset, value, isLE) {
     view.setUint32(byteOffset + h, wh, isLE);
     view.setUint32(byteOffset + l, wl, isLE);
 }
-// Base SHA2 class (RFC 6234)
-export class SHA2 extends Hash {
+/** Choice: a ? b : c */
+export function Chi(a, b, c) {
+    return (a & b) ^ (~a & c);
+}
+/** Majority function, true if any two inputs is true. */
+export function Maj(a, b, c) {
+    return (a & b) ^ (a & c) ^ (b & c);
+}
+/**
+ * Merkle-Damgard hash construction base class.
+ * Could be used to create MD5, RIPEMD, SHA1, SHA2.
+ */
+export class HashMD extends Hash {
     constructor(blockLen, outputLen, padOffset, isLE) {
         super();
         this.blockLen = blockLen;
@@ -29,7 +44,7 @@ export class SHA2 extends Hash {
         this.view = createView(this.buffer);
     }
     update(data) {
-        assert.exists(this);
+        aexists(this);
         const { view, buffer, blockLen } = this;
         data = toBytes(data);
         const len = data.length;
@@ -55,8 +70,8 @@ export class SHA2 extends Hash {
         return this;
     }
     digestInto(out) {
-        assert.exists(this);
-        assert.output(out, this);
+        aexists(this);
+        aoutput(out, this);
         this.finished = true;
         // Padding
         // We can avoid allocation of buffer for padding completely if it
@@ -66,7 +81,8 @@ export class SHA2 extends Hash {
         // append the bit '1' to the message
         buffer[pos++] = 0b10000000;
         this.buffer.subarray(pos).fill(0);
-        // we have less than padOffset left in buffer, so we cannot put length in current block, need process it and pad again
+        // we have less than padOffset left in buffer, so we cannot put length in
+        // current block, need process it and pad again
         if (this.padOffset > blockLen - pos) {
             this.process(view, 0);
             pos = 0;
@@ -111,4 +127,4 @@ export class SHA2 extends Hash {
         return to;
     }
 }
-//# sourceMappingURL=_sha2.js.map
+//# sourceMappingURL=_md.js.map

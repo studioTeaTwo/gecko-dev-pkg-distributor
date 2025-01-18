@@ -1,12 +1,15 @@
-import assert from 'resource://ssi/protocols/_assert.sys.mjs';
+/**
+ * HMAC: RFC2104 message authentication code.
+ * @module
+ */
+import { abytes, aexists, ahash } from 'resource://ssi/protocols/_assert.sys.mjs';
 import { Hash, toBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
-// HMAC (RFC 2104)
 export class HMAC extends Hash {
     constructor(hash, _key) {
         super();
         this.finished = false;
         this.destroyed = false;
-        assert.hash(hash);
+        ahash(hash);
         const key = toBytes(_key);
         this.iHash = hash.create();
         if (typeof this.iHash.update !== 'function')
@@ -29,13 +32,13 @@ export class HMAC extends Hash {
         pad.fill(0);
     }
     update(buf) {
-        assert.exists(this);
+        aexists(this);
         this.iHash.update(buf);
         return this;
     }
     digestInto(out) {
-        assert.exists(this);
-        assert.bytes(out, this.outputLen);
+        aexists(this);
+        abytes(out, this.outputLen);
         this.finished = true;
         this.iHash.digestInto(out);
         this.oHash.update(out);
@@ -71,6 +74,10 @@ export class HMAC extends Hash {
  * @param hash - function that would be used e.g. sha256
  * @param key - message key
  * @param message - message data
+ * @example
+ * import { hmac } from '@noble/hashes/hmac';
+ * import { sha256 } from '@noble/hashes/sha2';
+ * const mac1 = hmac(sha256, 'key', 'message');
  */
 export const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest();
 hmac.create = (hash, key) => new HMAC(hash, key);

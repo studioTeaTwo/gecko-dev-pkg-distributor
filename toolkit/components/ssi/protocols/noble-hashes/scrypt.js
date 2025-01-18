@@ -1,10 +1,11 @@
-import assert from './_assert.js';
-import { sha256 } from './sha256.js';
+/**
+ * RFC 7914 Scrypt KDF. Can be used to create a key from password and salt.
+ * @module
+ */
+import { anumber } from './_assert.js';
 import { pbkdf2 } from './pbkdf2.js';
-import { asyncLoop, checkOpts, u32 } from './utils.js';
-// RFC 7914 Scrypt KDF
-// Left rotate for uint32
-const rotl = (a, b) => (a << b) | (a >>> (32 - b));
+import { sha256 } from './sha256.js';
+import { asyncLoop, byteSwap32, checkOpts, isLE, rotl, u32 } from './utils.js';
 // The main Scrypt loop: uses Salsa extensively.
 // Six versions of the function were tried, this is the fastest one.
 // prettier-ignore
@@ -97,20 +98,22 @@ function scryptInit(password, salt, _opts) {
         maxmem: 1024 ** 3 + 1024,
     }, _opts);
     const { N, r, p, dkLen, asyncTick, maxmem, onProgress } = opts;
-    assert.number(N);
-    assert.number(r);
-    assert.number(p);
-    assert.number(dkLen);
-    assert.number(asyncTick);
-    assert.number(maxmem);
+    anumber(N);
+    anumber(r);
+    anumber(p);
+    anumber(dkLen);
+    anumber(asyncTick);
+    anumber(maxmem);
     if (onProgress !== undefined && typeof onProgress !== 'function')
         throw new Error('progressCb should be function');
     const blockSize = 128 * r;
     const blockSize32 = blockSize / 4;
-    if (N <= 1 || (N & (N - 1)) !== 0 || N >= 2 ** (blockSize / 8) || N > 2 ** 32) {
-        // NOTE: we limit N to be less than 2**32 because of 32 bit variant of Integrify function
-        // There is no JS engines that allows alocate more than 4GB per single Uint8Array for now, but can change in future.
-        throw new Error('Scrypt: N must be larger than 1, a power of 2, less than 2^(128 * r / 8) and less than 2^32');
+    // Max N is 2^32 (Integrify is 32-bit). Real limit is 2^22: JS engines Uint8Array limit is 4GB in 2024.
+    // Spec check `N >= 2 ** (blockSize / 8)` is not done for compat with popular libs,
+    // which used incorrect r: 1, p: 8. Also, the check seems to be a spec error:
+    // https://www.rfc-editor.org/errata_search.php?rfc=7914
+    if (N <= 1 || (N & (N - 1)) !== 0 || N > 2 ** 32) {
+        throw new Error('Scrypt: N must be larger than 1, a power of 2, and less than 2^32');
     }
     if (p < 0 || p > ((2 ** 32 - 1) * 32) / blockSize) {
         throw new Error('Scrypt: p must be a positive integer less than or equal to ((2^32 - 1) * 32) / (128 * r)');
@@ -120,7 +123,7 @@ function scryptInit(password, salt, _opts) {
     }
     const memUsed = blockSize * (N + p);
     if (memUsed > maxmem) {
-        throw new Error(`Scrypt: parameters too large, ${memUsed} (128 * r * (N + p)) > ${maxmem} (maxmem)`);
+        throw new Error('Scrypt: memused is bigger than maxMem. Expected 128 * r * (N + p) > maxmem of ' + maxmem);
     }
     // [B0...Bp−1] ← PBKDF2HMAC-SHA256(Passphrase, Salt, 1, blockSize*ParallelizationFactor)
     // Since it has only one iteration there is no reason to use async variant
@@ -164,9 +167,13 @@ function scryptOutput(password, dkLen, B, V, tmp) {
  * - `maxmem` - (default: `1024 ** 3 + 1024` aka 1GB+1KB). A limit that the app could use for scrypt
  * - `onProgress` - callback function that would be executed for progress report
  * @returns Derived key
+ * @example
+ * scrypt('password', 'salt', { N: 2**18, r: 8, p: 1, dkLen: 32 });
  */
 export function scrypt(password, salt, opts) {
     const { N, r, p, dkLen, blockSize32, V, B32, B, tmp, blockMixCb } = scryptInit(password, salt, opts);
+    if (!isLE)
+        byteSwap32(B32);
     for (let pi = 0; pi < p; pi++) {
         const Pi = blockSize32 * pi;
         for (let i = 0; i < blockSize32; i++)
@@ -186,25 +193,31 @@ export function scrypt(password, salt, opts) {
             blockMixCb();
         }
     }
+    if (!isLE)
+        byteSwap32(B32);
     return scryptOutput(password, dkLen, B, V, tmp);
 }
 /**
- * Scrypt KDF from RFC 7914.
+ * Scrypt KDF from RFC 7914. Async version.
+ * @example
+ * await scryptAsync('password', 'salt', { N: 2**18, r: 8, p: 1, dkLen: 32 });
  */
 export async function scryptAsync(password, salt, opts) {
     const { N, r, p, dkLen, blockSize32, V, B32, B, tmp, blockMixCb, asyncTick } = scryptInit(password, salt, opts);
+    if (!isLE)
+        byteSwap32(B32);
     for (let pi = 0; pi < p; pi++) {
         const Pi = blockSize32 * pi;
         for (let i = 0; i < blockSize32; i++)
             V[i] = B32[Pi + i]; // V[0] = B[i]
         let pos = 0;
-        await asyncLoop(N - 1, asyncTick, (i) => {
+        await asyncLoop(N - 1, asyncTick, () => {
             BlockMix(V, pos, V, (pos += blockSize32), r); // V[i] = BlockMix(V[i-1]);
             blockMixCb();
         });
         BlockMix(V, (N - 1) * blockSize32, B32, Pi, r); // Process last element
         blockMixCb();
-        await asyncLoop(N, asyncTick, (i) => {
+        await asyncLoop(N, asyncTick, () => {
             // First u32 of the last 64-byte block (u32 is LE)
             const j = B32[Pi + blockSize32 - 16] % N; // j = Integrify(X) % iterations
             for (let k = 0; k < blockSize32; k++)
@@ -213,6 +226,8 @@ export async function scryptAsync(password, salt, opts) {
             blockMixCb();
         });
     }
+    if (!isLE)
+        byteSwap32(B32);
     return scryptOutput(password, dkLen, B, V, tmp);
 }
 //# sourceMappingURL=scrypt.js.map
