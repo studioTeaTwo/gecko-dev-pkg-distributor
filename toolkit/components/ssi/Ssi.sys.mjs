@@ -18,8 +18,6 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
   return logger;
 });
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
 if (Services.appinfo.processType !== Services.appinfo.PROCESS_TYPE_DEFAULT) {
   throw new Error("Ssi.jsm should only run in the parent process");
 }
@@ -72,8 +70,6 @@ Ssi.prototype = {
 
     // Initialize storage so that asynchronous data loading can start.
     this._initStorage();
-
-    Services.obs.addObserver(this._observer, "gather-telemetry");
   },
 
   _initStorage() {
@@ -108,7 +104,7 @@ Ssi.prototype = {
     ]),
 
     // nsIObserver
-    observe(subject, topic, data) {
+    observe(subject, topic) {
       if (topic == "xpcom-shutdown") {
         delete this._ssi._storage;
         this._ssi = null;
@@ -120,71 +116,11 @@ Ssi.prototype = {
           Services.obs.notifyObservers(null, "ssi-storage-replace-complete");
         })();
       } else if (topic == "gather-telemetry") {
-        // When testing, the "data" parameter is a string containing the
-        // reference time in milliseconds for time-based statistics.
-        this._ssi._gatherTelemetry(
-          data ? parseInt(data) : new Date().getTime()
-        );
+        /* empty */
       } else {
         lazy.log.debug(`Unexpected notification: ${topic}.`);
       }
     },
-  },
-
-  /**
-   * Collects statistics about the current credentials and settings. The telemetry
-   * histograms used here are not accumulated, but are reset each time this
-   * function is called, since it can be called multiple times in a session.
-   *
-   * This function might also not be called at all in the current session.
-   *
-   * @param referenceTimeMs
-   *        Current time used to calculate time-based statistics, expressed as
-   *        the number of milliseconds since January 1, 1970, 00:00:00 UTC.
-   *        This is set to a fake value during unit testing.
-   */
-  async _gatherTelemetry(referenceTimeMs) {
-    function clearAndGetHistogram(histogramId) {
-      let histogram = Services.telemetry.getHistogramById(histogramId);
-      histogram.clear();
-      return histogram;
-    }
-
-    clearAndGetHistogram("SSI_NUM_SAVED_SECRETS").add(
-      this.countCredentials("", "")
-    );
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "SSI_NUM_SAVED_SECRETS"
-    );
-
-    // Don't try to get credentials if MP is enabled, since we don't want to show a MP prompt.
-    if (!this.isLoggedIn) {
-      return;
-    }
-
-    let credentials = await this.getAllCredentials();
-
-    let credentialLastUsedDaysHistogram = clearAndGetHistogram(
-      "SSI_LOGIN_LAST_USED_DAYS"
-    );
-    for (let credential of credentials) {
-      credential.QueryInterface(Ci.nsICredentialMetaInfo);
-      let timeLastUsedAgeMs = referenceTimeMs - credential.timeLastUsed;
-      if (timeLastUsedAgeMs > 0) {
-        credentialLastUsedDaysHistogram.add(
-          Math.floor(timeLastUsedAgeMs / MS_PER_DAY)
-        );
-      }
-    }
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "SSI_LOGIN_LAST_USED_DAYS"
-    );
-
-    Services.obs.notifyObservers(null, "ssi-gather-telemetry-complete");
   },
 
   /**

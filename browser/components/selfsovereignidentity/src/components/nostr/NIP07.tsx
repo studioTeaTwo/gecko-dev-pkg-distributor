@@ -209,7 +209,10 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     });
   };
 
-  const handleRevokeSite = async revokedSite => {
+  const handleRevokeSite = async (
+    identifier: string,
+    revokedSite: Credential["passwordAuthorizedSites"][number]
+  ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
@@ -220,17 +223,16 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       }
     }
 
-    for (const item of nostrkeys) {
-      modifyCredentialToStore({
-        guid: item.guid,
-        passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
-          if (site.url === revokedSite.url) {
-            site.expiryTime = 0;
-          }
-          return site;
-        }),
-      });
-    }
+    const item = nostrkeys.find(key => key.identifier === identifier);
+    modifyCredentialToStore({
+      guid: item.guid,
+      passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
+        if (site.url === revokedSite.url) {
+          site.expiryTime = 0;
+        }
+        return site;
+      }),
+    });
   };
 
   const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -276,16 +278,21 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
   const getPasswordAuthorizedSites = useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.map(key => ({
-      [key.properties.displayName]: key.passwordAuthorizedSites,
+      [key.identifier]: {
+        name: key.properties.displayName,
+        passwordAuthorizedSites: key.passwordAuthorizedSites,
+      },
     }));
     return passwordAuthorizedSites.map(site => {
-      const [key, value] = Object.entries(site)[0];
-      const validSites = value.filter(site => site.expiryTime > Date.now());
+      const [identifier, value] = Object.entries(site)[0];
+      const validSites = value.passwordAuthorizedSites.filter(
+        site => site.expiryTime > Date.now()
+      );
 
       return (
         <>
           <GridItem colSpan={2}>
-            <label>{key}</label>{" "}
+            <label>{value.name}</label>{" "}
             <IconButton
               disabled
               icon={<MdEdit />}
@@ -310,7 +317,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                     <Button
                       variant="outline"
                       colorScheme="blue"
-                      onClick={() => handleRevokeSite(validSite)}
+                      onClick={() => handleRevokeSite(identifier, validSite)}
                     >
                       Revoke
                     </Button>

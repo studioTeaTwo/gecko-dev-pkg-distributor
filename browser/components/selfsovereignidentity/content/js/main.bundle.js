@@ -823,7 +823,7 @@ function NIP07(props) {
       expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour
     });
   };
-  const handleRevokeSite = async (revokedSite) => {
+  const handleRevokeSite = async (identifier, revokedSite) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
@@ -833,17 +833,16 @@ function NIP07(props) {
         return;
       }
     }
-    for (const item of nostrkeys) {
-      modifyCredentialToStore2({
-        guid: item.guid,
-        passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
-          if (site.url === revokedSite.url) {
-            site.expiryTime = 0;
-          }
-          return site;
-        })
-      });
-    }
+    const item = nostrkeys.find((key) => key.identifier === identifier);
+    modifyCredentialToStore2({
+      guid: item.guid,
+      passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
+        if (site.url === revokedSite.url) {
+          site.expiryTime = 0;
+        }
+        return site;
+      })
+    });
   };
   const handleUsedAccountChanged = (e) => {
     e.preventDefault();
@@ -878,14 +877,19 @@ function NIP07(props) {
   }, [nostrkeys]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.map((key) => ({
-      [key.properties.displayName]: key.passwordAuthorizedSites
+      [key.identifier]: {
+        name: key.properties.displayName,
+        passwordAuthorizedSites: key.passwordAuthorizedSites
+      }
     }));
     return passwordAuthorizedSites.map((site) => {
-      const [key, value] = Object.entries(site)[0];
-      const validSites = value.filter((site2) => site2.expiryTime > Date.now());
+      const [identifier, value] = Object.entries(site)[0];
+      const validSites = value.passwordAuthorizedSites.filter(
+        (site2) => site2.expiryTime > Date.now()
+      );
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: value.name }),
           " ",
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             IconButton,
@@ -917,7 +921,7 @@ function NIP07(props) {
               {
                 variant: "outline",
                 colorScheme: "blue",
-                onClick: () => handleRevokeSite(validSite),
+                onClick: () => handleRevokeSite(identifier, validSite),
                 children: "Revoke"
               }
             ) })
