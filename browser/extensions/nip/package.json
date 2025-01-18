@@ -6,7 +6,7 @@
     "start": "npm run build && npm run watch",
     "build": "webpack --config webpack.config.js",
     "watch": "npm run build -- -w",
-    "prebuild": "cp ../ssi/src/custom.d.ts src/ssi.d.ts & cp ../ssi/src/custom.type.ts src/ssi.type.ts",
+    "prebuild": "cp ../ssi/src/browser.ssi.d.ts src/browser.ssi.d.ts & cp ../ssi/src/custom.type.ts src/ssi.type.ts",
     "lint": "eslint --config .eslintrc.json --ext .ts,.tsx,.js ./src",
     "lint:fix": "eslint --fix --config .eslintrc.json --ext .ts,.tsx,.js ./src",
     "test": "echo \"Error: no test specified\" && exit 1"

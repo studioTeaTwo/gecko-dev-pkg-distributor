@@ -38,35 +38,34 @@ export type ProtocolName =
   | "nostr"
   | "did:dht";
 export type CredentialName = "bip39" | "lnc" | "nsec";
-export interface Credential {
+type OnlyUsedNsICredentialInfo = Omit<
+  nsICredentialInfo,
+  "unknownFields" | "init" | "equals" | "matches" | "clone"
+> &
+  Omit<nsICredentialMetaInfo, keyof nsICredentialMetaInfo>;
+export interface Credential
+  extends Omit<
+    OnlyUsedNsICredentialInfo,
+    "trustedSites" | "passwordAuthorizedSites" | "properties"
+  > {
   protocolName: ProtocolName;
   credentialName: CredentialName;
-  primary: boolean;
-  secret: string;
-  identifier: string;
   trustedSites: {
     url: string;
-    name: string;
-    permissions: Record<string, never>;
+    name?: string;
+    permissions: Record<string, unknown>;
   }[];
   passwordAuthorizedSites: {
     url: string;
-    name: string;
+    name?: string;
     expiryTime: number;
-    permissions: Record<string, never>;
+    permissions: Record<string, unknown>;
   }[];
   properties: object;
   guid?: string;
 }
 // Pass object type through JSON.stringify for IPC & JSONstorage
-export type CredentialForPayload = Omit<
-  Credential,
-  "trustedSites" | "passwordAuthorizedSites" | "properties"
-> & {
-  trustedSites: string;
-  passwordAuthorizedSites: string;
-  properties: string;
-};
+export type CredentialForPayload = OnlyUsedNsICredentialInfo;
 
 export interface SelfsovereignidentityDefaultProps {
   prefs: SelfsovereignidentityPrefs;

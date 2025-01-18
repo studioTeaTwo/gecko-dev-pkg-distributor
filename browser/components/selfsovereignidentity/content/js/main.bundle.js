@@ -757,15 +757,13 @@ function NIP07(props) {
       modifyCredentialToStore2(
         {
           guid: item.guid,
-          trustedSites: item.trustedSites.concat({
-            name: "",
-            url: newSite,
-            permissions: {
-              read: true,
-              write: true,
-              admin: true
+          trustedSites: item.trustedSites.concat([
+            {
+              url: newSite,
+              name: "",
+              permissions: {}
             }
-          })
+          ])
         },
         newSite.startsWith("moz-extension") ? { newExtensionForTrustedSite: newSite } : null
       );

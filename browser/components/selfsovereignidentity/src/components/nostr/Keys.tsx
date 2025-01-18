@@ -49,7 +49,7 @@ interface NostrDisplayedCredential extends NostrCredential {
   rawPubkey: string;
 }
 
-const NostrTemplate: NostrCredential = {
+const NostrTemplate: Omit<NostrCredential, "guid"> = {
   protocolName: "nostr",
   credentialName: "nsec",
   identifier: "", // npubkey

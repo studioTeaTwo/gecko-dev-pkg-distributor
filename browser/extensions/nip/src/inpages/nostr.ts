@@ -7,6 +7,13 @@ import { log } from "../shared/logger";
 import { shouldInject } from "../shared/shouldInject";
 import { type NostrEvent } from "../ssi.type";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var nostr: NostrProvider;
+  // eslint-disable-next-line no-var
+  var nip07Loaded: { [provider: string]: boolean }[];
+}
+
 export function init() {
   if (!shouldInject()) {
     return;
@@ -31,7 +38,7 @@ export function init() {
           // Inject
           window.nostr = new NostrProvider();
           window.nip07Loaded = Array.isArray(window.nip07Loaded)
-            ? window.nip07Loaded.concat({ ssb: true })
+            ? window.nip07Loaded.concat([{ ssb: true }])
             : [{ ssb: true }];
           window.ssi.nostr.addEventListener(
             "accountChanged",
@@ -60,7 +67,7 @@ export function init() {
   });
 }
 
-const accountChangedHandler = (event: CustomEvent<PublicKey>) => {
+const accountChangedHandler = (event: CustomEvent<string>) => {
   const newPublicKey = event.detail;
 
   log(`inpage accountChanged emit`, event);

@@ -627,7 +627,7 @@ function init() {
                     // Inject
                     window.nostr = new NostrProvider();
                     window.nip07Loaded = Array.isArray(window.nip07Loaded)
-                        ? window.nip07Loaded.concat({ ssb: true })
+                        ? window.nip07Loaded.concat([{ ssb: true }])
                         : [{ ssb: true }];
                     window.ssi.nostr.addEventListener("accountChanged", accountChangedHandler);
                 }

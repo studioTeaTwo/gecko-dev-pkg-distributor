@@ -1,9 +1,10 @@
 // Interface for window.ssi prototype
+import { WindowSSI } from "src/custom.type";
 import { postMessage } from "./postMessage";
 
 export function init() {
   // It envisions browser-native API, so the object is persisted.
-  window.ssi = Object.freeze(WindowSSI);
+  window.ssi = Object.freeze(windowSSI);
 
   window.addEventListener("message", event => {
     if (event.source !== window || event.data.id !== "native") {
@@ -24,7 +25,7 @@ export function init() {
   });
 }
 
-export const WindowSSI: WindowSSI = {
+export const windowSSI: WindowSSI = {
   _scope: "ssi",
   _proxy: new EventTarget(),
 
@@ -48,21 +49,21 @@ export const WindowSSI: WindowSSI = {
 
     _proxy: new EventTarget(),
     dispatchEvent(event) {
-      return WindowSSI.nostr._proxy.dispatchEvent(event);
+      return windowSSI.nostr._proxy.dispatchEvent(event);
     },
     addEventListener(
       type: string,
       callback: EventListenerOrEventListenerObject | null,
       options?: AddEventListenerOptions | boolean
     ) {
-      return WindowSSI.nostr._proxy.addEventListener(type, callback, options);
+      return windowSSI.nostr._proxy.addEventListener(type, callback, options);
     },
     removeEventListener(
       type: string,
       callback: EventListenerOrEventListenerObject | null,
       options?: EventListenerOptions | boolean
     ) {
-      return WindowSSI.nostr._proxy.removeEventListener(
+      return windowSSI.nostr._proxy.removeEventListener(
         type,
         callback,
         options
@@ -71,20 +72,20 @@ export const WindowSSI: WindowSSI = {
   }),
 
   dispatchEvent(event: Event) {
-    return WindowSSI._proxy.dispatchEvent(event);
+    return windowSSI._proxy.dispatchEvent(event);
   },
   addEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: AddEventListenerOptions | boolean
   ) {
-    return WindowSSI._proxy.addEventListener(type, callback, options);
+    return windowSSI._proxy.addEventListener(type, callback, options);
   },
   removeEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: EventListenerOptions | boolean
   ) {
-    return WindowSSI._proxy.removeEventListener(type, callback, options);
+    return windowSSI._proxy.removeEventListener(type, callback, options);
   },
 };
