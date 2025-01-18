@@ -1,9 +1,9 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 // Short Weierstrass curve. The formula is: y² = x³ + ax + b
-import * as mod from 'resource://gre/modules/shared/modular.sys.mjs';
-import * as ut from 'resource://gre/modules/shared/utils-curves.sys.mjs';
-import { ensureBytes } from 'resource://gre/modules/shared/utils-curves.sys.mjs';
-import { wNAF, validateBasic } from 'resource://gre/modules/shared/curve.sys.mjs';
+import * as mod from 'resource://ssi/protocols/modular.sys.mjs';
+import * as ut from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { ensureBytes } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { wNAF, validateBasic } from 'resource://ssi/protocols/curve.sys.mjs';
 function validatePointOpts(curve) {
     const opts = validateBasic(curve);
     ut.validateObject(opts, {

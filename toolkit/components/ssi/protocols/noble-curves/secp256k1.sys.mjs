@@ -1,11 +1,11 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha256 } from 'resource://gre/modules/shared/sha256.sys.mjs';
-import { randomBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
-import { Field, mod, pow2 } from 'resource://gre/modules/shared/modular.sys.mjs';
-import { mapToCurveSimpleSWU } from 'resource://gre/modules/shared/weierstrass.sys.mjs';
-import { bytesToNumberBE, concatBytes, ensureBytes, numberToBytesBE } from 'resource://gre/modules/shared/utils-curves.sys.mjs';
-import { createHasher, isogenyMap } from 'resource://gre/modules/shared/hash-to-curve.sys.mjs';
-import { createCurve } from 'resource://gre/modules/shared/_shortw_utils.sys.mjs';
+import { sha256 } from 'resource://ssi/protocols/sha256.sys.mjs';
+import { randomBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
+import { Field, mod, pow2 } from 'resource://ssi/protocols/modular.sys.mjs';
+import { mapToCurveSimpleSWU } from 'resource://ssi/protocols/weierstrass.sys.mjs';
+import { bytesToNumberBE, concatBytes, ensureBytes, numberToBytesBE } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { createHasher, isogenyMap } from 'resource://ssi/protocols/hash-to-curve.sys.mjs';
+import { createCurve } from 'resource://ssi/protocols/_shortw_utils.sys.mjs';
 const secp256k1P = BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f');
 const secp256k1N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
 const _1n = BigInt(1);

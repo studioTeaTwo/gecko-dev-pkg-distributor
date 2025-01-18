@@ -1,7 +1,7 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { hmac } from 'resource://gre/modules/shared/hmac.sys.mjs';
-import { concatBytes, randomBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
-import { weierstrass } from 'resource://gre/modules/shared/weierstrass.sys.mjs';
+import { hmac } from 'resource://ssi/protocols/hmac.sys.mjs';
+import { concatBytes, randomBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
+import { weierstrass } from 'resource://ssi/protocols/weierstrass.sys.mjs';
 // connects noble-curves to noble-hashes
 export function getHash(hash) {
     return {

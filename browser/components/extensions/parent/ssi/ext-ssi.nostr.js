@@ -9,11 +9,11 @@
 // lazy is shared with other parent experiment-apis
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
-  Nostr: "resource://gre/modules/shared/Nostr.sys.mjs",
+  Nostr: "resource://ssi/protocols/Nostr.sys.mjs",
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
 const { ensureBytes } = ChromeUtils.importESModule(
-  "resource://gre/modules/shared/utils-curves.sys.mjs"
+  "resource://ssi/protocols/utils-curves.sys.mjs"
 );
 
 this["ssi.nostr"] = class extends ExtensionAPI {

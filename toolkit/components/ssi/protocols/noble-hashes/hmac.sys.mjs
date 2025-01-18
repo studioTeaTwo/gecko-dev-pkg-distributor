@@ -1,5 +1,5 @@
-import assert from 'resource://gre/modules/shared/_assert.sys.mjs';
-import { Hash, toBytes } from 'resource://gre/modules/shared/utils-hashes.sys.mjs';
+import assert from 'resource://ssi/protocols/_assert.sys.mjs';
+import { Hash, toBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
 // HMAC (RFC 2104)
 export class HMAC extends Hash {
     constructor(hash, _key) {

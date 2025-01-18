@@ -1,5 +1,5 @@
-import { mod } from 'resource://gre/modules/shared/modular.sys.mjs';
-import { bytesToNumberBE, concatBytes, utf8ToBytes, validateObject } from 'resource://gre/modules/shared/utils-curves.sys.mjs';
+import { mod } from 'resource://ssi/protocols/modular.sys.mjs';
+import { bytesToNumberBE, concatBytes, utf8ToBytes, validateObject } from 'resource://ssi/protocols/utils-curves.sys.mjs';
 function validateDST(dst) {
     if (dst instanceof Uint8Array)
         return dst;

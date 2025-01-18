@@ -1,7 +1,7 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 // Abelian group utilities
-import { validateField, nLength } from 'resource://gre/modules/shared/modular.sys.mjs';
-import { validateObject } from 'resource://gre/modules/shared/utils-curves.sys.mjs';
+import { validateField, nLength } from 'resource://ssi/protocols/modular.sys.mjs';
+import { validateObject } from 'resource://ssi/protocols/utils-curves.sys.mjs';
 const _0n = BigInt(0);
 const _1n = BigInt(1);
 // Elliptic curve multiplication of Point by scalar. Fragile.
