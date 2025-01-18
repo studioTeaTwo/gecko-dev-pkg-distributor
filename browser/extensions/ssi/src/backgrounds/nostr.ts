@@ -11,14 +11,11 @@ const SafeProtocols = ["http", "https", "moz-extension"];
 
 const MapBetweenPrefAndState = {
   enabled: "enabled",
-  usedAccountChanged: "event.accountChanged.enabled",
 };
 
 const DialogMessage = {
-  "nostr/getPublicKey": "read Nostr public key",
-  "nostr/signEvent": "sign with Nostr",
-  "nostr/accountChanged": "notify account changed",
-  "nostr/providerChanged": "notify provider changed",
+  "nostr/getPublicKey": "OK?",
+  "nostr/signEvent": "OK?",
 };
 
 const ERR_MSG_NOT_ENABLED =
@@ -40,11 +37,11 @@ export const doNostrAction = async (
 
   switch (action) {
     case "nostr/getPublicKey": {
-      // FIXME(ssb): Mitigation. Remove the askPermission and !state.nostr.npub condition, if OS auth dialog makes stable.
+      // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable.
       const isAuthorized = await browser.ssi.askPermission(
         "nostr",
         state.nostr.credentialName,
-        { caption: DialogMessage[action], submission: "" }
+        { caption: "READ NOSTR PUBLIC KEY", submission: "" }
       );
       if (!isAuthorized) {
         throw new Error("Rejected");

@@ -14,6 +14,16 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 const PROTOCOL_NAMES = ["nostr"];
 const CREDENTIAL_NAMES = ["nsec"];
+const capitalize = function (str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+const DIALOG_SYSTEM_MESSAGE = protocolName => ({
+  read: `read ${capitalize(protocolName)} public key`,
+  sign: `sign with ${capitalize(protocolName)}`,
+  encrypt: `encrypt with ${capitalize(protocolName)}`,
+  decrypt: `decrypt with ${capitalize(protocolName)}`,
+  custom: "get your authorization",
+});
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 /**
@@ -151,6 +161,7 @@ export const browserSsiHelper = {
    * @param {string} credential.protocolName
    * @param {string} credential.credentialName
    * @param {object} dialogInfo
+   * @param {string} dialogInfo.type - "read" | "sign" | "encrypt" | "decrypt" | "custom"
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -161,7 +172,7 @@ export const browserSsiHelper = {
     context,
     tabTracker,
     { protocolName, credentialName },
-    { caption, submission, enforce },
+    { type, caption, submission, enforce },
     onlyExtension
   ) {
     // Prepare stuff
@@ -169,7 +180,7 @@ export const browserSsiHelper = {
       context,
       tabTracker
     );
-    console.log("authorize", caption, site.url, site.isSystemPrincipal);
+    console.log("authorize", type, site.url, site.isSystemPrincipal);
     if (
       site.isSystemPrincipal &&
       browsingContext.embedderElement.remoteType ===
@@ -214,6 +225,7 @@ export const browserSsiHelper = {
       expiryTimePref: internalPrefs["primarypassword.toApps.expiryTime"],
     };
     const dialog = {
+      system: DIALOG_SYSTEM_MESSAGE(protocolName)[type],
       caption,
       submission,
       enforce,
@@ -257,6 +269,7 @@ export const browserSsiHelper = {
    * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
    * @param {number} authCache.expiryTimePref
    * @param {object} dialogInfo
+   * @param {string} dialogInfo.system - DIALOG_SYSTEM_MESSAGE
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -268,7 +281,7 @@ export const browserSsiHelper = {
     extensionName,
     { enabledTrustedSites, enabledPrimarypassword },
     { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref },
-    { caption, submission, enforce, embedderElement }
+    { system, caption, submission, enforce, embedderElement }
   ) {
     if (enabledTrustedSites && !enforce) {
       const trusted = browserSsiHelper.isTrusted(target.url, trustedSites);
@@ -299,6 +312,7 @@ export const browserSsiHelper = {
           expiryTimePref,
         },
         {
+          system,
           caption,
           submission,
           enforce,
@@ -338,14 +352,16 @@ export const browserSsiHelper = {
     { url, origin },
     extensionName,
     { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
-    { caption, submission, enforce, embedderElement } // dialog
+    { system, caption, submission, enforce, embedderElement } // dialog
   ) {
     const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
-    const messageText = {
-      value: `${caption}${eol}${origin}${
-        submission ? `${eol}${eol}${submission}` : ``
-      }`,
-    };
+    const messageText = { value: `${system}${eol}to ${origin}` };
+    if (caption) {
+      messageText.value += `${eol}${caption}`;
+    }
+    if (submission) {
+      messageText.value += `${eol}${eol}${submission}`;
+    }
     const captionText = { value: "" }; // only windows
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
       lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF

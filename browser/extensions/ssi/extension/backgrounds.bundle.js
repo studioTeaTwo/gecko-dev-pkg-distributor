@@ -1084,13 +1084,10 @@ const state_1 = __webpack_require__(975);
 const SafeProtocols = ["http", "https", "moz-extension"];
 const MapBetweenPrefAndState = {
     enabled: "enabled",
-    usedAccountChanged: "event.accountChanged.enabled",
 };
 const DialogMessage = {
-    "nostr/getPublicKey": "read Nostr public key",
-    "nostr/signEvent": "sign with Nostr",
-    "nostr/accountChanged": "notify account changed",
-    "nostr/providerChanged": "notify provider changed",
+    "nostr/getPublicKey": "OK?",
+    "nostr/signEvent": "OK?",
 };
 const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignidentity'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
@@ -1104,8 +1101,8 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            // FIXME(ssb): Mitigation. Remove the askPermission and !state.nostr.npub condition, if OS auth dialog makes stable.
-            const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: DialogMessage[action], submission: "" });
+            // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable.
+            const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
             if (!isAuthorized) {
                 throw new Error("Rejected");
             }
