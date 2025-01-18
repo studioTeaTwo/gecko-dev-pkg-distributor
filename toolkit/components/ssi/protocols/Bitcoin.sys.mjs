@@ -7,7 +7,13 @@ import { bytesToHex } from "resource://ssi/protocols/utils-hashes.sys.mjs";
 
 export const Bitcoin = {
   BIP340: {
-    sign: async (message, guid) => {
+    /**
+     *
+     * @param {string} message
+     * @param {string} guid
+     * @returns {string}
+     */
+    async sign(message, guid) {
       // Get private key from store
       const credentials = await Services.ssi.searchCredentialsAsync({ guid });
       if (credentials.length === 0) {

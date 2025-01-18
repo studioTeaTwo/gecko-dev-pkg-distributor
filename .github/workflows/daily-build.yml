@@ -22,9 +22,9 @@ jobs:
       run: |
         sudo apt-get update
         cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
-        (cd browser/components/selfsovereignidentity && npm i)
-        (cd browser/extensions/ssi && npm i)
-        (cd browser/extensions/nip && npm i)
+        (cd browser/components/selfsovereignidentity && npm ci)
+        (cd browser/extensions/ssi && npm ci)
+        (cd browser/extensions/nip && npm ci)
     - name: eslint
       id: error_execution_eslint
       continue-on-error: true
@@ -52,7 +52,7 @@ jobs:
       continue-on-error: true
       run: |
         cd ${{ matrix.target-dir }}
-        npm i
+        npm ci
         npm run lint
     - name: End normally due to check-only
       if: ${{ steps.error_execution_tslint.outcome == 'failure' }}
@@ -70,9 +70,9 @@ jobs:
         sudo apt-get update
         cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
         ./mach --no-interactive bootstrap --application-choice browser
-        (cd browser/components/selfsovereignidentity && npm i)
-        (cd browser/extensions/ssi && npm i)
-        (cd browser/extensions/nip && npm i)
+        (cd browser/components/selfsovereignidentity && npm ci)
+        (cd browser/extensions/ssi && npm ci)
+        (cd browser/extensions/nip && npm ci)
     - name: mozlint
       id: error_execution_mozlint
       continue-on-error: true

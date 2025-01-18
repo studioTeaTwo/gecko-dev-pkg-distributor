@@ -39,7 +39,7 @@ export const Nostr = {
   },
   /**
    *
-   * @param {string} npub npub1abc...
+   * @param {string} npub "npub1abc..."
    * @param {object} event Nostr Event
    * @returns {object}
    */

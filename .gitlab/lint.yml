@@ -13,9 +13,9 @@ default:
 mozlint_eslint:
   stage: test
   script:
-    - (cd browser/components/selfsovereignidentity && npm i)
-    - (cd browser/extensions/ssi && npm i)
-    - (cd browser/extensions/nip && npm i)
+    - (cd browser/components/selfsovereignidentity && npm ci)
+    - (cd browser/extensions/ssi && npm ci)
+    - (cd browser/extensions/nip && npm ci)
     - ./mach lint -l eslint .
   # rules:
   #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -47,5 +47,5 @@ tslint:
       - TARGET: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
   script:
     - cd $TARGET
-    - npm i
+    - npm ci
     - npm run lint

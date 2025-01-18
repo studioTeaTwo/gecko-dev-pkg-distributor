@@ -161,22 +161,18 @@ export const browserSsiHelper = {
    * @param {string} credential.protocolName
    * @param {string} credential.credentialName
    * @param {object} dialogInfo
-   * @param {string} dialogInfo.type - "read" | "sign" | "encrypt" | "decrypt" | "custom"
-   * @param {string} dialogInfo.evidence - NostrEvent etc.
+   * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
+   * @param {string} dialogInfo.evidence NostrEvent etc.
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
    * @param {boolean} onlyExtension
    * @returns {Promise<bool>}
    */
-  async authorize(
-    context,
-    tabTracker,
-    { protocolName, credentialName },
-    { type, evidence, caption, submission, enforce },
-    onlyExtension
-  ) {
+  async authorize(context, tabTracker, credential, dialogInfo, onlyExtension) {
     // Prepare stuff
+    const { protocolName, credentialName } = credential;
+    const { type, evidence, caption, submission, enforce } = dialogInfo;
     const { site, extension, browsingContext } = browserSsiHelper.getOrigin(
       context,
       tabTracker
@@ -271,7 +267,7 @@ export const browserSsiHelper = {
    * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
    * @param {number} authCache.expiryTimePref
    * @param {object} dialogInfo
-   * @param {string} dialogInfo.system - DIALOG_SYSTEM_MESSAGE
+   * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
    * @param {string} dialogInfo.evidence
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
@@ -279,15 +275,14 @@ export const browserSsiHelper = {
    * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
    * @returns {Promise<boolean>}
    */
-  async execAuth(
-    target,
-    extensionName,
-    { enabledTrustedSites, enabledPrimarypassword },
-    { cacheKey, trustedSites, passwordAuthorizedSites, expiryTimePref },
-    { system, evidence, caption, submission, enforce, embedderElement }
-  ) {
+  async execAuth(target, extensionName, prefs, authCache, dialogInfo) {
+    const { url } = target;
+    const { enabledTrustedSites, enabledPrimarypassword } = prefs;
+    const { trustedSites, passwordAuthorizedSites } = authCache;
+    const { enforce } = dialogInfo;
+
     if (enabledTrustedSites && !enforce) {
-      const trusted = browserSsiHelper.isTrusted(target.url, trustedSites);
+      const trusted = browserSsiHelper.isTrusted(url, trustedSites);
       if (trusted) {
         return true;
       }
@@ -296,7 +291,7 @@ export const browserSsiHelper = {
 
     if (enabledPrimarypassword && !enforce) {
       const alreadyAuthorized = browserSsiHelper.isPasswordAuthorized(
-        target.url,
+        url,
         passwordAuthorizedSites
       );
       if (alreadyAuthorized) {
@@ -309,19 +304,8 @@ export const browserSsiHelper = {
       const isAuthorized = await browserSsiHelper.authPassword(
         target,
         extensionName,
-        {
-          cacheKey,
-          passwordAuthorizedSites,
-          expiryTimePref,
-        },
-        {
-          system,
-          evidence,
-          caption,
-          submission,
-          enforce,
-          embedderElement,
-        }
+        authCache,
+        dialogInfo
       );
       if (isAuthorized) {
         return true;
@@ -330,6 +314,12 @@ export const browserSsiHelper = {
 
     return false;
   },
+  /**
+   *
+   * @param {string} url
+   * @param {object[]} trustedSites
+   * @returns {boolean}
+   */
   isTrusted(url, trustedSites) {
     // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
     const trusted = trustedSites.some(site => {
@@ -338,6 +328,12 @@ export const browserSsiHelper = {
     console.log("trustedSites", trusted, url, trustedSites);
     return trusted;
   },
+  /**
+   *
+   * @param {string} url
+   * @param {object[]} passwordAuthorizedSites
+   * @returns {boolean}
+   */
   isPasswordAuthorized(url, passwordAuthorizedSites) {
     const expiryTime = passwordAuthorizedSites.filter(site =>
       url.startsWith(site.url)
@@ -352,12 +348,31 @@ export const browserSsiHelper = {
     );
     return validSite;
   },
-  async authPassword(
-    { url, origin },
-    extensionName,
-    { cacheKey, passwordAuthorizedSites, expiryTimePref }, // auth cache
-    { system, evidence, caption, submission, enforce, embedderElement } // dialog
-  ) {
+  /**
+   *
+   * @param {object} target
+   * @param {string} target.origin contentPrincipal.originNoSuffix
+   * @param {string} target.url contentPrincipal.spec
+   * @param {string} extensionName
+   * @param {object} authCache
+   * @param {string} authCache.cacheKey
+   * @param {object[]} authCache.trustedSites credential.trustedSites
+   * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
+   * @param {number} authCache.expiryTimePref
+   * @param {object} dialogInfo
+   * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
+   * @param {string} dialogInfo.evidence
+   * @param {string} dialogInfo.caption
+   * @param {string} dialogInfo.submission
+   * @param {boolean} dialogInfo.enforce
+   * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+   * @returns {boolean}
+   */
+  async authPassword(target, extensionName, authCache, dialogInfo) {
+    const { url, origin } = target;
+    const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
+    const { system, evidence, caption, submission, enforce, embedderElement } =
+      dialogInfo;
     const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
     const messageText = { value: `${system}${eol}to ${origin}` };
     if (caption) {
