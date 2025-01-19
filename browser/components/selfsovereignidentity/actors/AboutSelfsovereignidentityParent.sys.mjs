@@ -150,12 +150,16 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     }
     // TODO(ssb): reconsider later
     // let messageText = { value: "NOT SUPPORTED" }
-    let messageText =
-      messageId ===
-      "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-        ? { value: "access YOUR KEY" }
-        : { value: "AUTH LOCK" };
-    let captionText = { value: "" };
+    let messageText = {
+      value: `${AppConstants.platform === "win" ? "Nightly is trying to " : ""}`,
+    };
+    messageId ===
+    "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      ? (messageText.value += "access YOUR KEY")
+      : (messageText.value += "AUTH LOCK");
+    let captionText = {
+      value: AppConstants.platform === "win" ? "Nightly" : "",
+    }; // caption only works on windows.
 
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
       lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF

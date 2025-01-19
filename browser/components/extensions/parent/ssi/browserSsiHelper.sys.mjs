@@ -379,8 +379,12 @@ export const browserSsiHelper = {
     const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
     const { system, evidence, caption, submission, enforce, embedderElement } =
       dialogInfo;
-    const eol = AppConstants.platform !== "win" ? "\n" : "\r\n";
-    const messageText = { value: `${system}${eol}to ${origin}` };
+    const eol = AppConstants.platform === "win" ? "\r\n" : "\n";
+    const messageText = {
+      value: `${
+        AppConstants.platform === "win" ? "Nightly is trying to " : ""
+      }${system}${eol}to ${origin}`,
+    };
     if (caption) {
       messageText.value += `${eol}${caption}`;
     }
@@ -390,7 +394,9 @@ export const browserSsiHelper = {
     if (submission) {
       messageText.value += `${eol}${eol}${submission}`;
     }
-    const captionText = { value: "" }; // only windows
+    const captionText = {
+      value: AppConstants.platform === "win" ? "Nightly" : "",
+    }; // caption only works on windows.
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
       lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
     );
