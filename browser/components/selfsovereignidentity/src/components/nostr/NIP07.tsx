@@ -47,6 +47,7 @@ export const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
+    enabled: true,
     permissions: {},
   },
 ];
@@ -133,6 +134,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             {
               url: newSite,
               name: "",
+              enabled: true,
               permissions: {},
             },
           ]),
@@ -158,9 +160,12 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     for (const item of nostrkeys) {
       modifyCredentialToStore({
         guid: item.guid,
-        trustedSites: item.trustedSites.filter(
-          site => site.url !== removedSite.url
-        ),
+        trustedSites: item.trustedSites.map(site => {
+          if (site.url === removedSite.url) {
+            site.enabled = false;
+          }
+          return site;
+        }),
       });
     }
   };

@@ -52,12 +52,13 @@ export interface Credential
   credentialName: CredentialName;
   trustedSites: {
     url: string;
-    name?: string;
+    name: string;
+    enabled: boolean;
     permissions: Record<string, unknown>;
   }[];
   passwordAuthorizedSites: {
     url: string;
-    name?: string;
+    name: string;
     expiryTime: number;
     permissions: Record<string, unknown>;
   }[];

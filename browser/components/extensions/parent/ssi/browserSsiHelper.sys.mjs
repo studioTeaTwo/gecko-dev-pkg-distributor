@@ -177,7 +177,13 @@ export const browserSsiHelper = {
       context,
       tabTracker
     );
-    console.log("authorize", type, site.url, site.isSystemPrincipal);
+    console.log(
+      "authorize",
+      type,
+      site.url,
+      site.isSystemPrincipal,
+      extension.url
+    );
     if (
       site.isSystemPrincipal &&
       browsingContext.embedderElement.remoteType ===
@@ -323,7 +329,7 @@ export const browserSsiHelper = {
   isTrusted(url, trustedSites) {
     // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
     const trusted = trustedSites.some(site => {
-      return url.startsWith(site.url);
+      return site.enabled && url.startsWith(site.url);
     });
     console.log("trustedSites", trusted, url, trustedSites);
     return trusted;
@@ -396,8 +402,10 @@ export const browserSsiHelper = {
     )[0]?.expiryTime;
     if (_authExpirationTime == null) {
       _authExpirationTime = 0;
-      Services.ssi.authCache.set(cacheKey, {
-        passwordAuthorizedSites: [{ url: origin, expiryTime: 0 }],
+      Services.ssi.authCache.update(cacheKey, {
+        passwordAuthorizedSites: [
+          { url: origin, name: extensionName, expiryTime: 0, permissions: [] },
+        ],
       });
     }
     if (enforce) {
@@ -420,11 +428,10 @@ export const browserSsiHelper = {
     ].includes(telemetryEvent.value);
     if (isAuthorized && enteredPassword) {
       const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
-      const passwordAuthorizedSites = [{ url: origin, expiryTime }];
-      if (extensionName) {
-        passwordAuthorizedSites[0].name = extensionName;
-      }
-      Services.ssi.authCache.set(cacheKey, { passwordAuthorizedSites });
+      const passwordAuthorizedSites = [
+        { url: origin, name: extensionName, expiryTime, permissions: [] },
+      ];
+      Services.ssi.authCache.update(cacheKey, { passwordAuthorizedSites });
     }
     console.log(
       "primarypassword-dialog",

@@ -92,6 +92,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       ...prefs.base.addons.map(addon => ({
         url: addon.url,
         name: addon.name,
+        enabled: true,
         permissions: {},
       })),
     ],

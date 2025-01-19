@@ -695,6 +695,7 @@ const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
+    enabled: true,
     permissions: {}
   }
 ];
@@ -761,6 +762,7 @@ function NIP07(props) {
             {
               url: newSite,
               name: "",
+              enabled: true,
               permissions: {}
             }
           ])
@@ -782,9 +784,12 @@ function NIP07(props) {
     for (const item of nostrkeys) {
       modifyCredentialToStore2({
         guid: item.guid,
-        trustedSites: item.trustedSites.filter(
-          (site) => site.url !== removedSite.url
-        )
+        trustedSites: item.trustedSites.map((site) => {
+          if (site.url === removedSite.url) {
+            site.enabled = false;
+          }
+          return site;
+        })
       });
     }
   };
@@ -1127,6 +1132,7 @@ function Nostr$2(props) {
       ...prefs.base.addons.map((addon) => ({
         url: addon.url,
         name: addon.name,
+        enabled: true,
         permissions: {}
       }))
     ],

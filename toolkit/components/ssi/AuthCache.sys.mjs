@@ -62,53 +62,46 @@ class _AuthCache {
    * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.expiryTime) is 0.
    *
    * @param {string} key
-   * @param {Object} value - Only new values from the API, all values from Services.ssi
-   * @param {boolean} [fromStore=false] - Updates from Services.ssi. In this case don't need to persist.
+   * @param {Object} value - Only new values from the API
    */
-  async set(key, value, fromStore = false) {
+  async update(key, value) {
     if (!this.initialized) {
       throw new Error(`Not initialized`);
     }
     if (!this.has(key)) {
-      if (!fromStore) {
-        throw new Error(`No key exists: ${key}`);
-      }
-      this._cache.set(key, { trustedSites: [], passwordAuthorizedSites: [] });
+      throw new Error(`No key exists: ${key}`);
     }
 
     const prevValue = this.get(key);
     if (JSON.stringify(prevValue) === JSON.stringify(value)) {
-      if (fromStore) {
-        return;
-      }
-      throw new Error("No changed value.");
+      return;
     }
 
     // Build the new value
     const newValue = JSON.parse(
       JSON.stringify(prevValue).replace(/^''$/g, '"')
     ); // TODO(ssb): investigate
-    const keys = key.split(":");
     let count = 0;
     const notPersistent = [];
-    function update(site, sort) {
+    function update(newSite, sort) {
       const idx = prevValue[sort].findIndex(
-        oldSite => oldSite.url === site.url
+        oldSite => oldSite.url === newSite.url
       );
       if (idx >= 0) {
-        if (JSON.stringify(site) === JSON.stringify(prevValue[sort][idx])) {
+        const oldSite = prevValue[sort][idx];
+        if (JSON.stringify(newSite) === JSON.stringify(oldSite)) {
           // noop
           notPersistent.push(true);
         } else {
           // update
           newValue[sort][idx] = {
-            ...prevValue[sort][idx],
-            ...site,
+            ...oldSite,
+            ...newSite,
           };
         }
       } else {
         // create
-        newValue[sort].push(site);
+        newValue[sort].push(newSite);
       }
     }
     if (Object.hasOwn(value, "trustedSites")) {
@@ -125,11 +118,12 @@ class _AuthCache {
     // Update cache
     this._cache.set(key, newValue);
 
-    if (fromStore || count === notPersistent.length) {
+    if (count === notPersistent.length) {
       return;
     }
 
     // Persist
+    const keys = key.split(":");
     const old = await Services.ssi.searchCredentialsAsync({
       protocolName: keys[0],
       credentialName: keys[1],
@@ -145,6 +139,15 @@ class _AuthCache {
       );
     }
     Services.ssi.modifyCredential(old[0], modifiedCredential);
+  }
+
+  // Only for cach sync from Services.ssi, don't need to persist.
+  async set(key, value) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+
+    this._cache.set(key, value);
   }
 
   // Only for cach sync from Services.ssi, don't need to persist.
