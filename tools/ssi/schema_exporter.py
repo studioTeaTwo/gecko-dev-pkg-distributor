@@ -2,7 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# This script formats and exports builtin-api schema files for markdown docs usage.
+# This script formats and exports builtin-api schema files by markdown for the docs site.
+#
 # The design is based on MDN: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/action
 # schema spec: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
 
@@ -17,7 +18,7 @@ topsrcdir = os.path.abspath(os.path.dirname(os.path.dirname(here)))
 
 # repository
 repository_name = 'gecko-dev-for-ssi'
-repository_url = 'https://gitlab.com/studioteatwo/{repository_name}/-/blob/mvp/'
+repository_url = f"https://gitlab.com/studioteatwo/{repository_name}/-/blob/mvp/"
 doc_list = [
     'browser/components/extensions/schemas/ssi/ssi.json',
     'browser/components/extensions/schemas/ssi/ssi.nostr.json'
@@ -79,7 +80,7 @@ def build(data, sub_directory):
         for key in ['types', 'properties', 'functions', 'events']:
             if key in item:
                 print(f"{key.capitalize()}")
-                output_text += f"## {key.capitalize()}\n\n"
+                output_text += f"## {key.capitalize()}{'()' if type == 'functions' else ''}\n\n"
 
                 for sub_item in item[key]:
                     name = 'id' if key == 'types' else 'name'
@@ -100,30 +101,35 @@ def create_member(namespace, type, data, sub_directory):
     print(f"[create_member]: {type} {namespace}.{data[key]} proceeds...")
 
     output_file_path = os.path.join(here, output_directory, sub_directory, f"{data[key]}.md")
-    output_text = f"# {namespace}.{data[key]}\n\n"
+    output_text = f"# {namespace}.{data[key]}{'()' if type == 'functions' else ''}\n\n"
 
     if 'description' in data:
         output_text += f"{data['description']}\n\n"
 
-    output_text += '## Syntax\n\n'
+    if type in ['functions', 'events'] :
+        output_text += '## Syntax\n\n'
+        output_text += f"{{{{#include fragments/syntax_{data[key]}.md }}}}\n\n"
 
     if 'async' in data:
         output_text += f"### Async\n\n"
         output_text += f"{str(data['async']).lower()}\n\n"
 
     if 'properties' in data:
-        output_text += f"### Properties\n\n"
+        output_text += f"### {'Type' if type == 'types' else 'Properties'}\n\n"
         output_text += f"{build_properties(data['properties'])}"
 
     if 'parameters' in data:
+        if type == 'events':
+            output_text += f"## addListener syntax\n\n"
         output_text += f"### Parameters\n\n"
         output_text += f"{build_parameters(data['parameters'])}"
 
     if 'returns' in data:
         output_text += f"### Return value\n\n"
-        output_text += f"{data['returns']}\n\n"
+        output_text += f"{data['returns']['description']}\n\n"
 
-    output_text += '\n'
+    if type in ['functions', 'events'] :
+        output_text += f"## Examples\n\n{{{{#include fragments/examples_{data[key]}.md }}}}\n\n"
 
     output_text += get_repository_text(sub_directory)
 

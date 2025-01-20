@@ -15,8 +15,21 @@
   },
   {
     "namespace": "ssi.nostr",
-    "description": "Nostr subset of browser.ssi. Requires `ssi.nostr` along with `ssi` to set permissions.",
+    "description": "The browser.ssi subset for Nostr protocol. Requires `ssi.nostr` along with `ssi` to set permissions.",
     "permissions": ["ssi", "ssi.nostr"],
+    "types": [
+      {
+        "id": "Preference",
+        "type": "object",
+        "description": "The preference values set by the user in `about:selfsovereignidentity`",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the user has `ssi.nostr` enabled."
+          }
+        }
+      }
+    ],
     "events": [
       {
         "name": "onPrimaryChanged",
@@ -37,12 +50,16 @@
         "type": "function",
         "description": "Get preference's values",
         "parameters": [],
-        "async": true
+        "async": true,
+        "returns": {
+          "$ref": "Preference",
+          "description": "A Promise that will be fulfilled with a `ssi.nostr.Preference`."
+        }
       },
       {
         "name": "sign",
         "type": "function",
-        "description": "Pass message and return the signature by Nostr secret key",
+        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askPermission`.",
         "async": true,
         "parameters": [
           {
@@ -67,7 +84,11 @@
             "optional": true,
             "description": "Parameters to build Auth dialog"
           }
-        ]
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A Promise that will be fulfilled with a resulting signature string."
+        }
       }
     ]
   }

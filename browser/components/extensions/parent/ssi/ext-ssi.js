@@ -15,9 +15,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
-    // Call it as a dummy to perform initialization
+    // Call it to perform initialization of Services.ssi.
     // eslint-disable-next-line no-unused-vars
     const authCache = Services.ssi.authCache;
+
     return {
       ssi: {
         async searchCredentialsWithoutSecret(

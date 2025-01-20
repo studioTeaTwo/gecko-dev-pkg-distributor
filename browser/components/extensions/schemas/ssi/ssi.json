@@ -19,6 +19,31 @@
     "permissions": ["ssi"],
     "types": [
       {
+        "id": "Credential",
+        "type": "object",
+        "description": "A credential object picked selectively from `nsICredentialInfo` and `nsICredentialMetaInfo` in the SSI store service.",
+        "properties": {
+          "protocolName": {
+            "type": "string",
+            "description": "The protocol name"
+          },
+          "credentialName": {
+            "type": "string",
+            "description": "The credential name"
+          },
+          "identifier": {
+            "type": "string",
+            "optional": true,
+            "default": "",
+            "description": "The identifier"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "The primary flag"
+          }
+        }
+      },
+      {
         "id": "SearchCriteria",
         "type": "object",
         "description": "Criteria to search credentials. If you want a full search, explicitly set primary to false.",
@@ -73,7 +98,7 @@
       {
         "name": "searchCredentialsWithoutSecret",
         "type": "function",
-        "description": "Return the requested credentials without secret",
+        "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `ssi.askPermission`.",
         "async": true,
         "parameters": [
           {
@@ -87,7 +112,14 @@
             "optional": true,
             "description": "Parameters to build Auth dialog"
           }
-        ]
+        ],
+        "returns": {
+          "type": "array",
+          "description": "A Promise that will be fulfilled with array of `ssi.Credential`.",
+          "items": {
+            "$ref": "Credential"
+          }
+        }
       },
       {
         "name": "askPermission",
@@ -111,7 +143,11 @@
             "description": "Parameters to build Auth dialog"
           }
         ],
-        "async": true
+        "async": true,
+        "returns": {
+          "type": "boolean",
+          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+        }
       },
       {
         "name": "askPermissionChild",
@@ -124,7 +160,11 @@
             "description": "The protocol name targeted"
           }
         ],
-        "async": true
+        "async": true,
+        "returns": {
+          "type": "boolean",
+          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+        }
       }
     ]
   }
