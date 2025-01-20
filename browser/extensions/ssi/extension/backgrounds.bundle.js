@@ -999,7 +999,7 @@ const onPrefChangedCallback = async (prefKey) => {
         }
     }
 };
-browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("enabled"));
 /**
  * Internal Utils
  *

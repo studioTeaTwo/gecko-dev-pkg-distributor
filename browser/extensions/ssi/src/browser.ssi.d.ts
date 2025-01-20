@@ -16,7 +16,13 @@ declare namespace browser.ssi {
       primary: boolean;
     },
     dialogOption?: dialogOption
-  ) => Promise<Pick<nsICredentialInfo & nsICredentialMetaInfo, "protocolName" | "credentialName" | "primary"| "identifier">[] | null>;
+  ) => Promise<
+    | Pick<
+        nsICredentialInfo & nsICredentialMetaInfo,
+        "protocolName" | "credentialName" | "primary" | "identifier"
+      >[]
+    | null
+  >;
   const askPermission: (
     protocolName: string,
     credentialName: string,
@@ -34,9 +40,9 @@ declare namespace browser.ssi {
       hasListener: (listener: () => void) => boolean;
     };
     onPrefEnabledChanged: {
-      addListener: (listener: (prefKey: string) => void) => void;
-      rmoveListener: (listener: (prefKey: string) => void) => void;
-      hasListener: (llistener: (prefKey: string) => void) => boolean;
+      addListener: (listener: () => void) => void;
+      rmoveListener: (listener: () => void) => void;
+      hasListener: (llistener: () => void) => boolean;
     };
   };
 

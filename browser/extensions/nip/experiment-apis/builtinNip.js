@@ -27,7 +27,7 @@ this.builtinNip = class extends ExtensionAPI {
                 return;
               }
 
-              fire.async("builtinNip07.enabled").catch(() => {}); // ignore Message Manager disconnects
+              fire.async().catch(() => {}); // ignore Message Manager disconnects
             };
             Services.prefs.addObserver(prefName, callback);
             return () => {

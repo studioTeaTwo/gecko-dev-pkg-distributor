@@ -352,5 +352,8 @@ mobile/android/annotations/bin/
 # Ignore generated log files under media/libvpx
 media/libvpx/config/**/config.log
 
-# Ignore binary base of Tor Browser
+##############################################################################
+# ssb
+##############################################################################
 .binaries
+tools/ssi/output

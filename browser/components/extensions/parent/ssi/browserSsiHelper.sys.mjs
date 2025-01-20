@@ -73,7 +73,7 @@ export const browserSsiHelper = {
 
     const callback = () => {
       // No need to check permission
-      fire.async("enabled").catch(() => {}); // ignore Message Manager disconnects
+      fire.async().catch(() => {}); // ignore Message Manager disconnects
     };
     Services.prefs.addObserver(prefName, callback);
     return () => {

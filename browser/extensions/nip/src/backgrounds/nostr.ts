@@ -68,8 +68,12 @@ const onPrefChangedCallback = async (prefKey: string) => {
     }
   }
 };
-browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
-browser.builtinNip.onPrefBuiltinNip07Changed.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefEnabledChanged.addListener(() =>
+  onPrefChangedCallback("enabled")
+);
+browser.builtinNip.onPrefBuiltinNip07Changed.addListener(() =>
+  onPrefChangedCallback("builtinNip07.enabled")
+);
 
 /**
  * Internal Utils

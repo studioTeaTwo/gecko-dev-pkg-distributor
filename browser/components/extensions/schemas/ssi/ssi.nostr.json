@@ -20,18 +20,15 @@
     "events": [
       {
         "name": "onPrimaryChanged",
-        "type": "function"
+        "type": "function",
+        "description": "Fire when primary key changed",
+        "parameters": []
       },
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ]
+        "description": "Fire when the preference value of `selfsovereignidentity.nostr.enabled` changed",
+        "parameters": []
       }
     ],
     "functions": [

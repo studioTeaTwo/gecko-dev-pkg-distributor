@@ -164,7 +164,9 @@ const onPrefChangedCallback = async (prefKey: string) => {
     }
   }
 };
-browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefEnabledChanged.addListener(() =>
+  onPrefChangedCallback("enabled")
+);
 
 /**
  * Internal Utils
