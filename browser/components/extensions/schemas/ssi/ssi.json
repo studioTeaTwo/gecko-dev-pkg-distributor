@@ -115,7 +115,7 @@
         ],
         "returns": {
           "type": "array",
-          "description": "A Promise that will be fulfilled with array of `ssi.Credential`.",
+          "description": "A Promise that will be fulfilled with `array` of `ssi.Credential`.",
           "items": {
             "$ref": "Credential"
           }
@@ -146,7 +146,7 @@
         "async": true,
         "returns": {
           "type": "boolean",
-          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+          "description": "A Promise that will be fulfilled with a `boolean` value to indicate the authorization result."
         }
       },
       {
@@ -163,7 +163,7 @@
         "async": true,
         "returns": {
           "type": "boolean",
-          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+          "description": "A Promise that will be fulfilled with a `boolean` value to indicate the authorization result."
         }
       }
     ]

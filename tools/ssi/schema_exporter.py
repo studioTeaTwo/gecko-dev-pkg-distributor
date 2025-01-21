@@ -10,6 +10,7 @@
 import json
 import os
 import shutil
+import textwrap
 
 # direcotry
 here = os.path.abspath(os.path.dirname(__file__))
@@ -47,7 +48,7 @@ def main():
                 data = json.load(json_file)
 
             # Returns the text of the summary and create each member file nested inside it.
-            summary_text = build(data, file_name)
+            summary_text = build(data)
 
             with open(output_file_path, 'w', encoding='utf-8') as output_file:
                 output_file.write(summary_text)
@@ -62,7 +63,7 @@ def main():
             print(f"Error: An unexpected error occurred while processing {file_path} - {e}")
 
 
-def build(data, sub_directory):
+def build(data):
     output_text = ''
     for item in data:
         if item["namespace"] == "manifest":
@@ -90,29 +91,28 @@ def build(data, sub_directory):
                     if 'description' in sub_item:
                         output_text += f"{sub_item['description']}\n\n"
 
-                    create_member(item['namespace'], key, sub_item, sub_directory)
+                    create_member_file(item['namespace'], key, sub_item)
 
-        output_text += get_repository_text(sub_directory)
+        output_text += get_repository_text(item['namespace'])
 
     return output_text
 
-def create_member(namespace, type, data, sub_directory):
+def create_member_file(namespace, type, data):
     key = 'id' if type == 'types' else 'name'
     print(f"[create_member]: {type} {namespace}.{data[key]} proceeds...")
 
-    output_file_path = os.path.join(here, output_directory, sub_directory, f"{data[key]}.md")
+    output_file_path = os.path.join(here, output_directory, namespace, f"{data[key]}.md")
     output_text = f"# {namespace}.{data[key]}{'()' if type == 'functions' else ''}\n\n"
 
     if 'description' in data:
         output_text += f"{data['description']}\n\n"
 
+    if 'async' in data:
+        output_text += f"This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
+
     if type in ['functions', 'events'] :
         output_text += '## Syntax\n\n'
-        output_text += f"{{{{#include fragments/syntax_{data[key]}.md }}}}\n\n"
-
-    if 'async' in data:
-        output_text += f"### Async\n\n"
-        output_text += f"{str(data['async']).lower()}\n\n"
+        output_text += f"{build_syntax(namespace, type, data)}\n\n"
 
     if 'properties' in data:
         output_text += f"### {'Type' if type == 'types' else 'Properties'}\n\n"
@@ -131,7 +131,7 @@ def create_member(namespace, type, data, sub_directory):
     if type in ['functions', 'events'] :
         output_text += f"## Examples\n\n{{{{#include fragments/examples_{data[key]}.md }}}}\n\n"
 
-    output_text += get_repository_text(sub_directory)
+    output_text += get_repository_text(namespace)
 
     with open(output_file_path, 'w', encoding='utf-8') as output_file:
         output_file.write(output_text)
@@ -180,13 +180,57 @@ def build_properties(data):
 
     return output_text
 
-def get_repository_text(sub_directory):
+def build_syntax(namespace, type, data):
+    if type == 'events':
+        function_name = f"browser.{namespace}.{data['name']}"
+        return textwrap.dedent('''\
+            ```js
+            {function_name}.addListener(listener)
+            {function_name}.removeListener(listener)
+            {function_name}.hasListener(listener)
+            ```
+
+            Events have three functions:
+
+            `addListener(listener)`
+            Adds a listener to this event.
+
+            `removeListener(listener)`
+            Stop listening to this event. The listener argument is the listener to remove.
+
+            `hasListener(listener)`
+            Check whether listener is registered for this event. Returns `true` if it is listening, `false` otherwise.
+        ''').format(function_name=function_name).strip()
+
+    # functions
+    output_text = f"```js\n"
+    return_value = ''
+    if 'returns' in data:
+        return_name = 'object' if '$ref' in data['returns'] else data['returns']['type']
+        return_value += f"const {return_name}Value = "
+
+    if len(data['parameters']) == 0:
+        output_text += f"{return_value}{'await' if data.get('async') else ''} browser.{namespace}.{data['name']}()\n"
+        output_text += f"```\n"
+        return output_text
+
+    output_text += f"{return_value}{'await' if data['async'] else ''} browser.{namespace}.{data['name']}(\n"
+
+    for param in data['parameters']:
+        output_text += f"\t{param['name']}, // {'optional ' if param.get('optional') else ''}{'object' if param.get('$ref') else param['type']}\n"
+
+    output_text += f")\n"
+    output_text += f"```\n"
+
+    return output_text
+
+def get_repository_text(namespace):
     repository = repository_url
-    if sub_directory == 'ssi':
+    if namespace == 'ssi':
         repository += doc_list[0]
-    elif sub_directory == "ssi.nostr":
+    elif namespace == "ssi.nostr":
         repository += doc_list[1]
 
-    return f"```admonish\nThis documentation is derived from [{sub_directory}.json]({repository}) in {repository_name}.\n```\n\n"
+    return f"```admonish\nThis documentation is derived from [{namespace}.json]({repository}) in {repository_name}.\n```\n\n"
 
 main()
