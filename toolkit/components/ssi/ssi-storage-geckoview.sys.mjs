@@ -47,15 +47,15 @@ export class SsiStorage extends SsiStorage_json {
    */
   terminate() {}
 
-  async addCredentialsAsync(selfsovereignidentities, continueOnDuplicates = false) {
+  async addCredentialsAsync(_credentials, _continueOnDuplicates = false) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  removeCredential(selfsovereignidentity) {
+  removeCredential(_credential) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  modifyCredential(oldCredential, newCredentialData) {
+  modifyCredential(_oldCredential, _newCredential) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
@@ -91,20 +91,23 @@ export class SsiStorage extends SsiStorage_json {
   }
 
   /**
-   * Convert a modern decrypted vanilla credential object to one expected from ssis.json.
+   * Convert a modern decrypted vanilla credential object to one expected from ssi-store.json.
    *
    * The storage credential is usually encrypted but not in this case, this aligns
    * with the `_decryptCredentials` method being a no-op.
    *
-   * @param {object} vanillaCredential using `origin`/`formActionOrigin`/`username` properties.
-   * @returns {object} a vanilla credential for ssi-credentials.json using
-   *                   `hostname`/`formSubmitURL`/`encryptedUsername`.
+   * @param {object} vanillaCredential using properties without `encrypted`.
+   * @returns {object} a vanilla credential for ssi-store.json using
+   *                   properties with `encrypted`.
    */
   _vanillaCredentialToStorageCredential(vanillaCredential) {
     return {
       ...vanillaCredential,
       encryptedSecret: vanillaCredential.seret,
       encryptedIdentifier: vanillaCredential.identifier,
+      encryptedTrustedSites: vanillaCredential.trustedSites,
+      encryptedPasswordAuthorizedSites:
+        vanillaCredential.passwordAuthorizedSites,
       encryptedProperties: vanillaCredential.properties,
     };
   }
@@ -116,7 +119,7 @@ export class SsiStorage extends SsiStorage_json {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
-  countCredentials(protocol, credential, secret) {
+  countCredentials(_protocolName, _credentialName) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 

@@ -41,7 +41,7 @@ async function init() {
                 action: ev.data.action,
                 args: ev.data.args,
             };
-            const replyFunction = (response) => {
+            const replyFunction = response => {
                 (0, logger_1.log)("response from background", ev, response);
                 postMessage(ev, response);
             };
@@ -51,7 +51,7 @@ async function init() {
     });
     // The message listener to listen to background calls
     // After, emit event to return the response to the inpages.
-    browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    browser.runtime.onMessage.addListener(request => {
         (0, logger_1.log)("content-script onMessage", request);
         // forward account changed messaged to inpage script
         if (request.action === "nostr/accountChanged") {
@@ -189,11 +189,13 @@ const nostr_1 = __webpack_require__(45);
 (0, logger_1.log)("content-script working", browser.runtime.getURL("inpages.bundle.js"));
 function loadInpageScript(url) {
     try {
-        if (!document)
+        if (!document) {
             throw new Error("No document");
+        }
         const container = document.head || document.documentElement;
-        if (!container)
+        if (!container) {
             throw new Error("No container element");
+        }
         const scriptEl = document.createElement("script");
         scriptEl.setAttribute("async", "false");
         scriptEl.setAttribute("type", "text/javascript");

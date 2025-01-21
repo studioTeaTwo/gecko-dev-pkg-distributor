@@ -36,7 +36,7 @@ export class SsiStorage_json {
       let profileDir = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
 
       // Set the reference to SsiStore synchronously.
-      let jsonPath = PathUtils.join(profileDir, "ssi-credentials.json");
+      let jsonPath = PathUtils.join(profileDir, "ssi-store.json");
       let backupPath = "";
       // TODO(ssb): reconsider whether it needs.
       // let loginsBackupEnabled = Services.prefs.getBoolPref(
@@ -124,9 +124,10 @@ export class SsiStorage_json {
       protocolName: credentialClone.protocolName,
       credentialName: credentialClone.credentialName,
       primary: credentialClone.primary,
-      trustedSites: credentialClone.trustedSites,
       encryptedSecret: credentialClone.secret,
       encryptedIdentifier: credentialClone.identifier,
+      encryptedTrustedSites: credentialClone.trustedSites,
+      encryptedPasswordAuthorizedSites: credentialClone.passwordAuthorizedSites,
       encryptedProperties: credentialClone.properties,
       guid: credentialClone.guid,
       encType: this._crypto.defaultEncType,
@@ -153,6 +154,7 @@ export class SsiStorage_json {
       const existingCredentials = await Services.ssi.searchCredentialsAsync({
         protocolName: credential.protocolName,
         credentialName: credential.credentialName,
+        secret: credential.secret,
       });
 
       const matchingCredential = existingCredentials.find(l =>
@@ -174,6 +176,9 @@ export class SsiStorage_json {
       // and return value
       resultCredential.secret = credential.secret;
       resultCredential.identifier = credential.identifier;
+      resultCredential.trustedSites = credential.trustedSites;
+      resultCredential.passwordAuthorizedSites =
+        credential.passwordAuthorizedSites;
       resultCredential.properties = credential.properties;
 
       // Send a notification that a credential was added.
@@ -247,17 +252,26 @@ export class SsiStorage_json {
     }
 
     // Get the encrypted values.
-    let [encSecret, encIdentifier, encProperties, encType, encUnknownFields] =
-      this._encryptCredential(newCredential);
+    let [
+      encSecret,
+      encIdentifier,
+      encTrustedSites,
+      encPasswordAuthorizedSites,
+      encProperties,
+      encType,
+      encUnknownFields,
+    ] = this._encryptCredential(newCredential);
 
     for (let credentialItem of this._store.data.credentials) {
       if (credentialItem.id == idToModify && !credentialItem.deleted) {
         credentialItem.protocolName = newCredential.protocolName;
         credentialItem.credentialName = newCredential.credentialName;
         credentialItem.primary = newCredential.primary;
-        credentialItem.trustedSites = newCredential.trustedSites;
         credentialItem.encryptedSecret = encSecret;
         credentialItem.encryptedIdentifier = encIdentifier;
+        credentialItem.encryptedTrustedSites = encTrustedSites;
+        credentialItem.encryptedPasswordAuthorizedSites =
+          encPasswordAuthorizedSites;
         credentialItem.encryptedProperties = encProperties;
         credentialItem.guid = newCredential.guid;
         credentialItem.encType = encType;
@@ -308,7 +322,6 @@ export class SsiStorage_json {
    * Public wrapper around _searchCredentials to convert the nsIPropertyBag to a
    * JavaScript object and decrypt the results.
    *
-   * @param matchData
    * @returns {nsICredentialInfo[]} which are decrypted.
    */
   searchCredentials(matchData) {
@@ -343,17 +356,16 @@ export class SsiStorage_json {
    * Returns [credentials, ids] for credentials that match the arguments, where credentials
    * is an array of encrypted nsCredentialInfo and ids is an array of associated
    * ids in the database.
-   *
-   * @param matchData
-   * @param candidateCredentials
    */
   _searchCredentials(
     matchData,
     candidateCredentials = this._store.data.credentials
   ) {
+    const self = this;
     function match(aCredentialItem) {
       for (let field in matchData) {
         let wantedValue = matchData[field];
+        let decriptedValue = null;
 
         switch (field) {
           // Normal cases.
@@ -362,9 +374,10 @@ export class SsiStorage_json {
           case "credentialName":
           case "id":
           case "primary":
-          case "trustedSites":
           case "encryptedSecret":
           case "encryptedIdentifier":
+          case "encryptedTrustedSites":
+          case "encryptedPasswordAuthorizedSites":
           case "encryptedProperties":
           case "guid":
           case "encType":
@@ -375,6 +388,19 @@ export class SsiStorage_json {
             if (wantedValue == null && aCredentialItem[field]) {
               return false;
             } else if (aCredentialItem[field] != wantedValue) {
+              return false;
+            }
+            break;
+          // Compare after decryption
+          case "secret":
+          case "identifier":
+          case "trustedSites":
+          case "authorizedSites":
+          case "properties":
+            decriptedValue = self._decryptDirectly(aCredentialItem);
+            if (wantedValue == null && decriptedValue[field]) {
+              return false;
+            } else if (decriptedValue[field] != wantedValue) {
               return false;
             }
             break;
@@ -398,9 +424,10 @@ export class SsiStorage_json {
           credentialItem.protocolName,
           credentialItem.credentialName,
           credentialItem.primary,
-          credentialItem.trustedSites,
           credentialItem.encryptedSecret,
           credentialItem.encryptedIdentifier,
+          credentialItem.encryptedTrustedSites,
+          credentialItem.encryptedPasswordAuthorizedSites,
           credentialItem.encryptedProperties
         );
         // set nsICredentialMetaInfo values
@@ -487,14 +514,12 @@ export class SsiStorage_json {
    * Returns an array with two items: [id, credential]. If the credential was not
    * found, both items will be null. The returned credential contains the actual
    * stored credential (useful for looking at the actual nsICredentialMetaInfo values).
-   *
-   * @param credential
    */
   _getIdForCredential(credential) {
     this._store.ensureDataReady();
 
     let matchData = {};
-    for (let field of ["protocolName", "credentialName"]) {
+    for (let field of ["protocolName", "credentialName", "secret"]) {
       if (credential[field] != "") {
         matchData[field] = credential[field];
       }
@@ -526,8 +551,6 @@ export class SsiStorage_json {
 
   /**
    * Checks to see if the specified GUID already exists.
-   *
-   * @param guid
    */
   _isGuidUnique(guid) {
     this._store.ensureDataReady();
@@ -546,8 +569,25 @@ export class SsiStorage_json {
     }
 
     const plaintexts = credentials.reduce(
-      (memo, { secret, identifier, properties, unknownFields }) =>
-        memo.concat([secret, identifier, properties, unknownFields]),
+      (
+        memo,
+        {
+          secret,
+          identifier,
+          trustedSites,
+          passwordAuthorizedSites,
+          properties,
+          unknownFields,
+        }
+      ) =>
+        memo.concat([
+          secret,
+          identifier,
+          trustedSites,
+          passwordAuthorizedSites,
+          properties,
+          unknownFields,
+        ]),
       []
     );
     const ciphertexts = await this._crypto.encryptMany(plaintexts);
@@ -556,13 +596,18 @@ export class SsiStorage_json {
       const [
         encryptedSecret,
         encryptedIdentifier,
+        encryptedTrustedSites,
+        encryptedPasswordAuthorizedSites,
         encryptedProperties,
         encryptedUnknownFields,
-      ] = ciphertexts.slice(4 * i, 4 * i + 4);
+      ] = ciphertexts.slice(6 * i, 6 * i + 6);
 
       const encryptedCredential = credential.clone();
       encryptedCredential.secret = encryptedSecret;
       encryptedCredential.identifier = encryptedIdentifier;
+      encryptedCredential.trustedSites = encryptedTrustedSites;
+      encryptedCredential.passwordAuthorizedSites =
+        encryptedPasswordAuthorizedSites;
       encryptedCredential.properties = encryptedProperties;
       encryptedCredential.unknownFields = encryptedUnknownFields;
 
@@ -580,16 +625,39 @@ export class SsiStorage_json {
     }
 
     const ciphertexts = credentials.reduce(
-      (memo, { secret, identifier, properties, unknownFields }) =>
-        memo.concat([secret, identifier, properties, unknownFields]),
+      (
+        memo,
+        {
+          secret,
+          identifier,
+          trustedSites,
+          passwordAuthorizedSites,
+          properties,
+          unknownFields,
+        }
+      ) =>
+        memo.concat([
+          secret,
+          identifier,
+          trustedSites,
+          passwordAuthorizedSites,
+          properties,
+          unknownFields,
+        ]),
       []
     );
     const plaintexts = await this._crypto.decryptMany(ciphertexts);
 
     return credentials
       .map((credential, i) => {
-        const [secret, identifier, properties, unknownFields] =
-          plaintexts.slice(4 * i, 4 * i + 4);
+        const [
+          secret,
+          identifier,
+          trustedSites,
+          passwordAuthorizedSites,
+          properties,
+          unknownFields,
+        ] = plaintexts.slice(6 * i, 6 * i + 6);
 
         // If the secret is blank it means that decryption may have
         // failed during decryptMany but we can't differentiate an empty string
@@ -616,6 +684,8 @@ export class SsiStorage_json {
         const decryptedCredential = credential.clone();
         decryptedCredential.secret = secret;
         decryptedCredential.identifier = identifier;
+        decryptedCredential.trustedSites = trustedSites;
+        decryptedCredential.passwordAuthorizedSites = passwordAuthorizedSites;
         decryptedCredential.properties = properties;
         decryptedCredential.unknownFields = unknownFields;
 
@@ -627,12 +697,14 @@ export class SsiStorage_json {
   /**
    * Returns the encrypted values, and encrypton type for the specified
    * credential. Can throw if the user cancels a primary password entry.
-   *
-   * @param credential
    */
   _encryptCredential(credential) {
     let encSecret = this._crypto.encrypt(credential.secret);
     let encIdentifier = this._crypto.encrypt(credential.identifier);
+    let encTrustedSites = this._crypto.encrypt(credential.trustedSites);
+    let encPasswordAuthorizedSites = this._crypto.encrypt(
+      credential.passwordAuthorizedSites
+    );
     let encProperties = this._crypto.encrypt(credential.properties);
 
     // Unknown fields should be encrypted since we can't know whether new fields
@@ -643,7 +715,15 @@ export class SsiStorage_json {
     }
     let encType = this._crypto.defaultEncType;
 
-    return [encSecret, encIdentifier, encProperties, encType, encUnknownFields];
+    return [
+      encSecret,
+      encIdentifier,
+      encTrustedSites,
+      encPasswordAuthorizedSites,
+      encProperties,
+      encType,
+      encUnknownFields,
+    ];
   }
 
   /**
@@ -655,8 +735,6 @@ export class SsiStorage_json {
    * entries are useless), whereas internal callers generally don't want
    * to lose unencrypted entries (eg, because the user clicked Cancel
    * instead of entering their primary password)
-   *
-   * @param credentials
    */
   _decryptCredentials(credentials) {
     let result = [];
@@ -665,6 +743,10 @@ export class SsiStorage_json {
       try {
         credential.secret = this._crypto.decrypt(credential.secret);
         credential.identifier = this._crypto.decrypt(credential.identifier);
+        credential.trustedSites = this._crypto.decrypt(credential.trustedSites);
+        credential.passwordAuthorizedSites = this._crypto.decrypt(
+          credential.passwordAuthorizedSites
+        );
         credential.properties = this._crypto.decrypt(credential.properties);
         // Verify unknownFields actually has a value
         if (credential.unknownFields) {
@@ -684,6 +766,42 @@ export class SsiStorage_json {
     }
 
     return result;
+  }
+
+  /**
+   * Decrypts directly with actual storage key and the return value has the memory key.
+   */
+  _decryptDirectly(aCredential) {
+    try {
+      aCredential.secret = this._crypto.decrypt(aCredential.encryptedSecret);
+      aCredential.identifier = this._crypto.decrypt(
+        aCredential.encryptedIdentifier
+      );
+      aCredential.trustedSites = this._crypto.decrypt(
+        aCredential.encryptedTrustedSites
+      );
+      aCredential.passwordAuthorizedSites = this._crypto.decrypt(
+        aCredential.encryptedPasswordAuthorizedSites
+      );
+      aCredential.properties = this._crypto.decrypt(
+        aCredential.encryptedProperties
+      );
+      // Verify unknownFields actually has a value
+      if (aCredential.encryptedUnknownFields) {
+        aCredential.unknownFields = this._crypto.decrypt(
+          aCredential.encryptedUnknownFields
+        );
+      }
+    } catch (e) {
+      // If decryption failed (corrupt entry?), just skip it.
+      // Rethrow other errors (like canceling entry of a primary pw)
+      if (e.result == Cr.NS_ERROR_FAILURE) {
+        return aCredential;
+      }
+      throw e;
+    }
+
+    return aCredential;
   }
 }
 

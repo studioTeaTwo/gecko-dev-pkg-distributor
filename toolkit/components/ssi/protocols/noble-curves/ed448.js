@@ -1,18 +1,20 @@
-/*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { shake256 } from '@noble/hashes/sha3';
-import { concatBytes, randomBytes, utf8ToBytes, wrapConstructor } from '@noble/hashes/utils';
-import { twistedEdwards } from './abstract/edwards.js';
-import { mod, pow2, Field, isNegativeLE } from './abstract/modular.js';
-import { montgomery } from './abstract/montgomery.js';
-import { createHasher, expand_message_xof } from './abstract/hash-to-curve.js';
-import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from './abstract/utils.js';
 /**
  * Edwards448 (not Ed448-Goldilocks) curve with following addons:
  * - X448 ECDH
  * - Decaf cofactor elimination
  * - Elligator hash-to-group / point indistinguishability
  * Conforms to RFC 8032 https://www.rfc-editor.org/rfc/rfc8032.html#section-5.2
+ * @module
  */
+/*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+import { shake256 } from '@noble/hashes/sha3';
+import { concatBytes, randomBytes, utf8ToBytes, wrapConstructor } from '@noble/hashes/utils';
+import { twistedEdwards } from './abstract/edwards.js';
+import { createHasher, expand_message_xof, } from './abstract/hash-to-curve.js';
+import { Field, isNegativeLE, mod, pow2 } from './abstract/modular.js';
+import { montgomery } from './abstract/montgomery.js';
+import { pippenger } from './abstract/curve.js';
+import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from './abstract/utils.js';
 const shake256_114 = wrapConstructor(() => shake256.create({ dkLen: 114 }));
 const shake256_64 = wrapConstructor(() => shake256.create({ dkLen: 64 }));
 const ed448P = BigInt('726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439');
@@ -81,6 +83,7 @@ const ED448_DEF = {
     // Subgroup order: how many points curve has;
     // 2n**446n - 13818066809895115352007386748515426880336692474882178609894547503885n
     n: BigInt('181709681073901722637330951972001133588410340171829515070372549795146003961539585716195755291692375963310293709091662304773755859649779'),
+    // RFC 7748 has 56-byte keys, RFC 8032 has 57-byte keys
     nBitLength: 456,
     // Cofactor
     h: BigInt(4),
@@ -94,18 +97,35 @@ const ED448_DEF = {
     // dom4
     domain: (data, ctx, phflag) => {
         if (ctx.length > 255)
-            throw new Error(`Context is too big: ${ctx.length}`);
+            throw new Error('context must be smaller than 255, got: ' + ctx.length);
         return concatBytes(utf8ToBytes('SigEd448'), new Uint8Array([phflag ? 1 : 0, ctx.length]), ctx, data);
     },
     uvRatio,
 };
+/**
+ * ed448 EdDSA curve and methods.
+ * @example
+ * import { ed448 } from '@noble/curves/ed448';
+ * const priv = ed448.utils.randomPrivateKey();
+ * const pub = ed448.getPublicKey(priv);
+ * const msg = new TextEncoder().encode('whatsup');
+ * const sig = ed448.sign(msg, priv);
+ * ed448.verify(sig, msg, pub);
+ */
 export const ed448 = /* @__PURE__ */ twistedEdwards(ED448_DEF);
 // NOTE: there is no ed448ctx, since ed448 supports ctx by default
-export const ed448ph = /* @__PURE__ */ twistedEdwards({ ...ED448_DEF, prehash: shake256_64 });
+export const ed448ph = /* @__PURE__ */ twistedEdwards({
+    ...ED448_DEF,
+    prehash: shake256_64,
+});
+/**
+ * ECDH using curve448 aka x448.
+ */
 export const x448 = /* @__PURE__ */ (() => montgomery({
     a: BigInt(156326),
+    // RFC 7748 has 56-byte keys, RFC 8032 has 57-byte keys
     montgomeryBits: 448,
-    nByteLength: 57,
+    nByteLength: 56,
     P: ed448P,
     Gu: BigInt(5),
     powPminus2: (x) => {
@@ -131,6 +151,7 @@ export function edwardsToMontgomeryPub(edwardsPub) {
     return Fp.toBytes(Fp.create((y - _1n) * Fp.inv(y + _1n)));
 }
 export const edwardsToMontgomery = edwardsToMontgomeryPub; // deprecated
+// TODO: add edwardsToMontgomeryPriv, similar to ed25519 version
 // Hash To Curve Elligator2 Map
 const ELL2_C1 = (Fp.ORDER - BigInt(3)) / BigInt(4); // 1. c1 = (q - 3) / 4         # Integer arithmetic
 const ELL2_J = BigInt(156326);
@@ -320,6 +341,10 @@ class DcfPoint {
             throw new Error(emsg);
         return new DcfPoint(new ed448.ExtendedPoint(x, y, _1n, t));
     }
+    static msm(points, scalars) {
+        const Fn = Field(ed448.CURVE.n, ed448.CURVE.nBitLength);
+        return pippenger(DcfPoint, Fn, points, scalars);
+    }
     /**
      * Encodes decaf point to Uint8Array.
      * https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-07#name-encode-2
@@ -369,6 +394,12 @@ class DcfPoint {
     }
     multiplyUnsafe(scalar) {
         return new DcfPoint(this.ep.multiplyUnsafe(scalar));
+    }
+    double() {
+        return new DcfPoint(this.ep.double());
+    }
+    negate() {
+        return new DcfPoint(this.ep.negate());
     }
 }
 export const DecafPoint = /* @__PURE__ */ (() => {

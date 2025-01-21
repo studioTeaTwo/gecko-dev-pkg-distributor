@@ -1,5 +1,6 @@
 {
   "root": true,
+  "ignorePatterns": ["actors/", "content/"],
   "env": {
     "browser": true,
     "es2022": true

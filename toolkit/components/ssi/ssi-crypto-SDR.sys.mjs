@@ -215,7 +215,6 @@ SsiCrypto_SDR.prototype = {
   /**
    * Decrypts the specified strings, using the SecretDecoderRing.
    *
-   * @param cipherTexts
    * @resolve {string[]} The decrypted strings. If a string cannot
    * be decrypted, the empty string is returned for that instance.
    * Callers will need to use decrypt() to determine if the encrypted

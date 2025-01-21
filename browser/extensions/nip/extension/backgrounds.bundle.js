@@ -66,8 +66,8 @@ const onPrefChangedCallback = async (prefKey) => {
         }
     }
 };
-browser.ssi.nostr.onPrefEnabledChanged.addListener(onPrefChangedCallback);
-browser.builtinNip.onPrefBuiltinNip07Changed.addListener(onPrefChangedCallback);
+browser.ssi.nostr.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("enabled"));
+browser.builtinNip.onPrefBuiltinNip07Changed.addListener(() => onPrefChangedCallback("builtinNip07.enabled"));
 /**
  * Internal Utils
  *
@@ -85,7 +85,7 @@ async function sendTab(tab, action, data) {
         .catch();
 }
 function supported(tabUrl) {
-    return SafeProtocols.some((protocol) => tabUrl.startsWith(protocol));
+    return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
 }
 
 

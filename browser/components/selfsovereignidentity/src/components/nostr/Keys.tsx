@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -13,54 +13,57 @@ import {
   Grid,
   GridItem,
   Heading,
+  IconButton,
   Input,
   InputGroup,
   StackDivider,
   Switch,
   Text,
   VStack,
-} from "@chakra-ui/react"
-import { dispatchEvents } from "../../hooks/useChildActorEvent"
+} from "@chakra-ui/react";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
   Credential,
   SelfsovereignidentityDefaultProps,
-} from "../../custom.type"
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils"
+} from "../../custom.type";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import {
   BIP340,
   decodeFromNostrKey,
   encodeToNostrKey,
   NostrTypeGuard,
-} from "../../shared/keys"
-import Secret from "../shared/Secret"
-import { DefaultTrustedSites } from "./NIP07"
-import { promptForPrimaryPassword } from "../../shared/utils"
-import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
+} from "../../shared/keys";
+import Secret from "../shared/Secret";
+import { DefaultTrustedSites } from "./NIP07";
+import { promptForPrimaryPassword } from "../../shared/utils";
+import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 
 interface NostrCredential extends Credential {
   properties: {
-    displayName: string
-  }
+    displayName: string;
+  };
 }
 interface NostrDisplayedCredential extends NostrCredential {
-  nseckey: string
-  rawPubkey: string
+  nseckey: string;
+  rawPubkey: string;
 }
 
-const NostrTemplate: NostrCredential = {
+const NostrTemplate: Omit<NostrCredential, "guid"> = {
   protocolName: "nostr",
   credentialName: "nsec",
   identifier: "", // npubkey
   secret: "", // raw seckey
   primary: false,
   trustedSites: [],
+  passwordAuthorizedSites: [],
   properties: {
     displayName: "",
   },
-}
+};
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
-  const { prefs, credentials } = props
+  const { prefs, credentials } = props;
   const {
     addCredentialToStore,
     modifyCredentialToStore,
@@ -68,183 +71,210 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
     removeAllCredentialsToStore,
     onPrimaryChanged,
     onPrefChanged,
-  } = dispatchEvents
+  } = dispatchEvents;
 
-  const [importedKey, setImportedKey] = useState("")
-  const [newKey, setNewKey] = useState("")
-  const [isOpenDialog, setIsOpenDialog] = useState(false)
-  const [error, setError] = useState("")
+  const [importedKey, setImportedKey] = useState("");
+  const [newKey, setNewKey] = useState("");
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [error, setError] = useState("");
 
   const nostrkeys = useMemo(
     () =>
       credentials
-        .filter((credential) => credential.protocolName === "nostr")
-        .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
+        .filter(credential => credential.protocolName === "nostr")
+        .map(addInterpretedKeys)
+        .sort((a, b) => (b.primary ? 1 : 0)) as NostrDisplayedCredential[],
     [credentials]
-  )
+  );
+  const defaultTrustedSites = useMemo(
+    () => [
+      ...DefaultTrustedSites,
+      ...prefs.base.addons.map(addon => ({
+        url: addon.url,
+        name: addon.name,
+        enabled: true,
+        permissions: {},
+      })),
+    ],
+    [prefs.base.addons]
+  );
 
   const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const checked = e.target.checked
-    onPrefChanged({ protocolName: "nostr", enabled: checked })
-  }
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", enabled: checked });
+  };
 
   const handleGenNewKey = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const seckey = BIP340.generateSecretKey()
-    const pubkey = BIP340.generatePublicKey(seckey)
-    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey))
+    const seckey = BIP340.generateSecretKey();
+    const pubkey = BIP340.generatePublicKey(seckey);
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
       ...NostrTemplate,
       identifier: npubkey,
       secret: bytesToHex(seckey),
       primary: nostrkeys.length === 0,
-      trustedSites: DefaultTrustedSites,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
       },
-    })
+    });
 
-    setNewKey(npubkey)
+    setNewKey(npubkey);
 
     // Notifying "PrimaryChanged" to the buit-in extension when this is the first key will be done in hooks,
     // because here is no guid yet.
-  }
+  };
 
-  const handleImportedKeyChange = (e) => setImportedKey(e.target.value)
+  const handleImportedKeyChange = e => setImportedKey(e.target.value);
   const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!NostrTypeGuard.isNSec(importedKey)) {
-      alert("The typed key is not nsec!")
-      return
+      alert("The typed key is not nsec!");
+      return;
     }
-    if (nostrkeys.some((key) => key.secret === importedKey)) {
-      alert("The typed key is existing!")
-      return
+    if (nostrkeys.some(key => key.secret === importedKey)) {
+      alert("The typed key is existing!");
+      return;
     }
 
-    const { data: seckey } = decodeFromNostrKey(importedKey)
-    const pubkey = BIP340.generatePublicKey(seckey)
-    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey))
+    const { data: seckey } = decodeFromNostrKey(importedKey);
+    const pubkey = BIP340.generatePublicKey(seckey);
+    const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
       ...NostrTemplate,
       identifier: npubkey,
       secret: bytesToHex(seckey as Uint8Array),
       primary: nostrkeys.length === 0,
+      trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
       },
-    })
+    });
 
-    setImportedKey("")
+    setImportedKey("");
 
     // Notifying "PrimaryChanged" to the buit-in extension when this is the first key will be done in hooks,
     // because here is no guid yet.
-  }
+  };
 
-  const handleChangePrimary = (checked, item: Credential) => {
-    let newPrimaryGuid = ""
+  const handleChangePrimary = async (
+    checked,
+    item: NostrDisplayedCredential
+  ) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    let newPrimaryGuid = "";
 
     if (checked === true) {
       // Set the current primary to false
-      const prevs = nostrkeys.filter((key) => key.primary)
+      const prevs = nostrkeys.filter(key => key.primary);
       for (const prev of prevs) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: false,
-        })
+        });
       }
-      newPrimaryGuid = item.guid
+      newPrimaryGuid = item.guid;
     } else {
       // Set the first of current falses to primary
-      const prev = nostrkeys.find((key) => !key.primary)
+      const prev = nostrkeys.find(key => !key.primary);
       if (prev) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: true,
-        })
-        newPrimaryGuid = prev.guid
+        });
+        newPrimaryGuid = prev.guid;
       }
     }
 
     modifyCredentialToStore({
-      ...item,
+      guid: item.guid,
       primary: checked,
-    })
+    });
 
     // Notify to the buit-in extension
-    onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid })
-  }
+    onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
+  };
 
-  const handleDeleteCredential = async (item: Credential) => {
+  const handleDeleteCredential = async (item: NostrDisplayedCredential) => {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
-      return
+      return;
     }
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
     if (item.primary === true) {
       // Set the first of current falses to primary
-      const prev = nostrkeys.find((key) => !key.primary)
+      const prev = nostrkeys.find(key => !key.primary);
       if (prev) {
         modifyCredentialToStore({
-          ...prev,
+          guid: prev.guid,
           primary: true,
-        })
+        });
       }
       // Notify to the buit-in extension
-      onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" })
+      onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
 
-    deleteCredentialToStore(item, nostrkeys)
-  }
+    deleteCredentialToStore(item, nostrkeys);
+  };
 
   const handleAllRemove = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!confirm("All data will be deleted. Okay?")) {
-      return
+      return;
     }
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
-    removeAllCredentialsToStore()
+    removeAllCredentialsToStore();
 
     // Notify to the buit-in extension
-    onPrimaryChanged({ protocolName: "nostr", guid: "" })
-  }
+    onPrimaryChanged({ protocolName: "nostr", guid: "" });
+  };
 
-  const cancelRef = React.useRef()
+  const cancelRef = React.useRef();
   const onCloseDialog = () => {
-    setIsOpenDialog(false)
-  }
+    setIsOpenDialog(false);
+  };
 
   function addInterpretedKeys(item: NostrCredential): NostrDisplayedCredential {
-    const rawSeckey = hexToBytes(item.secret)
-    const nseckey = encodeToNostrKey("nsec", rawSeckey)
-    const rawPubkey = BIP340.generatePublicKey(rawSeckey)
-    return { ...item, nseckey, rawPubkey }
+    const rawSeckey = hexToBytes(item.secret);
+    const nseckey = encodeToNostrKey("nsec", rawSeckey);
+    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    return { ...item, nseckey, rawPubkey };
   }
 
   return (
@@ -292,9 +322,9 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                   placeholder="nsec key"
                   value={importedKey}
                   onChange={handleImportedKeyChange}
-                  onKeyPress={(e) => {
+                  onKeyPress={e => {
                     if (e.key === "Enter") {
-                      handleSave(e)
+                      handleSave(e);
                     }
                   }}
                   maxW="500px"
@@ -311,17 +341,20 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
           </Grid>
         </Box>
         <Box>
-          {nostrkeys.length === 0 && <p>No key is regisitered.</p>}
+          {nostrkeys.length === 0 && (
+            <Text fontSize="sm">No key regisitered</Text>
+          )}
           <Flex gap={6} wrap="wrap">
-            {nostrkeys.map(addInterpretedKeys).map((item, i) => (
+            {nostrkeys.map((item, i) => (
               <Card maxW="md" overflow="hidden" key={i}>
                 <CardHeader>
                   <Heading size="md">
+                    {/* FIXME(ssb): more performable and high UX */}
                     <Editable
-                      defaultValue={item.properties.displayName}
-                      onSubmit={(value) =>
+                      value={item.properties.displayName}
+                      onChange={value =>
                         modifyCredentialToStore({
-                          ...item,
+                          guid: item.guid,
                           properties: {
                             ...item.properties,
                             displayName: value,
@@ -384,7 +417,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                     <Flex gap="2">
                       <Switch
                         isChecked={item.primary}
-                        onChange={(e) =>
+                        onChange={e =>
                           handleChangePrimary(e.target.checked, item)
                         }
                         alignSelf="center"
@@ -392,13 +425,20 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                       {item.primary && <Text>primary now</Text>}
                     </Flex>
                   )}
-                  <Button
-                    variant="ghost"
-                    colorScheme="blue"
+                  <IconButton
+                    disabled
+                    icon={<MdEdit />}
+                    variant="transparent"
+                    fontSize="20px"
+                    aria-label="Edit Key"
+                  />
+                  <IconButton
+                    icon={<MdDeleteForever />}
+                    variant="transparent"
+                    fontSize="20px"
+                    aria-label="Delete Key"
                     onClick={() => handleDeleteCredential(item)}
-                  >
-                    Delete
-                  </Button>
+                  />
                 </CardFooter>
               </Card>
             ))}
@@ -416,5 +456,5 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         cancelRef={cancelRef}
       />
     </>
-  )
+  );
 }

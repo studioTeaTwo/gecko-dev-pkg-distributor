@@ -1,0 +1,173 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/**
+ * A key-value, on-memory store to use for authorization in API internal layer
+ * (and cache sync from Services.ssi).
+ * It must be a singleton instance and should ideally be only on parent process.
+ *
+ * key: `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
+ * value: {
+ *   trustedSites: credential.trustedSites,
+ *   passwordAuthorizedSites: credential.passwordAuthorizedSites
+ * }
+ */
+class _AuthCache {
+  constructor() {
+    if (_AuthCache.instance) {
+      return _AuthCache.instance;
+    }
+    _AuthCache.instance = this;
+    this.initialized = false;
+    this._cache = new Map();
+  }
+
+  init() {
+    const onSearchComplete = credentials => {
+      credentials.forEach(credential => {
+        this._cache.set(
+          `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`,
+          {
+            trustedSites: JSON.parse(credential.trustedSites),
+            passwordAuthorizedSites: JSON.parse(
+              credential.passwordAuthorizedSites
+            ),
+          }
+        );
+      });
+      this.initialized = true;
+    };
+    Services.ssi.getAllCredentialsWithCallback({ onSearchComplete });
+    return this;
+  }
+
+  has(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+    return this._cache.has(key);
+  }
+
+  get(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+    return this._cache.get(key);
+  }
+
+  /**
+   * Update the kv cache together with the persistence (ssi store).
+   * If previous value is the same, don't update the ssi store. This becomes important when expiration preference
+   * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.expiryTime) is 0.
+   *
+   * @param {string} key
+   * @param {Object} value - Only new values from the API
+   */
+  async update(key, value) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+    if (!this.has(key)) {
+      throw new Error(`No key exists: ${key}`);
+    }
+
+    const prevValue = this.get(key);
+    if (JSON.stringify(prevValue) === JSON.stringify(value)) {
+      return;
+    }
+
+    // Build the new value
+    const newValue = JSON.parse(
+      JSON.stringify(prevValue).replace(/^''$/g, '"')
+    ); // TODO(ssb): investigate
+    let count = 0;
+    const notPersistent = [];
+    function update(newSite, sort) {
+      const idx = prevValue[sort].findIndex(
+        oldSite => oldSite.url === newSite.url
+      );
+      if (idx >= 0) {
+        const oldSite = prevValue[sort][idx];
+        if (JSON.stringify(newSite) === JSON.stringify(oldSite)) {
+          // noop
+          notPersistent.push(true);
+        } else {
+          // update
+          newValue[sort][idx] = {
+            ...oldSite,
+            ...newSite,
+          };
+        }
+      } else {
+        // create
+        newValue[sort].push(newSite);
+      }
+    }
+    if (Object.hasOwn(value, "trustedSites")) {
+      count += value.trustedSites.length;
+      value.trustedSites.forEach(site => update(site, "trustedSites"));
+    }
+    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
+      count += value.passwordAuthorizedSites.length;
+      value.passwordAuthorizedSites.forEach(site =>
+        update(site, "passwordAuthorizedSites")
+      );
+    }
+
+    // Update cache
+    this._cache.set(key, newValue);
+
+    if (count === notPersistent.length) {
+      return;
+    }
+
+    // Persist
+    const keys = key.split(":");
+    const old = await Services.ssi.searchCredentialsAsync({
+      protocolName: keys[0],
+      credentialName: keys[1],
+      identifier: keys[2],
+    });
+    let modifiedCredential = old[0].clone();
+    if (Object.hasOwn(value, "trustedSites")) {
+      modifiedCredential.trustedSites = JSON.stringify(newValue.trustedSites);
+    }
+    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
+      modifiedCredential.passwordAuthorizedSites = JSON.stringify(
+        newValue.passwordAuthorizedSites
+      );
+    }
+    Services.ssi.modifyCredential(old[0], modifiedCredential);
+  }
+
+  // Only for cach sync from Services.ssi, don't need to persist.
+  async set(key, value) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+
+    this._cache.set(key, value);
+  }
+
+  // Only for cach sync from Services.ssi, don't need to persist.
+  delete(key) {
+    if (!this.initialized) {
+      throw new Error(`Not initialized`);
+    }
+    if (!this.has(key)) {
+      throw new Error(`No key exists: ${key}`);
+    }
+    this._cache.delete(key);
+  }
+
+  // Only for cach sync from Services.ssi, don't need to persist.
+  reset() {
+    this._cache = new Map();
+  }
+}
+
+/**
+ * AuthCache - singleton instance
+ */
+export const AuthCache = new _AuthCache();

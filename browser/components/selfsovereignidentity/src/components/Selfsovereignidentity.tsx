@@ -2,48 +2,62 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useState, useEffect } from "react"
-import { Box, Grid, GridItem } from "@chakra-ui/react"
-import Menu from "./Menu"
-import Bitcoin from "./bitcoin"
-import Lightning from "./lightning"
-import Nostr from "./nostr"
-import ECash from "./ecash"
-import { MenuItem } from "../custom.type"
-import useChildActorEvent from "../hooks/useChildActorEvent"
+import React, { useState, useEffect } from "react";
+import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
+import Menu from "./Menu";
+import Bitcoin from "./bitcoin";
+import Lightning from "./lightning";
+import Nostr from "./nostr";
+import ECash from "./ecash";
+import { MenuItem } from "../custom.type";
+import useChildActorEvent, {
+  dispatchEvents,
+} from "../hooks/useChildActorEvent";
 
 function Selfsovereignidentity(props) {
-  const [selectedMenu, setSelectedMenu] = useState<MenuItem>("nostr")
-  const { prefs, credentials } = useChildActorEvent() // Just once to ensure that useeffect is called only once
+  const { prefs, credentials } = useChildActorEvent(); // Just once to ensure that useeffect is called only once
+  const { initStore } = dispatchEvents;
 
-  useEffect(() => {}, [])
+  const [selectedMenu, setSelectedMenu] = useState<MenuItem>("");
 
-  const setMenu = (menuItem: MenuItem) => {
-    setSelectedMenu(menuItem)
-  }
+  // on mount
+  useEffect(() => {
+    initStore();
+  }, []);
+
+  useEffect(() => {
+    // Actually, I want to update only at first time for initial pref value.
+    setSelectedMenu(prefs.base.menuPin);
+  }, [prefs.base.menuPin]);
 
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
-      return <Bitcoin />
+      return <Bitcoin />;
     } else if (selectedMenu === "lightning") {
-      return <Lightning />
+      return <Lightning />;
     } else if (selectedMenu === "ecash") {
-      return <ECash />
+      return <ECash />;
     } else if (selectedMenu === "nostr") {
-      return <Nostr prefs={prefs} credentials={credentials} />
+      return <Nostr prefs={prefs} credentials={credentials} />;
     }
-  }
+  };
 
   return (
     <Box m={10}>
       <Grid w="100%" h="100%" templateColumns="200px auto" gap={4}>
         <GridItem colSpan={1}>
-          <Menu selectedMenu={selectedMenu} setMenu={setMenu} />
+          <Menu
+            selectedMenu={selectedMenu}
+            setSelectedMenu={setSelectedMenu}
+            menuPin={prefs.base.menuPin}
+          />
         </GridItem>
-        <GridItem colSpan={1}>{switchContent()}</GridItem>
+        <GridItem colSpan={1}>
+          {prefs.base.menuPin ? switchContent() : <Spinner />}
+        </GridItem>
       </Grid>
     </Box>
-  )
+  );
 }
 
-export default Selfsovereignidentity
+export default Selfsovereignidentity;

@@ -214,6 +214,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.PAT }}
+
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
@@ -222,6 +223,12 @@ jobs:
         fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
         git_user_signingkey: true
         trust_level: 5
+    - name: Get previous tag
+      run: |
+        git fetch origin 'refs/tags/*:refs/tags/*'
+        criteria=v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}
+        previous_tag=$(git ls-remote --tags --sort=v:refname origin "$criteria" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
+        echo "previous_tag=$previous_tag" | tee "$GITHUB_ENV"
     - name: Create a tag with signature
       run: |
         git tag -s v${{ needs.get-display-version.outputs.display-version }} -m "v${{ needs.get-display-version.outputs.display-version }}"
@@ -235,6 +242,12 @@ jobs:
         exec 1> >(tee -a $VERIFICATION_LOG)
         exec 2>&1
 
+        echo 'Distributer: GitHub'
+        echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${{ needs.get-display-version.outputs.display-version }}"
+        echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+        echo
+
         sha256sum ssb-*.linux-x86_64.tar.bz2
         sha256sum ssb-*.linux-aarch64.tar.bz2
         sha256sum ssb-*.win64.installer.exe
@@ -246,13 +259,7 @@ jobs:
 
         echo
 
-        cd ${{ github.workspace }}
-        git tag -v v${{ needs.get-display-version.outputs.display-version }}
-        cd /home/runner/downloads/artifacts
-
-        echo
-
-        echo "workflow run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        (cd ${{ github.workspace }} && git tag -v v${{ needs.get-display-version.outputs.display-version }})
 
         echo
     - name: Sign verification log
@@ -261,6 +268,14 @@ jobs:
         gpg --clear-sign verification.txt
         cat verification.txt.asc
 
+    - name: Create release note draft
+      run: |
+        dest=/home/runner/downloads/artifacts/
+        commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
+        git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > ${dest}release_note_draft.txt
+        echo -e "\n<details close>\n" >> ${dest}release_note_draft.txt
+        cat ${dest}verification.txt.asc >> ${dest}release_note_draft.txt
+        cat ${dest}release_note_draft.txt
     - name: Deploy to GitHub Releases for Stable Version 🚀
       id: create_release
       uses: softprops/action-gh-release@v2
@@ -275,7 +290,7 @@ jobs:
           /home/runner/downloads/artifacts/WINNT-x86_64.mar
           /home/runner/downloads/artifacts/DARWIN-Universal.mar
           /home/runner/downloads/artifacts/verification.txt.asc
-        body_path: /home/runner/downloads/artifacts/verification.txt.asc
+        body_path: /home/runner/downloads/artifacts/release_note_draft.txt
         tag_name: "v${{ needs.get-display-version.outputs.display-version }}"
         name: "v${{ needs.get-display-version.outputs.display-version }}"
         draft: true

@@ -1,45 +1,45 @@
-import React, { useCallback, useState } from "react"
-import { HStack, IconButton, Text } from "@chakra-ui/react"
-import { LuEye, LuEyeOff } from "./react-icons/Icons"
-import { promptForPrimaryPassword } from "../../shared/utils"
-import AlertPrimaryPassword from "./AlertPrimaryPassword"
+import React, { useCallback, useState } from "react";
+import { HStack, IconButton, Text } from "@chakra-ui/react";
+import { LuEye, LuEyeOff } from "./react-icons/Icons";
+import { promptForPrimaryPassword } from "../../shared/utils";
+import AlertPrimaryPassword from "./AlertPrimaryPassword";
 
 export default function Secret(props: {
-  value: string
-  onChangeVisibility
-  usedPrimarypasswordToSettings
-  textProps?
+  value: string;
+  onChangeVisibility;
+  usedPrimarypasswordToSettings;
+  textProps?;
 }) {
-  const [visible, setVisible] = useState(false)
-  const [isOpenDialog, setIsOpenDialog] = useState(false)
+  const [visible, setVisible] = useState(false);
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
   const {
     value,
     textProps,
     onChangeVisibility,
     usedPrimarypasswordToSettings,
-  } = props
+  } = props;
 
-  const maskedValue = useCallback(() => "*".repeat(value.length), [value])
+  const maskedValue = useCallback(() => "*".repeat(value.length), [value]);
 
   const handleToggole = async () => {
     if (visible === false && usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
-    setVisible((prev) => !prev)
-    onChangeVisibility()
-  }
+    setVisible(prev => !prev);
+    onChangeVisibility();
+  };
 
-  const cancelRef = React.useRef()
+  const cancelRef = React.useRef();
   const onCloseDialog = () => {
-    setIsOpenDialog(false)
-  }
+    setIsOpenDialog(false);
+  };
 
   return (
     <>
@@ -62,5 +62,5 @@ export default function Secret(props: {
         cancelRef={cancelRef}
       />
     </>
-  )
+  );
 }

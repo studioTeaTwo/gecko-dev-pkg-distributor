@@ -40,6 +40,7 @@ browser.jar:
     content/browser/child/ext-menus.js (child/ext-menus.js)
     content/browser/child/ext-menus-child.js (child/ext-menus-child.js)
     content/browser/child/ext-omnibox.js (child/ext-omnibox.js)
+    content/browser/child/ext-ssi.js (child/ssi/ext-ssi.js)
     content/browser/child/ext-tabs.js (child/ext-tabs.js)
 %   resource builtin-addons %builtin-addons/  contentaccessible=yes
     builtin-addons/ssi/browserSsiHelper.sys.mjs (parent/ssi/browserSsiHelper.sys.mjs)

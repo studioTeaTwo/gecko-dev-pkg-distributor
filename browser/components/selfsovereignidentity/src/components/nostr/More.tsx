@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 import {
   Grid,
   GridItem,
@@ -6,40 +6,40 @@ import {
   StackDivider,
   Switch,
   VStack,
-} from "@chakra-ui/react"
-import { dispatchEvents } from "../../hooks/useChildActorEvent"
-import { promptForPrimaryPassword } from "../../shared/utils"
-import AlertPrimaryPassword from "../shared/AlertPrimaryPassword"
-import { SelfsovereignidentityDefaultProps } from "../../custom.type"
+} from "@chakra-ui/react";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
+import { promptForPrimaryPassword } from "../../shared/utils";
+import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import { SelfsovereignidentityDefaultProps } from "../../custom.type";
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
-  const { prefs } = props
-  const { onPrefChanged } = dispatchEvents
+  const { prefs } = props;
+  const { onPrefChanged } = dispatchEvents;
 
-  const [isOpenDialog, setIsOpenDialog] = useState(false)
-  const [error, setError] = useState("")
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [error, setError] = useState("");
 
   const handleUsedPrimarypasswordToSettings = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
-      )
+      );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true)
-        return
+        setIsOpenDialog(true);
+        return;
       }
     }
 
     onPrefChanged({
       protocolName: "nostr",
       usedPrimarypasswordToSettings: checked,
-    })
-  }
+    });
+  };
 
-  const cancelRef = React.useRef()
+  const cancelRef = React.useRef();
   const onCloseDialog = () => {
-    setIsOpenDialog(false)
-  }
+    setIsOpenDialog(false);
+  };
 
   return (
     <>
@@ -59,7 +59,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
               <Switch
                 id="nostr-pref-usedPrimarypasswordToSettings"
                 isChecked={prefs.nostr.usedPrimarypasswordToSettings}
-                onChange={(e) =>
+                onChange={e =>
                   handleUsedPrimarypasswordToSettings(e.target.checked)
                 }
               />
@@ -73,5 +73,5 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
         cancelRef={cancelRef}
       />
     </>
-  )
+  );
 }

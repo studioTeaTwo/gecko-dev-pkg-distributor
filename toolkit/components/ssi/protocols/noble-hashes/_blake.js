@@ -1,8 +1,15 @@
-import assert from './_assert.js';
-import { Hash, toBytes, u32 } from './utils.js';
-// For BLAKE2b, the two extra permutations for rounds 10 and 11 are SIGMA[10..11] = SIGMA[0..1].
+/**
+ * Internal helpers for blake hash.
+ * @module
+ */
+import { aexists, anumber, aoutput } from './_assert.js';
+import { byteSwap32, byteSwapIfBE, Hash, isLE, toBytes, u32 } from './utils.js';
+/**
+ * Internal blake variable.
+ * For BLAKE2b, the two extra permutations for rounds 10 and 11 are SIGMA[10..11] = SIGMA[0..1].
+ */
 // prettier-ignore
-export const SIGMA = new Uint8Array([
+export const SIGMA = /* @__PURE__ */ new Uint8Array([
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
     14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3,
     11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4,
@@ -15,8 +22,14 @@ export const SIGMA = new Uint8Array([
     10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0,
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
     14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3,
+    // Blake1, unused in others
+    11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4,
+    7, 9, 3, 1, 13, 12, 11, 14, 2, 6, 5, 10, 4, 0, 15, 8,
+    9, 0, 5, 7, 2, 4, 10, 15, 14, 1, 11, 12, 6, 8, 3, 13,
+    2, 12, 6, 10, 0, 11, 8, 3, 4, 13, 7, 5, 15, 14, 1, 9,
 ]);
-export class BLAKE2 extends Hash {
+/** Class, from which others are subclassed. */
+export class BLAKE extends Hash {
     constructor(blockLen, outputLen, opts = {}, keyLen, saltLen, persLen) {
         super();
         this.blockLen = blockLen;
@@ -25,21 +38,22 @@ export class BLAKE2 extends Hash {
         this.pos = 0;
         this.finished = false;
         this.destroyed = false;
-        assert.number(blockLen);
-        assert.number(outputLen);
-        assert.number(keyLen);
+        anumber(blockLen);
+        anumber(outputLen);
+        anumber(keyLen);
         if (outputLen < 0 || outputLen > keyLen)
             throw new Error('outputLen bigger than keyLen');
         if (opts.key !== undefined && (opts.key.length < 1 || opts.key.length > keyLen))
-            throw new Error(`key must be up 1..${keyLen} byte long or undefined`);
+            throw new Error('key length must be undefined or 1..' + keyLen);
         if (opts.salt !== undefined && opts.salt.length !== saltLen)
-            throw new Error(`salt must be ${saltLen} byte long or undefined`);
+            throw new Error('salt must be undefined or ' + saltLen);
         if (opts.personalization !== undefined && opts.personalization.length !== persLen)
-            throw new Error(`personalization must be ${persLen} byte long or undefined`);
-        this.buffer32 = u32((this.buffer = new Uint8Array(blockLen)));
+            throw new Error('personalization must be undefined or ' + persLen);
+        this.buffer = new Uint8Array(blockLen);
+        this.buffer32 = u32(this.buffer);
     }
     update(data) {
-        assert.exists(this);
+        aexists(this);
         // Main difference with other hashes: there is flag for last block,
         // so we cannot process current block before we know that there
         // is the next one. This significantly complicates logic and reduces ability
@@ -52,7 +66,11 @@ export class BLAKE2 extends Hash {
         for (let pos = 0; pos < len;) {
             // If buffer is full and we still have input (don't process last block, same as blake2s)
             if (this.pos === blockLen) {
+                if (!isLE)
+                    byteSwap32(buffer32);
                 this.compress(buffer32, 0, false);
+                if (!isLE)
+                    byteSwap32(buffer32);
                 this.pos = 0;
             }
             const take = Math.min(blockLen - this.pos, len - pos);
@@ -60,10 +78,14 @@ export class BLAKE2 extends Hash {
             // full block && aligned to 4 bytes && not last in input
             if (take === blockLen && !(dataOffset % 4) && pos + take < len) {
                 const data32 = new Uint32Array(buf, dataOffset, Math.floor((len - pos) / 4));
+                if (!isLE)
+                    byteSwap32(data32);
                 for (let pos32 = 0; pos + blockLen < len; pos32 += buffer32.length, pos += blockLen) {
                     this.length += blockLen;
                     this.compress(data32, pos32, false);
                 }
+                if (!isLE)
+                    byteSwap32(data32);
                 continue;
             }
             buffer.set(data.subarray(pos, pos + take), this.pos);
@@ -74,15 +96,19 @@ export class BLAKE2 extends Hash {
         return this;
     }
     digestInto(out) {
-        assert.exists(this);
-        assert.output(out, this);
+        aexists(this);
+        aoutput(out, this);
         const { pos, buffer32 } = this;
         this.finished = true;
         // Padding
         this.buffer.subarray(pos).fill(0);
+        if (!isLE)
+            byteSwap32(buffer32);
         this.compress(buffer32, 0, true);
+        if (!isLE)
+            byteSwap32(buffer32);
         const out32 = u32(out);
-        this.get().forEach((v, i) => (out32[i] = v));
+        this.get().forEach((v, i) => (out32[i] = byteSwapIfBE(v)));
     }
     digest() {
         const { buffer, outputLen } = this;
@@ -104,4 +130,4 @@ export class BLAKE2 extends Hash {
         return to;
     }
 }
-//# sourceMappingURL=_blake2.js.map
+//# sourceMappingURL=_blake.js.map

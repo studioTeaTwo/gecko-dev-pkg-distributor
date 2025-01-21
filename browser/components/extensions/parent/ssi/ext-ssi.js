@@ -4,7 +4,7 @@
 
 "use strict";
 
-/* globals ExtensionAPI, Services, ChromeUtils, AppConstants */
+/* globals ExtensionAPI, Services, ChromeUtils */
 
 // lazy is shared with other parent experiment-apis
 let lazy = {};
@@ -13,40 +13,39 @@ ChromeUtils.defineESModuleGetters(lazy, {
   browserSsiHelper: "resource://builtin-addons/ssi/browserSsiHelper.sys.mjs",
 });
 
-const INITIAL_EXPIRATIONTIME = Number.NEGATIVE_INFINITY;
-const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
-
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
-    const { tabManager } = context.extension;
-    // TODO(ssb): persist
-    let _authExpirationTimes = new Map();
+    // Call it to perform initialization of Services.ssi.
+    // eslint-disable-next-line no-unused-vars
+    const authCache = Services.ssi.authCache;
 
     return {
       ssi: {
         async searchCredentialsWithoutSecret(
-          protocolName,
-          credentialName,
-          primary = true
+          { protocolName = "", credentialName = "", primary = true },
+          { caption = "", submission = "", enforce = false }
         ) {
-          // Check permission
-          const enabled = {
-            nostr: Services.prefs.getBoolPref(
-              `selfsovereignidentity.nostr.enabled`
-            ),
-          };
-          const accountChanged = {
-            nostr: Services.prefs.getBoolPref(
-              `selfsovereignidentity.nostr.event.accountChanged.enabled`
-            ),
-          };
+          const errorValue = [];
 
           try {
+            // Stuff to check permission
+            const enabled = {
+              nostr: Services.prefs.getBoolPref(
+                `selfsovereignidentity.nostr.enabled`
+              ),
+            };
+            const accountChanged = {
+              nostr: Services.prefs.getBoolPref(
+                `selfsovereignidentity.nostr.event.accountChanged.enabled`
+              ),
+            };
+
+            // Validate params
             // NOTE(ssb): User controls whether to grant protocol permissions to apps in the settings page.
             const params = {};
             if (protocolName) {
               if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
-                return [];
+                return errorValue;
               }
               params.protocolName = protocolName;
             }
@@ -54,19 +53,42 @@ this.ssi = class extends ExtensionAPI {
               if (
                 !lazy.browserSsiHelper.validateCredentialName(credentialName)
               ) {
-                return [];
+                return errorValue;
               }
               params.credentialName = credentialName;
             }
             params.primary = primary;
+            if (caption) {
+              if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                return errorValue;
+              }
+            }
+            if (submission) {
+              if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                return errorValue;
+              }
+            }
 
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
 
             return credentials
-              .filter(credential => {
+              .filter(async credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
+                  return false;
+                }
+                const isAuthorized = await lazy.browserSsiHelper.authorize(
+                  context,
+                  tabTracker,
+                  {
+                    protocolName: credential.protocolName,
+                    credentialName: credential.credentialName,
+                  },
+                  { type: "read", caption, submission, enforce },
+                  false
+                );
+                if (!isAuthorized) {
                   return false;
                 }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
@@ -82,134 +104,69 @@ this.ssi = class extends ExtensionAPI {
               .map(credential => {
                 // Filter only the data to need
                 const filteredVal = {
-                  // credential info
                   protocolName: credential.protocolName,
                   credentialName: credential.credentialName,
-                  identifier: credential.identifier,
                   primary: credential.primary,
                 };
+                if (
+                  !(
+                    credential.protocolName === "bitcoin" &&
+                    credential.credentialName === "bip39"
+                  )
+                ) {
+                  filteredVal.identifier = credential.identifier;
+                }
                 return filteredVal;
               });
           } catch (e) {
             console.error(e);
-            return [];
+            return errorValue;
           }
         },
-        async askPermission(protocolName, credentialName, tabId, message) {
+        async askPermission(
+          protocolName,
+          credentialName,
+          { caption = "", submission = "", enforce = false }
+        ) {
+          const errorValue = false;
+
           try {
             // Validate params
             if (!lazy.browserSsiHelper.validateProtocolName(protocolName)) {
-              return false;
+              return errorValue;
             }
             if (!lazy.browserSsiHelper.validateCredentialName(credentialName)) {
-              return false;
+              return errorValue;
             }
-            // TODO(ssb): validate message
-            // TODO(ssb): validate tabId
-            // TODO(ssb): how to make tabId unnecessary
-            // const tabs = Array.from(
-            //   tabManager.query({
-            //     active: true,
-            //     lastFocusedWindow: true,
-            //     url: null,
-            //     cookieStoreId: null,
-            //     title: null,
-            //   })
-            // )
+            if (caption && !lazy.browserSsiHelper.validateDialogText(caption)) {
+              return errorValue;
+            }
+            if (
+              submission &&
+              !lazy.browserSsiHelper.validateDialogText(submission)
+            ) {
+              return errorValue;
+            }
 
             // Check permission
             const enabled = Services.prefs.getBoolPref(
               `selfsovereignidentity.${protocolName}.enabled`
             );
             if (!enabled) {
-              return false;
+              return errorValue;
             }
 
-            const { url, browser } = tabManager.get(tabId);
-            const origin = Services.io.newURI(url).displayPrePath;
-            const internalPrefs = await lazy.browserSsiHelper.getInternalPrefs(
-              protocolName
+            const isAuthorized = await lazy.browserSsiHelper.authorize(
+              context,
+              tabTracker,
+              { protocolName, credentialName },
+              { type: "custom", caption, submission, enforce },
+              false
             );
-
-            if (internalPrefs["trustedSites.enabled"]) {
-              const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  protocolName,
-                  credentialName,
-                  primary: true,
-                });
-              if (credentials.length === 0) {
-                return false;
-              }
-
-              const trustedSites = JSON.parse(credentials[0].trustedSites);
-              // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
-              const trusted = trustedSites.some(site =>
-                url.startsWith(site.url)
-              );
-              console.log("trusted", trusted, url);
-              if (trusted) {
-                return true;
-              }
-              // go to primarypassword auth
-            }
-
-            if (internalPrefs["primarypassword.toApps.enabled"]) {
-              const messageText = {
-                value: `${message || "AUTH LOCK"} \n${origin}`,
-              };
-              const captionText = { value: "" }; // FIXME(ssb): not displayed. want to set the origin here.
-
-              const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-                lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-              );
-              if (isOSAuthEnabled) {
-                const messageId = MESSAGE_ID + "-" + AppConstants.platform;
-              }
-
-              let _authExpirationTime = _authExpirationTimes.get(origin);
-              if (_authExpirationTime === undefined) {
-                _authExpirationTime = INITIAL_EXPIRATIONTIME;
-                _authExpirationTimes.set(origin, INITIAL_EXPIRATIONTIME);
-              }
-
-              const { isAuthorized, telemetryEvent } =
-                await lazy.SsiHelper.requestReauth(
-                  browser.browsingContext.embedderElement,
-                  isOSAuthEnabled,
-                  _authExpirationTime,
-                  messageText.value,
-                  captionText.value
-                );
-              if (isAuthorized) {
-                _authExpirationTimes.set(
-                  origin,
-                  Date.now() +
-                    internalPrefs["primarypassword.toApps.expiryTime"]
-                );
-              }
-              console.log(
-                "primarypassword",
-                isAuthorized,
-                telemetryEvent,
-                origin,
-                _authExpirationTimes.get(origin)
-              );
-              if (isAuthorized) {
-                return true;
-              }
-              // go to self-sovereign check
-            }
-
-            // NOTE(ssb): Returns true if all settings are explicitly turned off.
-            // eslint-disable-next-line no-unneeded-ternary
-            return !internalPrefs["trustedSites.enabled"] &&
-              !internalPrefs["primarypassword.toApps.enabled"]
-              ? true
-              : false;
+            return isAuthorized;
           } catch (e) {
             console.error(e);
-            return false;
+            return errorValue;
           }
         },
       },

@@ -1,20 +1,33 @@
-import assert from './_assert.js';
-import u64 from './_u64.js';
-import { BLAKE2 } from './_blake2.js';
-import { compress, IV } from './blake2s.js';
-import { u8, u32, toBytes, wrapXOFConstructorWithOpts } from './utils.js';
+/**
+ * Blake3 fast hash is Blake2 with reduced security (round count). Can also be used as MAC & KDF.
+ *
+ * It is advertised as "the fastest cryptographic hash". However, it isn't true in JS.
+ * Why is this so slow? While it should be 6x faster than blake2b, perf diff is only 20%:
+ *
+ * * There is only 30% reduction in number of rounds from blake2s
+ * * Speed-up comes from tree structure, which is parallelized using SIMD & threading.
+ *   These features are not present in JS, so we only get overhead from trees.
+ * * Parallelization only happens on 1024-byte chunks: there is no benefit for small inputs.
+ * * It is still possible to make it faster using: a) loop unrolling b) web workers c) wasm
+ * @module
+ */
+import { abytes, aexists, anumber, aoutput } from './_assert.js';
+import { BLAKE } from './_blake.js';
+import { fromBig } from './_u64.js';
+import { B2S_IV, compress } from './blake2s.js';
+import { byteSwap32, isLE, toBytes, u32, u8, wrapXOFConstructorWithOpts, } from './utils.js';
 // Flag bitset
-var Flags;
-(function (Flags) {
-    Flags[Flags["CHUNK_START"] = 1] = "CHUNK_START";
-    Flags[Flags["CHUNK_END"] = 2] = "CHUNK_END";
-    Flags[Flags["PARENT"] = 4] = "PARENT";
-    Flags[Flags["ROOT"] = 8] = "ROOT";
-    Flags[Flags["KEYED_HASH"] = 16] = "KEYED_HASH";
-    Flags[Flags["DERIVE_KEY_CONTEXT"] = 32] = "DERIVE_KEY_CONTEXT";
-    Flags[Flags["DERIVE_KEY_MATERIAL"] = 64] = "DERIVE_KEY_MATERIAL";
-})(Flags || (Flags = {}));
-const SIGMA = (() => {
+var B3_Flags;
+(function (B3_Flags) {
+    B3_Flags[B3_Flags["CHUNK_START"] = 1] = "CHUNK_START";
+    B3_Flags[B3_Flags["CHUNK_END"] = 2] = "CHUNK_END";
+    B3_Flags[B3_Flags["PARENT"] = 4] = "PARENT";
+    B3_Flags[B3_Flags["ROOT"] = 8] = "ROOT";
+    B3_Flags[B3_Flags["KEYED_HASH"] = 16] = "KEYED_HASH";
+    B3_Flags[B3_Flags["DERIVE_KEY_CONTEXT"] = 32] = "DERIVE_KEY_CONTEXT";
+    B3_Flags[B3_Flags["DERIVE_KEY_MATERIAL"] = 64] = "DERIVE_KEY_MATERIAL";
+})(B3_Flags || (B3_Flags = {}));
+const SIGMA = /* @__PURE__ */ (() => {
     const Id = Array.from({ length: 16 }, (_, i) => i);
     const permute = (arr) => [2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8].map((i) => arr[i]);
     const res = [];
@@ -22,15 +35,8 @@ const SIGMA = (() => {
         res.push(...v);
     return Uint8Array.from(res);
 })();
-// Why is this so slow? It should be 6x faster than blake2b.
-// - There is only 30% reduction in number of rounds from blake2s
-// - This function uses tree mode to achive parallelisation via SIMD and threading,
-//   however in JS we don't have threads and SIMD, so we get only overhead from tree structure
-// - It is possible to speed it up via Web Workers, hovewer it will make code singnificantly more
-//   complicated, which we are trying to avoid, since this library is intended to be used
-//   for cryptographic purposes. Also, parallelization happens only on chunk level (1024 bytes),
-//   which won't really benefit small inputs.
-class BLAKE3 extends BLAKE2 {
+/** Blake3 hash. Can be used as MAC and KDF. */
+export class BLAKE3 extends BLAKE {
     constructor(opts = {}, flags = 0) {
         super(64, opts.dkLen === undefined ? 32 : opts.dkLen, {}, Number.MAX_SAFE_INTEGER, 0, 0);
         this.flags = 0 | 0;
@@ -43,7 +49,7 @@ class BLAKE3 extends BLAKE2 {
         this.chunkOut = 0; // index of output chunk
         this.enableXOF = true;
         this.outputLen = opts.dkLen === undefined ? 32 : opts.dkLen;
-        assert.number(this.outputLen);
+        anumber(this.outputLen);
         if (opts.key !== undefined && opts.context !== undefined)
             throw new Error('Blake3: only key or context can be specified at same time');
         else if (opts.key !== undefined) {
@@ -51,17 +57,21 @@ class BLAKE3 extends BLAKE2 {
             if (key.length !== 32)
                 throw new Error('Blake3: key should be 32 byte');
             this.IV = u32(key);
-            this.flags = flags | Flags.KEYED_HASH;
+            if (!isLE)
+                byteSwap32(this.IV);
+            this.flags = flags | B3_Flags.KEYED_HASH;
         }
         else if (opts.context !== undefined) {
-            const context_key = new BLAKE3({ dkLen: 32 }, Flags.DERIVE_KEY_CONTEXT)
+            const context_key = new BLAKE3({ dkLen: 32 }, B3_Flags.DERIVE_KEY_CONTEXT)
                 .update(opts.context)
                 .digest();
             this.IV = u32(context_key);
-            this.flags = flags | Flags.DERIVE_KEY_MATERIAL;
+            if (!isLE)
+                byteSwap32(this.IV);
+            this.flags = flags | B3_Flags.DERIVE_KEY_MATERIAL;
         }
         else {
-            this.IV = IV.slice();
+            this.IV = B2S_IV.slice();
             this.flags = flags;
         }
         this.state = this.IV.slice();
@@ -74,9 +84,9 @@ class BLAKE3 extends BLAKE2 {
     set() { }
     b2Compress(counter, flags, buf, bufPos = 0) {
         const { state: s, pos } = this;
-        const { h, l } = u64.fromBig(BigInt(counter), true);
+        const { h, l } = fromBig(BigInt(counter), true);
         // prettier-ignore
-        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(SIGMA, bufPos, buf, 7, s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], IV[0], IV[1], IV[2], IV[3], h, l, pos, flags);
+        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(SIGMA, bufPos, buf, 7, s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], B2S_IV[0], B2S_IV[1], B2S_IV[2], B2S_IV[3], h, l, pos, flags);
         s[0] = v0 ^ v8;
         s[1] = v1 ^ v9;
         s[2] = v2 ^ v10;
@@ -90,9 +100,9 @@ class BLAKE3 extends BLAKE2 {
         // Compress last block
         let flags = this.flags;
         if (!this.chunkPos)
-            flags |= Flags.CHUNK_START;
+            flags |= B3_Flags.CHUNK_START;
         if (this.chunkPos === 15 || isLast)
-            flags |= Flags.CHUNK_END;
+            flags |= B3_Flags.CHUNK_END;
         if (!isLast)
             this.pos = this.blockLen;
         this.b2Compress(this.chunksDone, flags, buf, bufPos);
@@ -113,7 +123,7 @@ class BLAKE3 extends BLAKE2 {
                 this.buffer32.set(last, 0);
                 this.buffer32.set(chunk, 8);
                 this.pos = this.blockLen;
-                this.b2Compress(0, this.flags | Flags.PARENT, this.buffer32, 0);
+                this.b2Compress(0, this.flags | B3_Flags.PARENT, this.buffer32, 0);
                 chunk = this.state;
                 this.state = this.IV.slice();
             }
@@ -150,9 +160,11 @@ class BLAKE3 extends BLAKE2 {
     // Same as b2Compress, but doesn't modify state and returns 16 u32 array (instead of 8)
     b2CompressOut() {
         const { state: s, pos, flags, buffer32, bufferOut32: out32 } = this;
-        const { h, l } = u64.fromBig(BigInt(this.chunkOut++));
+        const { h, l } = fromBig(BigInt(this.chunkOut++));
+        if (!isLE)
+            byteSwap32(buffer32);
         // prettier-ignore
-        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(SIGMA, 0, buffer32, 7, s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], IV[0], IV[1], IV[2], IV[3], l, h, pos, flags);
+        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(SIGMA, 0, buffer32, 7, s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], B2S_IV[0], B2S_IV[1], B2S_IV[2], B2S_IV[3], l, h, pos, flags);
         out32[0] = v0 ^ v8;
         out32[1] = v1 ^ v9;
         out32[2] = v2 ^ v10;
@@ -169,6 +181,10 @@ class BLAKE3 extends BLAKE2 {
         out32[13] = s[5] ^ v13;
         out32[14] = s[6] ^ v14;
         out32[15] = s[7] ^ v15;
+        if (!isLE) {
+            byteSwap32(buffer32);
+            byteSwap32(out32);
+        }
         this.posOut = 0;
     }
     finish() {
@@ -178,22 +194,26 @@ class BLAKE3 extends BLAKE2 {
         // Padding
         this.buffer.fill(0, this.pos);
         // Process last chunk
-        let flags = this.flags | Flags.ROOT;
+        let flags = this.flags | B3_Flags.ROOT;
         if (this.stack.length) {
-            flags |= Flags.PARENT;
+            flags |= B3_Flags.PARENT;
+            if (!isLE)
+                byteSwap32(this.buffer32);
             this.compress(this.buffer32, 0, true);
+            if (!isLE)
+                byteSwap32(this.buffer32);
             this.chunksDone = 0;
             this.pos = this.blockLen;
         }
         else {
-            flags |= (!this.chunkPos ? Flags.CHUNK_START : 0) | Flags.CHUNK_END;
+            flags |= (!this.chunkPos ? B3_Flags.CHUNK_START : 0) | B3_Flags.CHUNK_END;
         }
         this.flags = flags;
         this.b2CompressOut();
     }
     writeInto(out) {
-        assert.exists(this, false);
-        assert.bytes(out);
+        aexists(this, false);
+        abytes(out);
         this.finish();
         const { blockLen, bufferOut } = this;
         for (let pos = 0, len = out.length; pos < len;) {
@@ -212,11 +232,11 @@ class BLAKE3 extends BLAKE2 {
         return this.writeInto(out);
     }
     xof(bytes) {
-        assert.number(bytes);
+        anumber(bytes);
         return this.xofInto(new Uint8Array(bytes));
     }
     digestInto(out) {
-        assert.output(out, this);
+        aoutput(out, this);
         if (this.finished)
             throw new Error('digest() was already called');
         this.enableXOF = false;
@@ -229,9 +249,14 @@ class BLAKE3 extends BLAKE2 {
     }
 }
 /**
- * BLAKE3 hash function.
+ * BLAKE3 hash function. Can be used as MAC and KDF.
  * @param msg - message that would be hashed
- * @param opts - dkLen, key, context
+ * @param opts - `dkLen` for output length, `key` for MAC mode, `context` for KDF mode
+ * @example
+ * const data = new Uint8Array(32);
+ * const hash = blake3(data);
+ * const mac = blake3(data, { key: new Uint8Array(32) });
+ * const kdf = blake3(data, { context: 'application name' });
  */
-export const blake3 = wrapXOFConstructorWithOpts((opts) => new BLAKE3(opts));
+export const blake3 = /* @__PURE__ */ wrapXOFConstructorWithOpts((opts) => new BLAKE3(opts));
 //# sourceMappingURL=blake3.js.map

@@ -15,10 +15,11 @@
  *       "protocolName": "bitcoin",
  *       "credentialName": "bip39",
  *       "primary": "true",
- *       "trustedSites": [{ url: "http://localhost", permissions: { read: true, write: true, admin: true }}],
  *       "encryptedSecret": "...",
  *       "encryptedIdentifier": "...",
- *       "encryptedProperties": "...",
+ *       "encryptedTrustedSites": "...", ciphertext of [{ url: "http://localhost", permissions: {...}}]
+ *       "encryptedPasswordAuthorizedSites": "...", ciphertext of [{ url: "http://localhost", expiryTime: 1736756527899, permissions: {...}}],
+ *       "encryptedProperties": "...", ciphertext of { displayName: "dev1 key" }
  *       "guid": "...",
  *       "encType": 1,
  *       "timeCreated": 1262304000000,
@@ -53,9 +54,7 @@ import { JSONFile } from "resource://gre/modules/JSONFile.sys.mjs";
  * For example, this number should NOT be changed when a new optional field is
  * added to a credential entry.
  */
-const kDataVersion = 3;
-
-const MAX_DATE_MS = 8640000000000000;
+const kDataVersion = 1;
 
 // SsiStore
 
@@ -84,8 +83,6 @@ SsiStore.prototype._save = async function () {
 
 /**
  * Synchronously work on the data just loaded into memory.
- *
- * @param data
  */
 SsiStore.prototype._dataPostProcessor = function (data) {
   if (data.nextId === undefined) {
@@ -97,26 +94,9 @@ SsiStore.prototype._dataPostProcessor = function (data) {
     data.credentials = [];
   }
 
-  // sanitize dates in credentials
-  if (!("version" in data) || data.version < 3) {
-    let dateProperties = ["timeCreated", "timeLastUsed", "timeSecretChanged"];
-    let now = Date.now();
-    function getEarliestDate(credential, defaultDate) {
-      let earliestDate = dateProperties.reduce((earliest, pname) => {
-        let ts = credential[pname];
-        return !ts ? earliest : Math.min(ts, earliest);
-      }, defaultDate);
-      return earliestDate;
-    }
-    for (let credential of data.credentials) {
-      for (let pname of dateProperties) {
-        let earliestDate;
-        if (!credential[pname] || credential[pname] > MAX_DATE_MS) {
-          credential[pname] =
-            earliestDate || (earliestDate = getEarliestDate(credential, now));
-        }
-      }
-    }
+  // Migrate
+  if (!("version" in data) || data.version < 1) {
+    /* empty */
   }
 
   // Indicate that the current version of the code has touched the file.

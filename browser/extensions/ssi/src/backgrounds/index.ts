@@ -4,35 +4,28 @@
 
 /* eslint-env webextensions */
 
-import { log } from "../shared/logger"
-import { init as nostrInit, doNostrAction } from "./nostr"
-import "./nostr"
+import { type MessageBetweenBackAndContent } from "../custom.type";
+import { log } from "../shared/logger";
+import { init as nostrInit, doNostrAction } from "./nostr";
+import "./nostr";
 
-log("background-script working")
+log("background-script working");
 
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener(
-  (
-    message: MessageBetweenBackAndContent,
-    sender: browser.runtime.MessageSender
-  ) => {
-    log("background received from content", message, sender)
+  (message: MessageBetweenBackAndContent, sender) => {
+    log("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
       return Promise.resolve(
-        doNostrAction(
-          message.action,
-          message.args,
-          message.origin,
-          sender.tab.id
-        )
+        doNostrAction(message.action, message.args, message.origin)
       )
-        .then((data) => ({ data }))
-        .catch((error) => ({ error }))
+        .then(data => ({ data }))
+        .catch(error => ({ error }));
     }
 
-    return false
+    return false;
   }
-)
+);
 
-nostrInit()
+nostrInit();

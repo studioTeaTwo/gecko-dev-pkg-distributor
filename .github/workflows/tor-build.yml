@@ -26,9 +26,3 @@ jobs:
           make build
           make fetch
           make deploy
-
-
-
-
-
-

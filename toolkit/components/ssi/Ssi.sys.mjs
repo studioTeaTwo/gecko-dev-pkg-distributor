@@ -5,6 +5,7 @@
 const MAX_DATE_MS = 8640000000000000;
 
 import { SsiStorage } from "resource://ssi/ssistorage.sys.mjs";
+import { AuthCache } from "resource://gre/modules/AuthCache.sys.mjs";
 
 const lazy = {};
 
@@ -16,8 +17,6 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let logger = lazy.SsiHelper.createLogger("Ssi");
   return logger;
 });
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 if (Services.appinfo.processType !== Services.appinfo.PROCESS_TYPE_DEFAULT) {
   throw new Error("Ssi.jsm should only run in the parent process");
@@ -54,6 +53,7 @@ Ssi.prototype = {
   /* ---------- private members ---------- */
 
   _storage: null, // Storage component which contains the saved credentials
+  _authCache: null, // AuthCache instance
 
   /**
    * Initialize the Ssi Store. Automatically called when service
@@ -70,8 +70,6 @@ Ssi.prototype = {
 
     // Initialize storage so that asynchronous data loading can start.
     this._initStorage();
-
-    Services.obs.addObserver(this._observer, "gather-telemetry");
   },
 
   _initStorage() {
@@ -86,6 +84,7 @@ Ssi.prototype = {
           "isPrimaryPasswordSet",
           lazy.SsiHelper.isPrimaryPasswordSet()
         );
+        this._authCache = AuthCache.init();
       });
     });
   },
@@ -105,7 +104,7 @@ Ssi.prototype = {
     ]),
 
     // nsIObserver
-    observe(subject, topic, data) {
+    observe(subject, topic) {
       if (topic == "xpcom-shutdown") {
         delete this._ssi._storage;
         this._ssi = null;
@@ -117,72 +116,11 @@ Ssi.prototype = {
           Services.obs.notifyObservers(null, "ssi-storage-replace-complete");
         })();
       } else if (topic == "gather-telemetry") {
-        // When testing, the "data" parameter is a string containing the
-        // reference time in milliseconds for time-based statistics.
-        this._ssi._gatherTelemetry(
-          data ? parseInt(data) : new Date().getTime()
-        );
+        /* empty */
       } else {
         lazy.log.debug(`Unexpected notification: ${topic}.`);
       }
     },
-  },
-
-  /**
-   * Collects statistics about the current credentials and settings. The telemetry
-   * histograms used here are not accumulated, but are reset each time this
-   * function is called, since it can be called multiple times in a session.
-   *
-   * This function might also not be called at all in the current session.
-   *
-   * @param referenceTimeMs
-   *        Current time used to calculate time-based statistics, expressed as
-   *        the number of milliseconds since January 1, 1970, 00:00:00 UTC.
-   *        This is set to a fake value during unit testing.
-   */
-  async _gatherTelemetry(referenceTimeMs) {
-    function clearAndGetHistogram(histogramId) {
-      let histogram = Services.telemetry.getHistogramById(histogramId);
-      histogram.clear();
-      return histogram;
-    }
-
-    clearAndGetHistogram("SSI_NUM_SAVED_SECRETS").add(
-      this.countCredentials("", "", "")
-    );
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "SSI_NUM_SAVED_SECRETS"
-    );
-
-    // TODO(ssb): consider to remove this _gatherTelemetry itself.
-    // Don't try to get credentials if MP is enabled, since we don't want to show a MP prompt.
-    if (!this.isLoggedIn) {
-      return;
-    }
-
-    let credentials = await this.getAllCredentials();
-
-    let credentialLastUsedDaysHistogram = clearAndGetHistogram(
-      "SSI_LOGIN_LAST_USED_DAYS"
-    );
-    for (let credential of credentials) {
-      credential.QueryInterface(Ci.nsICredentialMetaInfo);
-      let timeLastUsedAgeMs = referenceTimeMs - credential.timeLastUsed;
-      if (timeLastUsedAgeMs > 0) {
-        credentialLastUsedDaysHistogram.add(
-          Math.floor(timeLastUsedAgeMs / MS_PER_DAY)
-        );
-      }
-    }
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "SSI_LOGIN_LAST_USED_DAYS"
-    );
-
-    Services.obs.notifyObservers(null, "ssi-gather-telemetry-complete");
   },
 
   /**
@@ -208,6 +146,12 @@ Ssi.prototype = {
     if (credential.trustedSites == null) {
       throw new Error("Can't add a credential with a null trustedSites.");
     }
+    // For credentials w/o a trustedSites, set to [], not null.
+    if (credential.passwordAuthorizedSites == null) {
+      throw new Error(
+        "Can't add a credential with a null passwordAuthorizedSites."
+      );
+    }
 
     credential.QueryInterface(Ci.nsICredentialMetaInfo);
     for (let pname of ["timeCreated", "timeLastUsed", "timeSecretChanged"]) {
@@ -229,8 +173,6 @@ Ssi.prototype = {
 
   /**
    * Add a new credential to credential storage.
-   *
-   * @param credential
    */
   async addCredentialAsync(credential) {
     this._checkCredential(credential);
@@ -239,34 +181,52 @@ Ssi.prototype = {
     const [resultCredential] = await this._storage.addCredentialsAsync([
       credential,
     ]);
+    this._authCache.set(
+      `${resultCredential.protocolName}:${resultCredential.credentialName}:${resultCredential.identifier}`,
+      {
+        trustedSites: JSON.parse(resultCredential.trustedSites),
+        passwordAuthorizedSites: JSON.parse(
+          resultCredential.passwordAuthorizedSites
+        ),
+      },
+      true
+    );
     return resultCredential;
   },
 
   /**
    * Remove the specified credential from the stored credentials.
-   *
-   * @param credential
    */
   removeCredential(credential) {
     lazy.log.debug(
       "Removing credential",
       credential.QueryInterface(Ci.nsICredentialMetaInfo).guid
     );
-    return this._storage.removeCredential(credential);
+    this._storage.removeCredential(credential);
+    this._authCache.delete(
+      `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
+    );
   },
 
   /**
    * Change the specified credential to match the new credential or new properties.
-   *
-   * @param oldCredential
-   * @param newCredential
    */
   modifyCredential(oldCredential, newCredential) {
     lazy.log.debug(
       "Modifying credential",
       oldCredential.QueryInterface(Ci.nsICredentialMetaInfo).guid
     );
-    return this._storage.modifyCredential(oldCredential, newCredential);
+    this._storage.modifyCredential(oldCredential, newCredential);
+    this._authCache.set(
+      `${newCredential.protocolName}:${newCredential.credentialName}:${newCredential.identifier}`,
+      {
+        trustedSites: JSON.parse(newCredential.trustedSites),
+        passwordAuthorizedSites: JSON.parse(
+          newCredential.passwordAuthorizedSites
+        ),
+      },
+      true
+    );
   },
 
   /**
@@ -281,8 +241,6 @@ Ssi.prototype = {
 
   /**
    * Get a dump of all stored credentials asynchronously. Used by the credential detection service.
-   *
-   * @param aCallback
    */
   getAllCredentialsWithCallback(aCallback) {
     lazy.log.debug("Searching a list of all credentials asynchronously.");
@@ -297,6 +255,7 @@ Ssi.prototype = {
   removeAllCredentials() {
     lazy.log.debug("Removing all credentials from local store.");
     this._storage.removeAllCredentials();
+    this._authCache.reset();
   },
 
   async searchCredentialsAsync(matchData) {
@@ -308,9 +267,6 @@ Ssi.prototype = {
   /**
    * Search for the known credentials for entries matching the specified criteria,
    * returns only the count.
-   *
-   * @param protocolName
-   * @param credentialName
    */
   countCredentials(protocolName, credentialName) {
     const credentialsCount = this._storage.countCredentials(
@@ -331,5 +287,9 @@ Ssi.prototype = {
 
   get isLoggedIn() {
     return this._storage.isLoggedIn;
+  },
+
+  get authCache() {
+    return this._authCache;
   },
 }; // end of Ssi implementation

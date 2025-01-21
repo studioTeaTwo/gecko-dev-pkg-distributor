@@ -32,7 +32,7 @@ export const SsiHelper = {
   OS_AUTH_FOR_PASSWORDS_PREF,
 
   init() {
-    // Services.telemetry.setEventRecordingEnabled("ssi", true);
+    Services.telemetry.setEventRecordingEnabled("ssi", true);
   },
 
   createLogger(aLogPrefix) {
@@ -64,7 +64,6 @@ export const SsiHelper = {
    * be parsed incorrectly. These characters can cause problems in other
    * formats/languages too so reject credentials that may not be stored correctly.
    *
-   * @param aCredential
    * @throws String with English message in case validation failed.
    */
   checkCredentialValues(aCredential) {
@@ -72,6 +71,8 @@ export const SsiHelper = {
       return (
         l.secret.includes(c) ||
         l.identifier.includes(c) ||
+        l.trustedSites.includes(c) ||
+        l.passwordAuthorizedSites.includes(c) ||
         l.properties.includes(c)
       );
     }
@@ -97,11 +98,20 @@ export const SsiHelper = {
     if (!aCredential.secret || typeof aCredential.secret != "string") {
       throw new Error("secret must be non-empty strings");
     }
+    if (!aCredential.identifier || typeof aCredential.identifier != "string") {
+      throw new Error("identifier must be non-empty strings");
+    }
     if (
       !aCredential.trustedSites ||
       typeof aCredential.trustedSites != "string"
     ) {
       throw new Error("trustedSites must be non-empty strings");
+    }
+    if (
+      !aCredential.passwordAuthorizedSites ||
+      typeof aCredential.passwordAuthorizedSites != "string"
+    ) {
+      throw new Error("passwordAuthorizedSites must be non-empty strings");
     }
 
     // In theory these nulls should just be rolled up into the encrypted
@@ -111,6 +121,8 @@ export const SsiHelper = {
     if (
       aCredential.secret.includes("\0") ||
       aCredential.identifier.includes("\0") ||
+      aCredential.trustedSites.includes("\0") ||
+      aCredential.passwordAuthorizedSites.includes("\0") ||
       aCredential.properties.includes("\0")
     ) {
       throw new Error("credential values can't contain nulls");
@@ -155,7 +167,10 @@ export const SsiHelper = {
       aCredential1.protocolName != aCredential2.protocolName ||
       aCredential1.credentialName != aCredential2.credentialName ||
       aCredential1.secret != aCredential2.secret ||
-      aCredential1.trustedSites != aCredential2.trustedSites
+      aCredential1.identifier != aCredential2.identifier ||
+      aCredential1.trustedSites != aCredential2.trustedSites ||
+      aCredential1.passwordAuthorizedSites !=
+        aCredential2.passwordAuthorizedSites
     ) {
       return false;
     }
@@ -196,9 +211,10 @@ export const SsiHelper = {
         aNewCredentialData.protocolName,
         aNewCredentialData.credentialName,
         aNewCredentialData.primary,
-        aNewCredentialData.trustedSites,
         aNewCredentialData.secret,
         aNewCredentialData.identifier,
+        aNewCredentialData.trustedSites,
+        aNewCredentialData.passwordAuthorizedSites,
         aNewCredentialData.properties
       );
       newCredential.unknownFields = aNewCredentialData.unknownFields;
@@ -232,6 +248,7 @@ export const SsiHelper = {
           case "secret":
           case "identifier":
           case "trustedSites":
+          case "passwordAuthorizedSites":
           case "properties":
           case "unknownFields":
           // nsICredentialMetaInfo (fall through)
@@ -277,19 +294,29 @@ export const SsiHelper = {
     if (newCredential.secret == null || !newCredential.secret.length) {
       throw new Error("Can't add a credential with a null or empty secret.");
     }
+    if (newCredential.identifier == null || !newCredential.identifier.length) {
+      throw new Error(
+        "Can't add a credential with a null or empty identifier."
+      );
+    }
     if (
       newCredential.trustedSites == null ||
       !newCredential.trustedSites.length
     ) {
       throw new Error(
-        "Can't add a credential with a null or empty  trustedSites."
+        "Can't add a credential with a null or empty trustedSites."
+      );
+    }
+    if (
+      newCredential.passwordAuthorizedSites == null ||
+      !newCredential.passwordAuthorizedSites.length
+    ) {
+      throw new Error(
+        "Can't add a credential with a null or empty passwordAuthorizedSites."
       );
     }
 
     // For credentials w/o a optional property, set to "", not null.
-    if (newCredential.identifier == null) {
-      throw new Error("Can't add a credential with a null identifier.");
-    }
     if (newCredential.properties == null) {
       throw new Error("Can't add a credential with a null properties.");
     }
@@ -342,8 +369,6 @@ export const SsiHelper = {
     let credentialsByKeys = new Map();
 
     /**
-     * @param existingCredential
-     * @param credential
      * @returns {bool} whether `credential` is preferred over its duplicate (considering `uniqueKeys`)
      *                `existingCredential`.
      *
@@ -373,6 +398,11 @@ export const SsiHelper = {
 
             return credentialDate > storedCredentialDate;
           }
+          default: {
+            throw new Error(
+              "dedupeLogins: Invalid resolveBy preference: " + preference
+            );
+          }
         }
       }
 
@@ -400,8 +430,6 @@ export const SsiHelper = {
    * sending over IPC. Avoid using this in other cases.
    *
    * NB: All members of nsICredentialInfo (not nsICredentialMetaInfo) are strings.
-   *
-   * @param credentials
    */
   credentialsToVanillaObjects(credentials) {
     return credentials.map(this.credentialToVanillaObject);
@@ -409,8 +437,6 @@ export const SsiHelper = {
 
   /**
    * Same as above, but for a single credential.
-   *
-   * @param credential
    */
   credentialToVanillaObject(credential) {
     let obj = {};
@@ -424,8 +450,6 @@ export const SsiHelper = {
 
   /**
    * Convert an object received from IPC into an nsICredentialInfo (with guid).
-   *
-   * @param credential
    */
   vanillaObjectToCredential(credential) {
     let formCredential = Cc["@mozilla.org/ssi/credentialInfo;1"].createInstance(
@@ -435,9 +459,10 @@ export const SsiHelper = {
       credential.protocolName,
       credential.credentialName,
       credential.primary,
-      credential.trustedSites,
       credential.secret,
       credential.identifier,
+      credential.trustedSites,
+      credential.passwordAuthorizedSites,
       credential.properties
     );
 
@@ -456,8 +481,6 @@ export const SsiHelper = {
 
   /**
    * As above, but for an array of objects.
-   *
-   * @param vanillaObjects
    */
   vanillaObjectsToCredentials(vanillaObjects) {
     const credentials = [];
@@ -553,7 +576,7 @@ export const SsiHelper = {
       promptMessage = false;
     }
     try {
-      const result = (
+      return (
         await lazy.OSKeyStore.ensureLoggedIn(
           promptMessage,
           captionDialog,
@@ -561,7 +584,6 @@ export const SsiHelper = {
           generateKeyIfNotAvailable
         )
       ).authenticated;
-      return result;
     } catch (ex) {
       // Since Win throws an exception whereas Mac resolves to false upon cancelling.
       if (ex.result !== Cr.NS_ERROR_FAILURE) {
@@ -574,7 +596,6 @@ export const SsiHelper = {
   /**
    * Shows the Primary Password prompt if enabled, or the
    * OS auth dialog otherwise.
-   *
    * @param {Element} browser
    *        The <browser> that the prompt should be shown on
    * @param OSReauthEnabled Boolean indicating if OS reauth should be tried
@@ -685,9 +706,6 @@ export const SsiHelper = {
 
   /**
    * Send a notification when stored data is changed.
-   *
-   * @param changeType
-   * @param data
    */
   notifyStorageChanged(changeType, data) {
     let dataObject = data;
@@ -736,6 +754,7 @@ export const SsiHelper = {
     const credentials = await Services.ssi.searchCredentialsAsync(matchData);
     return credentials.map(credential => {
       // Exclude the secret properties
+      // eslint-disable-next-line no-unused-vars
       const { secret, properties, unknownFields, ...rest } = credential;
       return rest;
     });

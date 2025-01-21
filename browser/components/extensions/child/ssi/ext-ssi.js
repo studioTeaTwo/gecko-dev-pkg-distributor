@@ -4,28 +4,23 @@
 
 "use strict";
 
-/* global ExtensionAPI, Services, ChromeUtils */
-
-let lazy = {};
-ChromeUtils.defineESModuleGetters(lazy, {
-  SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
-});
+/* global ExtensionAPI */
 
 this.ssi = class extends ExtensionAPI {
   getAPI(context) {
     const { childManager } = context;
-    const { tabManager } = context.extension;
 
     return {
       ssi: {
         // TODO(ssb): Not yet implemented
         async askPermissionChild(protocolName) {
           console.dir("here is child");
+
           try {
             // let result = await childManager.callParentAsyncFunction(
             //   "ssi.askPermission",
             //   ["nostr"]
-            // )
+            // );
           } catch (e) {
             console.error(e);
           }

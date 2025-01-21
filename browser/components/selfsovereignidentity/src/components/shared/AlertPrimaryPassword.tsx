@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 import {
   AlertDialog,
   AlertDialogBody,
@@ -9,10 +9,16 @@ import {
   AlertDialogOverlay,
   Link,
   VStack,
-} from "@chakra-ui/react"
+} from "@chakra-ui/react";
 
-export default function AlertPrimaryPassword(props) {
-  const { cancelRef, onClose, isOpen } = props
+interface Props {
+  onClose: () => void;
+  isOpen: boolean;
+  cancelRef: React.MutableRefObject<undefined>;
+}
+
+export default function AlertPrimaryPassword(props: Props) {
+  const { cancelRef, onClose, isOpen } = props;
 
   return (
     <AlertDialog
@@ -51,5 +57,5 @@ export default function AlertPrimaryPassword(props) {
         </AlertDialogContent>
       </AlertDialogOverlay>
     </AlertDialog>
-  )
+  );
 }

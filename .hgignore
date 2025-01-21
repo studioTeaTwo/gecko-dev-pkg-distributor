@@ -351,3 +351,9 @@ toolkit/themes/shared/design-system/node_modules/
 
 # Ignore generated log files under media/libvpx
 ^media/libvpx/config/.*/config.log
+
+##############################################################################
+# ssb
+##############################################################################
+.binaries
+tools/ssi/output

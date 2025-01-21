@@ -1,43 +1,44 @@
-export function number(n) {
+/**
+ * Internal assertion helpers.
+ * @module
+ */
+/** Asserts something is positive integer. */
+function anumber(n) {
     if (!Number.isSafeInteger(n) || n < 0)
-        throw new Error(`Wrong positive integer: ${n}`);
+        throw new Error('positive integer expected, got ' + n);
 }
-export function bool(b) {
-    if (typeof b !== 'boolean')
-        throw new Error(`Expected boolean, not ${b}`);
+/** Is number an Uint8Array? Copied from utils for perf. */
+function isBytes(a) {
+    return a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === 'Uint8Array');
 }
-export function bytes(b, ...lengths) {
-    if (!(b instanceof Uint8Array))
-        throw new Error('Expected Uint8Array');
+/** Asserts something is Uint8Array. */
+function abytes(b, ...lengths) {
+    if (!isBytes(b))
+        throw new Error('Uint8Array expected');
     if (lengths.length > 0 && !lengths.includes(b.length))
-        throw new Error(`Expected Uint8Array of length ${lengths}, not of length=${b.length}`);
+        throw new Error('Uint8Array expected of length ' + lengths + ', got length=' + b.length);
 }
-export function hash(hash) {
-    if (typeof hash !== 'function' || typeof hash.create !== 'function')
+/** Asserts something is hash */
+function ahash(h) {
+    if (typeof h !== 'function' || typeof h.create !== 'function')
         throw new Error('Hash should be wrapped by utils.wrapConstructor');
-    number(hash.outputLen);
-    number(hash.blockLen);
+    anumber(h.outputLen);
+    anumber(h.blockLen);
 }
-export function exists(instance, checkFinished = true) {
+/** Asserts a hash instance has not been destroyed / finished */
+function aexists(instance, checkFinished = true) {
     if (instance.destroyed)
         throw new Error('Hash instance has been destroyed');
     if (checkFinished && instance.finished)
         throw new Error('Hash#digest() has already been called');
 }
-export function output(out, instance) {
-    bytes(out);
+/** Asserts output is properly-sized byte array */
+function aoutput(out, instance) {
+    abytes(out);
     const min = instance.outputLen;
     if (out.length < min) {
-        throw new Error(`digestInto() expects output buffer of length at least ${min}`);
+        throw new Error('digestInto() expects output buffer of length at least ' + min);
     }
 }
-const assert = {
-    number,
-    bool,
-    bytes,
-    hash,
-    exists,
-    output,
-};
-export default assert;
+export { anumber, abytes, ahash, aexists, aoutput };
 //# sourceMappingURL=_assert.js.map

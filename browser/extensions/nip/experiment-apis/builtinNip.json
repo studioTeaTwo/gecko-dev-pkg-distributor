@@ -5,13 +5,7 @@
       {
         "name": "onPrefBuiltinNip07Changed",
         "type": "function",
-        "parameters": [
-          {
-            "name": "prefKey",
-            "type": "string",
-            "description": "The pref key name which changed"
-          }
-        ]
+        "parameters": []
       }
     ],
     "functions": [
