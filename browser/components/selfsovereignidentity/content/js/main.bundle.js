@@ -738,10 +738,10 @@ function NIP07(props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const found = nostrkeys.some(
-      (site) => site.trustedSites.some((site2) => site2.url === newSite)
+    const existings = nostrkeys.filter(
+      (key) => key.trustedSites.some((site) => site.url === newSite && site.enabled)
     );
-    if (found) {
+    if (nostrkeys.length === existings.length) {
       alert("The url exists already.");
       return;
     }
@@ -754,22 +754,30 @@ function NIP07(props) {
         return;
       }
     }
-    for (const item of nostrkeys) {
+    for (const key of nostrkeys) {
+      const idx = key.trustedSites.findIndex((site) => site.url === newSite);
+      if (idx >= 0) {
+        if (key.trustedSites[idx].enabled) {
+          return;
+        }
+        key.trustedSites[idx].enabled = true;
+      } else {
+        key.trustedSites.push({
+          url: newSite,
+          name: "",
+          enabled: true,
+          permissions: {}
+        });
+      }
       modifyCredentialToStore2(
         {
-          guid: item.guid,
-          trustedSites: item.trustedSites.concat([
-            {
-              url: newSite,
-              name: "",
-              enabled: true,
-              permissions: {}
-            }
-          ])
+          guid: key.guid,
+          trustedSites: key.trustedSites
         },
         newSite.startsWith("moz-extension") ? { newExtensionForTrustedSite: newSite } : null
       );
     }
+    alert("Updated!");
   };
   const handleRemoveSite = async (removedSite) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
@@ -855,7 +863,7 @@ function NIP07(props) {
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys.map((key) => key.trustedSites).flat().map((site) => JSON.stringify(site))
+        nostrkeys.map((key) => key.trustedSites.filter((site) => site.enabled)).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -1338,8 +1346,8 @@ function Nostr$2(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Editable,
                 {
-                  defaultValue: item.properties.displayName,
-                  onSubmit: (value) => modifyCredentialToStore2({
+                  value: item.properties.displayName,
+                  onChange: (value) => modifyCredentialToStore2({
                     guid: item.guid,
                     properties: {
                       ...item.properties,

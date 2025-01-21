@@ -349,9 +349,10 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
               <Card maxW="md" overflow="hidden" key={i}>
                 <CardHeader>
                   <Heading size="md">
+                    {/* FIXME(ssb): more performable and high UX */}
                     <Editable
-                      defaultValue={item.properties.displayName}
-                      onSubmit={value =>
+                      value={item.properties.displayName}
+                      onChange={value =>
                         modifyCredentialToStore({
                           guid: item.guid,
                           properties: {

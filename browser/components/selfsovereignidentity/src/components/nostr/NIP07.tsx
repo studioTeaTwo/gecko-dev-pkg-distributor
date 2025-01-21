@@ -109,10 +109,10 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       return;
     }
     // TODO(ssb): improve the match method, such as supporting glob.
-    const found = nostrkeys.some(site =>
-      site.trustedSites.some(site => site.url === newSite)
+    const existings = nostrkeys.filter(key =>
+      key.trustedSites.some(site => site.url === newSite && site.enabled)
     );
-    if (found) {
+    if (nostrkeys.length === existings.length) {
       alert("The url exists already.");
       return;
     }
@@ -126,24 +126,32 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       }
     }
 
-    for (const item of nostrkeys) {
+    for (const key of nostrkeys) {
+      const idx = key.trustedSites.findIndex(site => site.url === newSite);
+      if (idx >= 0) {
+        if (key.trustedSites[idx].enabled) {
+          return;
+        }
+        key.trustedSites[idx].enabled = true;
+      } else {
+        key.trustedSites.push({
+          url: newSite,
+          name: "",
+          enabled: true,
+          permissions: {},
+        });
+      }
       modifyCredentialToStore(
         {
-          guid: item.guid,
-          trustedSites: item.trustedSites.concat([
-            {
-              url: newSite,
-              name: "",
-              enabled: true,
-              permissions: {},
-            },
-          ]),
+          guid: key.guid,
+          trustedSites: key.trustedSites,
         },
         newSite.startsWith("moz-extension")
           ? { newExtensionForTrustedSite: newSite }
           : null
       );
     }
+    alert("Updated!");
   };
 
   const handleRemoveSite = async removedSite => {
@@ -249,7 +257,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     const trustedSites = Array.from(
       new Set(
         nostrkeys
-          .map(key => key.trustedSites)
+          .map(key => key.trustedSites.filter(site => site.enabled))
           .flat()
           .map(site => JSON.stringify(site))
       )
