@@ -5,7 +5,6 @@
 /* globals Services */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-import { E10SUtils } from "resource://gre/modules/E10SUtils.sys.mjs";
 
 let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -129,7 +128,7 @@ export const browserSsiHelper = {
     return CREDENTIAL_NAMES.includes(credentialName);
   },
   validateDialogText(input) {
-    const regex = /^[A-Za-z0-9\s.,!?'"\-_()]{1,144}$/;
+    const regex = /^[A-Za-z0-9\s.,!?'"\-_()]{1,140}$/;
     return regex.test(input);
   },
   getOrigin(context, tabTracker) {
@@ -184,13 +183,9 @@ export const browserSsiHelper = {
       site.isSystemPrincipal,
       extension.url
     );
-    if (
-      site.isSystemPrincipal &&
-      browsingContext.embedderElement.remoteType ===
-        E10SUtils.PRIVILEGEDABOUT_REMOTE_TYPE
-    ) {
-      // This is assumed the about:selfsovereignindentity.
-      return true;
+    if (site.isSystemPrincipal) {
+      // This is assumed `about:` pages.
+      return false;
     }
     if (!site.origin || !extension.origin) {
       return false;
@@ -386,13 +381,13 @@ export const browserSsiHelper = {
       }${system}${eol}to ${origin}`,
     };
     if (caption) {
-      messageText.value += `${eol}${caption}`;
+      messageText.value += `${eol}${JSON.stringify(caption, null, 1)}`;
     }
     if (evidence) {
-      messageText.value += `${eol}${eol}${evidence}`;
+      messageText.value += `${eol}${eol}${JSON.stringify(evidence, null, 1)}`;
     }
     if (submission) {
-      messageText.value += `${eol}${eol}${submission}`;
+      messageText.value += `${eol}${eol}${JSON.stringify(submission, null, 1)}`;
     }
     const captionText = {
       value: AppConstants.platform === "win" ? "Nightly" : "",

@@ -104,7 +104,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                 },
                 {
                   type: "sign",
-                  evidence: JSON.stringify(nEvent, null, 1),
+                  evidence: nEvent,
                   caption,
                   submission,
                   enforce,
