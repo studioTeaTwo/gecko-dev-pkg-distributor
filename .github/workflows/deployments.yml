@@ -242,7 +242,7 @@ jobs:
         exec 1> >(tee -a $VERIFICATION_LOG)
         exec 2>&1
 
-        echo 'Distributer: GitHub'
+        echo 'Distributer: GitHub Releases'
         echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${{ needs.get-display-version.outputs.display-version }}"
         echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 

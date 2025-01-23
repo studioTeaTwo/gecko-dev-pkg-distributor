@@ -12,7 +12,7 @@
     "typecheck": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",
+  "author": "teatwo <studioTeaTwo@proton.me>",
   "license": "MPL-2.0",
   "devDependencies": {
     "@types/react": "^18.3.11",
