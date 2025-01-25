@@ -107,15 +107,6 @@ jobs:
         name: ssb-${{ matrix.arch }}-apple-darwin-profdata-and-jarlog
         path: ~/artifact
 
-    - name: Setup Cross Build tools 🪛
-      run: |
-        mkdir /home/runner/cross-tools && cd /home/runner/cross-tools
-        curl -sLJO -H 'Accept: application/octet-stream' \
-        "https://${{ secrets.READ_TOKEN }}@api.github.com/repos/studioTeaTwo/osxcross/releases/assets/$( \
-          curl -sL https://${{ secrets.READ_TOKEN }}@api.github.com/repos/studioTeaTwo/osxcross/releases/tags/v1 \
-            | jq '.assets[] | select(.name | contains("20230725.tar.xz")) | .id')"
-        tar Jxf 20230725.tar.xz && mv MacOSX15.1.sdk/* . && rm -r MacOSX15.1.sdk
-
     ## TODO: move mozconfig_darwin_pgo_base to src/macOS
     - name: Create config for "${{ matrix.arch }}" 📦
       run: |
@@ -182,9 +173,9 @@ jobs:
         rustup default 1.81.0
 
         if [[ $GHA_ARCH == 'x86_64' ]];then
-          rustup target add x86_64-apple-darwin --toolchain 1.81.0
+          rustup target add x86_64-apple-darwin
         else
-          rustup target add aarch64-apple-darwin --toolchain 1.81.0
+          rustup target add aarch64-apple-darwin
         fi
 
         #? https://github.com/mozilla/sccache#known-caveats

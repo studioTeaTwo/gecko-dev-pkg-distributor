@@ -18,8 +18,6 @@ MOZ_REQUIRE_SIGNING=
 MOZ_DATA_REPORTING=
 MOZ_TELEMETRY_REPORTING=
 
-export CROSS_SYSROOT=/home/runner/cross-tools
-export MACOS_SDK_DIR=/home/runner/cross-tools
 export HOST_CXXFLAGS=-g
 export HOST_CFLAGS=-g
 export HOST_LDFLAGS=-g

@@ -182,9 +182,9 @@ jobs:
         rustup default 1.81.0
 
         if [[ $GHA_aarch64 == 'true' ]];then
-          rustup target add aarch64-pc-windows-msvc --toolchain 1.81.0
+          rustup target add aarch64-pc-windows-msvc
         else
-          rustup target add x86_64-pc-windows-msvc --toolchain 1.81.0
+          rustup target add x86_64-pc-windows-msvc
         fi
 
         #? https://github.com/mozilla/sccache#known-caveats
