@@ -214,6 +214,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.PAT }}
+        fetch-depth: 100
 
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
