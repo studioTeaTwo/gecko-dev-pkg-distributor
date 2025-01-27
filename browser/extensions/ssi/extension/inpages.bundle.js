@@ -2,150 +2,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 323:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.postMessage = void 0;
-const promiseQueue_1 = __webpack_require__(576);
-// global queue object
-const queue = new promiseQueue_1.PromiseQueue();
-function postMessage(scope, action, args) {
-    return queue.add(() => new Promise((resolve, reject) => {
-        const id = Math.random().toString().slice(4);
-        // Post the request to the content script
-        window.postMessage({
-            id,
-            application: "ssb",
-            action: `${scope}/${action}`,
-            scope,
-            args,
-        }, window.location.origin);
-        function handleWindowMessage(messageEvent) {
-            // check if it is a relevant message
-            // there are some other events happening
-            if (messageEvent.origin !== window.location.origin ||
-                !messageEvent.data ||
-                !messageEvent.data.response ||
-                messageEvent.data.application !== "ssb" ||
-                messageEvent.data.scope !== scope ||
-                messageEvent.data.id !== id ||
-                messageEvent.data.id === "native" // catch in nostr.ts and ssi.ts
-            ) {
-                return;
-            }
-            if (messageEvent.data.data.error) {
-                reject(new Error(messageEvent.data.data.error));
-            }
-            else {
-                // 1. data: the message data
-                // 2. data: the data passed as data to the message
-                // 3. data: the actual response data
-                resolve(messageEvent.data.data.data);
-            }
-            // For some reason must happen only at the end of this function
-            window.removeEventListener("message", handleWindowMessage);
-        }
-        // The message listener to listen to content calls
-        // After, return the response to the web apps
-        window.addEventListener("message", handleWindowMessage);
-    }));
-}
-exports.postMessage = postMessage;
-
-
-/***/ }),
-
-/***/ 576:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PromiseQueue = void 0;
-class PromiseQueue {
-    queue = Promise.resolve(true);
-    add(operation) {
-        return new Promise((resolve, reject) => {
-            this.queue = this.queue.then(operation).then(resolve).catch(reject);
-        });
-    }
-}
-exports.PromiseQueue = PromiseQueue;
-
-
-/***/ }),
-
-/***/ 731:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.windowSSI = exports.init = void 0;
-const postMessage_1 = __webpack_require__(323);
-function init() {
-    // It envisions browser-native API, so the object is persisted.
-    window.ssi = Object.freeze(exports.windowSSI);
-    window.addEventListener("message", event => {
-        if (event.source !== window || event.data.id !== "native") {
-            return;
-        }
-        const action = event.data.data.action;
-        const data = event.data.data.data;
-        if (event.data.scope === "nostr") {
-            window.ssi.nostr.dispatchEvent(new CustomEvent(action, {
-                detail: data,
-                bubbles: false,
-                composed: true,
-            }));
-        }
-    });
-}
-exports.init = init;
-exports.windowSSI = {
-    _scope: "ssi",
-    _proxy: new EventTarget(),
-    nostr: Object.freeze({
-        generate(option) {
-            return Promise.resolve("Not implemented");
-        },
-        getPublicKey(option) {
-            return (0, postMessage_1.postMessage)("nostr", "getPublicKey", option);
-        },
-        sign(message, option) {
-            return (0, postMessage_1.postMessage)("nostr", option.type, { message, ...option });
-        },
-        decrypt(ciphertext, option) {
-            return Promise.resolve("Not implemented");
-        },
-        // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
-        // ref: https://github.com/nostr-protocol/nips/pull/1174
-        messageBoard: {},
-        _proxy: new EventTarget(),
-        dispatchEvent(event) {
-            return exports.windowSSI.nostr._proxy.dispatchEvent(event);
-        },
-        addEventListener(type, callback, options) {
-            return exports.windowSSI.nostr._proxy.addEventListener(type, callback, options);
-        },
-        removeEventListener(type, callback, options) {
-            return exports.windowSSI.nostr._proxy.removeEventListener(type, callback, options);
-        },
-    }),
-    dispatchEvent(event) {
-        return exports.windowSSI._proxy.dispatchEvent(event);
-    },
-    addEventListener(type, callback, options) {
-        return exports.windowSSI._proxy.addEventListener(type, callback, options);
-    },
-    removeEventListener(type, callback, options) {
-        return exports.windowSSI._proxy.removeEventListener(type, callback, options);
-    },
-};
-
-
-/***/ }),
-
 /***/ 874:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -158,6 +14,54 @@ function log(...args) {
     console.info("ssb:", args);
 }
 exports.log = log;
+
+
+/***/ }),
+
+/***/ 880:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+// ref: https://github.com/joule-labs/joule-extension/blob/develop/src/content_script/shouldInject.ts
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.shouldInject = void 0;
+// Checks the doctype of the current document if it exists
+function doctypeCheck() {
+    if (window && window.document && window.document.doctype) {
+        return window.document.doctype.name === "html";
+    }
+    return true;
+}
+// Returns whether or not the extension (suffix) of the current document is prohibited
+function suffixCheck() {
+    const prohibitedTypes = [/\.xml$/, /\.pdf$/];
+    const currentUrl = window.location.pathname;
+    for (const type of prohibitedTypes) {
+        if (type.test(currentUrl)) {
+            return false;
+        }
+    }
+    return true;
+}
+// Checks the documentElement of the current document
+function documentElementCheck() {
+    // todo: correct?
+    if (!document || !document.documentElement) {
+        return false;
+    }
+    const docNode = document.documentElement.nodeName;
+    if (docNode) {
+        return docNode.toLowerCase() === "html";
+    }
+    return true;
+}
+function shouldInject() {
+    const isHTML = doctypeCheck();
+    const noProhibitedType = suffixCheck();
+    const hasDocumentElement = documentElementCheck();
+    return isHTML && noProhibitedType && hasDocumentElement;
+}
+exports.shouldInject = shouldInject;
 
 
 /***/ })
@@ -200,10 +104,60 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
+const shouldInject_1 = __webpack_require__(880);
 const logger_1 = __webpack_require__(874);
-const ssi_1 = __webpack_require__(731);
 (0, logger_1.log)("inpage-script working");
-(0, ssi_1.init)();
+const windowSSI = {
+    _scope: "ssi",
+    _proxy: new EventTarget(),
+    nostr: Object.freeze({
+        generate(option) {
+            return Promise.resolve("Not implemented");
+        },
+        async getPublicKey(option) {
+            return callBackground("nostr/getPublicKey", option);
+        },
+        sign(message, option) {
+            return callBackground(`nostr/${option.type}`, {
+                message,
+                ...option,
+            });
+        },
+        decrypt(ciphertext, option) {
+            return Promise.resolve("Not implemented");
+        },
+        // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+        // ref: https://github.com/nostr-protocol/nips/pull/1174
+        messageBoard: {},
+        _proxy: new EventTarget(),
+        dispatchEvent(event) {
+            return windowSSI.nostr._proxy.dispatchEvent(event);
+        },
+        addEventListener(type, callback, options) {
+            return windowSSI.nostr._proxy.addEventListener(type, callback, options);
+        },
+        removeEventListener(type, callback, options) {
+            return windowSSI.nostr._proxy.removeEventListener(type, callback, options);
+        },
+    }),
+    dispatchEvent(event) {
+        return windowSSI._proxy.dispatchEvent(event);
+    },
+    addEventListener(type, callback, options) {
+        return windowSSI._proxy.addEventListener(type, callback, options);
+    },
+    removeEventListener(type, callback, options) {
+        return windowSSI._proxy.removeEventListener(type, callback, options);
+    },
+};
+if ((0, shouldInject_1.shouldInject)()) {
+    // It envisions browser-native API, so the object is persisted.
+    window.ssi = Object.freeze(windowSSI);
+    Object.defineProperty(window, "ssi", {
+        writable: false,
+        configurable: false,
+    });
+}
 
 })();
 

@@ -183,7 +183,7 @@ export const browserSsiHelper = {
       site.isSystemPrincipal,
       extension.url
     );
-    if (site.isSystemPrincipal) {
+    if (site.isSystemPrincipal || site.url.startsWith("about:")) {
       // This is assumed `about:` pages.
       return false;
     }

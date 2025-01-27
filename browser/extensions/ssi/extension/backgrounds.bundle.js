@@ -1114,9 +1114,7 @@ __webpack_require__(684);
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, message.origin))
-            .then(data => ({ data }))
-            .catch(error => ({ error }));
+        return (0, nostr_1.doNostrAction)(message.action, message.args, message.origin);
     }
     return false;
 });

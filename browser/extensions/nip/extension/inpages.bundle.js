@@ -657,6 +657,7 @@ const accountChangedHandler = (event) => {
     }));
 };
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
+// TODO(ssb): move to window.wrappedJSObject in content script. Consider window.nostr isn't non-configurable.
 class NostrProvider {
     _scope = "nostr";
     _provider = "ssb";

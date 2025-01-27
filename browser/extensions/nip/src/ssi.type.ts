@@ -1,5 +1,10 @@
 type ApplicationName = "ssb";
 type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht";
+export const availableCalls = [
+  "nostr/getPublicKey",
+  "nostr/signEvent",
+] as const;
+type AvailableCalls = (typeof availableCalls)[number];
 
 interface SelfsovereignidentityDefaultPrefs {
   enabled: boolean; // selfsovereignidentity.[protocolName].enabled
@@ -32,6 +37,28 @@ declare global {
   var ssi: WindowSSI;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type FixMe = any;
+
+  /**
+   * FireFox only methods
+   */
+  function cloneInto(
+    obj: object,
+    scope: Window,
+    option?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
+  );
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  function exportFunction(
+    func: Function,
+    scope: Window,
+    option?: { defineAs?: string; allowCrossOriginArguments?: boolean }
+  );
+  function XPCNativeWrapper(obj: object);
+  interface WrappedJSObject {
+    ssi: WindowSSI;
+  }
+  // eslint-disable-next-line no-var
+  var wrappedJSObject: WrappedJSObject;
+  function callBackground<T>(action: AvailableCalls, option: FixMe): Promise<T>;
 }
 
 /**
@@ -42,17 +69,6 @@ export interface MessageBetweenBackAndContent {
   args: FixMe;
   origin: string;
   application: ApplicationName;
-}
-export interface MessageBetweenContentAndInpage {
-  id;
-  application: ApplicationName;
-  action: `${ProtocolName}/action`;
-  scope: ProtocolName;
-  args: FixMe;
-}
-// on sendResponse
-export interface MessageBag {
-  data: FixMe;
 }
 
 const verifiedSymbol = Symbol("verified");
