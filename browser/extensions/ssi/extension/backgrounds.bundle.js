@@ -894,8 +894,8 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
-            const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
+            // FIXME(ssb): Mitigation. Remove the askConsent and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
+            const isAuthorized = await browser.ssi.askConsent("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
             if (!isAuthorized) {
                 throw new Error("Rejected");
             }

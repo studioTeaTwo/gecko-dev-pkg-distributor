@@ -123,7 +123,7 @@ this.ssi = class extends ExtensionAPI {
             return errorValue;
           }
         },
-        async askPermission(
+        async askConsent(
           protocolName,
           credentialName,
           { caption = "", submission = "", enforce = false }

@@ -23,12 +23,12 @@ declare namespace browser.ssi {
       >[]
     | null
   >;
-  const askPermission: (
+  const askConsent: (
     protocolName: string,
     credentialName: string,
     dialogOption?: dialogOption
   ) => Promise<boolean>;
-  const askPermissionChild: (protocolName: ProtocolName) => Promise<boolean>;
+  const askConsentChild: (protocolName: ProtocolName) => Promise<boolean>;
 
   type commonApis = {
     getPrefs: () => Promise<{

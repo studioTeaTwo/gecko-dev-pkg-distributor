@@ -59,7 +59,7 @@
       {
         "name": "sign",
         "type": "function",
-        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askPermission`.",
+        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
