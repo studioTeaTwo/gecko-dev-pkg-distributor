@@ -42,16 +42,19 @@ async function init() {
     // After, emit event to return the response to the inpages.
     browser.runtime.onMessage.addListener(request => {
         (0, logger_1.log)("content-script onMessage", request);
+        const action = request.action.replace("nostr/", "");
+        const data = request.args;
         // forward account changed messaged to inpage script
         if (request.action === "nostr/accountChanged") {
-            const action = request.action.replace("nostr/", "");
-            const data = request.args;
-            window.wrappedJSObject.ssi.nostr.dispatchEvent(new CustomEvent(action, {
-                detail: data,
-                bubbles: false,
-                composed: true,
-            }));
-            XPCNativeWrapper(window.wrappedJSObject.ssi);
+            window.postMessage({
+                id: "native",
+                application: "ssb",
+                data: {
+                    action,
+                    data,
+                },
+                scope: "nostr",
+            }, window.location.origin);
         }
     });
 }

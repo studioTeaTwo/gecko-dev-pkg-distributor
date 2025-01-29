@@ -2,6 +2,63 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 368:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.nostr = exports.init = void 0;
+function init() {
+    window.addEventListener("message", event => {
+        if (event.source !== window || event.data.id !== "native") {
+            return;
+        }
+        const action = event.data.data.action;
+        const data = event.data.data.data;
+        if (event.data.scope === "nostr") {
+            window.ssi.nostr.dispatchEvent(new CustomEvent(action, {
+                detail: data,
+                bubbles: false,
+                composed: true,
+            }));
+        }
+    });
+}
+exports.init = init;
+exports.nostr = Object.freeze({
+    generate(option) {
+        return Promise.resolve("Not implemented");
+    },
+    async getPublicKey(option) {
+        return callBackground("nostr/getPublicKey", option);
+    },
+    sign(message, option) {
+        return callBackground(`nostr/${option.type}`, {
+            message,
+            ...option,
+        });
+    },
+    decrypt(ciphertext, option) {
+        return Promise.resolve("Not implemented");
+    },
+    // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+    // ref: https://github.com/nostr-protocol/nips/pull/1174
+    messageBoard: {},
+    _proxy: new EventTarget(),
+    dispatchEvent(event) {
+        return exports.nostr._proxy.dispatchEvent(event);
+    },
+    addEventListener(type, callback, options) {
+        return exports.nostr._proxy.addEventListener(type, callback, options);
+    },
+    removeEventListener(type, callback, options) {
+        return exports.nostr._proxy.removeEventListener(type, callback, options);
+    },
+});
+
+
+/***/ }),
+
 /***/ 874:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -106,40 +163,12 @@ __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const shouldInject_1 = __webpack_require__(880);
 const logger_1 = __webpack_require__(874);
+const nostr_1 = __webpack_require__(368);
 (0, logger_1.log)("inpage-script working");
 const windowSSI = {
     _scope: "ssi",
     _proxy: new EventTarget(),
-    nostr: Object.freeze({
-        generate(option) {
-            return Promise.resolve("Not implemented");
-        },
-        async getPublicKey(option) {
-            return callBackground("nostr/getPublicKey", option);
-        },
-        sign(message, option) {
-            return callBackground(`nostr/${option.type}`, {
-                message,
-                ...option,
-            });
-        },
-        decrypt(ciphertext, option) {
-            return Promise.resolve("Not implemented");
-        },
-        // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
-        // ref: https://github.com/nostr-protocol/nips/pull/1174
-        messageBoard: {},
-        _proxy: new EventTarget(),
-        dispatchEvent(event) {
-            return windowSSI.nostr._proxy.dispatchEvent(event);
-        },
-        addEventListener(type, callback, options) {
-            return windowSSI.nostr._proxy.addEventListener(type, callback, options);
-        },
-        removeEventListener(type, callback, options) {
-            return windowSSI.nostr._proxy.removeEventListener(type, callback, options);
-        },
-    }),
+    nostr: nostr_1.nostr,
     dispatchEvent(event) {
         return windowSSI._proxy.dispatchEvent(event);
     },
@@ -157,6 +186,7 @@ if ((0, shouldInject_1.shouldInject)()) {
         writable: false,
         configurable: false,
     });
+    (0, nostr_1.init)();
 }
 
 })();
