@@ -25,6 +25,16 @@ const DIALOG_SYSTEM_MESSAGE = protocolName => ({
 });
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
+// below is from browser/components/selfsovereignidentity/src/components/nostr/contants.ts
+const DefaultExcludedKindList = {
+  13194: { nip: 47, name: "NWC info event" },
+  23194: { nip: 47, name: "NWC request" },
+  9734: { nip: 57, name: "Zap request event" },
+  9321: { nip: 61, name: "Nutzap event" },
+};
+const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
+const SpecialCards = ["*", "<all_urls>"];
+
 /**
  * Internal Helper for browser.ssi.
  * Validation of user input params should be already done by the calling browser.ssi, except for eventListener.
@@ -161,7 +171,7 @@ export const browserSsiHelper = {
    * @param {string} credential.credentialName
    * @param {object} dialogInfo
    * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
-   * @param {string} dialogInfo.evidence NostrEvent etc.
+   * @param {object} dialogInfo.evidence NostrEvent etc.
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -269,7 +279,7 @@ export const browserSsiHelper = {
    * @param {number} authCache.expiryTimePref
    * @param {object} dialogInfo
    * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
-   * @param {string} dialogInfo.evidence
+   * @param {object} dialogInfo.evidence
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -322,9 +332,20 @@ export const browserSsiHelper = {
    * @returns {boolean}
    */
   isTrusted(url, trustedSites) {
-    // TODO(ssb): improve the match method, such as supporting glob or WebExtension.UrlFilter
     const trusted = trustedSites.some(site => {
-      return site.enabled && url.startsWith(site.url);
+      if (!site.enabled) {
+        return false;
+      }
+      if (SpecialCards.includes(site.url)) {
+        return true;
+      }
+
+      // Check to match pattern
+      const escapedUrlString = site.url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Currently support only '*' as wildcard.
+      const regexString = escapedUrlString.replace(/\\\*/g, ".*");
+      const regex = new RegExp("^" + regexString);
+      return regex.test(url);
     });
     console.log("trustedSites", trusted, url, trustedSites);
     return trusted;
@@ -362,7 +383,7 @@ export const browserSsiHelper = {
    * @param {number} authCache.expiryTimePref
    * @param {object} dialogInfo
    * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
-   * @param {string} dialogInfo.evidence
+   * @param {object} dialogInfo.evidence
    * @param {string} dialogInfo.caption
    * @param {string} dialogInfo.submission
    * @param {boolean} dialogInfo.enforce
@@ -374,6 +395,8 @@ export const browserSsiHelper = {
     const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
     const { system, evidence, caption, submission, enforce, embedderElement } =
       dialogInfo;
+
+    // Build Dialog
     const eol = AppConstants.platform === "win" ? "\r\n" : "\n";
     const messageText = {
       value: `${
@@ -398,22 +421,40 @@ export const browserSsiHelper = {
     if (isOSAuthEnabled) {
       const messageId = MESSAGE_ID + "-" + AppConstants.platform;
     }
-    let _authExpirationTime = passwordAuthorizedSites.filter(site =>
+
+    // Transform AuthCache
+    const protocolName = cacheKey.split(":")[0];
+    let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
       url.startsWith(site.url)
-    )[0]?.expiryTime;
-    if (_authExpirationTime == null) {
-      _authExpirationTime = 0;
+    )[0];
+    if (!passwordAuthorizedSite) {
+      passwordAuthorizedSite = {
+        url: origin,
+        name: extensionName,
+        expiryTime: 0,
+        permissions: {},
+      };
+      if (protocolName === "nostr") {
+        passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
+      }
       Services.ssi.authCache.update(cacheKey, {
-        passwordAuthorizedSites: [
-          { url: origin, name: extensionName, expiryTime: 0, permissions: [] },
-        ],
+        passwordAuthorizedSites: [passwordAuthorizedSite],
       });
     }
+    let _authExpirationTime = passwordAuthorizedSite.expiryTime;
+
+    // Special case of mandatory authentication
     if (enforce) {
       _authExpirationTime = 0;
     }
+    if (
+      protocolName === "nostr" &&
+      passwordAuthorizedSite.permissions.excludedKinds.includes(evidence.kind)
+    ) {
+      _authExpirationTime = 0;
+    }
 
-    // Password prompt
+    // Suggest password prompt
     const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
       embedderElement,
       isOSAuthEnabled,
@@ -429,10 +470,10 @@ export const browserSsiHelper = {
     ].includes(telemetryEvent.value);
     if (isAuthorized && enteredPassword) {
       const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
-      const passwordAuthorizedSites = [
-        { url: origin, name: extensionName, expiryTime, permissions: [] },
-      ];
-      Services.ssi.authCache.update(cacheKey, { passwordAuthorizedSites });
+      passwordAuthorizedSite.expiryTime = expiryTime;
+      Services.ssi.authCache.update(cacheKey, {
+        passwordAuthorizedSites: [passwordAuthorizedSite],
+      });
     }
     console.log(
       "primarypassword-dialog",

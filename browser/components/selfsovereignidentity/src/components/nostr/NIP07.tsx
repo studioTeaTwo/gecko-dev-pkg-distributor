@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
   Divider,
@@ -33,6 +38,9 @@ import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
+import KeyEditor from "./KeyEditor";
+import { SafeProtocols, SpecialCards } from "./contants";
+import { ExampleUrlMatch } from "../shared/Examples";
 
 interface NostrCredential extends Credential {
   properties: {
@@ -42,16 +50,6 @@ interface NostrCredential extends Credential {
   };
 }
 
-const SafeProtocols = ["http", "https", "moz-extension"];
-export const DefaultTrustedSites = [
-  {
-    url: "http://localhost",
-    name: "",
-    enabled: true,
-    permissions: {},
-  },
-];
-
 const OneHour = 60 * 60 * 1000;
 
 export default function NIP07(props: SelfsovereignidentityDefaultProps) {
@@ -60,6 +58,8 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
   const [newSite, setNewSite] = useState("");
   const [tabIndex, setTabIndex] = useState(-1);
+  const [edittingNo, setEdittingNo] = useState(-1);
+  const [edittingUrl, setEdittingUrl] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
 
@@ -104,11 +104,13 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   ) => {
     e.preventDefault();
 
-    if (!SafeProtocols.some(protocol => newSite.startsWith(protocol))) {
+    if (
+      !SafeProtocols.some(protocol => newSite.startsWith(protocol)) &&
+      !SpecialCards.includes(newSite)
+    ) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    // TODO(ssb): improve the match method, such as supporting glob.
     const existings = nostrkeys.filter(key =>
       key.trustedSites.some(site => site.url === newSite && site.enabled)
     );
@@ -136,7 +138,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       } else {
         key.trustedSites.push({
           url: newSite,
-          name: "",
+          name: newSite !== "*" ? "" : "<all_urls>",
           enabled: true,
           permissions: {},
         });
@@ -147,14 +149,15 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
           trustedSites: key.trustedSites,
         },
         newSite.startsWith("moz-extension")
-          ? { newExtensionForTrustedSite: newSite }
-          : null
+          ? { newExtensionForTrustedSite: [newSite] }
+          : undefined
       );
     }
-    alert("Updated!");
   };
 
-  const handleRemoveSite = async removedSite => {
+  const handleRemoveSite = async (
+    removedSite: NostrCredential["trustedSites"][number]
+  ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignidentity-access-authlocked-os-auth-dialog-message"
@@ -266,10 +269,58 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
       trustedSites.map(site => (
         <>
           <GridItem>
-            <Heading as="h5" size="sm">
-              {site.url}
-              {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
-            </Heading>
+            <Accordion allowToggle>
+              <AccordionItem css={{ border: "none" }}>
+                <AccordionButton
+                  textAlign="left"
+                  css={{ padding: 0, lineBreak: "anywhere" }}
+                >
+                  <Heading as="h5" size="sm">
+                    {site.url}
+                    {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
+                  </Heading>
+                  <AccordionIcon />
+                </AccordionButton>
+                <AccordionPanel pb={4}>
+                  {nostrkeys
+                    .filter(key =>
+                      key.trustedSites.some(_site => _site.url === site.url)
+                    )
+                    .map((key, i) => {
+                      return (
+                        <>
+                          {!(edittingNo === i && edittingUrl === site.url) ? (
+                            <Box>
+                              <label>{key.properties.displayName}</label>{" "}
+                              <IconButton
+                                icon={<MdEdit />}
+                                variant="transparent"
+                                aria-label="Edit Key"
+                                onClick={() => {
+                                  setEdittingNo(i);
+                                  setEdittingUrl(site.url);
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <KeyEditor
+                              credential={nostrkeys[edittingNo]}
+                              nostrKeys={nostrkeys}
+                              usedPrimarypasswordToSettings={
+                                prefs.nostr.usedPrimarypasswordToSettings
+                              }
+                              goBack={() => {
+                                setEdittingNo(-1);
+                                setEdittingUrl("");
+                              }}
+                            ></KeyEditor>
+                          )}
+                        </>
+                      );
+                    })}
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
           </GridItem>
           <GridItem>
             <Button
@@ -285,7 +336,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     ) : (
       <Text fontSize="sm">No site registered</Text>
     );
-  }, [nostrkeys]);
+  }, [nostrkeys, edittingNo, edittingUrl]);
 
   const getPasswordAuthorizedSites = useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.map(key => ({
@@ -294,7 +345,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         passwordAuthorizedSites: key.passwordAuthorizedSites,
       },
     }));
-    return passwordAuthorizedSites.map(site => {
+    return passwordAuthorizedSites.map((site, i) => {
       const [identifier, value] = Object.entries(site)[0];
       const validSites = value.passwordAuthorizedSites.filter(
         site => site.expiryTime > Date.now()
@@ -302,44 +353,72 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
       return (
         <>
-          <GridItem colSpan={2}>
-            <label>{value.name}</label>{" "}
-            <IconButton
-              disabled
-              icon={<MdEdit />}
-              variant="transparent"
-              aria-label="Edit Key"
-            />
-          </GridItem>
-          {validSites.length > 0 &&
-            validSites.map(validSite => {
-              const expiryTime = new Date(validSite.expiryTime);
-              return (
-                <>
-                  <GridItem>
-                    <Heading as="h6" size="sm">
-                      {validSite.url}
-                      {validSite.name && <>&nbsp;&#40;{validSite.name}&#41;</>}
-                      &nbsp;-&nbsp;until&nbsp;{expiryTime.toLocaleDateString()}
-                      &nbsp;{expiryTime.toLocaleTimeString()}
-                    </Heading>
-                  </GridItem>
-                  <GridItem>
-                    <Button
-                      variant="outline"
-                      colorScheme="blue"
-                      onClick={() => handleRevokeSite(identifier, validSite)}
-                    >
-                      Revoke
-                    </Button>
-                  </GridItem>
-                </>
-              );
-            })}
+          {!(edittingNo === i && edittingUrl === "") ? (
+            <>
+              <GridItem colSpan={2}>
+                <label>{value.name}</label>{" "}
+                <IconButton
+                  icon={<MdEdit />}
+                  variant="transparent"
+                  aria-label="Edit Key"
+                  onClick={() => setEdittingNo(i)}
+                />
+              </GridItem>
+              {validSites.length > 0 &&
+                validSites.map(validSite => {
+                  const expiryTime = new Date(validSite.expiryTime);
+                  return (
+                    <>
+                      <GridItem>
+                        <Heading as="h6" size="sm">
+                          {validSite.url}
+                          {validSite.name && (
+                            <>&nbsp;&#40;{validSite.name}&#41;</>
+                          )}
+                          &nbsp;-&nbsp;until&nbsp;
+                          {expiryTime.toLocaleDateString()}
+                          &nbsp;{expiryTime.toLocaleTimeString()}
+                        </Heading>
+                      </GridItem>
+                      <GridItem>
+                        <Button
+                          variant="outline"
+                          colorScheme="blue"
+                          onClick={() =>
+                            handleRevokeSite(identifier, validSite)
+                          }
+                        >
+                          Revoke
+                        </Button>
+                      </GridItem>
+                    </>
+                  );
+                })}
+            </>
+          ) : (
+            <>
+              <GridItem>
+                <KeyEditor
+                  credential={nostrkeys[edittingNo]}
+                  nostrKeys={nostrkeys}
+                  usedPrimarypasswordToSettings={
+                    prefs.nostr.usedPrimarypasswordToSettings
+                  }
+                  goBack={() => setEdittingNo(-1)}
+                ></KeyEditor>
+              </GridItem>
+              <GridItem></GridItem>
+            </>
+          )}
         </>
       );
     });
-  }, [nostrkeys]);
+  }, [nostrkeys, edittingNo, edittingUrl]);
+
+  const reset = () => {
+    setEdittingNo(-1);
+    setEdittingUrl("");
+  };
 
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -354,7 +433,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         align="stretch"
       >
         <Box>
-          <Grid gridTemplateColumns={"400px 1fr"} gap={6} alignItems={"center"}>
+          <Grid gridTemplateColumns={"300px 1fr"} gap={6} alignItems={"center"}>
             <GridItem colSpan={2}>
               <Text fontSize="sm">
                 You can still use these features realated to your keys on
@@ -397,13 +476,13 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             }}
           >
             <TabList>
-              <Tab>
+              <Tab onClick={reset}>
                 <Heading as="h4" size="md">
                   Trusted Sites
                 </Heading>
                 {tabPin(0)}
               </Tab>
-              <Tab>
+              <Tab onClick={reset}>
                 <Heading as="h4" size="md">
                   Password Authorization
                 </Heading>
@@ -413,9 +492,9 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             <TabPanels>
               <TabPanel>
                 <Grid
-                  gridTemplateColumns={"400px 1fr"}
+                  gridTemplateColumns={"300px 1fr"}
                   gap={6}
-                  alignItems={"center"}
+                  alignItems="start"
                 >
                   <GridItem>
                     <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
@@ -441,7 +520,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                             handleRegisterSite(e);
                           }
                         }}
-                        maxW="500px"
+                        maxW="300px"
                       />
                       <Button
                         variant="outline"
@@ -451,19 +530,26 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                         Register to All keys
                       </Button>
                     </InputGroup>
+                    <ExampleUrlMatch maxW="500px" />
                   </GridItem>
                   <GridItem>
                     <Divider />
                   </GridItem>
                   <GridItem></GridItem>
+                </Grid>
+                <Grid
+                  gridTemplateColumns={"600px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
                   {getTrustedSites()}
                 </Grid>
               </TabPanel>
               <TabPanel>
                 <Grid
-                  gridTemplateColumns={"400px 1fr"}
+                  gridTemplateColumns={"300px 1fr"}
                   gap={6}
-                  alignItems={"center"}
+                  alignItems="start"
                 >
                   <GridItem>
                     <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
@@ -511,6 +597,12 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                     <Divider />
                   </GridItem>
                   <GridItem></GridItem>
+                </Grid>
+                <Grid
+                  gridTemplateColumns={"600px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
                   {getPasswordAuthorizedSites()}
                 </Grid>
               </TabPanel>

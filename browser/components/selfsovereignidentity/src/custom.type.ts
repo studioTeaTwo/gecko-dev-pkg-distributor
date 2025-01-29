@@ -27,10 +27,22 @@ export interface SelfsovereignidentityPrefs {
   } & ProtocolDefaultPrefs;
 }
 
+export interface SelfsovereignidentityDefaultProps {
+  prefs: SelfsovereignidentityPrefs;
+  credentials: Credential[];
+}
+
 /**
- * credential info base
+ * CredentialInfo
  * ref: toolkit/components/ssi/nsICredentialInfo.idl
  */
+type OnlyUsedNsICredentialInfo = Omit<
+  nsICredentialInfo,
+  "unknownFields" | "init" | "equals" | "matches" | "clone"
+> &
+  Pick<nsICredentialMetaInfo, "guid" | "timeCreated">;
+
+// ViewEntity to use in about:selfsovereignidentity
 export type ProtocolName =
   | "bitcoin"
   | "lightning"
@@ -38,37 +50,49 @@ export type ProtocolName =
   | "nostr"
   | "did:dht";
 export type CredentialName = "bip39" | "lnc" | "nsec";
-type OnlyUsedNsICredentialInfo = Omit<
-  nsICredentialInfo,
-  "unknownFields" | "init" | "equals" | "matches" | "clone"
-> &
-  Omit<nsICredentialMetaInfo, keyof nsICredentialMetaInfo>;
+interface TrustedSites {
+  url: string;
+  name: string;
+  enabled: boolean;
+  permissions: Record<string, unknown>;
+}
+interface PasswordAuthorizedSites {
+  url: string;
+  name: string;
+  expiryTime: number;
+  permissions: Record<string, unknown>;
+}
 export interface Credential
   extends Omit<
     OnlyUsedNsICredentialInfo,
-    "trustedSites" | "passwordAuthorizedSites" | "properties"
+    | "trustedSites"
+    | "passwordAuthorizedSites"
+    | "properties"
+    | "guid"
+    | "timeCreated"
   > {
   protocolName: ProtocolName;
   credentialName: CredentialName;
-  trustedSites: {
-    url: string;
-    name: string;
-    enabled: boolean;
-    permissions: Record<string, unknown>;
-  }[];
-  passwordAuthorizedSites: {
-    url: string;
-    name: string;
-    expiryTime: number;
-    permissions: Record<string, unknown>;
-  }[];
-  properties: object;
+  trustedSites: TrustedSites[];
+  passwordAuthorizedSites: PasswordAuthorizedSites[];
+  properties: {
+    displayName: string;
+    memo?: string;
+  };
   guid?: string;
+  timeCreated?: number;
 }
-// Pass object type through JSON.stringify for IPC & JSONstorage
-export type CredentialForPayload = OnlyUsedNsICredentialInfo;
+interface PasswordAuthorizedSitesForNostr extends PasswordAuthorizedSites {
+  permissions: {
+    excludedKinds: string[];
+  };
+}
+export interface NostrCredential extends Credential {
+  passwordAuthorizedSites: PasswordAuthorizedSitesForNostr[];
+}
 
-export interface SelfsovereignidentityDefaultProps {
-  prefs: SelfsovereignidentityPrefs;
-  credentials: Credential[];
+// Pass object type through JSON.stringify for IPC & JSONstorage
+export interface CredentialForPayload extends OnlyUsedNsICredentialInfo {
+  protocolName: ProtocolName;
+  credentialName: CredentialName;
 }

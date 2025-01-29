@@ -13,17 +13,19 @@ import {
   Grid,
   GridItem,
   Heading,
+  HStack,
   IconButton,
   Input,
   InputGroup,
   StackDivider,
   Switch,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
-  Credential,
+  NostrCredential,
   SelfsovereignidentityDefaultProps,
 } from "../../custom.type";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
@@ -34,33 +36,17 @@ import {
   NostrTypeGuard,
 } from "../../shared/keys";
 import Secret from "../shared/Secret";
-import { DefaultTrustedSites } from "./NIP07";
+import { DefaultTrustedSites, NostrTemplate } from "./contants";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
+import KeyEditor from "./KeyEditor";
+import { changePrimary } from "../shared/functions";
 
-interface NostrCredential extends Credential {
-  properties: {
-    displayName: string;
-  };
-}
 interface NostrDisplayedCredential extends NostrCredential {
   nseckey: string;
   rawPubkey: string;
 }
-
-const NostrTemplate: Omit<NostrCredential, "guid"> = {
-  protocolName: "nostr",
-  credentialName: "nsec",
-  identifier: "", // npubkey
-  secret: "", // raw seckey
-  primary: false,
-  trustedSites: [],
-  passwordAuthorizedSites: [],
-  properties: {
-    displayName: "",
-  },
-};
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props;
@@ -75,10 +61,11 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
 
   const [importedKey, setImportedKey] = useState("");
   const [newKey, setNewKey] = useState("");
+  const [edittingNo, setEdittingNo] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
 
-  const nostrkeys = useMemo(
+  const nostrKeys = useMemo(
     () =>
       credentials
         .filter(credential => credential.protocolName === "nostr")
@@ -119,7 +106,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       ...NostrTemplate,
       identifier: npubkey,
       secret: bytesToHex(seckey),
-      primary: nostrkeys.length === 0,
+      primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
@@ -140,7 +127,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       alert("The typed key is not nsec!");
       return;
     }
-    if (nostrkeys.some(key => key.secret === importedKey)) {
+    if (nostrKeys.some(key => key.secret === importedKey)) {
       alert("The typed key is existing!");
       return;
     }
@@ -153,7 +140,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       ...NostrTemplate,
       identifier: npubkey,
       secret: bytesToHex(seckey as Uint8Array),
-      primary: nostrkeys.length === 0,
+      primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
@@ -180,37 +167,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       }
     }
 
-    let newPrimaryGuid = "";
-
-    if (checked === true) {
-      // Set the current primary to false
-      const prevs = nostrkeys.filter(key => key.primary);
-      for (const prev of prevs) {
-        modifyCredentialToStore({
-          guid: prev.guid,
-          primary: false,
-        });
-      }
-      newPrimaryGuid = item.guid;
-    } else {
-      // Set the first of current falses to primary
-      const prev = nostrkeys.find(key => !key.primary);
-      if (prev) {
-        modifyCredentialToStore({
-          guid: prev.guid,
-          primary: true,
-        });
-        newPrimaryGuid = prev.guid;
-      }
-    }
-
-    modifyCredentialToStore({
-      guid: item.guid,
-      primary: checked,
-    });
-
-    // Notify to the buit-in extension
-    onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
+    changePrimary(item.guid, checked, nostrKeys);
   };
 
   const handleDeleteCredential = async (item: NostrDisplayedCredential) => {
@@ -229,7 +186,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
 
     if (item.primary === true) {
       // Set the first of current falses to primary
-      const prev = nostrkeys.find(key => !key.primary);
+      const prev = nostrKeys.find(key => !key.primary);
       if (prev) {
         modifyCredentialToStore({
           guid: prev.guid,
@@ -240,7 +197,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
       onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
 
-    deleteCredentialToStore(item, nostrkeys);
+    deleteCredentialToStore(item, nostrKeys);
   };
 
   const handleAllRemove = async (
@@ -341,107 +298,146 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
           </Grid>
         </Box>
         <Box>
-          {nostrkeys.length === 0 && (
-            <Text fontSize="sm">No key regisitered</Text>
+          {nostrKeys.length === 0 && (
+            <Text fontSize="sm">No key registered</Text>
           )}
           <Flex gap={6} wrap="wrap">
-            {nostrkeys.map((item, i) => (
-              <Card maxW="md" overflow="hidden" key={i}>
-                <CardHeader>
-                  <Heading size="md">
-                    {/* FIXME(ssb): more performable and high UX */}
-                    <Editable
-                      value={item.properties.displayName}
-                      onChange={value =>
-                        modifyCredentialToStore({
-                          guid: item.guid,
-                          properties: {
-                            ...item.properties,
-                            displayName: value,
-                          },
-                        })
-                      }
-                      isTruncated
-                    >
-                      <EditablePreview />
-                      <EditableInput />
-                    </Editable>
-                  </Heading>
-                </CardHeader>
-                <CardBody>
-                  <Box>
-                    <Heading size="xs" textTransform="uppercase">
-                      Nostr Public Key
-                    </Heading>
-                    <Text fontSize="sm" isTruncated>
-                      {item.identifier}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Heading size="xs" textTransform="uppercase">
-                      Nostr Secret Key
-                    </Heading>
-                    <Secret
-                      value={item.nseckey}
-                      onChangeVisibility={() => {}}
+            {nostrKeys.map((item, i) => {
+              return (
+                <>
+                  {edittingNo !== i ? (
+                    <Card maxW="md" overflow="hidden" key={i}>
+                      <CardHeader pb="0">
+                        <Heading size="md">
+                          {/* FIXME(ssb): more performable and high UX */}
+                          <Editable
+                            value={item.properties.displayName}
+                            onChange={value =>
+                              modifyCredentialToStore({
+                                guid: item.guid,
+                                properties: {
+                                  ...item.properties,
+                                  displayName: value,
+                                },
+                              })
+                            }
+                            isPreviewFocusable
+                            isTruncated
+                          >
+                            <EditablePreview />
+                            <EditableInput />
+                          </Editable>
+                        </Heading>
+                        <HStack>
+                          {item.trustedSites.some(site => site.url === "*") && (
+                            <Tooltip label="All URL trusted">🚨</Tooltip>
+                          )}
+                        </HStack>
+                      </CardHeader>
+                      <CardBody>
+                        <Box>
+                          {/* FIXME(ssb): more performable and high UX */}
+                          <Editable
+                            value={item.properties.memo}
+                            onChange={value =>
+                              modifyCredentialToStore({
+                                guid: item.guid,
+                                properties: {
+                                  ...item.properties,
+                                  memo: value,
+                                },
+                              })
+                            }
+                            isPreviewFocusable
+                            isTruncated
+                          >
+                            <EditablePreview />
+                            <EditableInput />
+                          </Editable>
+                        </Box>
+                        <Box mt={2}>
+                          <Heading size="xs" textTransform="uppercase">
+                            N Format
+                          </Heading>
+                          <Text fontSize="md" isTruncated>
+                            {item.identifier}
+                          </Text>
+                          <Secret
+                            value={item.nseckey}
+                            onChangeVisibility={() => {}}
+                            usedPrimarypasswordToSettings={
+                              prefs.nostr.usedPrimarypasswordToSettings
+                            }
+                            textProps={{ fontSize: "md", isTruncated: true }}
+                          />
+                        </Box>
+                        <Box mt={2}>
+                          <Heading size="xs" textTransform="uppercase">
+                            Raw Format
+                          </Heading>
+                          <Text fontSize="md" isTruncated>
+                            {item.rawPubkey}
+                          </Text>
+                          <Secret
+                            value={item.secret}
+                            onChangeVisibility={() => {}}
+                            usedPrimarypasswordToSettings={
+                              prefs.nostr.usedPrimarypasswordToSettings
+                            }
+                            textProps={{ fontSize: "md", isTruncated: true }}
+                          />
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm" isTruncated>
+                            Generated at{" "}
+                            {new Date(item.timeCreated).toLocaleDateString()}
+                            &nbsp;
+                            {new Date(item.timeCreated).toLocaleTimeString()}
+                          </Text>
+                        </Box>
+                      </CardBody>
+                      <CardFooter pt="0" justify="space-evenly">
+                        {nostrKeys.length > 1 && (
+                          <Flex gap="2">
+                            <Switch
+                              isChecked={item.primary}
+                              onChange={e =>
+                                handleChangePrimary(e.target.checked, item)
+                              }
+                              alignSelf="center"
+                            />
+                            {item.primary && <Text>primary now</Text>}
+                          </Flex>
+                        )}
+                        <IconButton
+                          icon={<MdEdit />}
+                          variant="transparent"
+                          fontSize="20px"
+                          aria-label="Edit Key"
+                          onClick={() => setEdittingNo(i)}
+                        />
+                        <IconButton
+                          icon={<MdDeleteForever />}
+                          variant="transparent"
+                          fontSize="20px"
+                          aria-label="Delete Key"
+                          onClick={() => handleDeleteCredential(item)}
+                        />
+                      </CardFooter>
+                    </Card>
+                  ) : (
+                    <KeyEditor
+                      credential={nostrKeys[edittingNo]}
+                      nostrKeys={nostrKeys}
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings
                       }
-                      textProps={{ fontSize: "sm", isTruncated: true }}
-                    />
-                  </Box>
-                  <Box>
-                    <Heading size="xs" textTransform="uppercase">
-                      Raw Public Key
-                    </Heading>
-                    <Text fontSize="sm" isTruncated>
-                      {item.rawPubkey}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Heading size="xs" textTransform="uppercase">
-                      Raw Secret Key
-                    </Heading>
-                    <Secret
-                      value={item.secret}
-                      onChangeVisibility={() => {}}
-                      usedPrimarypasswordToSettings={
-                        prefs.nostr.usedPrimarypasswordToSettings
-                      }
-                      textProps={{ fontSize: "sm", isTruncated: true }}
-                    />
-                  </Box>
-                </CardBody>
-                <CardFooter pt="0" justify="space-evenly">
-                  {nostrkeys.length > 1 && (
-                    <Flex gap="2">
-                      <Switch
-                        isChecked={item.primary}
-                        onChange={e =>
-                          handleChangePrimary(e.target.checked, item)
-                        }
-                        alignSelf="center"
-                      />
-                      {item.primary && <Text>primary now</Text>}
-                    </Flex>
+                      goBack={() => setEdittingNo(-1)}
+                    ></KeyEditor>
                   )}
-                  <IconButton
-                    disabled
-                    icon={<MdEdit />}
-                    variant="transparent"
-                    fontSize="20px"
-                    aria-label="Edit Key"
-                  />
-                  <IconButton
-                    icon={<MdDeleteForever />}
-                    variant="transparent"
-                    fontSize="20px"
-                    aria-label="Delete Key"
-                    onClick={() => handleDeleteCredential(item)}
-                  />
-                </CardFooter>
-              </Card>
-            ))}
+                </>
+              );
+            })}
           </Flex>
         </Box>
         <Box>

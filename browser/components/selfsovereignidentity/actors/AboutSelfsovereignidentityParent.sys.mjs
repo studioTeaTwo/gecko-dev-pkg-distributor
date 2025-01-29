@@ -151,7 +151,9 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     // TODO(ssb): reconsider later
     // let messageText = { value: "NOT SUPPORTED" }
     let messageText = {
-      value: `${AppConstants.platform === "win" ? "Nightly is trying to " : ""}`,
+      value: `${
+        AppConstants.platform === "win" ? "Nightly is trying to " : ""
+      }`,
     };
     messageId ===
     "about-selfsovereignidentity-access-secrets-os-auth-dialog-message"
@@ -263,14 +265,12 @@ export class AboutSelfsovereignidentityParent extends JSWindowActorParent {
     }
     if (changeSet.credential.hasOwnProperty("trustedSites")) {
       if (changeSet.options && changeSet.options.newExtensionForTrustedSite) {
-        const policy = WebExtensionPolicy.getByURI(
-          Services.io.newURI(changeSet.options.newExtensionForTrustedSite)
-        );
         const parsed = JSON.parse(changeSet.credential.trustedSites);
-        const idx = parsed.findIndex(
-          site => site.url === changeSet.options.newExtensionForTrustedSite
-        );
-        parsed[idx].name = policy ? policy.extension.name : "N/A";
+        for (const site of changeSet.options.newExtensionForTrustedSite) {
+          const policy = WebExtensionPolicy.getByURI(Services.io.newURI(site));
+          const idx = parsed.findIndex(_site => _site.url === site);
+          parsed[idx].name = policy ? policy.extension.name : "N/A";
+        }
         changeSet.credential.trustedSites = JSON.stringify(parsed);
       }
       modifiedCredential.trustedSites = changeSet.credential.trustedSites;

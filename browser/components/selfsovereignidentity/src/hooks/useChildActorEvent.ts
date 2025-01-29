@@ -38,7 +38,7 @@ function addCredentialToStore(credential: Credential) {
 
 function modifyCredentialToStore(
   credential: Partial<Credential>,
-  options?: { newExtensionForTrustedSite: string }
+  options?: { newExtensionForTrustedSite: string[] }
 ) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfsovereignidentityUpdateCredential", {

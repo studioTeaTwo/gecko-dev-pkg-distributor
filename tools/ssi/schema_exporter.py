@@ -48,7 +48,7 @@ def xpidl(file_path):
 
     print(f"-----{file_name}-----")
 
-    top_line = [f"# {file_name}\n\n"] + [f"This is described in [XPIDL](https://firefox-source-docs.mozilla.org/xpcom/xpidl.html) that is an Interface Description Language used to specify XPCOM interface classes.\n\n"]
+    top_line = [f"# {file_name}\n\n"] + ["This is described in [XPIDL](https://firefox-source-docs.mozilla.org/xpcom/xpidl.html) that is an Interface Description Language used to specify XPCOM interface classes.\n\n"]
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -85,7 +85,7 @@ def xpidl(file_path):
 
 
 def webextensions(file_name, file_path):
-    output_file_path = os.path.join(here, output_directory, file_name, f"README.md")
+    output_file_path = os.path.join(here, output_directory, file_name, "README.md")
 
     print(f"-----{file_name}-----")
 
@@ -121,7 +121,7 @@ def build(data):
             output_text += f"{item['description']}\n\n"
 
         if 'permissions' in item:
-            output_text += f"## Required Permissions\n\n"
+            output_text += "## Required Permissions\n\n"
             output_text += f"`{item['permissions']}`\n\n"
 
         for key in ['types', 'properties', 'functions', 'events']:
@@ -154,24 +154,24 @@ def create_member_file(namespace, type, data):
         output_text += f"{data['description']}\n\n"
 
     if 'async' in data:
-        output_text += f"This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
+        output_text += "This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
 
     if type in ['functions', 'events'] :
         output_text += '## Syntax\n\n'
         output_text += f"{build_syntax(namespace, type, data)}\n\n"
     elif type == 'types':
-        output_text += f"## Type\n\n"
+        output_text += "## Type\n\n"
         output_text += f"{build_types(data['properties'])}"
     # type == 'Properties' is not implemented.
 
     if 'parameters' in data:
         if type == 'events':
-            output_text += f"## addListener syntax\n\n"
-        output_text += f"### Parameters\n\n"
+            output_text += "## addListener syntax\n\n"
+        output_text += "### Parameters\n\n"
         output_text += f"{build_parameters(data['parameters'])}"
 
     if 'returns' in data:
-        output_text += f"### Return value\n\n"
+        output_text += "### Return value\n\n"
         output_text += f"{data['returns']['description']}\n\n"
 
     if type in ['functions', 'events'] :
@@ -249,7 +249,7 @@ def build_syntax(namespace, type, data):
         ''').format(function_name=function_name).strip()
 
     # functions
-    output_text = f"```js\n"
+    output_text = "```js\n"
     return_value = ''
     if 'returns' in data:
         return_name = 'object' if '$ref' in data['returns'] else data['returns']['type']
@@ -257,7 +257,7 @@ def build_syntax(namespace, type, data):
 
     if len(data['parameters']) == 0:
         output_text += f"{return_value}{'await' if data.get('async') else ''} browser.{namespace}.{data['name']}()\n"
-        output_text += f"```\n"
+        output_text += "```\n"
         return output_text
 
     output_text += f"{return_value}{'await' if data['async'] else ''} browser.{namespace}.{data['name']}(\n"
@@ -265,8 +265,7 @@ def build_syntax(namespace, type, data):
     for param in data['parameters']:
         output_text += f"\t{param['name']}, // {'optional ' if param.get('optional') else ''}{'object' if param.get('$ref') else param['type']}\n"
 
-    output_text += f")\n"
-    output_text += f"```\n"
+    output_text += ")\n```\n"
 
     return output_text
 
