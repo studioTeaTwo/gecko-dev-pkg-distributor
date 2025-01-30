@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
+        mavenLocal()
+
         maven {
             url "https://maven.mozilla.org/maven2"
         }

@@ -4,6 +4,8 @@
 
 buildscript {
     repositories {
+        mavenLocal()
+
         gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
                 url repository
