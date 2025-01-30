@@ -12,8 +12,8 @@ export const DefaultTrustedSites = [
 ];
 
 export const DefaultExcludedKindList = {
-  13194: { nip: 47, name: "Wallet Info" },
-  23194: { nip: 47, name: "Wallet Request" },
+  13194: { nip: 47, name: "NWC Wallet Info" },
+  23194: { nip: 47, name: "NWC Wallet Request" },
   9734: { nip: 57, name: "Zap Request" },
   9321: { nip: 61, name: "Nutzap" },
 };

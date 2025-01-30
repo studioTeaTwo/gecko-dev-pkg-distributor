@@ -7,6 +7,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { ChakraProvider } from "@chakra-ui/react";
 import Selfsovereignidentity from "../components/Selfsovereignidentity";
+import { StateProvider } from "../contexts/StatesProvider";
 
 // eslint-disable-next-line no-var
 var HomeOverlay = function () {
@@ -26,7 +27,9 @@ HomeOverlay.prototype = {
     const root = createRoot(container);
     root.render(
       <ChakraProvider>
-        <Selfsovereignidentity />
+        <StateProvider>
+          <Selfsovereignidentity />
+        </StateProvider>
       </ChakraProvider>
     );
 

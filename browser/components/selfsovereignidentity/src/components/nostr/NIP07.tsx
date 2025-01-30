@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Accordion,
   AccordionButton,
@@ -31,7 +37,7 @@ import {
 } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
-  Credential,
+  NostrCredential,
   SelfsovereignidentityDefaultProps,
 } from "../../custom.type";
 import { promptForPrimaryPassword } from "../../shared/utils";
@@ -41,25 +47,17 @@ import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import { SafeProtocols, SpecialCards } from "./contants";
 import { ExampleUrlMatch } from "../shared/Examples";
-
-interface NostrCredential extends Credential {
-  properties: {
-    pubkey: string;
-    seckey: string;
-    displayName: string;
-  };
-}
+import { StateContext } from "../../contexts/StatesProvider";
 
 const OneHour = 60 * 60 * 1000;
 
 export default function NIP07(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props;
+  const { states, resetState, updateState } = useContext(StateContext);
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
   const [newSite, setNewSite] = useState("");
   const [tabIndex, setTabIndex] = useState(-1);
-  const [edittingNo, setEdittingNo] = useState(-1);
-  const [edittingUrl, setEdittingUrl] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
 
@@ -225,7 +223,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
   const handleRevokeSite = async (
     identifier: string,
-    revokedSite: Credential["passwordAuthorizedSites"][number]
+    revokedSite: NostrCredential["passwordAuthorizedSites"][number]
   ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
@@ -289,30 +287,32 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                     .map((key, i) => {
                       return (
                         <>
-                          {!(edittingNo === i && edittingUrl === site.url) ? (
+                          {!(
+                            states.nostr.editingNo === i &&
+                            states.nostr.editingUrl === site.url
+                          ) ? (
                             <Box>
                               <label>{key.properties.displayName}</label>{" "}
                               <IconButton
                                 icon={<MdEdit />}
                                 variant="transparent"
                                 aria-label="Edit Key"
-                                onClick={() => {
-                                  setEdittingNo(i);
-                                  setEdittingUrl(site.url);
-                                }}
+                                onClick={() =>
+                                  updateState("nostr", {
+                                    editingNo: i,
+                                    editingUrl: site.url,
+                                  })
+                                }
                               />
                             </Box>
                           ) : (
                             <KeyEditor
-                              credential={nostrkeys[edittingNo]}
+                              credential={nostrkeys[states.nostr.editingNo]}
                               nostrKeys={nostrkeys}
                               usedPrimarypasswordToSettings={
                                 prefs.nostr.usedPrimarypasswordToSettings
                               }
-                              goBack={() => {
-                                setEdittingNo(-1);
-                                setEdittingUrl("");
-                              }}
+                              goBack={() => resetState()}
                             ></KeyEditor>
                           )}
                         </>
@@ -336,7 +336,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
     ) : (
       <Text fontSize="sm">No site registered</Text>
     );
-  }, [nostrkeys, edittingNo, edittingUrl]);
+  }, [nostrkeys, states.nostr]);
 
   const getPasswordAuthorizedSites = useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.map(key => ({
@@ -353,7 +353,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
 
       return (
         <>
-          {!(edittingNo === i && edittingUrl === "") ? (
+          {states.nostr.editingNo !== i ? (
             <>
               <GridItem colSpan={2}>
                 <label>{value.name}</label>{" "}
@@ -361,7 +361,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
                   icon={<MdEdit />}
                   variant="transparent"
                   aria-label="Edit Key"
-                  onClick={() => setEdittingNo(i)}
+                  onClick={() => updateState("nostr", { editingNo: i })}
                 />
               </GridItem>
               {validSites.length > 0 &&
@@ -399,12 +399,12 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             <>
               <GridItem>
                 <KeyEditor
-                  credential={nostrkeys[edittingNo]}
+                  credential={nostrkeys[states.nostr.editingNo]}
                   nostrKeys={nostrkeys}
                   usedPrimarypasswordToSettings={
                     prefs.nostr.usedPrimarypasswordToSettings
                   }
-                  goBack={() => setEdittingNo(-1)}
+                  goBack={() => resetState()}
                 ></KeyEditor>
               </GridItem>
               <GridItem></GridItem>
@@ -413,12 +413,7 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
         </>
       );
     });
-  }, [nostrkeys, edittingNo, edittingUrl]);
-
-  const reset = () => {
-    setEdittingNo(-1);
-    setEdittingUrl("");
-  };
+  }, [nostrkeys, states.nostr]);
 
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -473,16 +468,17 @@ export default function NIP07(props: SelfsovereignidentityDefaultProps) {
             index={tabIndex}
             onChange={index => {
               setTabIndex(index);
+              resetState();
             }}
           >
             <TabList>
-              <Tab onClick={reset}>
+              <Tab>
                 <Heading as="h4" size="md">
                   Trusted Sites
                 </Heading>
                 {tabPin(0)}
               </Tab>
-              <Tab onClick={reset}>
+              <Tab>
                 <Heading as="h4" size="md">
                   Password Authorization
                 </Heading>

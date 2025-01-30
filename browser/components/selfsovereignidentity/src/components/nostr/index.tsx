@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Heading,
   Spinner,
@@ -14,9 +14,11 @@ import NIP07 from "./NIP07";
 import More from "./More";
 import { SelfsovereignidentityDefaultProps } from "../../custom.type";
 import TabPin from "../shared/TabPin";
+import { StateContext } from "../../contexts/StatesProvider";
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props;
+  const { resetState } = useContext(StateContext);
 
   const [tabIndex, setTabIndex] = useState(-1);
 
@@ -43,6 +45,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
           index={tabIndex}
           onChange={index => {
             setTabIndex(index);
+            resetState();
           }}
         >
           <TabList>

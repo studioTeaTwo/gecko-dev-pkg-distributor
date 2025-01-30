@@ -105,6 +105,11 @@ export function ExampleNostrKind(props: { width?: string }) {
             Reference:
             https://github.com/nostr-protocol/nips?tab=readme-ov-file#event-kinds
           </Text>
+          <Text size="sm">
+            Note: App can arbitrarily enforce your authorisation even if you
+            opt-out here. It&apos;s because they deemed that authorisation
+            important enough to ask for your consent.
+          </Text>
         </AccordionPanel>
       </AccordionItem>
     </Accordion>

@@ -753,8 +753,8 @@ const DefaultTrustedSites = [
   }
 ];
 const DefaultExcludedKindList = {
-  13194: { nip: 47, name: "Wallet Info" },
-  23194: { nip: 47, name: "Wallet Request" },
+  13194: { nip: 47, name: "NWC Wallet Info" },
+  23194: { nip: 47, name: "NWC Wallet Request" },
   9734: { nip: 57, name: "Zap Request" },
   9321: { nip: 61, name: "Nutzap" }
 };
@@ -831,7 +831,8 @@ function ExampleNostrKind(props) {
           }
         ) })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Reference: https://github.com/nostr-protocol/nips?tab=readme-ov-file#event-kinds" })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Reference: https://github.com/nostr-protocol/nips?tab=readme-ov-file#event-kinds" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Note: App can arbitrarily enforce your authorisation even if you opt-out here. It's because they deemed that authorisation important enough to ask for your consent." })
     ] })
   ] }) });
 }
@@ -868,14 +869,14 @@ function changePrimary(guid, checked, keys) {
 function KeyEditor(props) {
   const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
-  const [edittingKey, setEdittingKey] = reactExports.useState(null);
+  const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
   const [newExtensions, setNewExtensions] = reactExports.useState([]);
-  const [edittingNumForTrusted, setEdittingNumForTrusted] = reactExports.useState(-1);
-  const [edittingNumForPassword, setEdittingNumForPassword] = reactExports.useState(-1);
+  const [editingNumForTrusted, setEditingNumForTrusted] = reactExports.useState(-1);
+  const [editingNumForPassword, setEditingNumForPassword] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
-    setEdittingKey(JSON.parse(JSON.stringify(credential)));
+    setEditingKey(JSON.parse(JSON.stringify(credential)));
   }, []);
   const handleSave = async () => {
     if (usedPrimarypasswordToSettings) {
@@ -887,17 +888,17 @@ function KeyEditor(props) {
         return;
       }
     }
-    modifyCredentialToStore2(edittingKey, {
+    modifyCredentialToStore2(editingKey, {
       newExtensionForTrustedSite: newExtensions
     });
-    if (credential.primary !== edittingKey.primary) {
-      changePrimary(edittingKey.guid, edittingKey.primary, nostrKeys);
+    if (credential.primary !== editingKey.primary) {
+      changePrimary(editingKey.guid, editingKey.primary, nostrKeys);
     }
     alert("saved!");
     props.goBack();
   };
   const HandleChangeValue = (newKV) => {
-    setEdittingKey((prev) => ({ ...prev, ...newKV }));
+    setEditingKey((prev) => ({ ...prev, ...newKV }));
   };
   const handleNewSiteChange = (e) => setNewSite(e.target.value);
   const handleRegisterSite = async (e) => {
@@ -906,7 +907,7 @@ function KeyEditor(props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const existing = edittingKey.trustedSites.some(
+    const existing = editingKey.trustedSites.some(
       (site) => site.url === newSite && site.enabled
     );
     if (existing) {
@@ -914,7 +915,7 @@ function KeyEditor(props) {
       return;
     }
     const value = {
-      trustedSites: edittingKey.trustedSites.concat([
+      trustedSites: editingKey.trustedSites.concat([
         {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
@@ -930,7 +931,7 @@ function KeyEditor(props) {
   };
   const handleRemoveSite = (removedSite) => {
     const value = {
-      trustedSites: edittingKey.trustedSites.map((site) => {
+      trustedSites: editingKey.trustedSites.map((site) => {
         if (site.url === removedSite.url) {
           site.enabled = false;
         }
@@ -941,7 +942,7 @@ function KeyEditor(props) {
   };
   const handleRevokeSite = (revokedSite) => {
     const value = {
-      passwordAuthorizedSites: edittingKey.passwordAuthorizedSites.map((site) => {
+      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
           site.expiryTime = 0;
         }
@@ -956,14 +957,14 @@ function KeyEditor(props) {
       return;
     }
     const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(edittingKey.passwordAuthorizedSites)
+      JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     passwordAuthorizedSites[siteNo].permissions.excludedKinds = value ? value.split(",") : [];
     HandleChangeValue({ passwordAuthorizedSites });
   };
   const handleResetExcludedKinds = (siteNo) => {
     const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(edittingKey.passwordAuthorizedSites)
+      JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     passwordAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
     HandleChangeValue({ passwordAuthorizedSites });
@@ -986,12 +987,12 @@ function KeyEditor(props) {
     setIsOpenDialog(false);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    edittingKey ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: 600, overflow: "hidden", variant: "filled", children: [
+    editingKey ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: 700, overflow: "hidden", variant: "filled", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: 0, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Editable,
           {
-            defaultValue: edittingKey.properties.displayName,
+            defaultValue: editingKey.properties.displayName,
             onSubmit: (value) => HandleChangeValue({ properties: { displayName: value } }),
             fontSize: "2xl",
             isPreviewFocusable: true,
@@ -1002,9 +1003,9 @@ function KeyEditor(props) {
             ]
           }
         ) }),
-        edittingKey.properties.displayName !== edittingKey.identifier && /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
+        editingKey.properties.displayName !== editingKey.identifier && /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
           "(",
-          edittingKey.identifier,
+          editingKey.identifier,
           ")"
         ] })
       ] }),
@@ -1021,10 +1022,10 @@ function KeyEditor(props) {
                 Textarea,
                 {
                   size: "sm",
-                  value: edittingKey.properties.memo,
+                  value: editingKey.properties.memo,
                   onChange: (e) => HandleChangeValue({
                     properties: {
-                      ...edittingKey.properties,
+                      ...editingKey.properties,
                       memo: e.target.value
                     }
                   }),
@@ -1072,8 +1073,8 @@ function KeyEditor(props) {
                       ] }),
                       /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { maxW: "500px" })
                     ] }),
-                    !edittingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                    edittingKey.trustedSites.filter((site) => site.enabled).map((site, i) => {
+                    !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                    editingKey.trustedSites.filter((site) => site.enabled).map((site, i) => {
                       return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
                           site.url,
@@ -1092,7 +1093,7 @@ function KeyEditor(props) {
                             children: "Remove"
                           }
                         ) }),
-                        edittingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { backgroundColor: "white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: "N/A" }) }) })
+                        editingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { backgroundColor: "white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: "N/A" }) }) })
                       ] });
                     })
                   ]
@@ -1102,8 +1103,8 @@ function KeyEditor(props) {
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
-                !edittingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                edittingKey.passwordAuthorizedSites.filter((site) => site.expiryTime > Date.now()).map((site, i) => {
+                !editingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.passwordAuthorizedSites.filter((site) => site.expiryTime > Date.now()).map((site, i) => {
                   const expiryTime = new Date(site.expiryTime);
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
@@ -1125,8 +1126,8 @@ function KeyEditor(props) {
                           variant: "outline",
                           colorScheme: "blue",
                           onClick: () => {
-                            setEdittingNumForPassword(
-                              i !== edittingNumForPassword ? i : -1
+                            setEditingNumForPassword(
+                              i !== editingNumForPassword ? i : -1
                             );
                           },
                           mr: "2",
@@ -1143,7 +1144,7 @@ function KeyEditor(props) {
                         }
                       )
                     ] }),
-                    edittingNumForPassword === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    editingNumForPassword === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                       VStack,
                       {
                         backgroundColor: "white",
@@ -1186,7 +1187,7 @@ function KeyEditor(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Switch,
                 {
-                  isChecked: edittingKey.primary,
+                  isChecked: editingKey.primary,
                   onChange: (e) => HandleChangeValue({ primary: e.target.checked }),
                   alignSelf: "center"
                 }
@@ -1204,7 +1205,7 @@ function KeyEditor(props) {
             fontSize: "20px",
             "aria-label": "Cancel",
             onClick: () => {
-              setEdittingKey(credential);
+              setEditingKey(credential);
               props.goBack();
             }
           }
@@ -1231,8 +1232,32 @@ function KeyEditor(props) {
     )
   ] });
 }
+const StateContext = React.createContext(null);
+const DefaultState = {
+  nostr: {
+    editingNo: -1,
+    editingUrl: ""
+  }
+};
+const StateProvider = ({ children }) => {
+  const [states, setStates] = reactExports.useState({
+    ...DefaultState
+  });
+  function updateState(protocolName, value) {
+    setStates((prev) => {
+      const current = { ...prev[protocolName] };
+      prev[protocolName] = { ...current, ...value };
+      return { ...prev };
+    });
+  }
+  function resetState() {
+    setStates({ ...DefaultState });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(StateContext.Provider, { value: { states, resetState, updateState }, children });
+};
 function Nostr$2(props) {
   const { prefs, credentials } = props;
+  const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const {
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
@@ -1243,7 +1268,6 @@ function Nostr$2(props) {
   } = dispatchEvents;
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
-  const [edittingNo, setEdittingNo] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
   const nostrKeys = reactExports.useMemo(
@@ -1435,7 +1459,7 @@ function Nostr$2(props) {
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             nostrKeys.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No key registered" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrKeys.map((item, i) => {
-              return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: edittingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.nostr.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: "0", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     Editable,
@@ -1533,7 +1557,7 @@ function Nostr$2(props) {
                       variant: "transparent",
                       fontSize: "20px",
                       "aria-label": "Edit Key",
-                      onClick: () => setEdittingNo(i)
+                      onClick: () => updateState("nostr", { editingNo: i })
                     }
                   ),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1550,10 +1574,10 @@ function Nostr$2(props) {
               ] }, i) : /* @__PURE__ */ jsxRuntimeExports.jsx(
                 KeyEditor,
                 {
-                  credential: nostrKeys[edittingNo],
+                  credential: nostrKeys[states.nostr.editingNo],
                   nostrKeys,
                   usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                  goBack: () => setEdittingNo(-1)
+                  goBack: () => resetState()
                 }
               ) });
             }) })
@@ -1575,11 +1599,10 @@ function Nostr$2(props) {
 const OneHour = 60 * 60 * 1e3;
 function NIP07(props) {
   const { prefs, credentials } = props;
+  const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
-  const [edittingNo, setEdittingNo] = reactExports.useState(-1);
-  const [edittingUrl, setEdittingUrl] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
   reactExports.useEffect(() => {
@@ -1763,7 +1786,7 @@ function NIP07(props) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrkeys.filter(
           (key) => key.trustedSites.some((_site) => _site.url === site.url)
         ).map((key, i) => {
-          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(edittingNo === i && edittingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === i && states.nostr.editingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key.properties.displayName }),
             " ",
             /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1772,22 +1795,19 @@ function NIP07(props) {
                 icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
                 variant: "transparent",
                 "aria-label": "Edit Key",
-                onClick: () => {
-                  setEdittingNo(i);
-                  setEdittingUrl(site.url);
-                }
+                onClick: () => updateState("nostr", {
+                  editingNo: i,
+                  editingUrl: site.url
+                })
               }
             )
           ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
             KeyEditor,
             {
-              credential: nostrkeys[edittingNo],
+              credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
               usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-              goBack: () => {
-                setEdittingNo(-1);
-                setEdittingUrl("");
-              }
+              goBack: () => resetState()
             }
           ) });
         }) })
@@ -1802,7 +1822,7 @@ function NIP07(props) {
         }
       ) })
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No site registered" });
-  }, [nostrkeys, edittingNo, edittingUrl]);
+  }, [nostrkeys, states.nostr]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.map((key) => ({
       [key.identifier]: {
@@ -1815,7 +1835,7 @@ function NIP07(props) {
       const validSites = value.passwordAuthorizedSites.filter(
         (site2) => site2.expiryTime > Date.now()
       );
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(edittingNo === i && edittingUrl === "") ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.nostr.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: value.name }),
           " ",
@@ -1825,7 +1845,7 @@ function NIP07(props) {
               icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
               variant: "transparent",
               "aria-label": "Edit Key",
-              onClick: () => setEdittingNo(i)
+              onClick: () => updateState("nostr", { editingNo: i })
             }
           )
         ] }),
@@ -1859,20 +1879,16 @@ function NIP07(props) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           KeyEditor,
           {
-            credential: nostrkeys[edittingNo],
+            credential: nostrkeys[states.nostr.editingNo],
             nostrKeys: nostrkeys,
             usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-            goBack: () => setEdittingNo(-1)
+            goBack: () => resetState()
           }
         ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
       ] }) });
     });
-  }, [nostrkeys, edittingNo, edittingUrl]);
-  const reset = () => {
-    setEdittingNo(-1);
-    setEdittingUrl("");
-  };
+  }, [nostrkeys, states.nostr]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -1913,14 +1929,15 @@ function NIP07(props) {
               index: tabIndex,
               onChange: (index) => {
                 setTabIndex(index);
+                resetState();
               },
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { onClick: reset, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Trusted Sites" }),
                     tabPin(0)
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { onClick: reset, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Password Authorization" }),
                     tabPin(1)
                   ] })
@@ -2113,6 +2130,7 @@ function Nostr$1(props) {
 }
 function Nostr(props) {
   const { prefs, credentials } = props;
+  const { resetState } = reactExports.useContext(StateContext);
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPin));
@@ -2131,6 +2149,7 @@ function Nostr(props) {
         index: tabIndex,
         onChange: (index) => {
           setTabIndex(index);
+          resetState();
         },
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
@@ -2206,7 +2225,7 @@ HomeOverlay.prototype = {
     const container = document.querySelector(`body`);
     const root = createRoot(container);
     root.render(
-      /* @__PURE__ */ jsxRuntimeExports.jsx(ChakraProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Selfsovereignidentity, {}) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ChakraProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(StateProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Selfsovereignidentity, {}) }) })
     );
   }
 };

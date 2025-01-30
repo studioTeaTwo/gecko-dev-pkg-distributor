@@ -47,15 +47,15 @@ export default function KeyEditor(props: Props) {
   const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
   const { modifyCredentialToStore } = dispatchEvents;
 
-  const [edittingKey, setEdittingKey] = useState<Props["credential"]>(null);
+  const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
   const [newSite, setNewSite] = useState("");
   const [newExtensions, setNewExtensions] = useState([]);
-  const [edittingNumForTrusted, setEdittingNumForTrusted] = useState(-1);
-  const [edittingNumForPassword, setEdittingNumForPassword] = useState(-1);
+  const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
+  const [editingNumForPassword, setEditingNumForPassword] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
 
   useEffect(() => {
-    setEdittingKey(JSON.parse(JSON.stringify(credential)));
+    setEditingKey(JSON.parse(JSON.stringify(credential)));
   }, []);
 
   const handleSave = async () => {
@@ -69,11 +69,11 @@ export default function KeyEditor(props: Props) {
       }
     }
 
-    modifyCredentialToStore(edittingKey, {
+    modifyCredentialToStore(editingKey, {
       newExtensionForTrustedSite: newExtensions,
     });
-    if (credential.primary !== edittingKey.primary) {
-      changePrimary(edittingKey.guid, edittingKey.primary, nostrKeys);
+    if (credential.primary !== editingKey.primary) {
+      changePrimary(editingKey.guid, editingKey.primary, nostrKeys);
     }
 
     alert("saved!");
@@ -83,7 +83,7 @@ export default function KeyEditor(props: Props) {
   const HandleChangeValue = (
     newKV: Partial<{ [key in keyof NostrCredential]: NostrCredential[key] }>
   ) => {
-    setEdittingKey(prev => ({ ...prev, ...newKV }));
+    setEditingKey(prev => ({ ...prev, ...newKV }));
   };
 
   const handleNewSiteChange = e => setNewSite(e.target.value);
@@ -101,7 +101,7 @@ export default function KeyEditor(props: Props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const existing = edittingKey.trustedSites.some(
+    const existing = editingKey.trustedSites.some(
       site => site.url === newSite && site.enabled
     );
     if (existing) {
@@ -110,7 +110,7 @@ export default function KeyEditor(props: Props) {
     }
 
     const value = {
-      trustedSites: edittingKey.trustedSites.concat([
+      trustedSites: editingKey.trustedSites.concat([
         {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
@@ -129,7 +129,7 @@ export default function KeyEditor(props: Props) {
     removedSite: NostrCredential["trustedSites"][number]
   ) => {
     const value = {
-      trustedSites: edittingKey.trustedSites.map(site => {
+      trustedSites: editingKey.trustedSites.map(site => {
         if (site.url === removedSite.url) {
           site.enabled = false;
         }
@@ -143,7 +143,7 @@ export default function KeyEditor(props: Props) {
     revokedSite: NostrCredential["passwordAuthorizedSites"][number]
   ) => {
     const value = {
-      passwordAuthorizedSites: edittingKey.passwordAuthorizedSites.map(site => {
+      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
           site.expiryTime = 0;
         }
@@ -160,7 +160,7 @@ export default function KeyEditor(props: Props) {
     }
 
     const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(edittingKey.passwordAuthorizedSites)
+      JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     passwordAuthorizedSites[siteNo].permissions.excludedKinds = value
       ? value.split(",")
@@ -169,7 +169,7 @@ export default function KeyEditor(props: Props) {
   };
   const handleResetExcludedKinds = (siteNo: number) => {
     const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(edittingKey.passwordAuthorizedSites)
+      JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     passwordAuthorizedSites[siteNo].permissions.excludedKinds =
       DefaultExcludedKinds;
@@ -198,12 +198,12 @@ export default function KeyEditor(props: Props) {
 
   return (
     <>
-      {edittingKey ? (
-        <Card maxW={600} overflow="hidden" variant="filled">
+      {editingKey ? (
+        <Card maxW={700} overflow="hidden" variant="filled">
           <CardHeader pb={0}>
             <Heading size="md">
               <Editable
-                defaultValue={edittingKey.properties.displayName}
+                defaultValue={editingKey.properties.displayName}
                 onSubmit={value =>
                   HandleChangeValue({ properties: { displayName: value } })
                 }
@@ -216,8 +216,8 @@ export default function KeyEditor(props: Props) {
                 <EditableControls />
               </Editable>
             </Heading>
-            {edittingKey.properties.displayName !== edittingKey.identifier && (
-              <Text fontSize="md">&#40;{edittingKey.identifier}&#41;</Text>
+            {editingKey.properties.displayName !== editingKey.identifier && (
+              <Text fontSize="md">&#40;{editingKey.identifier}&#41;</Text>
             )}
           </CardHeader>
           <CardBody>
@@ -232,11 +232,11 @@ export default function KeyEditor(props: Props) {
                 </Heading>
                 <Textarea
                   size="sm"
-                  value={edittingKey.properties.memo}
+                  value={editingKey.properties.memo}
                   onChange={e =>
                     HandleChangeValue({
                       properties: {
-                        ...edittingKey.properties,
+                        ...editingKey.properties,
                         memo: e.target.value,
                       },
                     })
@@ -279,10 +279,10 @@ export default function KeyEditor(props: Props) {
                     </InputGroup>
                     <ExampleUrlMatch maxW="500px" />
                   </GridItem>
-                  {!edittingKey.trustedSites.length && (
+                  {!editingKey.trustedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {edittingKey.trustedSites
+                  {editingKey.trustedSites
                     .filter(site => site.enabled)
                     .map((site, i) => {
                       return (
@@ -297,7 +297,7 @@ export default function KeyEditor(props: Props) {
                             {/* <Button
                               variant="outline"
                               colorScheme="blue"
-                              onClick={() => setEdittingNumForTrusted(i)}
+                              onClick={() => setEditingNumForTrusted(i)}
                               mr="2"
                             >
                               Permission
@@ -310,7 +310,7 @@ export default function KeyEditor(props: Props) {
                               Remove
                             </Button>
                           </GridItem>
-                          {edittingNumForTrusted === i && (
+                          {editingNumForTrusted === i && (
                             <GridItem colSpan={2}>
                               <VStack backgroundColor="white">
                                 <Box>N/A</Box>
@@ -327,10 +327,10 @@ export default function KeyEditor(props: Props) {
                   Password Authorization
                 </Heading>
                 <Grid gridTemplateColumns={"400px 1fr"} gap={2}>
-                  {!edittingKey.passwordAuthorizedSites.length && (
+                  {!editingKey.passwordAuthorizedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {edittingKey.passwordAuthorizedSites
+                  {editingKey.passwordAuthorizedSites
                     .filter(site => site.expiryTime > Date.now())
                     .map((site, i) => {
                       const expiryTime = new Date(site.expiryTime);
@@ -350,8 +350,8 @@ export default function KeyEditor(props: Props) {
                               variant="outline"
                               colorScheme="blue"
                               onClick={() => {
-                                setEdittingNumForPassword(
-                                  i !== edittingNumForPassword ? i : -1
+                                setEditingNumForPassword(
+                                  i !== editingNumForPassword ? i : -1
                                 );
                               }}
                               mr="2"
@@ -366,7 +366,7 @@ export default function KeyEditor(props: Props) {
                               Revoke
                             </Button>
                           </GridItem>
-                          {edittingNumForPassword === i && (
+                          {editingNumForPassword === i && (
                             <GridItem colSpan={2}>
                               <VStack
                                 backgroundColor="white"
@@ -417,7 +417,7 @@ export default function KeyEditor(props: Props) {
                   Primary
                 </Heading>
                 <Switch
-                  isChecked={edittingKey.primary}
+                  isChecked={editingKey.primary}
                   onChange={e =>
                     HandleChangeValue({ primary: e.target.checked })
                   }
@@ -433,7 +433,7 @@ export default function KeyEditor(props: Props) {
               fontSize="20px"
               aria-label="Cancel"
               onClick={() => {
-                setEdittingKey(credential);
+                setEditingKey(credential);
                 props.goBack();
               }}
             />

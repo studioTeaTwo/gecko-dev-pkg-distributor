@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -42,6 +42,7 @@ import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import { changePrimary } from "../shared/functions";
+import { StateContext } from "../../contexts/StatesProvider";
 
 interface NostrDisplayedCredential extends NostrCredential {
   nseckey: string;
@@ -50,6 +51,7 @@ interface NostrDisplayedCredential extends NostrCredential {
 
 export default function Nostr(props: SelfsovereignidentityDefaultProps) {
   const { prefs, credentials } = props;
+  const { states, resetState, updateState } = useContext(StateContext);
   const {
     addCredentialToStore,
     modifyCredentialToStore,
@@ -61,7 +63,6 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
 
   const [importedKey, setImportedKey] = useState("");
   const [newKey, setNewKey] = useState("");
-  const [edittingNo, setEdittingNo] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
 
@@ -305,7 +306,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
             {nostrKeys.map((item, i) => {
               return (
                 <>
-                  {edittingNo !== i ? (
+                  {states.nostr.editingNo !== i ? (
                     <Card maxW="md" overflow="hidden" key={i}>
                       <CardHeader pb="0">
                         <Heading size="md">
@@ -414,7 +415,7 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                           variant="transparent"
                           fontSize="20px"
                           aria-label="Edit Key"
-                          onClick={() => setEdittingNo(i)}
+                          onClick={() => updateState("nostr", { editingNo: i })}
                         />
                         <IconButton
                           icon={<MdDeleteForever />}
@@ -427,12 +428,12 @@ export default function Nostr(props: SelfsovereignidentityDefaultProps) {
                     </Card>
                   ) : (
                     <KeyEditor
-                      credential={nostrKeys[edittingNo]}
+                      credential={nostrKeys[states.nostr.editingNo]}
                       nostrKeys={nostrKeys}
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings
                       }
-                      goBack={() => setEdittingNo(-1)}
+                      goBack={() => resetState()}
                     ></KeyEditor>
                   )}
                 </>

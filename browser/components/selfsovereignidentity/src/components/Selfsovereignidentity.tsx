@@ -15,7 +15,7 @@ import useChildActorEvent, {
 } from "../hooks/useChildActorEvent";
 
 function Selfsovereignidentity(props) {
-  const { prefs, credentials } = useChildActorEvent(); // Just once to ensure that useeffect is called only once
+  const { prefs, credentials } = useChildActorEvent(); // Just once to ensure that useEffect is called only once
   const { initStore } = dispatchEvents;
 
   const [selectedMenu, setSelectedMenu] = useState<MenuItem>("");
@@ -26,7 +26,7 @@ function Selfsovereignidentity(props) {
   }, []);
 
   useEffect(() => {
-    // Actually, I want to update only at first time for initial pref value.
+    // FIXME(ssb): Actually, I want to update only at first time for initial pref value.
     setSelectedMenu(prefs.base.menuPin);
   }, [prefs.base.menuPin]);
 

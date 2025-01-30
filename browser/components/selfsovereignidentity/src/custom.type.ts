@@ -1,9 +1,8 @@
-export type MenuItem = ProtocolName | "";
-
 /**
  * Selfsovereignidentity prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
+export type MenuItem = ProtocolName | "";
 export interface ProtocolDefaultPrefs {
   enabled: boolean; // selfsovereignidentity.[protocolName].enabled
   usedPrimarypasswordToSettings: boolean; // selfsovereignidentity.[protocolName].primarypassword.toSettings.enabled
@@ -27,9 +26,17 @@ export interface SelfsovereignidentityPrefs {
   } & ProtocolDefaultPrefs;
 }
 
+// States provided from internal actor
 export interface SelfsovereignidentityDefaultProps {
   prefs: SelfsovereignidentityPrefs;
   credentials: Credential[];
+}
+// States only in about:selfsovereignidentity
+export interface AboutSelfsovereignidentityStates {
+  nostr: {
+    editingNo: number; // Key number being edited
+    editingUrl: string; // TrustedSite URL being edited
+  };
 }
 
 /**
@@ -42,7 +49,7 @@ type OnlyUsedNsICredentialInfo = Omit<
 > &
   Pick<nsICredentialMetaInfo, "guid" | "timeCreated">;
 
-// ViewEntity to use in about:selfsovereignidentity
+// ViewEntity in about:selfsovereignidentity
 export type ProtocolName =
   | "bitcoin"
   | "lightning"
