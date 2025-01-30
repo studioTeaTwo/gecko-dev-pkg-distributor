@@ -86,6 +86,6 @@ internal fun Level.asLogPriority(): Log.Priority {
         Level.DEBUG -> Log.Priority.DEBUG
         Level.INFO -> Log.Priority.INFO
         Level.WARN -> Log.Priority.WARN
-        Level.ERROR -> Log.Priority.ERROR
+        else -> Log.Priority.ERROR
     }
 }
