@@ -14,12 +14,14 @@ interface SelfsovereignidentityDefaultPrefs {
 type PublicKey = string;
 type Signature = string;
 type PlainText = string;
-export interface WindowSSI extends EventTarget {
+export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   _scope: "ssi";
   _proxy: EventTarget;
+  _invoke: (event: CustomEvent) => void;
 
   readonly nostr: {
     _proxy: EventTarget;
+    _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
     getPublicKey: (option?) => Promise<PublicKey>;
     sign: (
@@ -30,7 +32,7 @@ export interface WindowSSI extends EventTarget {
     ) => Promise<Signature>;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
-  } & EventTarget;
+  } & Omit<EventTarget, "dispatchEvent">;
 }
 declare global {
   // eslint-disable-next-line no-var

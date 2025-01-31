@@ -7,7 +7,7 @@
 import { shouldInject } from "../shared/shouldInject";
 import { log } from "../shared/logger";
 import { WindowSSI } from "../custom.type";
-import { init as nostrInit, nostr } from "./nostr";
+import { nostr } from "./nostr";
 
 log("inpage-script working");
 
@@ -17,7 +17,8 @@ const windowSSI: WindowSSI = {
 
   nostr,
 
-  dispatchEvent(event: Event) {
+  // TODO(ssb): Ideally should conceal
+  _invoke(event: CustomEvent) {
     return windowSSI._proxy.dispatchEvent(event);
   },
   addEventListener(
@@ -43,6 +44,4 @@ if (shouldInject()) {
     writable: false,
     configurable: false,
   });
-
-  nostrInit();
 }

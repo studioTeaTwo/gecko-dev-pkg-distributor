@@ -7,24 +7,7 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.nostr = exports.init = void 0;
-function init() {
-    window.addEventListener("message", event => {
-        if (event.source !== window || event.data.id !== "native") {
-            return;
-        }
-        const action = event.data.data.action;
-        const data = event.data.data.data;
-        if (event.data.scope === "nostr") {
-            window.ssi.nostr.dispatchEvent(new CustomEvent(action, {
-                detail: data,
-                bubbles: false,
-                composed: true,
-            }));
-        }
-    });
-}
-exports.init = init;
+exports.nostr = void 0;
 exports.nostr = Object.freeze({
     generate(option) {
         return Promise.resolve("Not implemented");
@@ -45,8 +28,13 @@ exports.nostr = Object.freeze({
     // ref: https://github.com/nostr-protocol/nips/pull/1174
     messageBoard: {},
     _proxy: new EventTarget(),
-    dispatchEvent(event) {
-        return exports.nostr._proxy.dispatchEvent(event);
+    // TODO(ssb): Ideally should conceal
+    _invoke(action, data) {
+        exports.nostr._proxy.dispatchEvent(new CustomEvent(action, {
+            detail: data,
+            bubbles: false,
+            composed: true,
+        }));
     },
     addEventListener(type, callback, options) {
         return exports.nostr._proxy.addEventListener(type, callback, options);
@@ -169,7 +157,8 @@ const windowSSI = {
     _scope: "ssi",
     _proxy: new EventTarget(),
     nostr: nostr_1.nostr,
-    dispatchEvent(event) {
+    // TODO(ssb): Ideally should conceal
+    _invoke(event) {
         return windowSSI._proxy.dispatchEvent(event);
     },
     addEventListener(type, callback, options) {
@@ -186,7 +175,6 @@ if ((0, shouldInject_1.shouldInject)()) {
         writable: false,
         configurable: false,
     });
-    (0, nostr_1.init)();
 }
 
 })();

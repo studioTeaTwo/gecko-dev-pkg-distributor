@@ -42,19 +42,9 @@ export async function init() {
     const data = request.args;
 
     // forward account changed messaged to inpage script
-    if (request.action === "nostr/accountChanged") {
-      window.postMessage(
-        {
-          id: "native",
-          application: "ssb",
-          data: {
-            action,
-            data,
-          },
-          scope: "nostr",
-        },
-        window.location.origin
-      );
+    if (action === "accountChanged") {
+      window.wrappedJSObject.ssi.nostr._invoke(action, data);
+      XPCNativeWrapper(window.wrappedJSObject.ssi);
     }
   });
 }
