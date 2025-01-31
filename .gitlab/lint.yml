@@ -7,7 +7,7 @@ workflow:
 default:
   interruptible: true
   before_script:
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-pip npm
+    - apt update && apt install python3-pip npm
     - cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
 
 mozlint_eslint:

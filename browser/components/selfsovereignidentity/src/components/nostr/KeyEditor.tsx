@@ -76,7 +76,6 @@ export default function KeyEditor(props: Props) {
       changePrimary(editingKey.guid, editingKey.primary, nostrKeys);
     }
 
-    alert("saved!");
     props.goBack();
   };
 
@@ -153,9 +152,9 @@ export default function KeyEditor(props: Props) {
     HandleChangeValue(value);
   };
 
-  const HandleSaveExcludedKinds = (siteNo: number, value: string) => {
+  const handleSaveExcludedKinds = (siteNo: number, value: string) => {
     if (!/^[1-9][0-9,]*$/.test(value) && value !== "") {
-      alert("Input must be number or ','.");
+      alert("Input must be Kind number or ','.");
       return;
     }
 
@@ -387,7 +386,7 @@ export default function KeyEditor(props: Props) {
                                         : ""
                                     }
                                     onChange={e =>
-                                      HandleSaveExcludedKinds(i, e.target.value)
+                                      handleSaveExcludedKinds(i, e.target.value)
                                     }
                                     placeholder={
                                       site.permissions.excludedKinds.length > 0
@@ -398,9 +397,12 @@ export default function KeyEditor(props: Props) {
                                     backgroundColor="white"
                                   />
                                   <Button
+                                    variant="outline"
+                                    colorScheme="blue"
                                     onClick={() => handleResetExcludedKinds(i)}
+                                    width="150px"
                                   >
-                                    Reset
+                                    Reset to default
                                   </Button>
                                 </HStack>
                                 <ExampleNostrKind width="100%" />

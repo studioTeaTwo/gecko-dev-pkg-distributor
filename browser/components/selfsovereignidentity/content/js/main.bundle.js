@@ -832,7 +832,7 @@ function ExampleNostrKind(props) {
         ) })
       ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Reference: https://github.com/nostr-protocol/nips?tab=readme-ov-file#event-kinds" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Note: App can arbitrarily enforce your authorisation even if you opt-out here. It's because they deemed that authorisation important enough to ask for your consent." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Note: App can arbitrarily enforce your authorization even if you opt-out here. It's because they deemed that authorization important enough to ask for your consent." })
     ] })
   ] }) });
 }
@@ -894,7 +894,6 @@ function KeyEditor(props) {
     if (credential.primary !== editingKey.primary) {
       changePrimary(editingKey.guid, editingKey.primary, nostrKeys);
     }
-    alert("saved!");
     props.goBack();
   };
   const HandleChangeValue = (newKV) => {
@@ -951,9 +950,9 @@ function KeyEditor(props) {
     };
     HandleChangeValue(value);
   };
-  const HandleSaveExcludedKinds = (siteNo, value) => {
+  const handleSaveExcludedKinds = (siteNo, value) => {
     if (!/^[1-9][0-9,]*$/.test(value) && value !== "") {
-      alert("Input must be number or ','.");
+      alert("Input must be Kind number or ','.");
       return;
     }
     const passwordAuthorizedSites = JSON.parse(
@@ -1160,7 +1159,7 @@ function KeyEditor(props) {
                                 value: site.permissions.excludedKinds.length > 0 ? site.permissions.excludedKinds.join(
                                   ","
                                 ) : "",
-                                onChange: (e) => HandleSaveExcludedKinds(i, e.target.value),
+                                onChange: (e) => handleSaveExcludedKinds(i, e.target.value),
                                 placeholder: site.permissions.excludedKinds.length > 0 ? "" : "Input kind number",
                                 minW: "300px",
                                 backgroundColor: "white"
@@ -1169,8 +1168,11 @@ function KeyEditor(props) {
                             /* @__PURE__ */ jsxRuntimeExports.jsx(
                               Button,
                               {
+                                variant: "outline",
+                                colorScheme: "blue",
                                 onClick: () => handleResetExcludedKinds(i),
-                                children: "Reset"
+                                width: "150px",
+                                children: "Reset to default"
                               }
                             )
                           ] }),

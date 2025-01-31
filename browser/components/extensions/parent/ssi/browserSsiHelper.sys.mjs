@@ -289,7 +289,7 @@ export const browserSsiHelper = {
   async execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     const { url } = target;
     const { enabledTrustedSites, enabledPrimarypassword } = prefs;
-    const { trustedSites, passwordAuthorizedSites } = authCache;
+    const { trustedSites } = authCache;
     const { enforce } = dialogInfo;
 
     if (enabledTrustedSites && !enforce) {
@@ -302,8 +302,10 @@ export const browserSsiHelper = {
 
     if (enabledPrimarypassword && !enforce) {
       const alreadyAuthorized = browserSsiHelper.isPasswordAuthorized(
-        url,
-        passwordAuthorizedSites
+        target,
+        extensionName,
+        authCache,
+        dialogInfo
       );
       if (alreadyAuthorized) {
         return true;
@@ -352,16 +354,68 @@ export const browserSsiHelper = {
   },
   /**
    *
-   * @param {string} url
-   * @param {object[]} passwordAuthorizedSites
+   * @param {object} target
+   * @param {string} target.origin contentPrincipal.originNoSuffix
+   * @param {string} target.url contentPrincipal.spec
+   * @param {string} extensionName
+   * @param {object} authCache
+   * @param {string} authCache.cacheKey
+   * @param {object[]} authCache.trustedSites credential.trustedSites
+   * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
+   * @param {number} authCache.expiryTimePref
+   * @param {object} dialogInfo
+   * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
+   * @param {object} dialogInfo.evidence
+   * @param {string} dialogInfo.caption
+   * @param {string} dialogInfo.submission
+   * @param {boolean} dialogInfo.enforce
+   * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
    * @returns {boolean}
    */
-  isPasswordAuthorized(url, passwordAuthorizedSites) {
-    const expiryTime = passwordAuthorizedSites.filter(site =>
-      url.startsWith(site.url)
-    )[0]?.expiryTime;
-    const validSite = !!expiryTime && expiryTime > Date.now();
+  isPasswordAuthorized(target, extensionName, authCache, dialogInfo) {
+    const { url, origin } = target;
+    const { cacheKey, passwordAuthorizedSites } = authCache;
+    const { evidence, enforce } = dialogInfo;
 
+    const protocolName = cacheKey.split(":")[0];
+    let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
+      url.startsWith(site.url)
+    )[0];
+
+    // If not existing, then create new cache and return false.
+    if (!passwordAuthorizedSite) {
+      passwordAuthorizedSite = {
+        url: origin,
+        name: extensionName,
+        expiryTime: 0,
+        permissions: {},
+      };
+      if (protocolName === "nostr") {
+        passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
+      }
+      Services.ssi.authCache.update(cacheKey, {
+        passwordAuthorizedSites: [passwordAuthorizedSite],
+      });
+      return false;
+    }
+
+    // Special cases of mandatory authorization.
+    // Don't need to update cache, do as it is.
+    if (enforce) {
+      return false;
+    }
+    if (protocolName === "nostr") {
+      if (
+        evidence &&
+        passwordAuthorizedSite.permissions.excludedKinds.includes(
+          evidence.kind.toString()
+        )
+      ) {
+        return false;
+      }
+    }
+
+    const validSite = passwordAuthorizedSite.expiryTime > Date.now();
     console.log(
       "primarypassword-cache",
       validSite,
@@ -422,36 +476,31 @@ export const browserSsiHelper = {
       const messageId = MESSAGE_ID + "-" + AppConstants.platform;
     }
 
-    // Transform AuthCache
+    // Prepare expiration time.
+    // It is assumed that passwordAuthorizedSite was definitely created before this.
     const protocolName = cacheKey.split(":")[0];
     let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
       url.startsWith(site.url)
     )[0];
     if (!passwordAuthorizedSite) {
-      passwordAuthorizedSite = {
-        url: origin,
-        name: extensionName,
-        expiryTime: 0,
-        permissions: {},
-      };
-      if (protocolName === "nostr") {
-        passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
-      }
-      Services.ssi.authCache.update(cacheKey, {
-        passwordAuthorizedSites: [passwordAuthorizedSite],
-      });
+      return false;
     }
     let _authExpirationTime = passwordAuthorizedSite.expiryTime;
 
-    // Special case of mandatory authentication
+    // Special cases of mandatory authorization.
+    // Don't need to update cache, do as it is.
     if (enforce) {
       _authExpirationTime = 0;
     }
-    if (
-      protocolName === "nostr" &&
-      passwordAuthorizedSite.permissions.excludedKinds.includes(evidence.kind)
-    ) {
-      _authExpirationTime = 0;
+    if (protocolName === "nostr") {
+      if (
+        evidence &&
+        passwordAuthorizedSite.permissions.excludedKinds.includes(
+          evidence.kind.toString()
+        )
+      ) {
+        _authExpirationTime = 0;
+      }
     }
 
     // Suggest password prompt
