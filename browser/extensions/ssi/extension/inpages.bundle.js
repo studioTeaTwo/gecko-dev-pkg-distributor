@@ -8,39 +8,67 @@
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.nostr = void 0;
-exports.nostr = Object.freeze({
-    generate(option) {
-        return Promise.resolve("Not implemented");
+exports.nostr = Object.create(null, {
+    generate: {
+        value: function (option) {
+            return Promise.resolve("Not implemented");
+        },
+        enumerable: true,
     },
-    async getPublicKey(option) {
-        return callBackground("nostr/getPublicKey", option);
+    getPublicKey: {
+        value: async function (option) {
+            return callBackground("nostr/getPublicKey", option);
+        },
+        enumerable: true,
     },
-    sign(message, option) {
-        return callBackground(`nostr/${option.type}`, {
-            message,
-            ...option,
-        });
+    sign: {
+        value: function (message, option) {
+            return callBackground(`nostr/${option.type}`, {
+                message,
+                ...option,
+            });
+        },
+        enumerable: true,
     },
-    decrypt(ciphertext, option) {
-        return Promise.resolve("Not implemented");
+    decrypt: {
+        value: function (ciphertext, option) {
+            return Promise.resolve("Not implemented");
+        },
+        enumerable: true,
     },
     // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
     // ref: https://github.com/nostr-protocol/nips/pull/1174
-    messageBoard: {},
-    _proxy: new EventTarget(),
+    messageBoard: {
+        value: {},
+        enumerable: true,
+        writable: true,
+    },
+    _proxy: {
+        value: new EventTarget(),
+        enumerable: true,
+    },
     // TODO(ssb): Ideally should conceal
-    _invoke(action, data) {
-        exports.nostr._proxy.dispatchEvent(new CustomEvent(action, {
-            detail: data,
-            bubbles: false,
-            composed: true,
-        }));
+    _invoke: {
+        value: function (action, data) {
+            exports.nostr._proxy.dispatchEvent(new CustomEvent(action, {
+                detail: data,
+                bubbles: false,
+                composed: true,
+            }));
+        },
+        enumerable: true,
     },
-    addEventListener(type, callback, options) {
-        return exports.nostr._proxy.addEventListener(type, callback, options);
+    addEventListener: {
+        value: function (type, callback, options) {
+            return exports.nostr._proxy.addEventListener(type, callback, options);
+        },
+        enumerable: true,
     },
-    removeEventListener(type, callback, options) {
-        return exports.nostr._proxy.removeEventListener(type, callback, options);
+    removeEventListener: {
+        value: function (type, callback, options) {
+            return exports.nostr._proxy.removeEventListener(type, callback, options);
+        },
+        enumerable: true,
     },
 });
 
@@ -153,24 +181,42 @@ const shouldInject_1 = __webpack_require__(880);
 const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(368);
 (0, logger_1.log)("inpage-script working");
-const windowSSI = {
-    _scope: "ssi",
-    _proxy: new EventTarget(),
-    nostr: nostr_1.nostr,
+const windowSSI = Object.create(null, {
+    _scope: {
+        value: "ssi",
+        enumerable: true,
+    },
+    _proxy: {
+        value: new EventTarget(),
+        enumerable: true,
+    },
+    nostr: {
+        value: nostr_1.nostr,
+        enumerable: true,
+    },
     // TODO(ssb): Ideally should conceal
-    _invoke(event) {
-        return windowSSI._proxy.dispatchEvent(event);
+    _invoke: {
+        value: function (event) {
+            return windowSSI._proxy.dispatchEvent(event);
+        },
+        enumerable: true,
     },
-    addEventListener(type, callback, options) {
-        return windowSSI._proxy.addEventListener(type, callback, options);
+    addEventListener: {
+        value: function (type, callback, options) {
+            return windowSSI._proxy.addEventListener(type, callback, options);
+        },
+        enumerable: true,
     },
-    removeEventListener(type, callback, options) {
-        return windowSSI._proxy.removeEventListener(type, callback, options);
+    removeEventListener: {
+        value: function (type, callback, options) {
+            return windowSSI._proxy.removeEventListener(type, callback, options);
+        },
+        enumerable: true,
     },
-};
+});
 if ((0, shouldInject_1.shouldInject)()) {
     // It envisions browser-native API, so the object is persisted.
-    window.ssi = Object.freeze(windowSSI);
+    window.ssi = windowSSI;
     Object.defineProperty(window, "ssi", {
         writable: false,
         configurable: false,

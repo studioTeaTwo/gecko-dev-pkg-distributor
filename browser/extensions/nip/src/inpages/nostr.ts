@@ -9,9 +9,14 @@ import { type NostrEvent } from "../ssi.type";
 
 declare global {
   // eslint-disable-next-line no-var
-  var nostr: NostrProvider;
+  var nostr: typeof NostrProvider;
   // eslint-disable-next-line no-var
   var nip07Loaded: { [provider: string]: boolean }[];
+  // eslint-disable-next-line no-var
+  var _nostr: {
+    _injectBuiltinNip: () => void;
+    _disposeBuiltinNip: () => void;
+  };
 }
 
 export function init() {
@@ -19,51 +24,31 @@ export function init() {
     return;
   }
 
-  // Inject
-  window.nostr = new NostrProvider();
-
-  // The message listener to listen to content calls
-  // After, emit event to return the reponse to the web apps.
-  window.addEventListener("message", event => {
-    if (event.source !== window || event.data.id !== "native") {
-      return;
-    }
-
-    const action = event.data.data.action;
-    const data = event.data.data.data;
-    if (event.data.scope === "nostr") {
-      if (action === "builtinNip07Init" || action === "builtinNip07Changed") {
-        // TODO(ssb): It depends on the standard spec with other providers.
-        if (data) {
-          // Inject
-          window.nostr = new NostrProvider();
-          window.nip07Loaded = Array.isArray(window.nip07Loaded)
-            ? window.nip07Loaded.concat([{ ssb: true }])
-            : [{ ssb: true }];
-          window.ssi.nostr.addEventListener(
-            "accountChanged",
-            accountChangedHandler
-          );
-        } else {
-          // Dispose
-          window.nostr && delete window.nostr;
-          window.nip07Loaded = Array.isArray(window.nip07Loaded)
-            ? window.nip07Loaded.concat({ ssb: false })
-            : [{ ssb: false }];
-          window.ssi.nostr.removeEventListener(
-            "accountChanged",
-            accountChangedHandler
-          );
-        }
-
-        log(`inpage ${action} emit`, event);
-        window.dispatchEvent(
-          new CustomEvent(action, {
-            detail: data,
-          })
+  window._nostr = Object.create(null, {
+    _injectBuiltinNip: {
+      value: () => {
+        window.nostr = NostrProvider;
+        window.nip07Loaded = Array.isArray(window.nip07Loaded)
+          ? window.nip07Loaded.concat([{ ssb: true }])
+          : [{ ssb: true }];
+        window.ssi.nostr.addEventListener(
+          "accountChanged",
+          accountChangedHandler
         );
-      }
-    }
+      },
+    },
+    _disposeBuiltinNip: {
+      value: () => {
+        window.nostr && delete window.nostr;
+        window.nip07Loaded = Array.isArray(window.nip07Loaded)
+          ? window.nip07Loaded.concat({ ssb: false })
+          : [{ ssb: false }];
+        window.ssi.nostr.removeEventListener(
+          "accountChanged",
+          accountChangedHandler
+        );
+      },
+    },
   });
 }
 
@@ -80,71 +65,98 @@ const accountChangedHandler = (event: CustomEvent<string>) => {
 };
 
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
-// TODO(ssb): move to window.wrappedJSObject in content script. Consider window.nostr isn't non-configurable.
-export class NostrProvider {
-  _scope = "nostr";
-  _provider = "ssb";
-  #proxy;
+export const NostrProvider = Object.create(null, {
+  _provider: {
+    value: "ssb",
+    enumerable: true,
+  },
+  _scope: {
+    value: "nostr",
+    enumerable: true,
+  },
+  _proxy: {
+    value: new EventTarget(),
+    enumerable: true,
+  },
 
-  constructor() {
-    this.#proxy = new EventTarget();
-    this.#proxy.proxied = this;
-  }
-
-  async getPublicKey() {
-    return window.ssi.nostr.getPublicKey();
-  }
-
-  async signEvent(event: {
-    created_at: number;
-    kind: number;
-    tags: string[][];
-    content: string;
-  }) {
-    const signedEvent: NostrEvent = { ...event };
-
-    // Attach your holding public key to verify it is the same as the current primary key.
-    signedEvent.pubkey = await this.getPublicKey();
-    const eventHash = bytesToHex(
-      sha256(new TextEncoder().encode(serializeEvent(signedEvent)))
-    );
-    const signature = await window.ssi.nostr.sign(JSON.stringify(signedEvent), {
-      type: "signEvent",
-    });
-    signedEvent.id = eventHash;
-    signedEvent.sig = signature;
-
-    return signedEvent;
-  }
-
-  nip04 = {
-    encrypt(pubkey, plaintext): Promise<string> {
-      return Promise.resolve("Not implemented");
+  getPublicKey: {
+    value: function () {
+      return window.ssi.nostr.getPublicKey();
     },
-    decrypt(pubkey, ciphertext): Promise<string> {
-      return Promise.resolve("Not implemented");
-    },
-  };
+    enumerable: true,
+  },
 
-  nip44 = {
-    encrypt(pubkey, plaintext): Promise<string> {
-      return Promise.resolve("Not implemented");
-    },
-    decrypt(pubkey, ciphertext): Promise<string> {
-      return Promise.resolve("Not implemented");
-    },
-  };
+  signEvent: {
+    value: async function (event: {
+      created_at: number;
+      kind: number;
+      tags: string[][];
+      content: string;
+    }) {
+      const signedEvent: NostrEvent = { ...event };
 
-  dispatchEvent(...args) {
-    return this.#proxy.dispatchEvent(...args);
-  }
-  addEventListener(...args) {
-    return this.#proxy.addEventListener(...args);
-  }
-  removeEventListener(...args) {
-    return this.#proxy.removeEventListener(...args);
-  }
-}
+      // Attach your holding public key to verify it is the same as the current primary key.
+      signedEvent.pubkey = await this.getPublicKey();
+      const eventHash = bytesToHex(
+        sha256(new TextEncoder().encode(serializeEvent(signedEvent)))
+      );
+      const signature = await window.ssi.nostr.sign(
+        JSON.stringify(signedEvent),
+        {
+          type: "signEvent",
+        }
+      );
+      signedEvent.id = eventHash;
+      signedEvent.sig = signature;
+
+      return signedEvent;
+    },
+    enumerable: true,
+  },
+
+  nip04: {
+    value: {
+      encrypt(pubkey, plaintext): Promise<string> {
+        return Promise.resolve("Not implemented");
+      },
+      decrypt(pubkey, ciphertext): Promise<string> {
+        return Promise.resolve("Not implemented");
+      },
+    },
+    enumerable: true,
+  },
+
+  nip44: {
+    value: {
+      encrypt(pubkey, plaintext): Promise<string> {
+        return Promise.resolve("Not implemented");
+      },
+      decrypt(pubkey, ciphertext): Promise<string> {
+        return Promise.resolve("Not implemented");
+      },
+    },
+    enumerable: true,
+  },
+
+  dispatchEvent: {
+    value: function (...args) {
+      return this._proxy.dispatchEvent(...args);
+    },
+    enumerable: true,
+  },
+  addEventListener: {
+    value: function (...args) {
+      return this._proxy.addEventListener(...args);
+    },
+    enumerable: true,
+  },
+  removeEventListener: {
+    value: function (...args) {
+      return this._proxy.removeEventListener(...args);
+    },
+    enumerable: true,
+  },
+});
 
 // based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event: NostrEvent): boolean {

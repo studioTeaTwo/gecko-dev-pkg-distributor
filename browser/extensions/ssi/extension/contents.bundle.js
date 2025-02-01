@@ -13,28 +13,11 @@ exports.init = void 0;
 const custom_type_1 = __webpack_require__(711);
 const logger_1 = __webpack_require__(874);
 const shouldInject_1 = __webpack_require__(880);
-// Function to inject in inpage.
-function callBackground(action, option) {
-    if (!custom_type_1.availableCalls.includes(action)) {
-        console.error("Function not available. Is the provider enabled?");
-        return;
-    }
-    return new window.Promise(resolve => {
-        browser.runtime
-            .sendMessage({
-            origin: location.origin,
-            action,
-            args: option,
-        })
-            .then(response => {
-            resolve(response);
-        });
-    });
-}
 async function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
+    // Inject to inpages.
     exportFunction(callBackground, window, {
         defineAs: "callBackground",
     });
@@ -52,6 +35,31 @@ async function init() {
     });
 }
 exports.init = init;
+// Function to receive background in inpage.
+function callBackground(action, option) {
+    if (!custom_type_1.availableCalls.includes(action)) {
+        throw new Error("Function not available. Is the provider enabled?");
+    }
+    // TODO(ssb): Validate option
+    switch (action) {
+        case "nostr/signEvent": {
+            if (typeof option.message !== "string") {
+                throw new Error("Invalid message");
+            }
+        }
+    }
+    return new window.Promise(resolve => {
+        browser.runtime
+            .sendMessage({
+            origin: location.origin,
+            action,
+            args: option,
+        })
+            .then(response => {
+            resolve(response);
+        });
+    });
+}
 
 
 /***/ }),

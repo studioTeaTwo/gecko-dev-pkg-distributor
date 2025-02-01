@@ -48,8 +48,8 @@ declare global {
     scope: Window,
     option?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
   );
-  // eslint-disable-next-line @typescript-eslint/ban-types
   function exportFunction(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     func: Function,
     scope: Window,
     option?: { defineAs?: string; allowCrossOriginArguments?: boolean }

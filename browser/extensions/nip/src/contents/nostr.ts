@@ -4,6 +4,15 @@
 import { log } from "../shared/logger";
 import { shouldInject } from "../shared/shouldInject";
 
+declare global {
+  interface WrappedJSObject {
+    _nostr: {
+      _injectBuiltinNip: () => void;
+      _disposeBuiltinNip: () => void;
+    };
+  }
+}
+
 export async function init() {
   if (!shouldInject()) {
     return;
@@ -13,23 +22,28 @@ export async function init() {
   // After, emit event to return the response to the inpages.
   browser.runtime.onMessage.addListener(request => {
     log("content-script onMessage", request);
+    const action = request.action;
+    const data = request.args;
+
     // forward account changed messaged to inpage script
     if (
-      request.action === "nostr/builtinNip07Init" ||
-      request.action === "nostr/builtinNip07Changed"
+      ["nostr/builtinNip07Init", "nostr/builtinNip07Changed"].includes(action)
     ) {
-      window.postMessage(
-        {
-          id: "native",
-          application: "nip",
-          data: {
-            action: request.action.replace("nostr/", ""),
-            data: request.args,
-          },
-          scope: "nostr",
-        },
-        window.location.origin
-      );
+      // TODO(ssb): It depends on the standard spec with other providers.
+      if (data) {
+        // Inject
+        window.wrappedJSObject._nostr._injectBuiltinNip();
+      } else {
+        // Dispose
+        window.wrappedJSObject._nostr._disposeBuiltinNip();
+      }
+      XPCNativeWrapper(window.wrappedJSObject._nostr);
+
+      const event = new CustomEvent(action, {
+        detail: data,
+      });
+      window.dispatchEvent(event);
+      log(`inpage ${action} emit`, event);
     }
   });
 }

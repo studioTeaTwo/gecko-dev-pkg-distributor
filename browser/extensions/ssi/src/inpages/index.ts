@@ -11,35 +11,53 @@ import { nostr } from "./nostr";
 
 log("inpage-script working");
 
-const windowSSI: WindowSSI = {
-  _scope: "ssi",
-  _proxy: new EventTarget(),
+const windowSSI: WindowSSI = Object.create(null, {
+  _scope: {
+    value: "ssi",
+    enumerable: true,
+  },
+  _proxy: {
+    value: new EventTarget(),
+    enumerable: true,
+  },
 
-  nostr,
+  nostr: {
+    value: nostr,
+    enumerable: true,
+  },
 
   // TODO(ssb): Ideally should conceal
-  _invoke(event: CustomEvent) {
-    return windowSSI._proxy.dispatchEvent(event);
+  _invoke: {
+    value: function (event: CustomEvent) {
+      return windowSSI._proxy.dispatchEvent(event);
+    },
+    enumerable: true,
   },
-  addEventListener(
-    type: string,
-    callback: EventListenerOrEventListenerObject | null,
-    options?: AddEventListenerOptions | boolean
-  ) {
-    return windowSSI._proxy.addEventListener(type, callback, options);
+  addEventListener: {
+    value: function (
+      type: string,
+      callback: EventListenerOrEventListenerObject | null,
+      options?: AddEventListenerOptions | boolean
+    ) {
+      return windowSSI._proxy.addEventListener(type, callback, options);
+    },
+    enumerable: true,
   },
-  removeEventListener(
-    type: string,
-    callback: EventListenerOrEventListenerObject | null,
-    options?: EventListenerOptions | boolean
-  ) {
-    return windowSSI._proxy.removeEventListener(type, callback, options);
+  removeEventListener: {
+    value: function (
+      type: string,
+      callback: EventListenerOrEventListenerObject | null,
+      options?: EventListenerOptions | boolean
+    ) {
+      return windowSSI._proxy.removeEventListener(type, callback, options);
+    },
+    enumerable: true,
   },
-};
+});
 
 if (shouldInject()) {
   // It envisions browser-native API, so the object is persisted.
-  window.ssi = Object.freeze(windowSSI);
+  window.ssi = windowSSI;
   Object.defineProperty(window, "ssi", {
     writable: false,
     configurable: false,

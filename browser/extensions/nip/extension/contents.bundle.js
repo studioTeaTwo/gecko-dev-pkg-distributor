@@ -20,18 +20,25 @@ async function init() {
     // After, emit event to return the response to the inpages.
     browser.runtime.onMessage.addListener(request => {
         (0, logger_1.log)("content-script onMessage", request);
+        const action = request.action;
+        const data = request.args;
         // forward account changed messaged to inpage script
-        if (request.action === "nostr/builtinNip07Init" ||
-            request.action === "nostr/builtinNip07Changed") {
-            window.postMessage({
-                id: "native",
-                application: "nip",
-                data: {
-                    action: request.action.replace("nostr/", ""),
-                    data: request.args,
-                },
-                scope: "nostr",
-            }, window.location.origin);
+        if (["nostr/builtinNip07Init", "nostr/builtinNip07Changed"].includes(action)) {
+            // TODO(ssb): It depends on the standard spec with other providers.
+            if (data) {
+                // Inject
+                window.wrappedJSObject._nostr._injectBuiltinNip();
+            }
+            else {
+                // Dispose
+                window.wrappedJSObject._nostr._disposeBuiltinNip();
+            }
+            XPCNativeWrapper(window.wrappedJSObject._nostr);
+            const event = new CustomEvent(action, {
+                detail: data,
+            });
+            window.dispatchEvent(event);
+            (0, logger_1.log)(`inpage ${action} emit`, event);
         }
     });
 }

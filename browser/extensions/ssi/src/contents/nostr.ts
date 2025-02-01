@@ -5,31 +5,12 @@ import { availableCalls } from "../custom.type";
 import { log } from "../shared/logger";
 import { shouldInject } from "../shared/shouldInject";
 
-// Function to inject in inpage.
-function callBackground(action: (typeof availableCalls)[number], option) {
-  if (!availableCalls.includes(action)) {
-    console.error("Function not available. Is the provider enabled?");
-    return;
-  }
-
-  return new window.Promise(resolve => {
-    browser.runtime
-      .sendMessage({
-        origin: location.origin,
-        action,
-        args: option,
-      })
-      .then(response => {
-        resolve(response);
-      });
-  });
-}
-
 export async function init() {
   if (!shouldInject()) {
     return;
   }
 
+  // Inject to inpages.
   exportFunction(callBackground, window, {
     defineAs: "callBackground",
   });
@@ -46,5 +27,32 @@ export async function init() {
       window.wrappedJSObject.ssi.nostr._invoke(action, data);
       XPCNativeWrapper(window.wrappedJSObject.ssi);
     }
+  });
+}
+
+// Function to receive background in inpage.
+function callBackground(action: (typeof availableCalls)[number], option) {
+  if (!availableCalls.includes(action)) {
+    throw new Error("Function not available. Is the provider enabled?");
+  }
+  // TODO(ssb): Validate option
+  switch (action) {
+    case "nostr/signEvent": {
+      if (typeof option.message !== "string") {
+        throw new Error("Invalid message");
+      }
+    }
+  }
+
+  return new window.Promise(resolve => {
+    browser.runtime
+      .sendMessage({
+        origin: location.origin,
+        action,
+        args: option,
+      })
+      .then(response => {
+        resolve(response);
+      });
   });
 }
