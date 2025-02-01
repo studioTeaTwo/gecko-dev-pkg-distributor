@@ -6,9 +6,25 @@ import { log } from "../shared/logger";
 import { shouldInject } from "../shared/shouldInject";
 
 // Function to inject in inpage.
-function callBackground(action: (typeof availableCalls)[number], option) {
+function callBackground(
+  action: (typeof availableCalls)[number],
+  option,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  callback?: Function
+) {
   if (!availableCalls.includes(action)) {
     console.error("Function not available. Is the provider enabled?");
+    return;
+  }
+
+  if (callback) {
+    browser.runtime
+      .sendMessage({
+        origin: location.origin,
+        action,
+        args: option,
+      })
+      .then(callback as FixMe);
     return;
   }
 

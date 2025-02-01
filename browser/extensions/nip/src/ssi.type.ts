@@ -14,23 +14,29 @@ interface SelfsovereignidentityDefaultPrefs {
 type PublicKey = string;
 type Signature = string;
 type PlainText = string;
-export interface WindowSSI extends EventTarget {
+export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   _scope: "ssi";
   _proxy: EventTarget;
+  _invoke: (event: CustomEvent) => void;
 
   readonly nostr: {
     _proxy: EventTarget;
+    _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
-    getPublicKey: (option?) => Promise<PublicKey>;
+    getPublicKey: (
+      option?,
+      callback?: (publicKey: PublicKey) => unknown
+    ) => Promise<PublicKey>;
     sign: (
       message: string,
       option: {
         type: "signEvent";
-      }
+      },
+      callback?: (signature: Signature) => unknown
     ) => Promise<Signature>;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
-  } & EventTarget;
+  } & Omit<EventTarget, "dispatchEvent">;
 }
 declare global {
   // eslint-disable-next-line no-var
@@ -48,6 +54,7 @@ declare global {
   );
   // eslint-disable-next-line @typescript-eslint/ban-types
   function exportFunction(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     func: Function,
     scope: Window,
     option?: { defineAs?: string; allowCrossOriginArguments?: boolean }
@@ -58,7 +65,12 @@ declare global {
   }
   // eslint-disable-next-line no-var
   var wrappedJSObject: WrappedJSObject;
-  function callBackground<T>(action: AvailableCalls, option: FixMe): Promise<T>;
+  function callBackground<T>(
+    action: AvailableCalls,
+    option: FixMe,
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    callback?: Function
+  ): Promise<T>;
 }
 
 /**

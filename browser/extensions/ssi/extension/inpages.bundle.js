@@ -12,10 +12,24 @@ exports.nostr = Object.freeze({
     generate(option) {
         return Promise.resolve("Not implemented");
     },
-    async getPublicKey(option) {
+    async getPublicKey(option, callback) {
+        if (callback) {
+            const pubkey = await callBackground("nostr/getPublicKey", option);
+            callback(pubkey);
+            return;
+        }
         return callBackground("nostr/getPublicKey", option);
     },
-    sign(message, option) {
+    sign(message, option, callback) {
+        if (callback) {
+            callBackground(`nostr/${option.type}`, {
+                message,
+                ...option,
+            }).then(pubkey => {
+                callback(pubkey);
+            });
+            return;
+        }
         return callBackground(`nostr/${option.type}`, {
             message,
             ...option,

@@ -23,12 +23,16 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
     _proxy: EventTarget;
     _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
-    getPublicKey: (option?) => Promise<PublicKey>;
+    getPublicKey: (
+      option?,
+      callback?: (publicKey: PublicKey) => unknown
+    ) => Promise<PublicKey>;
     sign: (
       message: string,
       option: {
         type: "signEvent";
-      }
+      },
+      callback?: (signature: Signature) => unknown
     ) => Promise<Signature>;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
@@ -50,6 +54,7 @@ declare global {
   );
   // eslint-disable-next-line @typescript-eslint/ban-types
   function exportFunction(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     func: Function,
     scope: Window,
     option?: { defineAs?: string; allowCrossOriginArguments?: boolean }
@@ -60,7 +65,12 @@ declare global {
   }
   // eslint-disable-next-line no-var
   var wrappedJSObject: WrappedJSObject;
-  function callBackground<T>(action: AvailableCalls, option: FixMe): Promise<T>;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  function callBackground<T>(
+    action: AvailableCalls,
+    option: FixMe,
+    callback?: Function
+  ): Promise<T>;
 }
 
 /**
