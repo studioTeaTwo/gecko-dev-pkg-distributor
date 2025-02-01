@@ -401,18 +401,15 @@ export const browserSsiHelper = {
 
     // Special cases of mandatory authorization.
     // Don't need to update cache, do as it is.
-    if (enforce) {
+    if (
+      browserSsiHelper.isAuthMandatory(
+        protocolName,
+        passwordAuthorizedSite,
+        enforce,
+        evidence
+      )
+    ) {
       return false;
-    }
-    if (protocolName === "nostr") {
-      if (
-        evidence &&
-        passwordAuthorizedSite.permissions.excludedKinds.includes(
-          evidence.kind.toString()
-        )
-      ) {
-        return false;
-      }
     }
 
     const validSite = passwordAuthorizedSite.expiryTime > Date.now();
@@ -489,18 +486,15 @@ export const browserSsiHelper = {
 
     // Special cases of mandatory authorization.
     // Don't need to update cache, do as it is.
-    if (enforce) {
+    if (
+      browserSsiHelper.isAuthMandatory(
+        protocolName,
+        passwordAuthorizedSite,
+        enforce,
+        evidence
+      )
+    ) {
       _authExpirationTime = 0;
-    }
-    if (protocolName === "nostr") {
-      if (
-        evidence &&
-        passwordAuthorizedSite.permissions.excludedKinds.includes(
-          evidence.kind.toString()
-        )
-      ) {
-        _authExpirationTime = 0;
-      }
     }
 
     // Suggest password prompt
@@ -532,5 +526,22 @@ export const browserSsiHelper = {
       Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
     );
     return isAuthorized;
+  },
+  isAuthMandatory(protocolName, passwordAuthorizedSite, enforce, evidence) {
+    if (enforce) {
+      return true;
+    }
+    if (protocolName === "nostr") {
+      if (
+        evidence &&
+        passwordAuthorizedSite.permissions.excludedKinds.includes(
+          evidence.kind.toString()
+        )
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   },
 };
