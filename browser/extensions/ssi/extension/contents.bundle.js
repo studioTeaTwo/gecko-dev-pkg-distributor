@@ -14,21 +14,9 @@ const custom_type_1 = __webpack_require__(711);
 const logger_1 = __webpack_require__(874);
 const shouldInject_1 = __webpack_require__(880);
 // Function to inject in inpage.
-function callBackground(action, option, 
-// eslint-disable-next-line @typescript-eslint/ban-types
-callback) {
+function callBackground(action, option) {
     if (!custom_type_1.availableCalls.includes(action)) {
         console.error("Function not available. Is the provider enabled?");
-        return;
-    }
-    if (callback) {
-        browser.runtime
-            .sendMessage({
-            origin: location.origin,
-            action,
-            args: option,
-        })
-            .then(callback);
         return;
     }
     return new window.Promise(resolve => {

@@ -5,24 +5,10 @@ export const nostr = Object.freeze<WindowSSI["nostr"]>({
   generate(option) {
     return Promise.resolve("Not implemented");
   },
-  async getPublicKey(option, callback) {
-    if (callback) {
-      const pubkey = await callBackground<string>("nostr/getPublicKey", option);
-      callback(pubkey);
-      return;
-    }
+  async getPublicKey(option) {
     return callBackground<string>("nostr/getPublicKey", option);
   },
-  sign(message, option, callback) {
-    if (callback) {
-      callBackground<string>(`nostr/${option.type}`, {
-        message,
-        ...option,
-      }).then(pubkey => {
-        callback(pubkey);
-      });
-      return;
-    }
+  sign(message, option) {
     return callBackground<string>(`nostr/${option.type}`, {
       message,
       ...option,
