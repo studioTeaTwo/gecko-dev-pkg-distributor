@@ -601,7 +601,7 @@ function randomBytes(bytesLength = 32) {
 // Interface for the web apps to call the extension
 // refs: https://github.com/nostr-protocol/nips/blob/master/07.md
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.NostrProvider = exports.init = void 0;
+exports.windowNostr = exports.init = void 0;
 const sha256_1 = __webpack_require__(623);
 const utils_1 = __webpack_require__(175);
 const logger_1 = __webpack_require__(874);
@@ -610,19 +610,21 @@ function init() {
     if (!(0, shouldInject_1.shouldInject)()) {
         return;
     }
-    window._nostr = Object.create(null, {
-        _injectBuiltinNip: {
+    window._builtinNip = Object.create(null, {
+        _injectBuiltinNip07: {
             value: () => {
-                window.nostr = exports.NostrProvider;
+                window.nostr = exports.windowNostr;
                 window.nip07Loaded = Array.isArray(window.nip07Loaded)
                     ? window.nip07Loaded.concat([{ ssb: true }])
                     : [{ ssb: true }];
                 window.ssi.nostr.addEventListener("accountChanged", accountChangedHandler);
             },
         },
-        _disposeBuiltinNip: {
+        _disposeBuiltinNip07: {
             value: () => {
-                window.nostr && delete window.nostr;
+                if (window.nostr && window.nostr._provider === "ssb") {
+                    delete window.nostr;
+                }
                 window.nip07Loaded = Array.isArray(window.nip07Loaded)
                     ? window.nip07Loaded.concat({ ssb: false })
                     : [{ ssb: false }];
@@ -635,13 +637,13 @@ exports.init = init;
 const accountChangedHandler = (event) => {
     const newPublicKey = event.detail;
     (0, logger_1.log)(`inpage accountChanged emit`, event);
-    window.nostr.dispatchEvent(new CustomEvent("accountChanged", {
+    window.nostr._invoke(new CustomEvent("accountChanged", {
         detail: newPublicKey,
         bubbles: true,
     }));
 };
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
-exports.NostrProvider = Object.create(null, {
+exports.windowNostr = Object.create(null, {
     _provider: {
         value: "ssb",
         enumerable: true,
@@ -697,21 +699,25 @@ exports.NostrProvider = Object.create(null, {
         },
         enumerable: true,
     },
-    dispatchEvent: {
-        value: function (...args) {
-            return this._proxy.dispatchEvent(...args);
+    _invoke: {
+        value: function (action, data) {
+            exports.windowNostr._proxy.dispatchEvent(new CustomEvent(action, {
+                detail: data,
+                bubbles: false,
+                composed: true,
+            }));
         },
         enumerable: true,
     },
     addEventListener: {
         value: function (...args) {
-            return this._proxy.addEventListener(...args);
+            return exports.windowNostr._proxy.addEventListener(...args);
         },
         enumerable: true,
     },
     removeEventListener: {
         value: function (...args) {
-            return this._proxy.removeEventListener(...args);
+            return exports.windowNostr._proxy.removeEventListener(...args);
         },
         enumerable: true,
     },

@@ -11,8 +11,12 @@ export async function init() {
   }
 
   // Inject to inpages.
-  exportFunction(callBackground, window, {
-    defineAs: "callBackground",
+  window._ssi = exportFunction(callRuntime, window, {
+    defineAs: "_callRuntime",
+  });
+  Object.defineProperty(window, "_ssi", {
+    writable: false,
+    configurable: false,
   });
 
   // The message listener to listen to background calls
@@ -31,7 +35,7 @@ export async function init() {
 }
 
 // Function to receive background in inpage.
-function callBackground(action: (typeof availableCalls)[number], option) {
+function callRuntime(action: (typeof availableCalls)[number], option) {
   if (!availableCalls.includes(action)) {
     throw new Error("Function not available. Is the provider enabled?");
   }

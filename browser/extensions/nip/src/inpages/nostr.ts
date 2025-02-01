@@ -9,13 +9,13 @@ import { type NostrEvent } from "../ssi.type";
 
 declare global {
   // eslint-disable-next-line no-var
-  var nostr: typeof NostrProvider;
+  var nostr: typeof windowNostr;
   // eslint-disable-next-line no-var
   var nip07Loaded: { [provider: string]: boolean }[];
   // eslint-disable-next-line no-var
-  var _nostr: {
-    _injectBuiltinNip: () => void;
-    _disposeBuiltinNip: () => void;
+  var _builtinNip: {
+    _injectBuiltinNip07: () => void;
+    _disposeBuiltinNip07: () => void;
   };
 }
 
@@ -24,10 +24,10 @@ export function init() {
     return;
   }
 
-  window._nostr = Object.create(null, {
-    _injectBuiltinNip: {
+  window._builtinNip = Object.create(null, {
+    _injectBuiltinNip07: {
       value: () => {
-        window.nostr = NostrProvider;
+        window.nostr = windowNostr;
         window.nip07Loaded = Array.isArray(window.nip07Loaded)
           ? window.nip07Loaded.concat([{ ssb: true }])
           : [{ ssb: true }];
@@ -37,9 +37,11 @@ export function init() {
         );
       },
     },
-    _disposeBuiltinNip: {
+    _disposeBuiltinNip07: {
       value: () => {
-        window.nostr && delete window.nostr;
+        if (window.nostr && window.nostr._provider === "ssb") {
+          delete window.nostr;
+        }
         window.nip07Loaded = Array.isArray(window.nip07Loaded)
           ? window.nip07Loaded.concat({ ssb: false })
           : [{ ssb: false }];
@@ -56,7 +58,7 @@ const accountChangedHandler = (event: CustomEvent<string>) => {
   const newPublicKey = event.detail;
 
   log(`inpage accountChanged emit`, event);
-  window.nostr.dispatchEvent(
+  window.nostr._invoke(
     new CustomEvent("accountChanged", {
       detail: newPublicKey,
       bubbles: true,
@@ -65,7 +67,7 @@ const accountChangedHandler = (event: CustomEvent<string>) => {
 };
 
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
-export const NostrProvider = Object.create(null, {
+export const windowNostr = Object.create(null, {
   _provider: {
     value: "ssb",
     enumerable: true,
@@ -138,21 +140,27 @@ export const NostrProvider = Object.create(null, {
     enumerable: true,
   },
 
-  dispatchEvent: {
-    value: function (...args) {
-      return this._proxy.dispatchEvent(...args);
+  _invoke: {
+    value: function (action, data) {
+      windowNostr._proxy.dispatchEvent(
+        new CustomEvent(action, {
+          detail: data,
+          bubbles: false,
+          composed: true,
+        })
+      );
     },
     enumerable: true,
   },
   addEventListener: {
     value: function (...args) {
-      return this._proxy.addEventListener(...args);
+      return windowNostr._proxy.addEventListener(...args);
     },
     enumerable: true,
   },
   removeEventListener: {
     value: function (...args) {
-      return this._proxy.removeEventListener(...args);
+      return windowNostr._proxy.removeEventListener(...args);
     },
     enumerable: true,
   },

@@ -6,9 +6,9 @@ import { shouldInject } from "../shared/shouldInject";
 
 declare global {
   interface WrappedJSObject {
-    _nostr: {
-      _injectBuiltinNip: () => void;
-      _disposeBuiltinNip: () => void;
+    _builtinNip: {
+      _injectBuiltinNip07: () => void;
+      _disposeBuiltinNip07: () => void;
     };
   }
 }
@@ -32,12 +32,12 @@ export async function init() {
       // TODO(ssb): It depends on the standard spec with other providers.
       if (data) {
         // Inject
-        window.wrappedJSObject._nostr._injectBuiltinNip();
+        window.wrappedJSObject._builtinNip._injectBuiltinNip07();
       } else {
         // Dispose
-        window.wrappedJSObject._nostr._disposeBuiltinNip();
+        window.wrappedJSObject._builtinNip._disposeBuiltinNip07();
       }
-      XPCNativeWrapper(window.wrappedJSObject._nostr);
+      XPCNativeWrapper(window.wrappedJSObject._builtinNip);
 
       const event = new CustomEvent(action, {
         detail: data,

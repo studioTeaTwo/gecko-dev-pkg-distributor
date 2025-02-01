@@ -24,12 +24,23 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
     _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
     getPublicKey: (option?) => Promise<PublicKey>;
+    getPublicKeyWithCallback: (
+      callback: (...argments) => unknown,
+      option?
+    ) => PublicKey;
     sign: (
       message: string,
       option: {
         type: "signEvent";
       }
     ) => Promise<Signature>;
+    signWithCallback: (
+      message: string,
+      callback: (...argments) => unknown,
+      option: {
+        type: "signEvent";
+      }
+    ) => Signature;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
   } & Omit<EventTarget, "dispatchEvent">;
@@ -60,7 +71,11 @@ declare global {
   }
   // eslint-disable-next-line no-var
   var wrappedJSObject: WrappedJSObject;
-  function callBackground<T>(action: AvailableCalls, option: FixMe): Promise<T>;
+  // Injected by content script
+  // eslint-disable-next-line no-var
+  var _ssi: {
+    _callRuntime: <T>(action: AvailableCalls, option: FixMe) => Promise<T>;
+  };
 }
 
 /**

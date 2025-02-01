@@ -9,8 +9,18 @@ export const nostr: WindowSSI["nostr"] = Object.create(null, {
     enumerable: true,
   },
   getPublicKey: {
-    value: async function (option) {
-      return callBackground<string>("nostr/getPublicKey", option);
+    value: function (option) {
+      return _ssi._callRuntime<string>("nostr/getPublicKey", option);
+    },
+    enumerable: true,
+  },
+  getPublicKeyWithCallback: {
+    value: function (callback, option) {
+      _ssi
+        ._callRuntime<string>("nostr/getPublicKey", option)
+        .then(publicKey => {
+          callback(publicKey);
+        });
     },
     enumerable: true,
   },
@@ -21,10 +31,29 @@ export const nostr: WindowSSI["nostr"] = Object.create(null, {
         type: "signEvent";
       }
     ) {
-      return callBackground<string>(`nostr/${option.type}`, {
+      return _ssi._callRuntime<string>(`nostr/${option.type}`, {
         message,
         ...option,
       });
+    },
+    enumerable: true,
+  },
+  signWithCallback: {
+    value: function (
+      message,
+      callback,
+      option: {
+        type: "signEvent";
+      }
+    ) {
+      _ssi
+        ._callRuntime<string>(`nostr/${option.type}`, {
+          message,
+          ...option,
+        })
+        .then(signature => {
+          callback(signature);
+        });
     },
     enumerable: true,
   },

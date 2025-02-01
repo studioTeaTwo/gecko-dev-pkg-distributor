@@ -16,16 +16,39 @@ exports.nostr = Object.create(null, {
         enumerable: true,
     },
     getPublicKey: {
-        value: async function (option) {
-            return callBackground("nostr/getPublicKey", option);
+        value: function (option) {
+            return _ssi._callRuntime("nostr/getPublicKey", option);
+        },
+        enumerable: true,
+    },
+    getPublicKeyWithCallback: {
+        value: function (callback, option) {
+            _ssi
+                ._callRuntime("nostr/getPublicKey", option)
+                .then(publicKey => {
+                callback(publicKey);
+            });
         },
         enumerable: true,
     },
     sign: {
         value: function (message, option) {
-            return callBackground(`nostr/${option.type}`, {
+            return _ssi._callRuntime(`nostr/${option.type}`, {
                 message,
                 ...option,
+            });
+        },
+        enumerable: true,
+    },
+    signWithCallback: {
+        value: function (message, callback, option) {
+            _ssi
+                ._callRuntime(`nostr/${option.type}`, {
+                message,
+                ...option,
+            })
+                .then(signature => {
+                callback(signature);
             });
         },
         enumerable: true,
