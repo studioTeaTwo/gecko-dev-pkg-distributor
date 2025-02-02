@@ -1,29 +1,48 @@
-// Mediator for the extension to relay between the web apps and the background
-// refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
-
-import { availableCalls } from "../custom.type";
+import { WindowSSI } from "../custom.type";
 import { log } from "../shared/logger";
-import { shouldInject } from "../shared/shouldInject";
+import {
+  generate,
+  getPublicKey,
+  getPublicKeyWithCallback,
+  sign,
+  signWithCallback,
+  decrypt,
+  _invoke,
+  addEventListener,
+  removeEventListener,
+} from "./api";
+
+// Object shared with inpage scripts.
+const _nostr = new window.Object() as WindowSSI["nostr"];
+_nostr.generate = exportFunction(generate, window);
+_nostr.getPublicKey = exportFunction(getPublicKey, window);
+_nostr.getPublicKeyWithCallback = exportFunction(
+  getPublicKeyWithCallback,
+  window
+);
+_nostr.sign = exportFunction(sign, window);
+_nostr.signWithCallback = exportFunction(signWithCallback, window);
+_nostr.decrypt = exportFunction(decrypt, window);
+
+// NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+// ref: https://github.com/nostr-protocol/nips/pull/1174
+_nostr.messageBoard = cloneInto({}, window);
+
+_nostr._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+_nostr._invoke = exportFunction(_invoke(_nostr._proxy), window);
+_nostr.addEventListener = exportFunction(
+  addEventListener(_nostr._proxy),
+  window
+);
+_nostr.removeEventListener = exportFunction(
+  removeEventListener(_nostr._proxy),
+  window
+);
+
+export const nostr = _nostr;
 
 export async function init() {
-  if (!shouldInject()) {
-    return;
-  }
-
-  // Inject to inpages.
-  const ssi = new window.Object() as InternalSSI;
-  ssi._callRuntime = exportFunction(callRuntime, window);
-  window.wrappedJSObject._ssi = ssi;
-  Object.defineProperty(window.wrappedJSObject._ssi, "_callRuntime", {
-    writable: false,
-    configurable: false,
-  });
-  Object.defineProperty(window.wrappedJSObject, "_ssi", {
-    writable: false,
-    configurable: false,
-  });
-  XPCNativeWrapper(window.wrappedJSObject._ssi);
-
   // The message listener to listen to background calls
   // After, emit event to return the response to the inpages.
   browser.runtime.onMessage.addListener(request => {
@@ -36,32 +55,5 @@ export async function init() {
       window.wrappedJSObject.ssi.nostr._invoke(action, data);
       XPCNativeWrapper(window.wrappedJSObject.ssi);
     }
-  });
-}
-
-// Function to receive background in inpage.
-function callRuntime(action: (typeof availableCalls)[number], option) {
-  if (!availableCalls.includes(action)) {
-    throw new Error("Function not available. Is the provider enabled?");
-  }
-  // TODO(ssb): Validate option
-  switch (action) {
-    case "nostr/signEvent": {
-      if (typeof option.message !== "string") {
-        throw new Error("Invalid message");
-      }
-    }
-  }
-
-  return new window.Promise(resolve => {
-    browser.runtime
-      .sendMessage({
-        origin: location.origin,
-        action,
-        args: option,
-      })
-      .then(response => {
-        resolve(response);
-      });
   });
 }

@@ -21,6 +21,5 @@
       "run_at": "document_start",
       "js": ["contents.bundle.js"]
     }
-  ],
-  "web_accessible_resources": ["inpages.bundle.js"]
+  ]
 }

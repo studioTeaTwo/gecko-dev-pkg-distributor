@@ -35,15 +35,6 @@ export const doNostrAction = async (
 
   switch (action) {
     case "nostr/getPublicKey": {
-      // FIXME(ssb): Mitigation. Remove the askConsent and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
-      const isAuthorized = await browser.ssi.askConsent(
-        "nostr",
-        state.nostr.credentialName,
-        { caption: "READ NOSTR PUBLIC KEY", submission: "" }
-      );
-      if (!isAuthorized) {
-        throw new Error("Rejected");
-      }
       if (!state.nostr.npub) {
         const credentials = await browser.ssi.searchCredentialsWithoutSecret(
           {
@@ -96,7 +87,8 @@ export async function init() {
   const results = await browser.ssi.nostr.getPrefs();
   const prefs = {} as FixMe;
   Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
-    prefs[_state] = results[_pref];
+    prefs[_state] =
+      results && results[_pref] ? results[_pref] : state.nostr.prefs[_pref];
   });
   state.nostr = {
     ...state.nostr,
@@ -144,10 +136,12 @@ const onPrimaryChangedCallback = async () => {
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 
 const onPrefChangedCallback = async (prefKey: string) => {
+  // Update new value
+  const results = await browser.ssi.nostr.getPrefs();
   const stateName = Object.entries(MapBetweenPrefAndState)
     .filter(([_state, _pref]) => _pref === prefKey)
     .map(([_state, _pref]) => _state)[0];
-  const newVal = !state.nostr.prefs[stateName];
+  const newVal = results[stateName];
   state.nostr.prefs[stateName] = newVal;
   log("pref changed!", prefKey, newVal, state.nostr);
 

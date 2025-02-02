@@ -19,7 +19,7 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   _proxy: EventTarget;
   _invoke: (event: CustomEvent) => void;
 
-  readonly nostr: {
+  nostr: {
     _proxy: EventTarget;
     _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
@@ -68,16 +68,9 @@ declare global {
   function XPCNativeWrapper(obj: object);
   interface WrappedJSObject {
     ssi: WindowSSI;
-    _ssi: InternalSSI;
   }
   // eslint-disable-next-line no-var
   var wrappedJSObject: WrappedJSObject;
-  // Injected by content script
-  interface InternalSSI {
-    _callRuntime: <T>(action: AvailableCalls, option: FixMe) => Promise<T>;
-  }
-  // eslint-disable-next-line no-var
-  var _ssi: InternalSSI;
 }
 
 /**

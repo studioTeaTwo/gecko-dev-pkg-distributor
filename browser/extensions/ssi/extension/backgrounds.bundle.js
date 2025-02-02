@@ -894,11 +894,6 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            // FIXME(ssb): Mitigation. Remove the askConsent and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
-            const isAuthorized = await browser.ssi.askConsent("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
-            if (!isAuthorized) {
-                throw new Error("Rejected");
-            }
             if (!state_1.state.nostr.npub) {
                 const credentials = await browser.ssi.searchCredentialsWithoutSecret({
                     protocolName: "nostr",
@@ -940,7 +935,8 @@ async function init() {
     const results = await browser.ssi.nostr.getPrefs();
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
-        prefs[_state] = results[_pref];
+        prefs[_state] =
+            results && results[_pref] ? results[_pref] : state_1.state.nostr.prefs[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
@@ -980,10 +976,12 @@ const onPrimaryChangedCallback = async () => {
 };
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
+    // Update new value
+    const results = await browser.ssi.nostr.getPrefs();
     const stateName = Object.entries(MapBetweenPrefAndState)
         .filter(([_state, _pref]) => _pref === prefKey)
         .map(([_state, _pref]) => _state)[0];
-    const newVal = !state_1.state.nostr.prefs[stateName];
+    const newVal = results[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents

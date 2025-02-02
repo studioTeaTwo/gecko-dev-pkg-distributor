@@ -2,58 +2,85 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 45:
+/***/ 71:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
-// Mediator for the extension to relay between the web apps and the background
-// refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.init = void 0;
+exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.decrypt = exports.signWithCallback = exports.sign = exports.getPublicKeyWithCallback = exports.getPublicKey = exports.generate = void 0;
 const custom_type_1 = __webpack_require__(711);
-const logger_1 = __webpack_require__(874);
-const shouldInject_1 = __webpack_require__(880);
-async function init() {
-    if (!(0, shouldInject_1.shouldInject)()) {
-        return;
-    }
-    // Inject to inpages.
-    const ssi = new window.Object();
-    ssi._callRuntime = exportFunction(callRuntime, window);
-    window.wrappedJSObject._ssi = ssi;
-    Object.defineProperty(window.wrappedJSObject._ssi, "_callRuntime", {
-        writable: false,
-        configurable: false,
-    });
-    Object.defineProperty(window.wrappedJSObject, "_ssi", {
-        writable: false,
-        configurable: false,
-    });
-    XPCNativeWrapper(window.wrappedJSObject._ssi);
-    // The message listener to listen to background calls
-    // After, emit event to return the response to the inpages.
-    browser.runtime.onMessage.addListener(request => {
-        (0, logger_1.log)("content-script onMessage", request);
-        const action = request.action.replace("nostr/", "");
-        const data = request.args;
-        // forward account changed messaged to inpage script
-        if (action === "accountChanged") {
-            window.wrappedJSObject.ssi.nostr._invoke(action, data);
-            XPCNativeWrapper(window.wrappedJSObject.ssi);
-        }
+/**
+ * Nostr
+ */
+function generate(option) {
+    return window.Promise.resolve("Not implemented");
+}
+exports.generate = generate;
+function getPublicKey(option) {
+    return _callRuntime("nostr/getPublicKey", option);
+}
+exports.getPublicKey = getPublicKey;
+function getPublicKeyWithCallback(callback, option) {
+    _callRuntime("nostr/getPublicKey", option).then(publicKey => {
+        callback(publicKey);
     });
 }
-exports.init = init;
+exports.getPublicKeyWithCallback = getPublicKeyWithCallback;
+function sign(message, option) {
+    return _callRuntime(`nostr/${option.type}`, {
+        message,
+        ...option,
+    });
+}
+exports.sign = sign;
+function signWithCallback(message, callback, option) {
+    _callRuntime(`nostr/${option.type}`, {
+        message,
+        ...option,
+    }).then(signature => {
+        callback(signature);
+    });
+}
+exports.signWithCallback = signWithCallback;
+function decrypt(ciphertext, option) {
+    return window.Promise.resolve("Not implemented");
+}
+exports.decrypt = decrypt;
+/**
+ * Event
+ */
+function _invoke(target) {
+    return function (action, data) {
+        return target.dispatchEvent(new CustomEvent(action, {
+            detail: data,
+            bubbles: true,
+            composed: true,
+        }));
+    };
+}
+exports._invoke = _invoke;
+function addEventListener(target) {
+    return function (type, callback, options) {
+        return target.addEventListener(type, callback, options);
+    };
+}
+exports.addEventListener = addEventListener;
+function removeEventListener(target) {
+    return function (type, callback, options) {
+        return target.removeEventListener(type, callback, options);
+    };
+}
+exports.removeEventListener = removeEventListener;
 // Function to receive background in inpage.
-function callRuntime(action, option) {
+function _callRuntime(action, option) {
     if (!custom_type_1.availableCalls.includes(action)) {
-        throw new Error("Function not available. Is the provider enabled?");
+        throw new window.Error("Function not available. Is the provider enabled?");
     }
     // TODO(ssb): Validate option
     switch (action) {
         case "nostr/signEvent": {
             if (typeof option.message !== "string") {
-                throw new Error("Invalid message");
+                throw new window.Error("Invalid message");
             }
         }
     }
@@ -69,6 +96,51 @@ function callRuntime(action, option) {
         });
     });
 }
+exports._callRuntime = _callRuntime;
+
+
+/***/ }),
+
+/***/ 45:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = exports.nostr = void 0;
+const logger_1 = __webpack_require__(874);
+const api_1 = __webpack_require__(71);
+// Object shared with inpage scripts.
+const _nostr = new window.Object();
+_nostr.generate = exportFunction(api_1.generate, window);
+_nostr.getPublicKey = exportFunction(api_1.getPublicKey, window);
+_nostr.getPublicKeyWithCallback = exportFunction(api_1.getPublicKeyWithCallback, window);
+_nostr.sign = exportFunction(api_1.sign, window);
+_nostr.signWithCallback = exportFunction(api_1.signWithCallback, window);
+_nostr.decrypt = exportFunction(api_1.decrypt, window);
+// NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+// ref: https://github.com/nostr-protocol/nips/pull/1174
+_nostr.messageBoard = cloneInto({}, window);
+_nostr._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+_nostr._invoke = exportFunction((0, api_1._invoke)(_nostr._proxy), window);
+_nostr.addEventListener = exportFunction((0, api_1.addEventListener)(_nostr._proxy), window);
+_nostr.removeEventListener = exportFunction((0, api_1.removeEventListener)(_nostr._proxy), window);
+exports.nostr = _nostr;
+async function init() {
+    // The message listener to listen to background calls
+    // After, emit event to return the response to the inpages.
+    browser.runtime.onMessage.addListener(request => {
+        (0, logger_1.log)("content-script onMessage", request);
+        const action = request.action.replace("nostr/", "");
+        const data = request.args;
+        // forward account changed messaged to inpage script
+        if (action === "accountChanged") {
+            window.wrappedJSObject.ssi.nostr._invoke(action, data);
+            XPCNativeWrapper(window.wrappedJSObject.ssi);
+        }
+    });
+}
+exports.init = init;
 
 
 /***/ }),
@@ -190,30 +262,41 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
+const shouldInject_1 = __webpack_require__(880);
 const logger_1 = __webpack_require__(874);
 const nostr_1 = __webpack_require__(45);
-(0, logger_1.log)("content-script working", browser.runtime.getURL("inpages.bundle.js"));
-function loadInpageScript(url) {
-    try {
-        if (!document) {
-            throw new Error("No document");
+const api_1 = __webpack_require__(71);
+(0, logger_1.log)("content-script working", browser.runtime.getURL("contents.bundle.js"));
+// Object shared with inpage scripts.
+const windowSSI = new window.Object();
+windowSSI._scope = "ssi";
+windowSSI.nostr = nostr_1.nostr;
+windowSSI._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+windowSSI._invoke = exportFunction((0, api_1._invoke)(windowSSI._proxy), window);
+windowSSI.addEventListener = exportFunction((0, api_1.addEventListener)(windowSSI._proxy), window);
+windowSSI.removeEventListener = exportFunction((0, api_1.removeEventListener)(windowSSI._proxy), window);
+if ((0, shouldInject_1.shouldInject)()) {
+    // It envisions browser-native API, so the object is persisted.
+    window.wrappedJSObject.ssi = windowSSI;
+    for (const api of [
+        window.wrappedJSObject.ssi,
+        window.wrappedJSObject.ssi.nostr,
+    ]) {
+        for (const property of Object.getOwnPropertyNames(api)) {
+            Object.defineProperty(window.wrappedJSObject.ssi.nostr, property, {
+                writable: false,
+                configurable: false,
+            });
         }
-        const container = document.head || document.documentElement;
-        if (!container) {
-            throw new Error("No container element");
-        }
-        const scriptEl = document.createElement("script");
-        scriptEl.setAttribute("async", "false");
-        scriptEl.setAttribute("type", "text/javascript");
-        scriptEl.setAttribute("src", url);
-        container.appendChild(scriptEl);
     }
-    catch (err) {
-        console.error("injection failed", err);
-    }
+    Object.defineProperty(window.wrappedJSObject, "ssi", {
+        writable: false,
+        configurable: false,
+    });
+    XPCNativeWrapper(window.wrappedJSObject.ssi);
+    (0, nostr_1.init)();
 }
-loadInpageScript(browser.runtime.getURL("inpages.bundle.js"));
-(0, nostr_1.init)();
 
 })();
 

@@ -26,7 +26,8 @@ async function init() {
     };
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
-        prefs[_state] = results[_pref];
+        prefs[_state] =
+            results && results[_pref] ? results[_pref] : state_1.state.nostr.prefs[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
@@ -48,10 +49,15 @@ browser.webNavigation.onDOMContentLoaded.addListener(async (detail) => {
     sendTab(tab, "nostr/builtinNip07Init", injecting);
 }, { url: [{ schemes: SafeProtocols }] });
 const onPrefChangedCallback = async (prefKey) => {
+    // Update new value
+    const results = {
+        ...(await browser.ssi.nostr.getPrefs()),
+        ...(await browser.builtinNip.getPrefs()),
+    };
     const stateName = Object.entries(MapBetweenPrefAndState)
         .filter(([_state, _pref]) => _pref === prefKey)
         .map(([_state, _pref]) => _state)[0];
-    const newVal = !state_1.state.nostr.prefs[stateName];
+    const newVal = results[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents

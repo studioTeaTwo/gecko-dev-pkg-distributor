@@ -53,7 +53,10 @@ class _AuthCache {
     if (!this.initialized) {
       throw new Error(`Not initialized`);
     }
-    return this._cache.get(key);
+    if (!this.has(key)) {
+      return undefined;
+    }
+    return JSON.parse(JSON.stringify(this._cache.get(key)));
   }
 
   /**

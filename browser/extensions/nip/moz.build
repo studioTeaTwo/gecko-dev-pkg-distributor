@@ -10,7 +10,6 @@ DEFINES["MOZ_APP_MAXVERSION"] = CONFIG["MOZ_APP_MAXVERSION"]
 FINAL_TARGET_FILES.features["builtin-nip@teatwo.dev"] += [
     "extension/backgrounds.bundle.js",
     "extension/contents.bundle.js",
-    "extension/inpages.bundle.js",
     "extension/manifest.json",
 ]
 
