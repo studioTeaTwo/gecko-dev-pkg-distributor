@@ -68,14 +68,16 @@ declare global {
   function XPCNativeWrapper(obj: object);
   interface WrappedJSObject {
     ssi: WindowSSI;
+    _ssi: InternalSSI;
   }
   // eslint-disable-next-line no-var
   var wrappedJSObject: WrappedJSObject;
   // Injected by content script
-  // eslint-disable-next-line no-var
-  var _ssi: {
+  interface InternalSSI {
     _callRuntime: <T>(action: AvailableCalls, option: FixMe) => Promise<T>;
-  };
+  }
+  // eslint-disable-next-line no-var
+  var _ssi: InternalSSI;
 }
 
 /**

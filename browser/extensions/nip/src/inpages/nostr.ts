@@ -11,7 +11,7 @@ declare global {
   // eslint-disable-next-line no-var
   var nostr: typeof windowNostr;
   // eslint-disable-next-line no-var
-  var nip07Loaded: { [provider: string]: boolean }[];
+  var nip07Loaded: Map<string, boolean>;
   // eslint-disable-next-line no-var
   var _builtinNip: {
     _injectBuiltinNip07: () => void;
@@ -28,9 +28,10 @@ export function init() {
     _injectBuiltinNip07: {
       value: () => {
         window.nostr = windowNostr;
-        window.nip07Loaded = Array.isArray(window.nip07Loaded)
-          ? window.nip07Loaded.concat([{ ssb: true }])
-          : [{ ssb: true }];
+        if (!window.nip07Loaded || window.nip07Loaded instanceof Map) {
+          window.nip07Loaded = new Map();
+        }
+        window.nip07Loaded.set("ssb", true);
         window.ssi.nostr.addEventListener(
           "accountChanged",
           accountChangedHandler
@@ -42,9 +43,10 @@ export function init() {
         if (window.nostr && window.nostr._provider === "ssb") {
           delete window.nostr;
         }
-        window.nip07Loaded = Array.isArray(window.nip07Loaded)
-          ? window.nip07Loaded.concat({ ssb: false })
-          : [{ ssb: false }];
+        if (!window.nip07Loaded || window.nip07Loaded instanceof Map) {
+          window.nip07Loaded = new Map();
+        }
+        window.nip07Loaded.set("ssb", false);
         window.ssi.nostr.removeEventListener(
           "accountChanged",
           accountChangedHandler
@@ -58,12 +60,7 @@ const accountChangedHandler = (event: CustomEvent<string>) => {
   const newPublicKey = event.detail;
 
   log(`inpage accountChanged emit`, event);
-  window.nostr._invoke(
-    new CustomEvent("accountChanged", {
-      detail: newPublicKey,
-      bubbles: true,
-    })
-  );
+  window.nostr._invoke("accountChanged", newPublicKey);
 };
 
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md

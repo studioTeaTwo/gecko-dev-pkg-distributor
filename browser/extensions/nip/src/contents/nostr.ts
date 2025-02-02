@@ -39,11 +39,11 @@ export async function init() {
       }
       XPCNativeWrapper(window.wrappedJSObject._builtinNip);
 
-      const event = new CustomEvent(action, {
+      const event = new CustomEvent("providerChanged", {
         detail: data,
       });
       window.dispatchEvent(event);
-      log(`inpage ${action} emit`, event);
+      log(`inpage providerChanged emit`, event);
     }
   });
 }

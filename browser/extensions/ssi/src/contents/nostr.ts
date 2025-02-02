@@ -11,13 +11,18 @@ export async function init() {
   }
 
   // Inject to inpages.
-  window._ssi = exportFunction(callRuntime, window, {
-    defineAs: "_callRuntime",
-  });
-  Object.defineProperty(window, "_ssi", {
+  const ssi = new window.Object() as InternalSSI;
+  ssi._callRuntime = exportFunction(callRuntime, window);
+  window.wrappedJSObject._ssi = ssi;
+  Object.defineProperty(window.wrappedJSObject._ssi, "_callRuntime", {
     writable: false,
     configurable: false,
   });
+  Object.defineProperty(window.wrappedJSObject, "_ssi", {
+    writable: false,
+    configurable: false,
+  });
+  XPCNativeWrapper(window.wrappedJSObject._ssi);
 
   // The message listener to listen to background calls
   // After, emit event to return the response to the inpages.

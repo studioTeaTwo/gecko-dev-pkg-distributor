@@ -614,9 +614,10 @@ function init() {
         _injectBuiltinNip07: {
             value: () => {
                 window.nostr = exports.windowNostr;
-                window.nip07Loaded = Array.isArray(window.nip07Loaded)
-                    ? window.nip07Loaded.concat([{ ssb: true }])
-                    : [{ ssb: true }];
+                if (!window.nip07Loaded || window.nip07Loaded instanceof Map) {
+                    window.nip07Loaded = new Map();
+                }
+                window.nip07Loaded.set("ssb", true);
                 window.ssi.nostr.addEventListener("accountChanged", accountChangedHandler);
             },
         },
@@ -625,9 +626,10 @@ function init() {
                 if (window.nostr && window.nostr._provider === "ssb") {
                     delete window.nostr;
                 }
-                window.nip07Loaded = Array.isArray(window.nip07Loaded)
-                    ? window.nip07Loaded.concat({ ssb: false })
-                    : [{ ssb: false }];
+                if (!window.nip07Loaded || window.nip07Loaded instanceof Map) {
+                    window.nip07Loaded = new Map();
+                }
+                window.nip07Loaded.set("ssb", false);
                 window.ssi.nostr.removeEventListener("accountChanged", accountChangedHandler);
             },
         },
@@ -637,10 +639,7 @@ exports.init = init;
 const accountChangedHandler = (event) => {
     const newPublicKey = event.detail;
     (0, logger_1.log)(`inpage accountChanged emit`, event);
-    window.nostr._invoke(new CustomEvent("accountChanged", {
-        detail: newPublicKey,
-        bubbles: true,
-    }));
+    window.nostr._invoke("accountChanged", newPublicKey);
 };
 // ref: https://github.com/nostr-protocol/nips/blob/master/07.md
 exports.windowNostr = Object.create(null, {
