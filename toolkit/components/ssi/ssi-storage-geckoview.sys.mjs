@@ -77,7 +77,7 @@ export class SsiStorage extends SsiStorage_json {
     let realMatchData = {};
     if (matchData.guid) {
       // Enforce GUID-based filtering when available, since the origin of the
-      // selfsovereignidentity may not match the origin of the form in the case of scheme
+      // credential may not match the origin of the form in the case of scheme
       // upgrades.
       realMatchData = { guid: matchData.guid };
     } else {

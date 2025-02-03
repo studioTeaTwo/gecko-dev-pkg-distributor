@@ -1,0 +1,26 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- TODO(ssb): reconsider later -->
+    <!-- TODO(ssb): rewrite react UI library and fill in style-src hole -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; object-src 'none'; script-src resource: chrome:; img-src data: blob:; style-src 'unsafe-inline'; frame-ancestors: 'none'; form-action: 'none'"
+    />
+    <base href="chrome://selfsovereignindividual/content/" />
+    <link rel="localization" href="./toolkit/branding/brandings.ftl" />
+    <title>Self-Sovereign Individual</title>
+    <script type="module" crossorigin src="./js/main.bundle.js"></script>
+    <link rel="modulepreload" crossorigin href="./js/vendor.bundle.js">
+    <link rel="stylesheet" crossorigin href="./css/style.css">
+  </head>
+  <body class="selfsovereignindividual_containerhome" aria-live="polite">
+    <div id="root"></div>
+    <script src="./js/entry.js"></script>
+  </body>
+</html>

@@ -6,9 +6,9 @@ export const availableCalls = [
 ] as const;
 type AvailableCalls = (typeof availableCalls)[number];
 
-interface SelfsovereignidentityDefaultPrefs {
-  enabled: boolean; // selfsovereignidentity.[protocolName].enabled
-  usedAccountChanged: boolean; // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+interface SelfSovereignIndividualDefaultPrefs {
+  enabled: boolean; // selfsovereignindividual.[protocolName].enabled
+  usedAccountChanged: boolean; // selfsovereignindividual.[protocolName].event.accountChanged.enabled
 }
 
 type PublicKey = string;
@@ -98,6 +98,6 @@ export type NostrEvent = {
 /**
  * Nostr
  */
-export interface SelfsovereignidentityPrefs {
-  nostr: SelfsovereignidentityDefaultPrefs;
+export interface SelfSovereignIndividualPrefs {
+  nostr: SelfSovereignIndividualDefaultPrefs;
 }

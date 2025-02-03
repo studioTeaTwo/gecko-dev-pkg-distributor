@@ -21,7 +21,7 @@
       {
         "id": "Preference",
         "type": "object",
-        "description": "The preference values set by the user in `about:selfsovereignidentity`",
+        "description": "The preference values set by the user in `about:selfsovereignindividual`",
         "properties": {
           "enabled": {
             "type": "boolean",
@@ -40,7 +40,7 @@
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignidentity.nostr.enabled` changed",
+        "description": "Fire when the preference value of `selfsovereignindividual.nostr.enabled` changed",
         "parameters": []
       }
     ],

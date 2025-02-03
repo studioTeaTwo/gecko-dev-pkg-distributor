@@ -17,7 +17,7 @@ const DialogMessage = {
 };
 
 const ERR_MSG_NOT_ENABLED =
-  "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignidentity'.";
+  "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
 
 // Proceed calls from contents

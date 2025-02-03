@@ -194,8 +194,8 @@ const COMMANDS = {
   "Tools:Addons": function () {
     BrowserAddonUI.openAddonsMgr();
   },
-  "Tools:Selfsovereignidentity": function () {
-    switchToTabHavingURI("about:selfsovereignidentity", true);
+  "Tools:SelfSovereignIndividual": function () {
+    switchToTabHavingURI("about:selfsovereignindividual", true);
   },
   "Tools:Sanitize": function () {
     Sanitizer.showUI(window);

@@ -13,7 +13,7 @@ default:
 mozlint_eslint:
   stage: test
   script:
-    - (cd browser/components/selfsovereignidentity && npm ci)
+    - (cd browser/components/selfsovereignindividual && npm ci)
     - (cd browser/extensions/ssi && npm ci)
     - (cd browser/extensions/nip && npm ci)
     - ./mach lint -l eslint .
@@ -44,7 +44,7 @@ tslint:
   stage: test
   parallel:
     matrix:
-      - TARGET: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
+      - TARGET: ['browser/components/selfsovereignindividual', 'browser/extensions/ssi', 'browser/extensions/nip']
   script:
     - cd $TARGET
     - npm ci

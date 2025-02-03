@@ -71,7 +71,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
 
               // Check permission
               const enabled = Services.prefs.getBoolPref(
-                "selfsovereignidentity.nostr.enabled"
+                "selfsovereignindividual.nostr.enabled"
               );
               if (!enabled) {
                 return errorValue;

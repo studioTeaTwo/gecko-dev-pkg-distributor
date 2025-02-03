@@ -15,7 +15,7 @@
   },
   {
     "namespace": "ssi",
-    "description": "That's to realize the self-sovereign identity.",
+    "description": "That's to empower individual on the self-sovereign way.",
     "permissions": ["ssi"],
     "types": [
       {

@@ -72,9 +72,7 @@ if (shouldInject()) {
         // Inject
         window.wrappedJSObject.nostr = nostr;
         // FIXME(ssb): Typecheck for nip07Loaded. window.Map neither instanceof Map nor instanceof window.Map works.
-        if (
-          !window.wrappedJSObject.nip07Loaded
-        ) {
+        if (!window.wrappedJSObject.nip07Loaded) {
           window.wrappedJSObject.nip07Loaded = new window.Map();
         }
         window.wrappedJSObject.nip07Loaded.set("ssb", true);
@@ -91,9 +89,7 @@ if (shouldInject()) {
           delete window.wrappedJSObject.nostr;
         }
         // FIXME(ssb): Typecheck for nip07Loaded. window.Map neither instanceof Map nor instanceof window.Map works.
-        if (
-          !window.wrappedJSObject.nip07Loaded
-        ) {
+        if (!window.wrappedJSObject.nip07Loaded) {
           window.wrappedJSObject.nip07Loaded = new window.Map();
         }
         window.wrappedJSObject.nip07Loaded.set("ssb", false);

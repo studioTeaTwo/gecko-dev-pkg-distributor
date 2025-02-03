@@ -5249,7 +5249,7 @@ const nodeToShortcutMap = {
   "context-reload": "key_reload",
   "context-stop": "key_stop",
   "downloads-button": "key_openDownloads",
-  "selfsovereignidentity-button": "key_openSelfsovereignidentity",
+  "selfsovereignindividual-button": "key_openSelfSovereignIndividual",
   "fullscreen-button": "key_enterFullScreen",
   "appMenu-fullscreen-button2": "key_enterFullScreen",
   "new-window-button": "key_newNavigator",

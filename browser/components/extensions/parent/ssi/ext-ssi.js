@@ -31,12 +31,12 @@ this.ssi = class extends ExtensionAPI {
             // Stuff to check permission
             const enabled = {
               nostr: Services.prefs.getBoolPref(
-                `selfsovereignidentity.nostr.enabled`
+                `selfsovereignindividual.nostr.enabled`
               ),
             };
             const accountChanged = {
               nostr: Services.prefs.getBoolPref(
-                `selfsovereignidentity.nostr.event.accountChanged.enabled`
+                `selfsovereignindividual.nostr.event.accountChanged.enabled`
               ),
             };
 
@@ -150,7 +150,7 @@ this.ssi = class extends ExtensionAPI {
 
             // Check permission
             const enabled = Services.prefs.getBoolPref(
-              `selfsovereignidentity.${protocolName}.enabled`
+              `selfsovereignindividual.${protocolName}.enabled`
             );
             if (!enabled) {
               return errorValue;

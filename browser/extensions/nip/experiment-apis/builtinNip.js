@@ -16,7 +16,7 @@ this.builtinNip = class extends ExtensionAPI {
           context,
           name: "builtinNip.onPrefBuiltinNip07Changed",
           register: fire => {
-            const prefName = `selfsovereignidentity.nostr.builtinNip07.enabled`;
+            const prefName = `selfsovereignindividual.nostr.builtinNip07.enabled`;
 
             const callback = () => {
               // No need to check permission
@@ -35,7 +35,7 @@ this.builtinNip = class extends ExtensionAPI {
             const protocolName = "nostr";
             const prefs = {
               "builtinNip07.enabled": Services.prefs.getBoolPref(
-                `selfsovereignidentity.${protocolName}.builtinNip07.enabled`
+                `selfsovereignindividual.${protocolName}.builtinNip07.enabled`
               ),
             };
             return prefs;

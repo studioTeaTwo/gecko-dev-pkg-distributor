@@ -22,7 +22,7 @@ jobs:
       run: |
         sudo apt-get update
         cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
-        (cd browser/components/selfsovereignidentity && npm ci)
+        (cd browser/components/selfsovereignindividual && npm ci)
         (cd browser/extensions/ssi && npm ci)
         (cd browser/extensions/nip && npm ci)
     - name: eslint
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-dir: ['browser/components/selfsovereignidentity', 'browser/extensions/ssi', 'browser/extensions/nip']
+        target-dir: ['browser/components/selfsovereignindividual', 'browser/extensions/ssi', 'browser/extensions/nip']
     steps:
     - uses: actions/checkout@v4
       with:
@@ -70,7 +70,7 @@ jobs:
         sudo apt-get update
         cp ./.github/workflows/src/linux/shared/mozconfig_linux_base mozconfig
         ./mach --no-interactive bootstrap --application-choice browser
-        (cd browser/components/selfsovereignidentity && npm ci)
+        (cd browser/components/selfsovereignindividual && npm ci)
         (cd browser/extensions/ssi && npm ci)
         (cd browser/extensions/nip && npm ci)
     - name: mozlint

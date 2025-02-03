@@ -25,7 +25,7 @@ const DIALOG_SYSTEM_MESSAGE = protocolName => ({
 });
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
-// below is from browser/components/selfsovereignidentity/src/components/nostr/contants.ts
+// below is from browser/components/selfsovereignindividual/src/components/nostr/contants.ts
 const DefaultExcludedKindList = {
   13194: { nip: 47, name: "NWC info event" },
   23194: { nip: 47, name: "NWC request" },
@@ -50,10 +50,10 @@ export const browserSsiHelper = {
     const callback = () => {
       // Check permission
       const enabled = Services.prefs.getBoolPref(
-        `selfsovereignidentity.${protocolName}.enabled`
+        `selfsovereignindividual.${protocolName}.enabled`
       );
       const usedAccountChanged = Services.prefs.getBoolPref(
-        `selfsovereignidentity.${protocolName}.event.accountChanged.enabled`
+        `selfsovereignindividual.${protocolName}.event.accountChanged.enabled`
       );
       if (!enabled || !usedAccountChanged) {
         return;
@@ -78,7 +78,7 @@ export const browserSsiHelper = {
       return;
     }
 
-    const prefName = `selfsovereignidentity.${protocolName}.enabled`;
+    const prefName = `selfsovereignindividual.${protocolName}.enabled`;
 
     const callback = () => {
       // No need to check permission
@@ -96,7 +96,7 @@ export const browserSsiHelper = {
 
     // Check permission
     const enabled = Services.prefs.getBoolPref(
-      `selfsovereignidentity.${protocolName}.enabled`
+      `selfsovereignindividual.${protocolName}.enabled`
     );
     if (!enabled) {
       return null;
@@ -116,13 +116,13 @@ export const browserSsiHelper = {
     try {
       const prefs = {
         "trustedSites.enabled": Services.prefs.getBoolPref(
-          `selfsovereignidentity.${protocolName}.trustedSites.enabled`
+          `selfsovereignindividual.${protocolName}.trustedSites.enabled`
         ),
         "primarypassword.toApps.enabled": Services.prefs.getBoolPref(
-          `selfsovereignidentity.${protocolName}.primarypassword.toApps.enabled`
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.enabled`
         ),
         "primarypassword.toApps.expiryTime": Services.prefs.getIntPref(
-          `selfsovereignidentity.${protocolName}.primarypassword.toApps.expiryTime`
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
       };
       return prefs;

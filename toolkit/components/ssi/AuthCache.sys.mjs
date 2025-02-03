@@ -62,7 +62,7 @@ class _AuthCache {
   /**
    * Update the kv cache together with the persistence (ssi store).
    * If previous value is the same, don't update the ssi store. This becomes important when expiration preference
-   * of passwordAuthorizedSites (selfsovereignidentity.[protocolName].primarypassword.toApps.expiryTime) is 0.
+   * of passwordAuthorizedSites (selfsovereignindividual.[protocolName].primarypassword.toApps.expiryTime) is 0.
    *
    * @param {string} key
    * @param {Object} value - Only new values from the API
