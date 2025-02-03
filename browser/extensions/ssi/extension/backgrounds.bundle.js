@@ -894,6 +894,11 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
+            // FIXME(ssb): Mitigation. Remove the askConsent and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
+            const isAuthorized = await browser.ssi.askConsent("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
+            if (!isAuthorized) {
+                throw new Error(ERR_MSG_NOT_ENABLED);
+            }
             if (!state_1.state.nostr.npub) {
                 const credentials = await browser.ssi.searchCredentialsWithoutSecret({
                     protocolName: "nostr",
@@ -940,7 +945,7 @@ async function init() {
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        prefs,
+        prefs: prefs,
     };
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }

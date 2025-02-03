@@ -194,8 +194,7 @@ export const browserSsiHelper = {
       return true;
     }
 
-    // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
-    // TODO(ssb): Even if you call it multiple times in one transaction, the dialog will only be called once.
+    // Build parameters
     const prefs = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
@@ -216,6 +215,9 @@ export const browserSsiHelper = {
       enforce,
       embedderElement: browsingContext.embedderElement,
     };
+
+    // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
+    // TODO(ssb): Even if you call it multiple times in one transaction, the dialog will only be called once.
     const resultExtensiton = await execAuth(
       extension,
       context.extension.name,
@@ -261,10 +263,19 @@ export const browserSsiHelper = {
 async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   const { url } = target;
   const { enabledTrustedSites, enabledPrimarypassword } = prefs;
-  const { trustedSites } = authCache;
-  const { enforce } = dialogInfo;
+  const { cacheKey, trustedSites, passwordAuthorizedSite } = authCache;
+  const { evidence, enforce } = dialogInfo;
 
-  if (enabledTrustedSites && !enforce) {
+  const protocolName = cacheKey.split(":")[0];
+  const _isAuthMandatory = isAuthMandatory(
+    url,
+    protocolName,
+    passwordAuthorizedSite,
+    enforce,
+    evidence
+  );
+
+  if (enabledTrustedSites && !_isAuthMandatory) {
     const trusted = isTrusted(url, trustedSites);
     if (trusted) {
       return true;
@@ -272,21 +283,16 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     // go to primarypassword cache
   }
 
-  if (enabledPrimarypassword && !enforce) {
-    const alreadyAuthorized = isPasswordAuthorized(
-      target,
-      extensionName,
-      authCache,
-      dialogInfo
-    );
-    if (alreadyAuthorized) {
+  if (enabledPrimarypassword && !_isAuthMandatory) {
+    const validCache = isPasswordAuthorized(target, authCache);
+    if (validCache) {
       return true;
     }
     // go to primarypassword dialog
   }
 
-  if (enabledPrimarypassword || enforce) {
-    const isAuthorized = await authPassword(
+  if (enabledPrimarypassword) {
+    const isAuthorized = await authWithPassword(
       target,
       extensionName,
       authCache,
@@ -352,53 +358,22 @@ function isTrusted(url, trustedSites) {
  * @param {object} target
  * @param {string} target.origin contentPrincipal.originNoSuffix
  * @param {string} target.url contentPrincipal.spec
- * @param {string} extensionName
  * @param {object} authCache
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
  * @param {number} authCache.expiryTimePref
- * @param {object} dialogInfo
- * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
- * @param {object} dialogInfo.evidence
- * @param {string} dialogInfo.caption
- * @param {string} dialogInfo.submission
- * @param {boolean} dialogInfo.enforce
- * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
  * @returns {boolean}
  */
-function isPasswordAuthorized(target, extensionName, authCache, dialogInfo) {
-  const { url, origin } = target;
-  const { cacheKey, passwordAuthorizedSites } = authCache;
-  const { evidence, enforce } = dialogInfo;
+function isPasswordAuthorized(target, authCache) {
+  const { url } = target;
+  const { passwordAuthorizedSites } = authCache;
 
-  const protocolName = cacheKey.split(":")[0];
   let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
     url.startsWith(site.url)
   )[0];
 
-  // If not existing, then create new cache and return false.
   if (!passwordAuthorizedSite) {
-    passwordAuthorizedSite = {
-      url: origin,
-      name: extensionName,
-      expiryTime: 0,
-      permissions: {},
-    };
-    if (protocolName === "nostr") {
-      passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
-    }
-    Services.ssi.authCache.update(cacheKey, {
-      passwordAuthorizedSites: [passwordAuthorizedSite],
-    });
-    return false;
-  }
-
-  // Special cases of mandatory authorization.
-  // Don't need to update cache, do as it is.
-  if (
-    isAuthMandatory(protocolName, passwordAuthorizedSite, enforce, evidence)
-  ) {
     return false;
   }
 
@@ -427,7 +402,7 @@ function isPasswordAuthorized(target, extensionName, authCache, dialogInfo) {
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
  * @returns {boolean}
  */
-async function authPassword(target, extensionName, authCache, dialogInfo) {
+async function authWithPassword(target, extensionName, authCache, dialogInfo) {
   const { url, origin } = target;
   const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
   const { system, evidence, caption, submission, enforce, embedderElement } =
@@ -460,20 +435,36 @@ async function authPassword(target, extensionName, authCache, dialogInfo) {
   }
 
   // Prepare expiration time.
-  // It is assumed that passwordAuthorizedSite was definitely created before this.
   const protocolName = cacheKey.split(":")[0];
   let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
     url.startsWith(site.url)
   )[0];
   if (!passwordAuthorizedSite) {
-    return false;
+    passwordAuthorizedSite = {
+      url: origin,
+      name: extensionName,
+      expiryTime: 0,
+      permissions: {},
+    };
+    if (protocolName === "nostr") {
+      passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
+    }
+    Services.ssi.authCache.update(cacheKey, {
+      passwordAuthorizedSites: [passwordAuthorizedSite],
+    });
   }
   let _authExpirationTime = passwordAuthorizedSite.expiryTime;
 
   // Special cases of mandatory authorization.
   // Don't need to update cache, do as it is.
   if (
-    isAuthMandatory(protocolName, passwordAuthorizedSite, enforce, evidence)
+    isAuthMandatory(
+      url,
+      protocolName,
+      passwordAuthorizedSite,
+      enforce,
+      evidence
+    )
   ) {
     _authExpirationTime = 0;
   }
@@ -495,7 +486,7 @@ async function authPassword(target, extensionName, authCache, dialogInfo) {
     const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
     passwordAuthorizedSite.expiryTime = expiryTime;
     Services.ssi.authCache.update(cacheKey, {
-      passwordAuthorizedSites: [passwordAuthorizedSite],
+      passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
     });
   }
   console.log(
@@ -503,23 +494,31 @@ async function authPassword(target, extensionName, authCache, dialogInfo) {
     isAuthorized,
     telemetryEvent,
     origin,
+    system,
     Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
   );
   return isAuthorized;
 }
 
 function isAuthMandatory(
+  url,
   protocolName,
   passwordAuthorizedSite,
   enforce,
   evidence
 ) {
+  // NOTE(ssb): exclude it for now to avoid duplication with tab apps. We need to reconsider here to cover the use case of extension only.
+  if (url.startsWith("moz-extension:")) {
+    return false;
+  }
+
   if (enforce) {
     return true;
   }
   if (protocolName === "nostr") {
     if (
       evidence &&
+      passwordAuthorizedSite &&
       passwordAuthorizedSite.permissions.excludedKinds.includes(
         evidence.kind.toString()
       )

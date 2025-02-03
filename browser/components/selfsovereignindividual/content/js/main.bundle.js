@@ -1721,12 +1721,14 @@ function NIP07(props) {
     });
   };
   const handleExpiryTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
-    const primaryPasswordAuth = await promptForPrimaryPassword(
-      "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-    );
-    if (!primaryPasswordAuth) {
-      setIsOpenDialog(true);
-      return;
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
     }
     onPrefChanged2({
       protocolName: "nostr",
