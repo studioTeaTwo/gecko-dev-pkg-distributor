@@ -36,45 +36,45 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
   handleEvent(event) {
     switch (event.type) {
       case "AboutSelfSovereignIndividualInit": {
-        this.#aboutIdentityInit();
+        this.#aboutSelfSovereignIndividualInit();
         break;
       }
       case "AboutSelfSovereignIndividualGetAllCredentials": {
-        this.#aboutIdentityGetAllCredentials();
+        this.#aboutSelfSovereignIndividualGetAllCredentials();
         break;
       }
       case "AboutSelfSovereignIndividualCreateCredential": {
-        this.#aboutIdentityCreateCredential(event.detail);
+        this.#aboutSelfSovereignIndividualCreateCredential(event.detail);
         break;
       }
       case "AboutSelfSovereignIndividualDeleteCredential": {
-        this.#aboutIdentityDeleteCredential(event.detail);
+        this.#aboutSelfSovereignIndividualDeleteCredential(event.detail);
         break;
       }
       case "AboutSelfSovereignIndividualRecordTelemetryEvent": {
-        this.#aboutIdentityRecordTelemetryEvent(event);
+        this.#aboutSelfSovereignIndividualRecordTelemetryEvent(event);
         break;
       }
       case "AboutSelfSovereignIndividualRemoveAllCredentials": {
-        this.#aboutIdentityRemoveAllCredentials();
+        this.#aboutSelfSovereignIndividualRemoveAllCredentials();
         break;
       }
       case "AboutSelfSovereignIndividualUpdateCredential": {
-        this.#aboutIdentityUpdateCredential(event.detail);
+        this.#aboutSelfSovereignIndividualUpdateCredential(event.detail);
         break;
       }
       case "AboutSelfSovereignIndividualPrimaryChanged": {
-        this.#aboutIdentityPrimaryChanged(event.detail);
+        this.#aboutSelfSovereignIndividualPrimaryChanged(event.detail);
         break;
       }
       case "AboutSelfSovereignIndividualPrefChanged": {
-        this.#aboutIdentityPrefChanged(event.detail);
+        this.#aboutSelfSovereignIndividualPrefChanged(event.detail);
         break;
       }
     }
   }
 
-  #aboutIdentityInit() {
+  #aboutSelfSovereignIndividualInit() {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:Subscribe");
 
     let win = this.browsingContext.window;
@@ -90,7 +90,7 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
        * OS auth dialog otherwise.
        *
        * @param resolve Callback that is called with result of authentication.
-       * @param messageId The string ID that corresponds to a string stored in aboutIdentity.ftl.
+       * @param messageId The string ID that corresponds to a string stored in aboutSelfSovereignIndividual.ftl.
        *                  This string will be displayed only when the OS auth dialog is used.
        */
       async promptForPrimaryPassword(resolve, messageId) {
@@ -168,23 +168,23 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
     this.sendToContent("Prefs", prefs);
   }
 
-  #aboutIdentityGetAllCredentials() {
+  #aboutSelfSovereignIndividualGetAllCredentials() {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:GetAllCredentials");
   }
 
-  #aboutIdentityCreateCredential(credential) {
+  #aboutSelfSovereignIndividualCreateCredential(credential) {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:CreateCredential", {
       credential,
     });
   }
 
-  #aboutIdentityDeleteCredential(credential) {
+  #aboutSelfSovereignIndividualDeleteCredential(credential) {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:DeleteCredential", {
       credential,
     });
   }
 
-  #aboutIdentityRecordTelemetryEvent(event) {
+  #aboutSelfSovereignIndividualRecordTelemetryEvent(event) {
     let { method } = event.detail;
 
     if (method == "open_management") {
@@ -208,23 +208,23 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
     recordTelemetryEvent(event.detail);
   }
 
-  #aboutIdentityRemoveAllCredentials() {
+  #aboutSelfSovereignIndividualRemoveAllCredentials() {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:RemoveAllCredentials");
   }
 
-  #aboutIdentityUpdateCredential(changeSet) {
+  #aboutSelfSovereignIndividualUpdateCredential(changeSet) {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:UpdateCredential", {
       changeSet,
     });
   }
 
-  #aboutIdentityPrimaryChanged(changeSet) {
+  #aboutSelfSovereignIndividualPrimaryChanged(changeSet) {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:PrimaryChanged", {
       changeSet,
     });
   }
 
-  #aboutIdentityPrefChanged(changeSet) {
+  #aboutSelfSovereignIndividualPrefChanged(changeSet) {
     this.sendAsyncMessage("AboutSelfSovereignIndividual:PrefChanged", {
       changeSet,
     });

@@ -535,7 +535,9 @@ class AboutSelfSovereignIndividualInternal {
     for (let subscriber of this.#subscriberIterator()) {
       let browser = subscriber.embedderElement;
       let MozXULElement = browser.ownerGlobal.MozXULElement;
-      MozXULElement.insertFTLIfNeeded("browser/aboutIdentity.ftl");
+      MozXULElement.insertFTLIfNeeded(
+        "browser/aboutSelfSovereignIndividual.ftl"
+      );
       for (let ftl of extraFtl) {
         MozXULElement.insertFTLIfNeeded(ftl);
       }

@@ -69,28 +69,42 @@ this.ssi = class extends ExtensionAPI {
               }
             }
 
+            // FIXME(ssb): Mitigation. Move inside credentials.filter, if OS auth dialog makes stable or other resolutions find out.
+            const isAuthorized = await lazy.browserSsiHelper.authorize(
+              context,
+              tabTracker,
+              {
+                protocolName: "nostr",
+                credentialName: "nsec",
+              },
+              { type: "read", caption, submission, enforce },
+              false
+            );
+            if (!isAuthorized) {
+              return false;
+            }
+
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
-
-            return credentials
+            const filteredCredentials = credentials
               .filter(async credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
                   return false;
                 }
-                const isAuthorized = await lazy.browserSsiHelper.authorize(
-                  context,
-                  tabTracker,
-                  {
-                    protocolName: credential.protocolName,
-                    credentialName: credential.credentialName,
-                  },
-                  { type: "read", caption, submission, enforce },
-                  false
-                );
-                if (!isAuthorized) {
-                  return false;
-                }
+                // const isAuthorized = await lazy.browserSsiHelper.authorize(
+                //   context,
+                //   tabTracker,
+                //   {
+                //     protocolName: credential.protocolName,
+                //     credentialName: credential.credentialName,
+                //   },
+                //   { type: "read", caption, submission, enforce },
+                //   false
+                // );
+                // if (!isAuthorized) {
+                //   return false;
+                // }
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
@@ -118,6 +132,7 @@ this.ssi = class extends ExtensionAPI {
                 }
                 return filteredVal;
               });
+            return filteredCredentials;
           } catch (e) {
             console.error(e);
             return errorValue;
