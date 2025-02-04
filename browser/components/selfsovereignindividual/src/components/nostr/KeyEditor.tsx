@@ -206,10 +206,10 @@ export default function KeyEditor(props: Props) {
                 onSubmit={value =>
                   HandleChangeValue({ properties: { displayName: value } })
                 }
-                fontSize="2xl"
+                fontSize="xl"
                 isPreviewFocusable
               >
-                <EditablePreview />
+                <EditablePreview overflowWrap='anywhere' />
                 {/* Here is the custom input */}
                 <Input as={EditableInput} />
                 <EditableControls />

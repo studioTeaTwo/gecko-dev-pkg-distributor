@@ -993,10 +993,10 @@ function KeyEditor(props) {
           {
             defaultValue: editingKey.properties.displayName,
             onSubmit: (value) => HandleChangeValue({ properties: { displayName: value } }),
-            fontSize: "2xl",
+            fontSize: "xl",
             isPreviewFocusable: true,
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(EditableControls, {})
             ]
