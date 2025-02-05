@@ -843,11 +843,9 @@ function changePrimary(guid, checked, keys) {
   if (checked === true) {
     const prevs = keys.filter((key) => key.primary);
     for (const prev of prevs) {
-      setTimeout(() => {
-        modifyCredentialToStore({
-          guid: prev.guid,
-          primary: false
-        });
+      modifyCredentialToStore({
+        guid: prev.guid,
+        primary: false
       });
     }
     newPrimaryGuid = guid;
@@ -861,9 +859,11 @@ function changePrimary(guid, checked, keys) {
       newPrimaryGuid = prev.guid;
     }
   }
-  modifyCredentialToStore({
-    guid,
-    primary: checked
+  setTimeout(() => {
+    modifyCredentialToStore({
+      guid,
+      primary: checked
+    });
   });
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }

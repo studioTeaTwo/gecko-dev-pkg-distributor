@@ -14,12 +14,9 @@ export function changePrimary(
     // Set the current primary to false
     const prevs = keys.filter(key => key.primary);
     for (const prev of prevs) {
-      // Because of making state change in hooks ensured
-      setTimeout(() => {
-        modifyCredentialToStore({
-          guid: prev.guid,
-          primary: false,
-        });
+      modifyCredentialToStore({
+        guid: prev.guid,
+        primary: false,
       });
     }
     newPrimaryGuid = guid;
@@ -35,9 +32,12 @@ export function changePrimary(
     }
   }
 
-  modifyCredentialToStore({
-    guid,
-    primary: checked,
+  // setTimeout, because of making state change order in hooks ensured
+  setTimeout(() => {
+    modifyCredentialToStore({
+      guid,
+      primary: checked,
+    });
   });
 
   // Notify to the buit-in extension
