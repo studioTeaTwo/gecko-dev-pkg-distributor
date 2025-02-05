@@ -15,7 +15,7 @@
   },
   {
     "namespace": "ssi",
-    "description": "That's to realize the self-sovereign identity.",
+    "description": "That's to empower individual on the self-sovereign way.",
     "permissions": ["ssi"],
     "types": [
       {
@@ -98,7 +98,7 @@
       {
         "name": "searchCredentialsWithoutSecret",
         "type": "function",
-        "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `ssi.askPermission`.",
+        "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -115,14 +115,14 @@
         ],
         "returns": {
           "type": "array",
-          "description": "A Promise that will be fulfilled with array of `ssi.Credential`.",
+          "description": "A Promise that will be fulfilled with `array` of `ssi.Credential`.",
           "items": {
             "$ref": "Credential"
           }
         }
       },
       {
-        "name": "askPermission",
+        "name": "askConsent",
         "type": "function",
         "description": "Ask the user whether to give a permission to the requsting web app",
         "parameters": [
@@ -146,11 +146,11 @@
         "async": true,
         "returns": {
           "type": "boolean",
-          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+          "description": "A Promise that will be fulfilled with a `boolean` value to indicate the authorization result."
         }
       },
       {
-        "name": "askPermissionChild",
+        "name": "askConsentChild",
         "type": "function",
         "description": "Ask the user whether to give a permission to the requsting web app",
         "parameters": [
@@ -163,7 +163,7 @@
         "async": true,
         "returns": {
           "type": "boolean",
-          "description": "A Promise that will be fulfilled with a boolean value to indicate the authorization result."
+          "description": "A Promise that will be fulfilled with a `boolean` value to indicate the authorization result."
         }
       }
     ]

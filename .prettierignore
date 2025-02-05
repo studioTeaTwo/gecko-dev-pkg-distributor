@@ -1533,8 +1533,8 @@ xpcom/idl-parser/xpidl/fixtures/xpctest.d.json
 # ssb: The list below is built by bundler or copied from npm package
 ##############################################################################
 
-browser/components/selfsovereignidentity/content
-browser/components/selfsovereignidentity/tsconfig.json
+browser/components/selfsovereignindividual/content
+browser/components/selfsovereignindividual/tsconfig.json
 browser/extensions/nip/extension/*.bundle.js
 browser/extensions/nip/tsconfig.json
 browser/extensions/ssi/extension/*.bundle.js

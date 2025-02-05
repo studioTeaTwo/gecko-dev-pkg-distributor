@@ -73,17 +73,13 @@ jobs:
           cat ./mozconfig
           echo '*********************************'
 
-          brew install gnu-tar
-          export PATH=/usr/local/opt/gnu-tar/libexec/gnubin:$PATH
           ./mach --no-interactive bootstrap --application-choice browser
-
       - name: Install setup tool via PIP 📦
         run: |
           pip install setuptools
 
       - name: Extract artifact 📂
         run: |
-          mkdir -p ./ssb
           cp ${{ steps.download-artifacts-mac-enable-profgen.outputs.download-path }}/${ARCH_TYPE}-apple-darwin-output.tar.xz ./
           tar xf ${ARCH_TYPE}-apple-darwin-output.tar.xz
 

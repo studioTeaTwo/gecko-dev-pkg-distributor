@@ -1,86 +1,59 @@
-// Mediator for the extension to relay between the web apps and the background
-// refs: https://github.com/getAlby/lightning-browser-extension/blob/master/src/extension/content-script/nostr.js
-
-import { type MessageBetweenBackAndContent } from "../custom.type";
+import { WindowSSI } from "../custom.type";
 import { log } from "../shared/logger";
-import { shouldInject } from "../shared/shouldInject";
+import {
+  generate,
+  getPublicKey,
+  getPublicKeyWithCallback,
+  sign,
+  signWithCallback,
+  decrypt,
+  _invoke,
+  addEventListener,
+  removeEventListener,
+} from "./api";
 
-const availableCalls = ["nostr/getPublicKey", "nostr/signEvent"];
+// Object shared with inpage scripts.
+const _nostr = new window.Object() as WindowSSI["nostr"];
+_nostr.generate = exportFunction(generate, window);
+_nostr.getPublicKey = exportFunction(getPublicKey, window);
+_nostr.getPublicKeyWithCallback = exportFunction(
+  getPublicKeyWithCallback,
+  window
+);
+_nostr.sign = exportFunction(sign, window);
+_nostr.signWithCallback = exportFunction(signWithCallback, window);
+_nostr.decrypt = exportFunction(decrypt, window);
+
+// NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
+// ref: https://github.com/nostr-protocol/nips/pull/1174
+_nostr.messageBoard = cloneInto({}, window);
+
+_nostr._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+_nostr._invoke = exportFunction(_invoke(_nostr._proxy), window);
+_nostr.addEventListener = exportFunction(
+  addEventListener(_nostr._proxy),
+  window
+);
+_nostr.removeEventListener = exportFunction(
+  removeEventListener(_nostr._proxy),
+  window
+);
+
+export const nostr = _nostr;
 
 export async function init() {
-  if (!shouldInject()) {
-    return;
-  }
-
-  // The message listener to listen to inpage calls
-  // After, those calls get passed on to the background script
-  // and emit event to return the response to the inpages.
-  window.addEventListener("message", async ev => {
-    log("content-script eventListener message", ev);
-    // Only accept messages from the current window
-    if (
-      ev.source !== window ||
-      ev.data.id === "native" ||
-      ev.data.application !== "ssb" ||
-      ev.data.scope !== "nostr"
-    ) {
-      return;
-    }
-
-    if (ev.data && !ev.data.response) {
-      if (!availableCalls.includes(ev.data.action)) {
-        console.error("Function not available. Is the provider enabled?");
-        return;
-      }
-
-      // Send message to the backgrounds and emit the returned value to the inpages
-      const message: MessageBetweenBackAndContent = {
-        origin: ev.origin,
-        application: ev.data.application,
-        action: ev.data.action,
-        args: ev.data.args,
-      };
-      const replyFunction = response => {
-        log("response from background", ev, response);
-        postMessage(ev, response);
-      };
-      log("content-script sendMessage to background", message);
-      return browser.runtime.sendMessage(message).then(replyFunction).catch();
-    }
-  });
-
   // The message listener to listen to background calls
   // After, emit event to return the response to the inpages.
   browser.runtime.onMessage.addListener(request => {
     log("content-script onMessage", request);
+    const action = request.action.replace("nostr/", "");
+    const data = request.args;
+
     // forward account changed messaged to inpage script
-    if (request.action === "nostr/accountChanged") {
-      window.postMessage(
-        {
-          id: "native",
-          application: "ssb",
-          data: {
-            action: request.action.replace("nostr/", ""),
-            data: request.args,
-          },
-          scope: "nostr",
-        },
-        window.location.origin
-      );
+    if (action === "accountChanged") {
+      window.wrappedJSObject.ssi.nostr._invoke(action, data);
+      XPCNativeWrapper(window.wrappedJSObject.ssi);
     }
   });
-}
-
-// Send message to the inpages
-function postMessage(ev, response) {
-  window.postMessage(
-    {
-      id: ev.data.id,
-      application: "ssb",
-      response: true,
-      data: response,
-      scope: "nostr",
-    },
-    window.location.origin
-  );
 }

@@ -32,8 +32,6 @@ ac_add_options --target=x86_64-pc-windows-msvc
 
 export MOZ_STUB_INSTALLER=1
 
-export MOZ_LTO=cross
-
 MOZ_USER_DIR="ssb"
 MOZ_APP_BASENAME=ssb
 MOZ_APP_PROFILE=ssb

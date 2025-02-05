@@ -4,29 +4,51 @@
 
 /* eslint-env webextensions */
 
+import { shouldInject } from "../shared/shouldInject";
 import { log } from "../shared/logger";
-import { init as nostrInit } from "./nostr";
+import { WindowSSI } from "../custom.type";
+import { nostr, init as nostrInit } from "./nostr";
+import { _invoke, addEventListener, removeEventListener } from "./api";
 
-log("content-script working", browser.runtime.getURL("inpages.bundle.js"));
+log("content-script working", browser.runtime.getURL("contents.bundle.js"));
 
-function loadInpageScript(url) {
-  try {
-    if (!document) {
-      throw new Error("No document");
+// Object shared with inpage scripts.
+const windowSSI = new window.Object() as WindowSSI;
+windowSSI._scope = "ssi";
+
+windowSSI.nostr = nostr;
+
+windowSSI._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+windowSSI._invoke = exportFunction(_invoke(windowSSI._proxy), window);
+windowSSI.addEventListener = exportFunction(
+  addEventListener(windowSSI._proxy),
+  window
+);
+windowSSI.removeEventListener = exportFunction(
+  removeEventListener(windowSSI._proxy),
+  window
+);
+
+if (shouldInject()) {
+  // It envisions browser-native API, so the object is persisted.
+  window.wrappedJSObject.ssi = windowSSI;
+  for (const api of [
+    window.wrappedJSObject.ssi,
+    window.wrappedJSObject.ssi.nostr,
+  ]) {
+    for (const property of Object.getOwnPropertyNames(api)) {
+      Object.defineProperty(window.wrappedJSObject.ssi.nostr, property, {
+        writable: false,
+        configurable: false,
+      });
     }
-    const container = document.head || document.documentElement;
-    if (!container) {
-      throw new Error("No container element");
-    }
-    const scriptEl = document.createElement("script");
-    scriptEl.setAttribute("async", "false");
-    scriptEl.setAttribute("type", "text/javascript");
-    scriptEl.setAttribute("src", url);
-    container.appendChild(scriptEl);
-  } catch (err) {
-    console.error("injection failed", err);
   }
-}
-loadInpageScript(browser.runtime.getURL("inpages.bundle.js"));
+  Object.defineProperty(window.wrappedJSObject, "ssi", {
+    writable: false,
+    configurable: false,
+  });
+  XPCNativeWrapper(window.wrappedJSObject.ssi);
 
-nostrInit();
+  nostrInit();
+}

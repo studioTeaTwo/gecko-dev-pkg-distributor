@@ -17,9 +17,9 @@
  *       "primary": "true",
  *       "encryptedSecret": "...",
  *       "encryptedIdentifier": "...",
- *       "encryptedTrustedSites": "...", ciphertext of [{ url: "http://localhost", permissions: {...}}]
- *       "encryptedPasswordAuthorizedSites": "...", ciphertext of [{ url: "http://localhost", expiryTime: 1736756527899, permissions: {...}}],
- *       "encryptedProperties": "...", ciphertext of { displayName: "dev1 key" }
+ *       "encryptedTrustedSites": "...", ciphertext of stringified ([{ url: "http://localhost", enabled: true, permissions: {...}}])
+ *       "encryptedPasswordAuthorizedSites": "...", ciphertext of stringified [{ url: "http://localhost", expiryTime: 1736756527899, permissions: {...}}],
+ *       "encryptedProperties": "...", ciphertext of stringified { displayName: "dev1 key" }
  *       "guid": "...",
  *       "encType": 1,
  *       "timeCreated": 1262304000000,

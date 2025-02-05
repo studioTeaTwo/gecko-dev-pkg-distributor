@@ -882,7 +882,7 @@ const DialogMessage = {
     "nostr/getPublicKey": "OK?",
     "nostr/signEvent": "OK?",
 };
-const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignidentity'.";
+const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
 // Proceed calls from contents
 const doNostrAction = async (action, args, origin) => {
@@ -894,25 +894,18 @@ const doNostrAction = async (action, args, origin) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            // FIXME(ssb): Mitigation. Remove the askPermission and state.nostr.npub, if OS auth dialog makes stable. Otherwise, problem occurs when user disables accuntChanged notification.
-            const isAuthorized = await browser.ssi.askPermission("nostr", state_1.state.nostr.credentialName, { caption: "READ NOSTR PUBLIC KEY", submission: "" });
-            if (!isAuthorized) {
-                throw new Error("Rejected");
+            const credentials = await browser.ssi.searchCredentialsWithoutSecret({
+                protocolName: "nostr",
+                credentialName: state_1.state.nostr.credentialName,
+                primary: true,
+            }, { caption: DialogMessage[action], submission: "" });
+            if (credentials.length === 0) {
+                throw new Error(ERR_MSG_NOT_ENABLED);
             }
-            if (!state_1.state.nostr.npub) {
-                const credentials = await browser.ssi.searchCredentialsWithoutSecret({
-                    protocolName: "nostr",
-                    credentialName: state_1.state.nostr.credentialName,
-                    primary: true,
-                }, { caption: DialogMessage[action], submission: "" });
-                if (credentials.length === 0) {
-                    throw new Error(ERR_MSG_NOT_ENABLED);
-                }
-                state_1.state.nostr = {
-                    ...state_1.state.nostr,
-                    npub: credentials[0].identifier,
-                };
-            }
+            state_1.state.nostr = {
+                ...state_1.state.nostr,
+                npub: credentials[0].identifier,
+            };
             return decodeNpub(state_1.state.nostr.npub);
         }
         case "nostr/signEvent": {
@@ -940,11 +933,12 @@ async function init() {
     const results = await browser.ssi.nostr.getPrefs();
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
-        prefs[_state] = results[_pref];
+        prefs[_state] =
+            results && results[_pref] ? results[_pref] : state_1.state.nostr.prefs[_pref];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
-        prefs,
+        prefs: prefs,
     };
     (0, logger_1.log)("nostr inited in background", state_1.state.nostr);
 }
@@ -980,10 +974,12 @@ const onPrimaryChangedCallback = async () => {
 };
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
+    // Update new value
+    const results = await browser.ssi.nostr.getPrefs();
     const stateName = Object.entries(MapBetweenPrefAndState)
         .filter(([_state, _pref]) => _pref === prefKey)
         .map(([_state, _pref]) => _state)[0];
-    const newVal = !state_1.state.nostr.prefs[stateName];
+    const newVal = results[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents
@@ -1114,9 +1110,7 @@ __webpack_require__(684);
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
     if (message.action.includes("nostr/")) {
-        return Promise.resolve((0, nostr_1.doNostrAction)(message.action, message.args, message.origin))
-            .then(data => ({ data }))
-            .catch(error => ({ error }));
+        return (0, nostr_1.doNostrAction)(message.action, message.args, message.origin);
     }
     return false;
 });

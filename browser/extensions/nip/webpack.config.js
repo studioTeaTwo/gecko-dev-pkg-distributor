@@ -12,7 +12,6 @@ module.exports = env => {
     entry: {
       "extension/backgrounds": "./src/backgrounds/index.ts",
       "extension/contents": "./src/contents/index.ts",
-      "extension/inpages": "./src/inpages/index.ts",
     },
     output: {
       filename: "[name].bundle.js",

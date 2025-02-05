@@ -71,7 +71,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
 
               // Check permission
               const enabled = Services.prefs.getBoolPref(
-                "selfsovereignidentity.nostr.enabled"
+                "selfsovereignindividual.nostr.enabled"
               );
               if (!enabled) {
                 return errorValue;
@@ -104,7 +104,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                 },
                 {
                   type: "sign",
-                  evidence: JSON.stringify(nEvent, null, 1),
+                  evidence: nEvent,
                   caption,
                   submission,
                   enforce,

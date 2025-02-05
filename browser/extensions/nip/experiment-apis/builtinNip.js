@@ -16,17 +16,10 @@ this.builtinNip = class extends ExtensionAPI {
           context,
           name: "builtinNip.onPrefBuiltinNip07Changed",
           register: fire => {
-            const prefName = `selfsovereignidentity.nostr.builtinNip07.enabled`;
+            const prefName = `selfsovereignindividual.nostr.builtinNip07.enabled`;
 
             const callback = () => {
-              // Check permission
-              const enabled = Services.prefs.getBoolPref(
-                `selfsovereignidentity.nostr.enabled`
-              );
-              if (!enabled) {
-                return;
-              }
-
+              // No need to check permission
               fire.async().catch(() => {}); // ignore Message Manager disconnects
             };
             Services.prefs.addObserver(prefName, callback);
@@ -37,18 +30,12 @@ this.builtinNip = class extends ExtensionAPI {
         }).api(),
         async getPrefs() {
           try {
-            const protocolName = "nostr";
-            // Check permission
-            const enabled = Services.prefs.getBoolPref(
-              `selfsovereignidentity.${protocolName}.enabled`
-            );
-            if (!enabled) {
-              return null;
-            }
+            // No need to check permission
 
+            const protocolName = "nostr";
             const prefs = {
               "builtinNip07.enabled": Services.prefs.getBoolPref(
-                `selfsovereignidentity.${protocolName}.builtinNip07.enabled`
+                `selfsovereignindividual.${protocolName}.builtinNip07.enabled`
               ),
             };
             return prefs;

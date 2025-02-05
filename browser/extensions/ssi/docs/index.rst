@@ -1,7 +1,7 @@
-Experiment-API Selfsovereignidentity
+Experiment-API SelfSovereignIndividual
 =============
 
 Introduction
 ------------
 
-That's to realize the self-sovereign identity.
+That's to empower individual on the self-sovereign way.

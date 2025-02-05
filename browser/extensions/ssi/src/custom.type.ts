@@ -1,37 +1,76 @@
 type ApplicationName = "ssb";
 type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht";
+export const availableCalls = [
+  "nostr/getPublicKey",
+  "nostr/signEvent",
+] as const;
+type AvailableCalls = (typeof availableCalls)[number];
 
-interface SelfsovereignidentityDefaultPrefs {
-  enabled: boolean; // selfsovereignidentity.[protocolName].enabled
-  usedAccountChanged: boolean; // selfsovereignidentity.[protocolName].event.accountChanged.enabled
+interface SelfSovereignIndividualDefaultPrefs {
+  enabled: boolean; // selfsovereignindividual.[protocolName].enabled
+  usedAccountChanged: boolean; // selfsovereignindividual.[protocolName].event.accountChanged.enabled
 }
 
 type PublicKey = string;
 type Signature = string;
 type PlainText = string;
-export interface WindowSSI extends EventTarget {
+export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   _scope: "ssi";
   _proxy: EventTarget;
+  _invoke: (event: CustomEvent) => void;
 
-  readonly nostr: {
+  nostr: {
     _proxy: EventTarget;
+    _invoke: (action, data) => void;
     generate: (option?) => Promise<PublicKey>;
     getPublicKey: (option?) => Promise<PublicKey>;
+    getPublicKeyWithCallback: (
+      callback: (...argments) => unknown,
+      option?
+    ) => PublicKey;
     sign: (
       message: string,
       option: {
         type: "signEvent";
       }
     ) => Promise<Signature>;
+    signWithCallback: (
+      message: string,
+      callback: (...argments) => unknown,
+      option: {
+        type: "signEvent";
+      }
+    ) => Signature;
     decrypt: (ciphertext: string, option?) => Promise<PlainText>;
     messageBoard?: unknown;
-  } & EventTarget;
+  } & Omit<EventTarget, "dispatchEvent">;
 }
 declare global {
   // eslint-disable-next-line no-var
   var ssi: WindowSSI;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type FixMe = any;
+
+  /**
+   * FireFox only methods
+   */
+  function cloneInto(
+    obj: object,
+    scope: Window,
+    option?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
+  );
+  function exportFunction(
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    func: Function,
+    scope: Window,
+    option?: { defineAs?: string; allowCrossOriginArguments?: boolean }
+  );
+  function XPCNativeWrapper(obj: object);
+  interface WrappedJSObject {
+    ssi: WindowSSI;
+  }
+  // eslint-disable-next-line no-var
+  var wrappedJSObject: WrappedJSObject;
 }
 
 /**
@@ -42,17 +81,6 @@ export interface MessageBetweenBackAndContent {
   args: FixMe;
   origin: string;
   application: ApplicationName;
-}
-export interface MessageBetweenContentAndInpage {
-  id;
-  application: ApplicationName;
-  action: `${ProtocolName}/action`;
-  scope: ProtocolName;
-  args: FixMe;
-}
-// on sendResponse
-export interface MessageBag {
-  data: FixMe;
 }
 
 const verifiedSymbol = Symbol("verified");
@@ -70,6 +98,6 @@ export type NostrEvent = {
 /**
  * Nostr
  */
-export interface SelfsovereignidentityPrefs {
-  nostr: SelfsovereignidentityDefaultPrefs;
+export interface SelfSovereignIndividualPrefs {
+  nostr: SelfSovereignIndividualDefaultPrefs;
 }

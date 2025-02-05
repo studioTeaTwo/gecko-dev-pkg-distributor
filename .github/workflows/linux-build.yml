@@ -72,8 +72,11 @@ jobs:
 
     - name: setup Rust 🦀
       run: |
+        rustup default stable
         if [[ $GHA_aarch64 == 'true' ]];then
-          rustup target add aarch64-unknown-linux-gnu --toolchain stable
+          rustup target add aarch64-unknown-linux-gnu
+        else
+          rustup target add x86_64-unknown-linux-gnu
         fi
 
         #? https://github.com/mozilla/sccache#known-caveats
@@ -143,6 +146,16 @@ jobs:
         GHA_aarch64: ${{inputs.aarch64}}
         GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
       shell: python3 {0}
+
+    - name: Mach Configure
+      run: |
+        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+          export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
+        fi
+
+        ./mach configure
+      env:
+        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
     - name: Build 🔨
       continue-on-error: true

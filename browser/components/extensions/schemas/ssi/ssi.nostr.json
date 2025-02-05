@@ -21,7 +21,7 @@
       {
         "id": "Preference",
         "type": "object",
-        "description": "The preference values set by the user in `about:selfsovereignidentity`",
+        "description": "The preference values set by the user in `about:selfsovereignindividual`",
         "properties": {
           "enabled": {
             "type": "boolean",
@@ -40,7 +40,7 @@
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignidentity.nostr.enabled` changed",
+        "description": "Fire when the preference value of `selfsovereignindividual.nostr.enabled` changed",
         "parameters": []
       }
     ],
@@ -53,13 +53,14 @@
         "async": true,
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `ssi.nostr.Preference`."
+          "description": "A Promise that will be fulfilled with a `object` of `ssi.nostr.Preference`. Returns Promise<null> if error.",
+          "optional": true
         }
       },
       {
         "name": "sign",
         "type": "function",
-        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askPermission`.",
+        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -87,7 +88,8 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a resulting signature string."
+          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise<null> if error.",
+          "optional": true
         }
       }
     ]

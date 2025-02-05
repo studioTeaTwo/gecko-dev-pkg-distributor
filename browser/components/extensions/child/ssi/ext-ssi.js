@@ -13,12 +13,12 @@ this.ssi = class extends ExtensionAPI {
     return {
       ssi: {
         // TODO(ssb): Not yet implemented
-        async askPermissionChild(protocolName) {
+        async askConsentChild(protocolName) {
           console.dir("here is child");
 
           try {
             // let result = await childManager.callParentAsyncFunction(
-            //   "ssi.askPermission",
+            //   "ssi.askConsent",
             //   ["nostr"]
             // );
           } catch (e) {

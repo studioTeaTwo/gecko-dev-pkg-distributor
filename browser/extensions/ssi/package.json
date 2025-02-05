@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix --config .eslintrc.json --ext .ts,.tsx,.js ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "studioTeaTwo <studioTeaTwo@proton.me> (https://studioteatwo.github.io/)",
+  "author": "teatwo <studioTeaTwo@proton.me>",
   "license": "MPL-2.0",
   "devDependencies": {
     "@types/firefox-webext-browser": "^120.0.4",

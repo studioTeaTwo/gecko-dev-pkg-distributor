@@ -280,26 +280,30 @@ let JSWINDOWACTORS = {
     remoteTypes: ["privilegedabout"],
   },
 
-  AboutSelfsovereignidentity: {
+  AboutSelfSovereignIndividual: {
     parent: {
       esModuleURI:
-        "resource:///actors/AboutSelfsovereignidentityParent.sys.mjs",
+        "resource:///actors/AboutSelfSovereignIndividualParent.sys.mjs",
     },
     child: {
-      esModuleURI: "resource:///actors/AboutSelfsovereignidentityChild.sys.mjs",
+      esModuleURI:
+        "resource:///actors/AboutSelfSovereignIndividualChild.sys.mjs",
       events: {
-        AboutSelfsovereignidentityCreateCredential: {},
-        AboutSelfsovereignidentityDeleteCredential: {},
-        AboutSelfsovereignidentityGetAllCredentials: {},
-        AboutSelfsovereignidentityInit: {},
-        AboutSelfsovereignidentityRecordTelemetryEvent: {},
-        AboutSelfsovereignidentityRemoveAllCredentials: {},
-        AboutSelfsovereignidentityUpdateCredential: {},
-        AboutSelfsovereignidentityPrimaryChanged: {},
-        AboutSelfsovereignidentityPrefChanged: {},
+        AboutSelfSovereignIndividualCreateCredential: {},
+        AboutSelfSovereignIndividualDeleteCredential: {},
+        AboutSelfSovereignIndividualGetAllCredentials: {},
+        AboutSelfSovereignIndividualInit: {},
+        AboutSelfSovereignIndividualRecordTelemetryEvent: {},
+        AboutSelfSovereignIndividualRemoveAllCredentials: {},
+        AboutSelfSovereignIndividualUpdateCredential: {},
+        AboutSelfSovereignIndividualPrimaryChanged: {},
+        AboutSelfSovereignIndividualPrefChanged: {},
       },
     },
-    matches: ["about:selfsovereignidentity", "about:selfsovereignidentity?*"],
+    matches: [
+      "about:selfsovereignindividual",
+      "about:selfsovereignindividual?*",
+    ],
     allFrames: true,
     remoteTypes: ["privilegedabout"],
   },
@@ -2338,7 +2342,7 @@ BrowserGlue.prototype = {
     }
   },
 
-  async _setupSelfsovereignidentity() {
+  async _setupSelfSovereignIndividual() {
     // There is no pref for this add-on because it shouldn't be disabled.
     const ID = "experimentapi-ssi@teatwo.dev";
 
@@ -2588,7 +2592,7 @@ BrowserGlue.prototype = {
     this._monitorIonPref();
     this._monitorIonStudies();
     this._setupSearchDetection();
-    this._setupSelfsovereignidentity();
+    this._setupSelfSovereignIndividual();
 
     this._monitorGPCPref();
 

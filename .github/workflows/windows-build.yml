@@ -110,6 +110,21 @@ jobs:
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+    - name: setup Rust 🦀
+      run: |
+        rustup toolchain install 1.81.0
+        rustup default 1.81.0
+
+        if [[ $GHA_aarch64 == 'true' ]];then
+          rustup target add aarch64-pc-windows-msvc
+        else
+          rustup target add x86_64-pc-windows-msvc
+        fi
+
+        #? https://github.com/mozilla/sccache#known-caveats
+        export CARGO_INCREMENTAL=0
+      env:
+        GHA_aarch64: ${{inputs.aarch64}}
 
     - uses: actions/download-artifact@v4
       name: Download artifact if use profdata📥
@@ -138,6 +153,7 @@ jobs:
           echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
         elif [[ -n $GHA_profdata_jarlog_artifact_name ]]; then
           {
+            echo 'export MOZ_LTO=cross'
             echo 'ac_add_options --enable-profile-use=cross'
             echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
             echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
@@ -176,21 +192,15 @@ jobs:
         GHA_profdata_jarlog_artifact_name : ${{inputs.profdata_jarlog_artifact_name}}
         GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: setup Rust 🦀
+    - name: Mach Configure
       run: |
-        rustup toolchain install 1.81.0
-        rustup default 1.81.0
-
-        if [[ $GHA_aarch64 == 'true' ]];then
-          rustup target add aarch64-pc-windows-msvc --toolchain 1.81.0
-        else
-          rustup target add x86_64-pc-windows-msvc --toolchain 1.81.0
+        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+          export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
         fi
 
-        #? https://github.com/mozilla/sccache#known-caveats
-        export CARGO_INCREMENTAL=0
+        ./mach configure
       env:
-        GHA_aarch64: ${{inputs.aarch64}}
+        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
     - name: Build 🔨
       continue-on-error: true

@@ -15378,71 +15378,77 @@
   mirror: always
 
 #---------------------------------------------------------------------------
-# Prefs starting with "selfsovereignidentity."
+# Prefs starting with "selfsovereignindividual."
 #---------------------------------------------------------------------------
 
-# Menu pin in about:selfsovereignidentity
-- name: selfsovereignidentity.ui.menuPin
+# Menu pin in about:selfsovereignindividual
+- name: selfsovereignindividual.ui.menuPin
   type: String
   value: "nostr"
   mirror: never
 
 # Enabling to use keys of Nostr
-- name: selfsovereignidentity.nostr.enabled
+- name: selfsovereignindividual.nostr.enabled
   type: bool
   value: true
   mirror: always
 
 # Whether to use primary password when managing secrets in setting page.
-- name: selfsovereignidentity.nostr.primarypassword.toSettings.enabled
+- name: selfsovereignindividual.nostr.primarypassword.toSettings.enabled
   type: bool
   value: true
   mirror: always
 
 # Expiry time for primary password when managing secrets in setting page.
-- name: selfsovereignidentity.nostr.primarypassword.toSettings.expiryTime
+- name: selfsovereignindividual.nostr.primarypassword.toSettings.expiryTime
   type: uint32_t
   value: 300000 # 5 minutes
   mirror: always
 
 # Whether to use primary password to calls from webapps.
-- name: selfsovereignidentity.nostr.primarypassword.toApps.enabled
+- name: selfsovereignindividual.nostr.primarypassword.toApps.enabled
   type: bool
   value: true
   mirror: always
 
 # Expiry time for primary password to calls from webapps.
-- name: selfsovereignidentity.nostr.primarypassword.toApps.expiryTime
+- name: selfsovereignindividual.nostr.primarypassword.toApps.expiryTime
   type: uint32_t
   value: 86400000 # 1 day
   mirror: always
 
+# Preset for the Event Kind authorized every time to calls from webapps.
+- name: selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset
+  type: String
+  value: "9321,9734,13194,23194"
+  mirror: never
+
 # Trusting only registered sites
-- name: selfsovereignidentity.nostr.trustedSites.enabled
+- name: selfsovereignindividual.nostr.trustedSites.enabled
   type: bool
   value: true
   mirror: always
 
 # Permitting to emit `accountChanged` event
-- name: selfsovereignidentity.nostr.event.accountChanged.enabled
+- name: selfsovereignindividual.nostr.event.accountChanged.enabled
   type: bool
   value: true
   mirror: always
 
 # Injecting `window.nostr` by built-in NIP-07
-- name: selfsovereignidentity.nostr.builtinNip07.enabled
+- name: selfsovereignindividual.nostr.builtinNip07.enabled
   type: bool
   value: true
   mirror: always
 
 # Tab pin in nostr
-- name: selfsovereignidentity.nostr.ui.tabPin
+- name: selfsovereignindividual.nostr.ui.tabPin
   type: String
   value: "0"
   mirror: never
 
 # Tap pin in nostr.nip-07
-- name: selfsovereignidentity.nostr.ui.nip07.tabPin
+- name: selfsovereignindividual.nostr.ui.nip07.tabPin
   type: String
   value: "0"
   mirror: never

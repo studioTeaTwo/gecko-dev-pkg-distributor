@@ -24,8 +24,6 @@ export WINEDEBUG=-all
 
 ac_add_options --target=aarch64-pc-windows-msvc
 
-export MOZ_LTO=cross
-
 export MOZ_STUB_INSTALLER=1
 
 MOZ_USER_DIR="ssb"
