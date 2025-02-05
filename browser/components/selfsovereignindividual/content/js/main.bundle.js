@@ -333,6 +333,37 @@ function MdHelp(props) {
     ]
   })(props);
 }
+const SafeProtocols = ["http", "https", "moz-extension"];
+const SpecialCards = ["*", "<all_urls>"];
+const DefaultTrustedSites = [
+  {
+    url: "http://localhost",
+    name: "",
+    enabled: true,
+    permissions: {}
+  }
+];
+const DefaultExcludedKindList = {
+  9321: { nip: 61, name: "Nutzap" },
+  9734: { nip: 57, name: "Zap Request" },
+  13194: { nip: 47, name: "NWC Wallet Info" },
+  23194: { nip: 47, name: "NWC Wallet Request" }
+};
+const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
+const NostrTemplate = {
+  protocolName: "nostr",
+  credentialName: "nsec",
+  identifier: "",
+  // npubkey
+  secret: "",
+  // raw seckey
+  primary: false,
+  trustedSites: [],
+  passwordAuthorizedSites: [],
+  properties: {
+    displayName: ""
+  }
+};
 function initStore() {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
@@ -463,6 +494,7 @@ function useChildActorEvent() {
       expiryTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 864e5,
+      excludedKindsPreset: DefaultExcludedKinds.join(","),
       usedTrustedSites: false,
       usedBuiltinNip07: true,
       usedAccountChanged: true
@@ -742,37 +774,6 @@ function Secret(props) {
     )
   ] });
 }
-const SafeProtocols = ["http", "https", "moz-extension"];
-const SpecialCards = ["*", "<all_urls>"];
-const DefaultTrustedSites = [
-  {
-    url: "http://localhost",
-    name: "",
-    enabled: true,
-    permissions: {}
-  }
-];
-const DefaultExcludedKindList = {
-  13194: { nip: 47, name: "NWC Wallet Info" },
-  23194: { nip: 47, name: "NWC Wallet Request" },
-  9734: { nip: 57, name: "Zap Request" },
-  9321: { nip: 61, name: "Nutzap" }
-};
-const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
-const NostrTemplate = {
-  protocolName: "nostr",
-  credentialName: "nsec",
-  identifier: "",
-  // npubkey
-  secret: "",
-  // raw seckey
-  primary: false,
-  trustedSites: [],
-  passwordAuthorizedSites: [],
-  properties: {
-    displayName: ""
-  }
-};
 function ExampleUrlMatch(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, maxW: props.maxW || "500px", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
@@ -1150,7 +1151,7 @@ function KeyEditor(props) {
                         p: "2",
                         alignItems: "flex-start",
                         children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Event Kinds authenticated every time" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Event Kinds authorized every time" }),
                           /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                             /* @__PURE__ */ jsxRuntimeExports.jsx(
                               Textarea,
@@ -1172,7 +1173,7 @@ function KeyEditor(props) {
                                 colorScheme: "blue",
                                 onClick: () => handleResetExcludedKinds(i),
                                 width: "150px",
-                                children: "Reset to default"
+                                children: "Revert to preset"
                               }
                             )
                           ] }),
@@ -1604,6 +1605,7 @@ function NIP07(props) {
   const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
+  const [newExcludedKindsPreset, setNewExcludedKindsPreset] = reactExports.useState("");
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useState("");
@@ -1760,6 +1762,33 @@ function NIP07(props) {
     e.preventDefault();
     const checked = e.target.checked;
     onPrefChanged2({ protocolName: "nostr", usedAccountChanged: checked });
+  };
+  const handleChangeExcludedKinds = (e) => {
+    e.preventDefault();
+    const value = e.target.value;
+    if (!/^[1-9][0-9,]*$/.test(value) && value !== "") {
+      alert("Input must be Kind number or ','.");
+      return;
+    }
+    setNewExcludedKindsPreset(value);
+  };
+  const handleEditExcludedKinds = async (sort) => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    onPrefChanged2({
+      protocolName: "nostr",
+      excludedKindsPreset: sort === "edit" ? newExcludedKindsPreset : DefaultExcludedKinds.join(",")
+    });
+    if (sort === "default") {
+      setNewExcludedKindsPreset(DefaultExcludedKinds.join(","));
+    }
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
@@ -2042,6 +2071,53 @@ function NIP07(props) {
                                     /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
                                     /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
                                   ] })
+                                ]
+                              }
+                            ) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the Event Kind authorized every time" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                              VStack,
+                              {
+                                backgroundColor: "white",
+                                p: "2",
+                                alignItems: "flex-start",
+                                children: [
+                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      Input,
+                                      {
+                                        placeholder: "Input kind number",
+                                        value: newExcludedKindsPreset || prefs.nostr.excludedKindsPreset,
+                                        onChange: handleChangeExcludedKinds,
+                                        maxW: "300px"
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      Button,
+                                      {
+                                        variant: "outline",
+                                        colorScheme: "blue",
+                                        onClick: (e) => {
+                                          e.preventDefault();
+                                          handleEditExcludedKinds("edit");
+                                        },
+                                        children: "Edit"
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      Button,
+                                      {
+                                        variant: "outline",
+                                        colorScheme: "blue",
+                                        onClick: (e) => {
+                                          e.preventDefault();
+                                          handleEditExcludedKinds("default");
+                                        },
+                                        children: "Reset to default"
+                                      }
+                                    )
+                                  ] }),
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
                                 ]
                               }
                             ) })

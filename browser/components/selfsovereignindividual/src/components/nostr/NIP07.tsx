@@ -45,8 +45,8 @@ import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
-import { SafeProtocols, SpecialCards } from "./contants";
-import { ExampleUrlMatch } from "../shared/Examples";
+import { DefaultExcludedKinds, SafeProtocols, SpecialCards } from "./contants";
+import { ExampleNostrKind, ExampleUrlMatch } from "../shared/Examples";
 import { StateContext } from "../../contexts/StatesProvider";
 
 const OneHour = 60 * 60 * 1000;
@@ -57,6 +57,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
   const [newSite, setNewSite] = useState("");
+  const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [error, setError] = useState("");
@@ -254,6 +255,41 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
     const checked = e.target.checked;
     onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked });
+  };
+
+  const handleChangeExcludedKinds = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+    const value = e.target.value;
+    if (!/^[1-9][0-9,]*$/.test(value) && value !== "") {
+      alert("Input must be Kind number or ','.");
+      return;
+    }
+
+    setNewExcludedKindsPreset(value);
+  };
+  const handleEditExcludedKinds = async (sort: "edit" | "default") => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      excludedKindsPreset:
+        sort === "edit"
+          ? newExcludedKindsPreset
+          : DefaultExcludedKinds.join(","),
+    });
+    if (sort === "default") {
+      setNewExcludedKindsPreset(DefaultExcludedKinds.join(","));
+    }
   };
 
   const getTrustedSites = useCallback(() => {
@@ -588,6 +624,51 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             <NumberDecrementStepper />
                           </NumberInputStepper>
                         </NumberInput>
+                      </GridItem>
+                      <GridItem>
+                        <label>
+                          Preset for the Event Kind authorized every time
+                        </label>
+                      </GridItem>
+                      <GridItem>
+                        <VStack
+                          backgroundColor="white"
+                          p="2"
+                          alignItems="flex-start"
+                        >
+                          <InputGroup>
+                            <Input
+                              placeholder="Input kind number"
+                              value={
+                                newExcludedKindsPreset ||
+                                prefs.nostr.excludedKindsPreset
+                              }
+                              onChange={handleChangeExcludedKinds}
+                              maxW="300px"
+                            />
+                            <Button
+                              variant="outline"
+                              colorScheme="blue"
+                              onClick={e => {
+                                e.preventDefault();
+                                handleEditExcludedKinds("edit");
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              colorScheme="blue"
+                              onClick={e => {
+                                e.preventDefault();
+                                handleEditExcludedKinds("default");
+                              }}
+                            >
+                              Reset to default
+                            </Button>
+                          </InputGroup>
+                          <ExampleNostrKind width="100%" />
+                        </VStack>
                       </GridItem>
                     </>
                   )}

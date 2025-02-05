@@ -26,13 +26,6 @@ const DIALOG_SYSTEM_MESSAGE = protocolName => ({
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
 // below is from browser/components/selfsovereignindividual/src/components/nostr/contants.ts
-const DefaultExcludedKindList = {
-  13194: { nip: 47, name: "NWC info event" },
-  23194: { nip: 47, name: "NWC request" },
-  9734: { nip: 57, name: "Zap request event" },
-  9321: { nip: 61, name: "Nutzap event" },
-};
-const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
 const SpecialCards = ["*", "<all_urls>"];
 
 /**
@@ -125,6 +118,11 @@ export const browserSsiHelper = {
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
       };
+      if (protocolName === "nostr") {
+        prefs.excludedKindsPreset = Services.prefs.getStringPref(
+          "selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset"
+        );
+      }
       return prefs;
     } catch (e) {
       console.error(e);
@@ -199,6 +197,9 @@ export const browserSsiHelper = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
     };
+    if (protocolName === "nostr") {
+      prefs.excludedKindsPreset = internalPrefs.excludedKindsPreset;
+    }
     const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
     const auth = Services.ssi.authCache.get(cacheKey);
     const cache = {
@@ -246,6 +247,7 @@ export const browserSsiHelper = {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
+ * @param {boolean=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
@@ -295,6 +297,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     const isAuthorized = await authWithPassword(
       target,
       extensionName,
+      prefs,
       authCache,
       dialogInfo
     );
@@ -388,6 +391,10 @@ function isPasswordAuthorized(target, authCache) {
  * @param {string} target.origin contentPrincipal.originNoSuffix
  * @param {string} target.url contentPrincipal.spec
  * @param {string} extensionName
+ * @param {object} prefs
+ * @param {boolean} prefs.enabledTrustedSites
+ * @param {boolean} prefs.enabledPrimarypassword
+ * @param {boolean=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
@@ -402,7 +409,13 @@ function isPasswordAuthorized(target, authCache) {
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
  * @returns {boolean}
  */
-async function authWithPassword(target, extensionName, authCache, dialogInfo) {
+async function authWithPassword(
+  target,
+  extensionName,
+  prefs,
+  authCache,
+  dialogInfo
+) {
   const { url, origin } = target;
   const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
   const { system, evidence, caption, submission, enforce, embedderElement } =
@@ -447,7 +460,8 @@ async function authWithPassword(target, extensionName, authCache, dialogInfo) {
       permissions: {},
     };
     if (protocolName === "nostr") {
-      passwordAuthorizedSite.permissions.excludedKinds = DefaultExcludedKinds;
+      passwordAuthorizedSite.permissions.excludedKinds =
+        prefs.excludedKindsPreset;
     }
     Services.ssi.authCache.update(cacheKey, {
       passwordAuthorizedSites: [passwordAuthorizedSite],

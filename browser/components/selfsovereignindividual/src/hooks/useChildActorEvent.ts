@@ -5,6 +5,7 @@ import {
   ProtocolName,
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
+import { DefaultExcludedKinds } from "../components/nostr/contants";
 
 /**
  * Send to child actor
@@ -172,6 +173,7 @@ export default function useChildActorEvent() {
       expiryTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 86400000,
+      excludedKindsPreset: DefaultExcludedKinds.join(","),
       usedTrustedSites: false,
       usedBuiltinNip07: true,
       usedAccountChanged: true,

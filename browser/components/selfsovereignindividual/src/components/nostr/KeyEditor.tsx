@@ -209,7 +209,7 @@ export default function KeyEditor(props: Props) {
                 fontSize="xl"
                 isPreviewFocusable
               >
-                <EditablePreview overflowWrap='anywhere' />
+                <EditablePreview overflowWrap="anywhere" />
                 {/* Here is the custom input */}
                 <Input as={EditableInput} />
                 <EditableControls />
@@ -373,7 +373,7 @@ export default function KeyEditor(props: Props) {
                                 alignItems="flex-start"
                               >
                                 <Heading size="sm">
-                                  Event Kinds authenticated every time
+                                  Event Kinds authorized every time
                                 </Heading>
                                 <HStack>
                                   <Textarea
@@ -402,7 +402,7 @@ export default function KeyEditor(props: Props) {
                                     onClick={() => handleResetExcludedKinds(i)}
                                     width="150px"
                                   >
-                                    Reset to default
+                                    Revert to preset
                                   </Button>
                                 </HStack>
                                 <ExampleNostrKind width="100%" />

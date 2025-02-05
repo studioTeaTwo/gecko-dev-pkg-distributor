@@ -155,6 +155,9 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
           usedBuiltinNip07: Services.prefs.getBoolPref(
             "selfsovereignindividual.nostr.builtinNip07.enabled"
           ),
+          excludedKindsPreset: Services.prefs.getStringPref(
+            "selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset"
+          ),
           tabPin: Services.prefs.getStringPref(
             "selfsovereignindividual.nostr.ui.tabPin"
           ),

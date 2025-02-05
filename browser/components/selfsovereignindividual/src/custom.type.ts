@@ -23,6 +23,7 @@ export interface SelfSovereignIndividualPrefs {
     tabPin: string; // selfsovereignindividual.nostr.ui.tabPin
     tabPinInNip07: string; // selfsovereignindividual.nostr.ui.nip07.tabPin
     usedBuiltinNip07: boolean; // selfsovereignindividual.nostr.builtinNip07.enabled
+    excludedKindsPreset: string; // selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset
   } & ProtocolDefaultPrefs;
 }
 

@@ -15381,6 +15381,12 @@
   value: 86400000 # 1 day
   mirror: always
 
+# Preset for the Event Kind authorized every time to calls from webapps.
+- name: selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset
+  type: String
+  value: "9321,9734,13194,23194"
+  mirror: never
+
 # Trusting only registered sites
 - name: selfsovereignindividual.nostr.trustedSites.enabled
   type: bool

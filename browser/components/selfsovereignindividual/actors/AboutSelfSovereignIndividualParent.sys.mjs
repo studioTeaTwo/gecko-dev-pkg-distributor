@@ -345,6 +345,12 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.expiryTimeForPrimarypasswordToApps
       );
     }
+    if (changeSet.hasOwnProperty("excludedKindsPreset")) {
+      Services.prefs.setStringPref(
+        `selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset`,
+        changeSet.excludedKindsPreset
+      );
+    }
     if (changeSet.hasOwnProperty("usedTrustedSites")) {
       Services.prefs.setBoolPref(
         `selfsovereignindividual.${changeSet.protocolName}.trustedSites.enabled`,
