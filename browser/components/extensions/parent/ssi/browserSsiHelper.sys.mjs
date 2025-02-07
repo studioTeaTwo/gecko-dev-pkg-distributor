@@ -198,7 +198,9 @@ export const browserSsiHelper = {
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
     };
     if (protocolName === "nostr") {
-      prefs.excludedKindsPreset = internalPrefs.excludedKindsPreset;
+      prefs.excludedKindsPreset = internalPrefs.excludedKindsPreset
+        ? internalPrefs.excludedKindsPreset.split(",")
+        : [];
     }
     const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
     const auth = Services.ssi.authCache.get(cacheKey);
@@ -247,7 +249,7 @@ export const browserSsiHelper = {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
- * @param {boolean=} prefs.excludedKindsPreset
+ * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
@@ -265,14 +267,14 @@ export const browserSsiHelper = {
 async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   const { url } = target;
   const { enabledTrustedSites, enabledPrimarypassword } = prefs;
-  const { cacheKey, trustedSites, passwordAuthorizedSite } = authCache;
+  const { cacheKey, trustedSites, passwordAuthorizedSites } = authCache;
   const { evidence, enforce } = dialogInfo;
 
   const protocolName = cacheKey.split(":")[0];
   const _isAuthMandatory = isAuthMandatory(
     url,
     protocolName,
-    passwordAuthorizedSite,
+    passwordAuthorizedSites,
     enforce,
     evidence
   );
@@ -372,9 +374,9 @@ function isPasswordAuthorized(target, authCache) {
   const { url } = target;
   const { passwordAuthorizedSites } = authCache;
 
-  let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
+  let passwordAuthorizedSite = passwordAuthorizedSites.find(site =>
     url.startsWith(site.url)
-  )[0];
+  );
 
   if (!passwordAuthorizedSite) {
     return false;
@@ -394,7 +396,7 @@ function isPasswordAuthorized(target, authCache) {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
- * @param {boolean=} prefs.excludedKindsPreset
+ * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
@@ -449,9 +451,9 @@ async function authWithPassword(
 
   // Prepare expiration time.
   const protocolName = cacheKey.split(":")[0];
-  let passwordAuthorizedSite = passwordAuthorizedSites.filter(site =>
+  let passwordAuthorizedSite = passwordAuthorizedSites.find(site =>
     url.startsWith(site.url)
-  )[0];
+  );
   if (!passwordAuthorizedSite) {
     passwordAuthorizedSite = {
       url: origin,
@@ -475,7 +477,7 @@ async function authWithPassword(
     isAuthMandatory(
       url,
       protocolName,
-      passwordAuthorizedSite,
+      passwordAuthorizedSites,
       enforce,
       evidence
     )
@@ -513,16 +515,30 @@ async function authWithPassword(
   );
   return isAuthorized;
 }
-
+/**
+ *
+ * @param {string} url
+ * @param {string} protocolName
+ * @param {object[]} passwordAuthorizedSites
+ * @param {boolean} enforce
+ * @param {object} evidence
+ * @returns
+ */
 function isAuthMandatory(
   url,
   protocolName,
-  passwordAuthorizedSite,
+  passwordAuthorizedSites,
   enforce,
   evidence
 ) {
   // NOTE(ssb): exclude it for now to avoid duplication with tab apps. We need to reconsider here to cover the use case of extension only.
   if (url.startsWith("moz-extension:")) {
+    return false;
+  }
+  const passwordAuthorizedSite = passwordAuthorizedSites.find(site =>
+    url.startsWith(site.url)
+  );
+  if (!passwordAuthorizedSite) {
     return false;
   }
 
