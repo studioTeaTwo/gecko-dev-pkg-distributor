@@ -8,7 +8,6 @@
 name: "Mac OS test build"
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       MOZ_BUILD_DATE:
