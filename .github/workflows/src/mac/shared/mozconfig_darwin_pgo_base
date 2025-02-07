@@ -10,8 +10,13 @@ ac_add_options --enable-rust-simd
 ac_add_options --enable-release
 ac_add_options --enable-bootstrap
 
+# ac_add_options RUSTC_OPT_LEVEL=3
 mk_add_options AUTOCLOBBER=1
 
 MOZ_REQUIRE_SIGNING=
 MOZ_DATA_REPORTING=
 MOZ_TELEMETRY_REPORTING=
+
+# export HOST_CXXFLAGS=-g
+# export HOST_CFLAGS=-g
+# export HOST_LDFLAGS=-g

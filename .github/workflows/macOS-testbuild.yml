@@ -1,0 +1,308 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Please write our copyright if you use this file.
+# © 2023 Floorp Projects & Contributors
+
+name: "Mac OS test build"
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      MOZ_BUILD_DATE:
+        type: string
+        default: ""
+
+jobs:
+  get-buildid:
+    runs-on: ubuntu-latest
+    outputs:
+      buildids: ${{ steps.get.outputs.bid }}
+    steps:
+    - id: get
+      shell: bash -xe {0}
+      run: |
+        bdat=$(date +"%Y%m%d%I%M%S")
+        echo "bid=${bdat}" >> "$GITHUB_OUTPUT"
+
+  mac-build:
+    needs: get-buildid
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      matrix:
+        runs-on: ["ubuntu-latest"]
+        arch: [x86_64, aarch64]
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Change PPA mirror servers
+        run: |
+          sudo perl -p -i -e 's%(deb(?:-src|)\s+)https?://(?!archive\.canonical\.com|security\.ubuntu\.com)[^\s]+%$1http://archive.ubuntu.com/ubuntu/%' /etc/apt/sources.list
+          sudo apt update
+          echo "$GHA_aarch64"
+
+      - uses: actions/checkout@v4
+        name: Clone 🧬
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Setup Disk & Swap Space 💿
+        run: |
+          chmod +x .github/workflows/src/disk_swap_for_github_runner.sh
+          .github/workflows/src/disk_swap_for_github_runner.sh
+
+      - name: Configure sccache
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: setup Rust 🦀
+        run: |
+          # rustup toolchain install 1.81.0
+          # rustup default 1.81.0
+
+          if [[ $GHA_ARCH == 'x86_64' ]];then
+            rustup target add x86_64-apple-darwin
+          else
+            rustup target add aarch64-apple-darwin
+          fi
+
+          #? https://github.com/mozilla/sccache#known-caveats
+          export CARGO_INCREMENTAL=0
+        env:
+          GHA_ARCH: ${{matrix.arch}}
+
+      ## TODO: move mozconfig_darwin_pgo_base to src/macOS
+      - name: Create config for "${{ matrix.arch }}" 📦
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+
+          cp ./.github/workflows/src/mac/shared/mozconfig_darwin_pgo_base mozconfig
+
+          if [[ $GHA_ARCH == 'x86_64' ]];then
+            cat ./.github/workflows/src/mac/x86_64/x86_64-optimize-base >> mozconfig
+          else
+            cat ./.github/workflows/src/mac/aarch64/aarch64-optimize-base >> mozconfig
+          fi
+
+          echo 'mozconfig: **********************'
+          cat ./mozconfig
+          echo '*********************************'
+
+          ./mach --no-interactive bootstrap --application-choice browser
+          sudo apt install -y p7zip-full zip tar
+        env:
+          GHA_ARCH: ${{matrix.arch}}
+
+      - name: Bootstrap 🥾
+        run: |
+
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
+
+          echo 'ac_add_options --with-branding=browser/branding/unofficial' >> mozconfig
+
+          # echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
+
+          # SCCACHE START
+          {
+            echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
+            echo "mk_add_options 'export CCACHE_CPP2=yes'"
+            echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
+            echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
+          } >> mozconfig
+          # SCCACHE END
+
+          ./mach --no-interactive bootstrap --application-choice browser
+
+          echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> "$GITHUB_ENV"
+          echo "UPDATE_CHANNEL=release" >> "$GITHUB_ENV"
+        env:
+          GHA_MOZ_BUILD_DATE: ${{ needs.get-buildid.outputs.buildids }}
+
+      - name: Mach Configure
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=${{ needs.get-buildid.outputs.buildids }}
+          fi
+
+          ./mach configure
+        env:
+          GHA_MOZ_BUILD_DATE: ${{ needs.get-buildid.outputs.buildids }}
+
+      - name: Build 🔨
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
+
+          ./mach build
+        env:
+          GHA_MOZ_BUILD_DATE: ${{ needs.get-buildid.outputs.buildids }}
+
+      - name: Retry Build if 1st build is failed 🔨
+        if: failure()
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
+
+          ./mach build
+        env:
+          GHA_MOZ_BUILD_DATE: ${{ needs.get-buildid.outputs.buildids }}
+
+      - name: Package 📦
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
+          ./mach package
+        env:
+          GHA_MOZ_BUILD_DATE: ${{ needs.get-buildid.outputs.buildids }}
+
+      - name: Copy & Compress Artifacts 📁
+        run: |
+          mkdir ~/output
+          if [[ $GHA_ARCH == 'aarch64' ]];then
+            arch='aarch64'
+          else
+            arch='x86_64'
+          fi
+
+          tar -czf ${arch}-apple-darwin-output.tar.gz ./obj-${arch}-apple-darwin/dist/
+          mv ${arch}-apple-darwin-output.tar.gz ~/output/
+        env:
+          GHA_ARCH: ${{matrix.arch}}
+
+      # Publish START
+      - name: make name of publish archive
+        shell: node {0}
+        run: |
+          const fs = require('fs');
+          let name = process.env.GHA_default_name
+          fs.appendFileSync(process.env.GITHUB_ENV, `ARTIFACT_NAME=${name}`);
+        env:
+          GHA_default_name: ssb-mac-${{ matrix.arch }}-build-with-profgen
+
+      - name: Publish Package🎁
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.ARTIFACT_NAME}}
+          path: ~/output
+      # Publish END
+
+  Integration:
+    needs: mac-build
+    runs-on: macos-latest
+    steps:
+      - name: Clone 📥
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.PAT }}
+      - name: download M1 build artifact 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: ssb-mac-aarch64-build-with-profgen
+          path: ./
+
+      - name: download Intel build artifact 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: ssb-mac-x86_64-build-with-profgen
+          path: ./
+
+      - name: result
+        run: |
+          ls -R
+
+      - name: Extract 📦
+        run: |
+          brew install gnu-tar
+          export PATH=/usr/local/opt/gnu-tar/libexec/gnubin:$PATH
+          # tar -xf ./ssb-aarch64-apple-darwin-with-pgo.tar.gz
+          # tar -xf ./ssb-x86_64-apple-darwin-with-pgo.tar.gz
+          tar -xf ./aarch64-apple-darwin-output.tar.gz
+          tar -xf ./x86_64-apple-darwin-output.tar.gz
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create environment 🌲
+        shell: bash
+        run: |
+          ./mach --no-interactive bootstrap --application-choice browser
+          echo -e 'ac_add_options --enable-bootstrap' >> mozconfig
+
+          echo 'mozconfig: **********************'
+          cat ./mozconfig
+          echo '*********************************'
+
+          echo 'folder structure: **********************'
+          ls -l ./
+          echo '*********************************'
+
+          echo '****************************************************************************************************'
+          echo 'folder structure: x86_64-apple-darwin'
+          ls -l ./obj-x86_64-apple-darwin/dist/
+          echo '****************************************************************************************************'
+          echo 'folder structure: aarch64-apple-darwin'
+          ls -l ./obj-aarch64-apple-darwin/dist/
+          echo '****************************************************************************************************'
+
+      - name: Integration 🗃
+        run: |
+          export APP_NAME='Nightly'
+
+          ./mach python ./toolkit/mozapps/installer/unify.py ./obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}.app ./obj-aarch64-apple-darwin/dist/ssb/${APP_NAME}.app
+
+      - name: Create DMG 📦
+        run: |
+          export APP_NAME='ssb'
+          export INSTALLER_NAME='ssb'
+          export DMG_FILE_NAME=${INSTALLER_NAME}-v0.3.0.macOS-universal.dmg
+
+          ./mach python -m mozbuild.action.make_dmg ./obj-x86_64-apple-darwin/dist/ssb ${DMG_FILE_NAME}
+
+          mkdir -p ./output
+          mv ./${DMG_FILE_NAME} ./output/${DMG_FILE_NAME}
+
+      - name: Create MAR artifact 📦
+        run: |
+          export APP_NAME='Nightly.app'
+
+          brew install tree
+          chmod +x ./.github/workflows/bin/mar
+          chmod +x ./tools/update-packaging/make_full_update.sh
+          touch obj-x86_64-apple-darwin/dist/ssb/precomplete
+          MAR='.github/workflows/bin/mar' MOZ_PRODUCT_VERSION=v0.3.0 MAR_CHANNEL_ID='release' tools/update-packaging/make_full_update.sh ./output/DARWIN-Universal.mar obj-x86_64-apple-darwin/dist/ssb/${APP_NAME}
+
+          MACOS_MAR_SIZE=$(stat -f%z ./output/DARWIN-Universal.mar)
+          echo "MACOS_MAR_SIZE=$MACOS_MAR_SIZE" >> "$GITHUB_ENV"
+
+      - name: make name of publish archive
+        shell: node {0}
+        run: |
+          const fs = require('fs');
+          let name = process.env.GHA_default_name
+          fs.appendFileSync(process.env.GITHUB_ENV, `ARTIFACT_NAME=${name}`);
+        env:
+          GHA_default_name: Universal-Artifact
+
+      - name: Publish 🎁
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-universal
+          if-no-files-found: ignore
+          path: |
+            ./output/
