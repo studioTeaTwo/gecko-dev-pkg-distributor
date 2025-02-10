@@ -775,35 +775,43 @@ function Secret(props) {
   ] });
 }
 function ExampleUrlMatch(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, maxW: props.maxW || "500px", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Examples" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "characters" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "match" })
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Tbody, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "*" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Accordion,
+    {
+      allowToggle: true,
+      maxW: props.maxW || "500px",
+      backgroundColor: props.backgroundColor ?? "transparent",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Examples" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "<all_urls>" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http*://*.example.com" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http://example.com, https://www.example.com, https://sub.example.com/path?query=value,..." })
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "characters" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "match" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Tbody, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "*" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "<all_urls>" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http*://*.example.com" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http://example.com, https://www.example.com, https://sub.example.com/path?query=value,..." })
+            ] })
+          ] })
+        ] }) }) })
       ] })
-    ] }) }) })
-  ] }) });
+    }
+  );
 }
 function ExampleNostrKind(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
@@ -1854,73 +1862,95 @@ function NIP07(props) {
           children: "Remove from All keys"
         }
       ) })
-    ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No site registered" });
+    ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site registered" });
   }, [nostrkeys, states.nostr]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.map((key) => ({
-      [key.identifier]: {
-        name: key.properties.displayName,
-        passwordAuthorizedSites: key.passwordAuthorizedSites
-      }
-    }));
-    return passwordAuthorizedSites.map((site, i) => {
-      const [identifier, value] = Object.entries(site)[0];
-      const validSites = value.passwordAuthorizedSites.filter(
-        (site2) => site2.expiryTime > Date.now()
-      );
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.nostr.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: value.name }),
-          " ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            IconButton,
-            {
-              icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
-              variant: "transparent",
-              "aria-label": "Edit Key",
-              onClick: () => updateState("nostr", { editingNo: i })
-            }
-          )
-        ] }),
-        validSites.length > 0 && validSites.map((validSite) => {
-          const expiryTime = new Date(validSite.expiryTime);
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h6", size: "sm", children: [
-              validSite.url,
-              validSite.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                " (",
-                validSite.name,
-                ")"
-              ] }),
-              " - until ",
-              expiryTime.toLocaleDateString(),
-              " ",
-              expiryTime.toLocaleTimeString()
-            ] }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                variant: "outline",
-                colorScheme: "blue",
-                onClick: () => handleRevokeSite(identifier, validSite),
-                children: "Revoke"
-              }
-            ) })
-          ] });
-        })
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          KeyEditor,
+    const passwordAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+      key.passwordAuthorizedSites.filter((site) => site.expiryTime > 0).forEach((site) => {
+        const found = Object.keys(acc).find((url) => site.url === url);
+        if (found) {
+          acc[found].push({ key, site, keyNo: i });
+          return;
+        }
+        acc[site.url] = [{ key, site, keyNo: i }];
+      });
+      return acc;
+    }, {});
+    return Object.keys(passwordAuthorizedSites).length > 0 ? Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          AccordionButton,
           {
-            credential: nostrkeys[states.nostr.editingNo],
-            nostrKeys: nostrkeys,
-            usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-            goBack: () => resetState()
+            textAlign: "left",
+            css: { padding: 0, lineBreak: "anywhere" },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
+                url,
+                keys[0].site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                  " (",
+                  keys[0].site.name,
+                  ")"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
+            ]
           }
-        ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-      ] }) });
-    });
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: keys.map((item) => {
+          const expiryTime = new Date(item.site.expiryTime);
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === item.keyNo && states.nostr.editingUrl === url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Grid,
+            {
+              gridTemplateColumns: "700px 1fr",
+              gap: 6,
+              alignItems: "start",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: item.key.properties.displayName }),
+                  " ",
+                  " - until ",
+                  expiryTime.toLocaleDateString(),
+                  " ",
+                  expiryTime.toLocaleTimeString(),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                      variant: "transparent",
+                      "aria-label": "Edit Key",
+                      onClick: () => updateState("nostr", {
+                        editingNo: item.keyNo,
+                        editingUrl: url
+                      })
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: () => handleRevokeSite(
+                      item.key.identifier,
+                      item.site
+                    ),
+                    children: "Revoke"
+                  }
+                ) })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+            KeyEditor,
+            {
+              credential: nostrkeys[states.nostr.editingNo],
+              nostrKeys: nostrkeys,
+              usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              goBack: () => resetState()
+            }
+          ) });
+        }) })
+      ] }) }) }) });
+    }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site registered" });
   }, [nostrkeys, states.nostr]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {

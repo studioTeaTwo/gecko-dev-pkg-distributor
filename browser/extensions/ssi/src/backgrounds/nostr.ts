@@ -35,21 +35,21 @@ export const doNostrAction = async (
 
   switch (action) {
     case "nostr/getPublicKey": {
-        const credentials = await browser.ssi.searchCredentialsWithoutSecret(
-          {
-            protocolName: "nostr",
-            credentialName: state.nostr.credentialName,
-            primary: true,
-          },
-          { caption: DialogMessage[action], submission: "" }
-        );
-        if (credentials.length === 0) {
-          throw new Error(ERR_MSG_NOT_ENABLED);
-        }
-        state.nostr = {
-          ...state.nostr,
-          npub: credentials[0].identifier,
-        };
+      const credentials = await browser.ssi.searchCredentialsWithoutSecret(
+        {
+          protocolName: "nostr",
+          credentialName: state.nostr.credentialName,
+          primary: true,
+        },
+        { caption: DialogMessage[action], submission: "" }
+      );
+      if (credentials.length === 0) {
+        throw new Error(ERR_MSG_NOT_ENABLED);
+      }
+      state.nostr = {
+        ...state.nostr,
+        npub: credentials[0].identifier,
+      };
       return decodeNpub(state.nostr.npub);
     }
     case "nostr/signEvent": {
