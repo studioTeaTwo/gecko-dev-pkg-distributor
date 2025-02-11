@@ -54,5 +54,21 @@ declare namespace browser.ssi {
       },
       dialogOption?: dialogOption
     ) => Promise<string | null>;
+    encrypt: (
+      plaintext: string,
+      option: {
+        type: "nip04";
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+      },
+      dialogOption?: dialogOption
+    ) => Promise<string | null>;
+    decrypt: (
+      ciphertext: string,
+      option: {
+        type: "nip04";
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+      },
+      dialogOption?: dialogOption
+    ) => Promise<string | null>;
   } & commonApis;
 }

@@ -75,7 +75,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "description": "'signEvent'"
+                "description": "e.g. 'signEvent'"
               }
             }
           },
@@ -89,6 +89,86 @@
         "returns": {
           "type": "string",
           "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise<null> if error.",
+          "optional": true
+        }
+      },
+      {
+        "name": "encrypt",
+        "type": "function",
+        "description": "Pass plain text and return the cipher text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "plaintext",
+            "type": "string",
+            "description": "The plain text to encrypt"
+          },
+          {
+            "name": "option",
+            "type": "object",
+            "description": "Direction about encrypt detail",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "e.g. 'nip04', 'nip44'"
+              },
+              "pubkey": {
+                "type": "string",
+                "description": "Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise<null> if error.",
+          "optional": true
+        }
+      },
+      {
+        "name": "decrypt",
+        "type": "function",
+        "description": "Pass cipher text and return the plain text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "ciphertext",
+            "type": "string",
+            "description": "The cipher text to decrypt"
+          },
+          {
+            "name": "option",
+            "type": "object",
+            "description": "Direction about decrypt detail",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "e.g. 'nip04', 'nip44'"
+              },
+              "pubkey": {
+                "type": "string",
+                "description": "Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise<null> if error.",
           "optional": true
         }
       }

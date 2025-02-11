@@ -14,6 +14,8 @@ const MapBetweenPrefAndState = {
 const DialogMessage = {
   "nostr/getPublicKey": "OK?",
   "nostr/signEvent": "OK?",
+  "nostr/nip04/encrypt": "OK?",
+  "nostr/nip04/decrypt": "OK?",
 };
 
 const ERR_MSG_NOT_ENABLED =
@@ -53,14 +55,17 @@ export const doNostrAction = async (
       return decodeNpub(state.nostr.npub);
     }
     case "nostr/signEvent": {
-      if (typeof args.message !== "string") {
+      if (args.type == null || args.type !== "signEvent") {
+        throw new Error(`Invalid type: ${args.type}`);
+      }
+      if (args.message == null || typeof args.message !== "string") {
         throw new Error("Invalid message");
       }
 
       // Sign
       const signature = await browser.ssi.nostr.sign(
         args.message,
-        { type: "signEvent" },
+        { type: args.type },
         {
           caption: DialogMessage[action],
         }
@@ -70,6 +75,59 @@ export const doNostrAction = async (
       }
 
       return signature;
+    }
+    case "nostr/nip04/encrypt": {
+      if (args.type == null || !["nip04"].includes(args.type)) {
+        throw new Error(`Invalid type: ${args.type}`);
+      }
+      if (args.plaintext == null || typeof args.plaintext !== "string") {
+        throw new Error("Invalid plaintext");
+      }
+      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+      if (args.pubkey == null || typeof args.pubkey !== "string") {
+        throw new window.Error("Invalid partner's pubkey");
+      }
+
+      // Encrypt
+      const ciphertext = await browser.ssi.nostr.encrypt(
+        args.plaintext,
+        { type: args.type, pubkey: args.pubkey },
+        {
+          caption: DialogMessage[action],
+        }
+      );
+      if (!ciphertext) {
+        throw new Error("Failed to encrypt");
+      }
+
+      return ciphertext;
+    }
+    case "nostr/nip04/decrypt": {
+      if (args.type == null || !["nip04"].includes(args.type)) {
+        throw new Error(`Invalid type: ${args.type}`);
+      }
+      // TODO(ssb): validate in the terms of cryptography
+      if (args.ciphertext == null || typeof args.ciphertext !== "string") {
+        throw new Error("Invalid ciphertext");
+      }
+      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+      if (args.pubkey == null || typeof args.pubkey !== "string") {
+        throw new window.Error("Invalid partner's pubkey");
+      }
+
+      // Decrypt
+      const plaintext = await browser.ssi.nostr.decrypt(
+        args.ciphertext,
+        { type: args.type, pubkey: args.pubkey },
+        {
+          caption: DialogMessage[action],
+        }
+      );
+      if (!plaintext) {
+        throw new Error("Failed to decrypt");
+      }
+
+      return plaintext;
     }
     default:
       throw new Error("Not implemented");

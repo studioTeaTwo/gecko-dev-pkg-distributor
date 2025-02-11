@@ -6,7 +6,10 @@ import {
   getPublicKeyWithCallback,
   sign,
   signWithCallback,
+  encrypt,
+  encryptWithCallback,
   decrypt,
+  decryptWithCallback,
   _invoke,
   addEventListener,
   removeEventListener,
@@ -22,7 +25,10 @@ _nostr.getPublicKeyWithCallback = exportFunction(
 );
 _nostr.sign = exportFunction(sign, window);
 _nostr.signWithCallback = exportFunction(signWithCallback, window);
+_nostr.encrypt = exportFunction(encrypt, window);
+_nostr.encryptWithCallback = exportFunction(encryptWithCallback, window);
 _nostr.decrypt = exportFunction(decrypt, window);
+_nostr.decryptWithCallback = exportFunction(decryptWithCallback, window);
 
 // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
 // ref: https://github.com/nostr-protocol/nips/pull/1174
