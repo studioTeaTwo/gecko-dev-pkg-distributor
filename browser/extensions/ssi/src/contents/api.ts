@@ -153,7 +153,8 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
       }
       break;
     }
-    case "nostr/nip04/encrypt": {
+    case "nostr/nip04/encrypt":
+    case "nostr/nip44/encrypt": {
       if (option.plaintext == null || typeof option.plaintext !== "string") {
         throw new window.Error("Invalid plaintext");
       }
@@ -163,7 +164,8 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
       }
       break;
     }
-    case "nostr/nip04/decrypt": {
+    case "nostr/nip04/decrypt":
+    case "nostr/nip44/decrypt": {
       // TODO(ssb): validate in the terms of cryptography
       if (option.ciphertext == null || typeof option.ciphertext !== "string") {
         throw new window.Error("Invalid ciphertext");

@@ -79,10 +79,40 @@ export function nip04Decrypt(pubkey, ciphertext) {
   });
 }
 export function nip44Encrypt(pubkey, plaintext) {
-  return window.Promise.resolve("Not implemented");
+  return new window.Promise(resolve => {
+    window.wrappedJSObject.ssi.nostr.encryptWithCallback(
+      plaintext,
+      exportFunction(ciphertext => {
+        resolve(ciphertext);
+      }, window),
+      cloneInto(
+        {
+          type: "nip44",
+          pubkey,
+        },
+        window
+      )
+    );
+    XPCNativeWrapper(window.wrappedJSObject.ssi);
+  });
 }
 export function nip44Decrypt(pubkey, ciphertext) {
-  return window.Promise.resolve("Not implemented");
+  return new window.Promise(resolve => {
+    window.wrappedJSObject.ssi.nostr.decryptWithCallback(
+      ciphertext,
+      exportFunction(plaintext => {
+        resolve(plaintext);
+      }, window),
+      cloneInto(
+        {
+          type: "nip44",
+          pubkey,
+        },
+        window
+      )
+    );
+    XPCNativeWrapper(window.wrappedJSObject.ssi);
+  });
 }
 
 /**

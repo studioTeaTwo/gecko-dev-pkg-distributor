@@ -883,6 +883,8 @@ const DialogMessage = {
     "nostr/signEvent": "OK?",
     "nostr/nip04/encrypt": "OK?",
     "nostr/nip04/decrypt": "OK?",
+    "nostr/nip44/encrypt": "OK?",
+    "nostr/nip44/decrypt": "OK?",
 };
 const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
@@ -926,8 +928,9 @@ const doNostrAction = async (action, args, origin) => {
             }
             return signature;
         }
-        case "nostr/nip04/encrypt": {
-            if (args.type == null || !["nip04"].includes(args.type)) {
+        case "nostr/nip04/encrypt":
+        case "nostr/nip44/encrypt": {
+            if (args.type == null || !["nip04", "nip44"].includes(args.type)) {
                 throw new Error(`Invalid type: ${args.type}`);
             }
             if (args.plaintext == null || typeof args.plaintext !== "string") {
@@ -946,8 +949,9 @@ const doNostrAction = async (action, args, origin) => {
             }
             return ciphertext;
         }
-        case "nostr/nip04/decrypt": {
-            if (args.type == null || !["nip04"].includes(args.type)) {
+        case "nostr/nip04/decrypt":
+        case "nostr/nip44/decrypt": {
+            if (args.type == null || !["nip04", "nip44"].includes(args.type)) {
                 throw new Error(`Invalid type: ${args.type}`);
             }
             // TODO(ssb): validate in the terms of cryptography

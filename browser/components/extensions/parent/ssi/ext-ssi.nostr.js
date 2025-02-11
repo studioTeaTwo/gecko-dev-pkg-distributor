@@ -131,7 +131,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           },
           async encrypt(
             plaintext,
-            { type, pubkey },
+            { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
             const errorValue = null;
@@ -139,12 +139,17 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             try {
               // Validate params
               switch (type) {
-                case "nip04": {
+                case "nip04":
+                case "nip44": {
                   if (
                     !lazy.browserSsiHelper.validateConversationPartnerPubkey(
                       pubkey
                     )
                   ) {
+                    return errorValue;
+                  }
+                  if (type === "nip44" && version !== "0x02") {
+                    // Not implemented
                     return errorValue;
                   }
                   break;
@@ -215,7 +220,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           },
           async decrypt(
             ciphertext,
-            { type, pubkey },
+            { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
             const errorValue = null;
@@ -223,7 +228,8 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             try {
               // Validate params
               switch (type) {
-                case "nip04": {
+                case "nip04":
+                case "nip44": {
                   if (!lazy.browserSsiHelper.validateCiphertext(ciphertext)) {
                     return errorValue;
                   }
@@ -232,6 +238,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                       pubkey
                     )
                   ) {
+                    return errorValue;
+                  }
+                  if (type === "nip44" && version !== "0x02") {
+                    // Not implemented
                     return errorValue;
                   }
                   break;

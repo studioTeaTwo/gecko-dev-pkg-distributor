@@ -12,9 +12,9 @@
  * [wiki](https://en.wikipedia.org/wiki/Salsa20).
  * @module
  */
-import { createCipher, rotl } from './_arx.js';
-import { poly1305 } from './_poly1305.js';
-import { clean, createView, equalBytes, getOutput, setBigUint64, wrapCipher, } from './utils.js';
+import { createCipher, rotl } from 'resource://ssi/protocols/ciphers/_arx.sys.mjs';
+import { poly1305 } from 'resource://ssi/protocols/ciphers/_poly1305.sys.mjs';
+import { clean, createView, equalBytes, getOutput, setBigUint64, wrapCipher, } from 'resource://ssi/protocols/ciphers/utils.sys.mjs';
 /**
  * ChaCha core function.
  */

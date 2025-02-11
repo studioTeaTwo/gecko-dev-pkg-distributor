@@ -10,12 +10,14 @@ export const availableCalls = [
   "nostr/signEvent",
   "nostr/nip04/encrypt",
   "nostr/nip04/decrypt",
+  "nostr/nip44/encrypt",
+  "nostr/nip44/decrypt",
 ] as const;
 export type AvailableCalls = (typeof availableCalls)[number];
 
 export type SignType = "signEvent";
-export type EncryptType = "nip04";
-export type DecryptType = "nip04";
+export type EncryptType = "nip04" | "nip44";
+export type DecryptType = "nip04" | "nip44";
 
 interface SelfSovereignIndividualDefaultPrefs {
   enabled: boolean; // selfsovereignindividual.[protocolName].enabled

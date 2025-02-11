@@ -113,7 +113,8 @@ function _callRuntime(action, option) {
             }
             break;
         }
-        case "nostr/nip04/encrypt": {
+        case "nostr/nip04/encrypt":
+        case "nostr/nip44/encrypt": {
             if (option.plaintext == null || typeof option.plaintext !== "string") {
                 throw new window.Error("Invalid plaintext");
             }
@@ -123,7 +124,8 @@ function _callRuntime(action, option) {
             }
             break;
         }
-        case "nostr/nip04/decrypt": {
+        case "nostr/nip04/decrypt":
+        case "nostr/nip44/decrypt": {
             // TODO(ssb): validate in the terms of cryptography
             if (option.ciphertext == null || typeof option.ciphertext !== "string") {
                 throw new window.Error("Invalid ciphertext");
@@ -210,6 +212,8 @@ exports.availableCalls = [
     "nostr/signEvent",
     "nostr/nip04/encrypt",
     "nostr/nip04/decrypt",
+    "nostr/nip44/encrypt",
+    "nostr/nip44/decrypt",
 ];
 const verifiedSymbol = Symbol("verified");
 

@@ -3,9 +3,9 @@
  * See https://soatok.blog/2021/11/17/understanding-hkdf/.
  * @module
  */
-import { ahash, anumber } from './_assert.js';
-import { hmac } from './hmac.js';
-import { toBytes } from './utils.js';
+import { ahash, anumber } from 'resource://ssi/protocols/hashes/_assert.sys.mjs';
+import { hmac } from 'resource://ssi/protocols/hashes/hmac.sys.mjs';
+import { toBytes } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 /**
  * HKDF-extract from spec. Less important part. `HKDF-Extract(IKM, salt) -> PRK`
  * Arguments position differs from spec (IKM is first one, since it is not optional)

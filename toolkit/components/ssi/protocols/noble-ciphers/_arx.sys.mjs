@@ -36,8 +36,8 @@ xchacha [^2] uses the subkey and remaining 8 byte nonce with ChaCha20 as normal
 
  * @module
  */
-import { abool, abytes, anumber } from './_assert.js';
-import { checkOpts, clean, copyBytes, u32 } from './utils.js';
+import { abool, abytes, anumber } from 'resource://ssi/protocols/ciphers/_assert.sys.mjs';
+import { checkOpts, clean, copyBytes, u32 } from 'resource://ssi/protocols/ciphers/utils.sys.mjs';
 // We can't make top-level var depend on utils.utf8ToBytes
 // because it's not present in all envs. Creating a similar fn here
 const _utf8ToBytes = (str) => Uint8Array.from(str.split('').map((c) => c.charCodeAt(0)));

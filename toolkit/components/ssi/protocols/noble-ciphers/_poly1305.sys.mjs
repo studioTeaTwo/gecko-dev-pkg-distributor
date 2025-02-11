@@ -16,8 +16,8 @@
  * Check out [original website](https://cr.yp.to/mac.html).
  * @module
  */
-import { abytes, aexists, aoutput } from './_assert.js';
-import { Hash, clean, toBytes } from './utils.js';
+import { abytes, aexists, aoutput } from 'resource://ssi/protocols/ciphers/_assert.sys.mjs';
+import { Hash, clean, toBytes } from 'resource://ssi/protocols/ciphers/utils.sys.mjs';
 // Based on Public Domain poly1305-donna https://github.com/floodyberry/poly1305-donna
 const u8to16 = (a, i) => (a[i++] & 0xff) | ((a[i++] & 0xff) << 8);
 class Poly1305 {

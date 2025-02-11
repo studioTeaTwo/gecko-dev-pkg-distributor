@@ -562,9 +562,16 @@ function isAuthMandatory(
     return true;
   }
   if (protocolName === "nostr") {
-    if (
-      evidence &&
+    const hasKind =
+      evidence && evidence.kind && typeof evidence.kind === "number";
+    const hasExcludedKinds =
       passwordAuthorizedSite &&
+      passwordAuthorizedSite.permissions &&
+      passwordAuthorizedSite.permissions.excludedKinds &&
+      Array.isArray(passwordAuthorizedSite.permissions.excludedKinds);
+    if (
+      hasKind &&
+      hasExcludedKinds &&
       passwordAuthorizedSite.permissions.excludedKinds.includes(
         evidence.kind.toString()
       )
