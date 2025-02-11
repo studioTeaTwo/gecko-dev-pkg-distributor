@@ -310,6 +310,7 @@ browser/extensions/nip/extension/*.bundle.js
 browser/extensions/nip/tsconfig.json
 browser/extensions/ssi/extension/*.bundle.js
 browser/extensions/ssi/tsconfig.json
+toolkit/components/ssi/protocols/noble-ciphers
 toolkit/components/ssi/protocols/noble-curves
 toolkit/components/ssi/protocols/noble-hashes
 toolkit/components/ssi/protocols/scure-base

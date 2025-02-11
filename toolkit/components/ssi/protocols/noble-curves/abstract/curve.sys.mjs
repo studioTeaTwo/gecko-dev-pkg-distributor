@@ -4,8 +4,8 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { validateField, nLength } from 'resource://ssi/protocols/modular.sys.mjs';
-import { validateObject, bitLen } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { validateField, nLength } from 'resource://ssi/protocols/curves/modular.sys.mjs';
+import { validateObject, bitLen } from 'resource://ssi/protocols/curves/utils.sys.mjs';
 const _0n = BigInt(0);
 const _1n = BigInt(1);
 function constTimeNegate(condition, item) {

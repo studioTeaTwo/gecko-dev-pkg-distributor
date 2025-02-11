@@ -25,10 +25,10 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { validateBasic, wNAF, pippenger, } from 'resource://ssi/protocols/curve.sys.mjs';
-import * as mod from 'resource://ssi/protocols/modular.sys.mjs';
-import * as ut from 'resource://ssi/protocols/utils-curves.sys.mjs';
-import { ensureBytes, memoized, abool } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { validateBasic, wNAF, pippenger, } from 'resource://ssi/protocols/curves/curve.sys.mjs';
+import * as mod from 'resource://ssi/protocols/curves/modular.sys.mjs';
+import * as ut from 'resource://ssi/protocols/curves/utils.sys.mjs';
+import { ensureBytes, memoized, abool } from 'resource://ssi/protocols/curves/utils.sys.mjs';
 function validateSigVerOpts(opts) {
     if (opts.lowS !== undefined)
         abool('lowS', opts.lowS);

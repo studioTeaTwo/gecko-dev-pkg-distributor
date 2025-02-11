@@ -1,5 +1,5 @@
-import { mod } from 'resource://ssi/protocols/modular.sys.mjs';
-import { abytes, bytesToNumberBE, concatBytes, utf8ToBytes, validateObject } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { mod } from 'resource://ssi/protocols/curves/modular.sys.mjs';
+import { abytes, bytesToNumberBE, concatBytes, utf8ToBytes, validateObject } from 'resource://ssi/protocols/curves/utils.sys.mjs';
 // Octet Stream to Integer. "spec" implementation of os2ip is 2.5x slower vs bytesToNumberBE.
 const os2ip = bytesToNumberBE;
 // Integer to Octet Stream (numberToBytesBE)
