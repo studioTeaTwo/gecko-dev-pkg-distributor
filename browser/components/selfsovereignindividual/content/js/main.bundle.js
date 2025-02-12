@@ -933,9 +933,9 @@ function KeyEditor(props) {
   const handleNewSiteChange = (e) => setNewSite(e.target.value);
   const handleRegisterSite = async (e) => {
     e.preventDefault();
-    handleReenable(newSite);
+    handleReRegister(newSite);
   };
-  const handleReenable = (url) => {
+  const handleReRegister = (url) => {
     if (!SafeProtocols.some((protocol) => url.startsWith(protocol)) && !SpecialCards.includes(url)) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
@@ -1136,8 +1136,8 @@ function KeyEditor(props) {
                           {
                             variant: "outline",
                             colorScheme: "blue",
-                            onClick: () => handleReenable(site.url),
-                            children: "Re-enable"
+                            onClick: () => handleReRegister(site.url),
+                            children: "Re-register"
                           }
                         ) })
                       ] });
