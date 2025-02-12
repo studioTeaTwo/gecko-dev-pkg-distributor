@@ -53,7 +53,7 @@
         "async": true,
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `object` of `ssi.nostr.Preference`. Returns Promise<null> if error.",
+          "description": "A Promise that will be fulfilled with a `object` of `ssi.nostr.Preference`. Returns Promise\\<null\\> if error.",
           "optional": true
         }
       },
@@ -88,7 +88,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise<null> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise\\<null\\> if error.",
           "optional": true
         }
       },
@@ -106,11 +106,11 @@
           {
             "name": "option",
             "type": "object",
-            "description": "Direction about encrypt detail",
+            "description": "Direction about encryption detail",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "e.g. 'nip04', 'nip44'"
+                "description": "The encryption spec. e.g. 'nip04', 'nip44'"
               },
               "pubkey": {
                 "type": "string",
@@ -119,7 +119,7 @@
               },
               "version": {
                 "type": "string",
-                "description": "The version to define encryption algorithms if type is 'nip44'.",
+                "description": "The version to define encryption algorithms if the type is 'nip44'.",
                 "optional": true,
                 "default": "0x02"
               }
@@ -134,7 +134,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise<null> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise\\<null\\> if error.",
           "optional": true
         }
       },
@@ -152,11 +152,11 @@
           {
             "name": "option",
             "type": "object",
-            "description": "Direction about decrypt detail",
+            "description": "Direction about decryption detail",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "e.g. 'nip04', 'nip44'"
+                "description": "The encryption spec. e.g. 'nip04', 'nip44'"
               },
               "pubkey": {
                 "type": "string",
@@ -165,7 +165,7 @@
               },
               "version": {
                 "type": "string",
-                "description": "The version to define encryption algorithms if type is 'nip44'.",
+                "description": "The version to define encryption algorithms if the type is 'nip44'.",
                 "optional": true,
                 "default": "0x02"
               }
@@ -180,7 +180,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise<null> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise\\<null\\> if error.",
           "optional": true
         }
       }
