@@ -372,7 +372,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         </>
       ))
     ) : (
-      <Text>No site registered</Text>
+      <Text>No site enabled</Text>
     );
   }, [nostrkeys, states.nostr]);
 
@@ -385,7 +385,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       }[];
     }>((acc, key, i) => {
       key.passwordAuthorizedSites
-        .filter(site => site.expiryTime > 0)
+        .filter(site => site.expiryTime > Date.now())
         .forEach(site => {
           const found = Object.keys(acc).find(url => site.url === url);
           if (found) {
@@ -482,7 +482,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         );
       })
     ) : (
-      <Text>No site registered</Text>
+      <Text>No site enabled</Text>
     );
   }, [nostrkeys, states.nostr]);
 
