@@ -14,7 +14,7 @@ import useChildActorEvent, {
   dispatchEvents,
 } from "../hooks/useChildActorEvent";
 
-function SelfSovereignIndividual(props) {
+function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent(); // Just once to ensure that useEffect is called only once
   const { initStore } = dispatchEvents;
 

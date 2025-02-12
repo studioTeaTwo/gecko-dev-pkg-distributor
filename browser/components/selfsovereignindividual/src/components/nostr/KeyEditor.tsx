@@ -50,7 +50,7 @@ export default function KeyEditor(props: Props) {
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
   const [newSite, setNewSite] = useState("");
   const [newExtensions, setNewExtensions] = useState([]);
-  const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
+  // const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
 
@@ -283,7 +283,7 @@ export default function KeyEditor(props: Props) {
                   )}
                   {editingKey.trustedSites
                     .filter(site => site.enabled)
-                    .map((site, i) => {
+                    .map(site => {
                       return (
                         <>
                           <GridItem>
@@ -309,13 +309,13 @@ export default function KeyEditor(props: Props) {
                               Remove
                             </Button>
                           </GridItem>
-                          {editingNumForTrusted === i && (
+                          {/* {editingNumForTrusted === i && (
                             <GridItem colSpan={2}>
                               <VStack backgroundColor="white">
                                 <Box>N/A</Box>
                               </VStack>
                             </GridItem>
-                          )}
+                          )} */}
                         </>
                       );
                     })}

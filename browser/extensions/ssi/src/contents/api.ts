@@ -10,7 +10,7 @@ import {
  * Nostr
  */
 
-export function generate(option) {
+export function generate() {
   return window.Promise.resolve("Not implemented");
 }
 export function getPublicKey(option) {

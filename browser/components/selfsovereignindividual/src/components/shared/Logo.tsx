@@ -1,6 +1,11 @@
 import * as React from "react";
 
-const BitcoinLogo = props => {
+interface Props {
+  color: string;
+  size: string;
+}
+
+const BitcoinLogo = (props: Props) => {
   const { color, size, ...otherProps } = props;
   return (
     <svg

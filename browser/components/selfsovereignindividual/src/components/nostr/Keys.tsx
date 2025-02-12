@@ -64,7 +64,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   const [importedKey, setImportedKey] = useState("");
   const [newKey, setNewKey] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
   const nostrKeys = useMemo(
     () =>

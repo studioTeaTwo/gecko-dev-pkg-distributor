@@ -881,7 +881,6 @@ function KeyEditor(props) {
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
   const [newExtensions, setNewExtensions] = reactExports.useState([]);
-  const [editingNumForTrusted, setEditingNumForTrusted] = reactExports.useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -1082,7 +1081,7 @@ function KeyEditor(props) {
                       /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { maxW: "500px" })
                     ] }),
                     !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                    editingKey.trustedSites.filter((site) => site.enabled).map((site, i) => {
+                    editingKey.trustedSites.filter((site) => site.enabled).map((site) => {
                       return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
                           site.url,
@@ -1100,8 +1099,7 @@ function KeyEditor(props) {
                             onClick: () => handleRemoveSite(site),
                             children: "Remove"
                           }
-                        ) }),
-                        editingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { backgroundColor: "white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: "N/A" }) }) })
+                        ) })
                       ] });
                     })
                   ]
@@ -1280,7 +1278,6 @@ function Nostr$2(props) {
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   const nostrKeys = reactExports.useMemo(
     () => credentials.filter((credential) => credential.protocolName === "nostr").map(addInterpretedKeys).sort((a, b) => b.primary ? 1 : 0),
     [credentials]
@@ -1616,7 +1613,6 @@ function NIP07(props) {
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = reactExports.useState("");
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
@@ -2188,7 +2184,6 @@ function Nostr$1(props) {
   const { prefs } = props;
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   const handleUsedPrimarypasswordToSettings = async (checked) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
@@ -2289,7 +2284,7 @@ function Nostr(props) {
 function ECash(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Automation of the way we pay for goods and services is already underway, as can be seen by the variety and growth of electronic banking services available to consumers."' });
 }
-function SelfSovereignIndividual(props) {
+function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent();
   const { initStore: initStore2 } = dispatchEvents;
   const [selectedMenu, setSelectedMenu] = reactExports.useState("");

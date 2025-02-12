@@ -17,7 +17,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   const { onPrefChanged } = dispatchEvents;
 
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
   const handleUsedPrimarypasswordToSettings = async (checked: boolean) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {

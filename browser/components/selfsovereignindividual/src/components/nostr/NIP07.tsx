@@ -60,7 +60,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
   useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));

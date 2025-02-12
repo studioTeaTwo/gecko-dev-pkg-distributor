@@ -12,7 +12,7 @@ const custom_type_1 = __webpack_require__(711);
 /**
  * Nostr
  */
-function generate(option) {
+function generate() {
     return window.Promise.resolve("Not implemented");
 }
 exports.generate = generate;
