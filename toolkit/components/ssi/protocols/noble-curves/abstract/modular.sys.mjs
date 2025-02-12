@@ -5,7 +5,7 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { bitMask, bytesToNumberBE, bytesToNumberLE, ensureBytes, numberToBytesBE, numberToBytesLE, validateObject, } from 'resource://ssi/protocols/utils-curves.sys.mjs';
+import { bitMask, bytesToNumberBE, bytesToNumberLE, ensureBytes, numberToBytesBE, numberToBytesLE, validateObject, } from 'resource://ssi/protocols/curves/utils.sys.mjs';
 // prettier-ignore
 const _0n = BigInt(0), _1n = BigInt(1), _2n = /* @__PURE__ */ BigInt(2), _3n = /* @__PURE__ */ BigInt(3);
 // prettier-ignore

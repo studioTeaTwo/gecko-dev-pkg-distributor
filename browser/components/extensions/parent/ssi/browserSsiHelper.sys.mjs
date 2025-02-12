@@ -139,6 +139,22 @@ export const browserSsiHelper = {
     const regex = /^[A-Za-z0-9\s.,!?'"\-_()]{1,140}$/;
     return regex.test(input);
   },
+  validateCiphertext(ciphertext) {
+    if (ciphertext == null) {
+      return false;
+    }
+    // TODO(ssb): validate in the terms of cryptography
+
+    return true;
+  },
+  validateConversationPartnerPubkey(pubkey) {
+    if (pubkey == null) {
+      return false;
+    }
+    // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+
+    return true;
+  },
   /**
    *
    * @param {Context} context
@@ -522,7 +538,7 @@ async function authWithPassword(
  * @param {object[]} passwordAuthorizedSites
  * @param {boolean} enforce
  * @param {object} evidence
- * @returns
+ * @returns {boolean}
  */
 function isAuthMandatory(
   url,
@@ -546,9 +562,16 @@ function isAuthMandatory(
     return true;
   }
   if (protocolName === "nostr") {
-    if (
-      evidence &&
+    const hasKind =
+      evidence && evidence.kind && typeof evidence.kind === "number";
+    const hasExcludedKinds =
       passwordAuthorizedSite &&
+      passwordAuthorizedSite.permissions &&
+      passwordAuthorizedSite.permissions.excludedKinds &&
+      Array.isArray(passwordAuthorizedSite.permissions.excludedKinds);
+    if (
+      hasKind &&
+      hasExcludedKinds &&
       passwordAuthorizedSite.permissions.excludedKinds.includes(
         evidence.kind.toString()
       )

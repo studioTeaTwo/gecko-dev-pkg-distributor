@@ -1,10 +1,16 @@
-import { availableCalls } from "../custom.type";
+import {
+  type AvailableCalls,
+  availableCalls,
+  DecryptType,
+  EncryptType,
+  SignType,
+} from "../custom.type";
 
 /**
  * Nostr
  */
 
-export function generate(option) {
+export function generate() {
   return window.Promise.resolve("Not implemented");
 }
 export function getPublicKey(option) {
@@ -18,7 +24,7 @@ export function getPublicKeyWithCallback(callback, option) {
 export function sign(
   message,
   option: {
-    type: "signEvent";
+    type: SignType;
   }
 ) {
   return _callRuntime<string>(`nostr/${option.type}`, {
@@ -30,7 +36,7 @@ export function signWithCallback(
   message,
   callback,
   option: {
-    type: "signEvent";
+    type: SignType;
   }
 ) {
   _callRuntime<string>(`nostr/${option.type}`, {
@@ -40,8 +46,63 @@ export function signWithCallback(
     callback(signature);
   });
 }
-export function decrypt(ciphertext, option) {
-  return window.Promise.resolve("Not implemented");
+export function encrypt(
+  plaintext,
+  option: {
+    type: EncryptType;
+    pubkey?: string;
+    version?: string;
+  }
+) {
+  return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+    plaintext,
+    ...option,
+  });
+}
+export function encryptWithCallback(
+  plaintext,
+  callback,
+  option: {
+    type: EncryptType;
+    pubkey?: string;
+    version?: string;
+  }
+) {
+  return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+    plaintext,
+    ...option,
+  }).then(ciphertext => {
+    callback(ciphertext);
+  });
+}
+export function decrypt(
+  ciphertext,
+  option: {
+    type: DecryptType;
+    pubkey?: string;
+    version?: string;
+  }
+) {
+  return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
+    ciphertext,
+    ...option,
+  });
+}
+export function decryptWithCallback(
+  ciphertext,
+  callback,
+  option: {
+    type: DecryptType;
+    pubkey?: string;
+    version?: string;
+  }
+) {
+  return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
+    ciphertext,
+    ...option,
+  }).then(plaintext => {
+    callback(plaintext);
+  });
 }
 
 /**
@@ -79,19 +140,41 @@ export function removeEventListener(target: EventTarget) {
 }
 
 // Function to receive background in inpage.
-export function _callRuntime<T>(
-  action: (typeof availableCalls)[number],
-  option
-) {
+export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
+  // Validate
   if (!availableCalls.includes(action)) {
     throw new window.Error("Function not available. Is the provider enabled?");
   }
   // TODO(ssb): Validate option
   switch (action) {
     case "nostr/signEvent": {
-      if (typeof option.message !== "string") {
+      if (option.message == null || typeof option.message !== "string") {
         throw new window.Error("Invalid message");
       }
+      break;
+    }
+    case "nostr/nip04/encrypt":
+    case "nostr/nip44/encrypt": {
+      if (option.plaintext == null || typeof option.plaintext !== "string") {
+        throw new window.Error("Invalid plaintext");
+      }
+      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+      if (option.pubkey == null || typeof option.pubkey !== "string") {
+        throw new window.Error("Invalid partner's pubkey");
+      }
+      break;
+    }
+    case "nostr/nip04/decrypt":
+    case "nostr/nip44/decrypt": {
+      // TODO(ssb): validate in the terms of cryptography
+      if (option.ciphertext == null || typeof option.ciphertext !== "string") {
+        throw new window.Error("Invalid ciphertext");
+      }
+      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+      if (option.pubkey == null || typeof option.pubkey !== "string") {
+        throw new window.Error("Invalid partner's pubkey");
+      }
+      break;
     }
   }
 

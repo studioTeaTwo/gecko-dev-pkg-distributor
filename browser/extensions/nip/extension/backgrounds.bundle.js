@@ -54,9 +54,7 @@ const onPrefChangedCallback = async (prefKey) => {
         ...(await browser.ssi.nostr.getPrefs()),
         ...(await browser.builtinNip.getPrefs()),
     };
-    const stateName = Object.entries(MapBetweenPrefAndState)
-        .filter(([_state, _pref]) => _pref === prefKey)
-        .map(([_state, _pref]) => _state)[0];
+    const stateName = MapBetweenPrefAndState[prefKey];
     const newVal = results[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);

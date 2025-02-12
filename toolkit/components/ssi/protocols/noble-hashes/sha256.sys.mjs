@@ -7,8 +7,8 @@
  * Check out [FIPS 180-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf).
  * @module
  */
-import { Chi, HashMD, Maj } from 'resource://ssi/protocols/_md.sys.mjs';
-import { rotr, wrapConstructor } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
+import { Chi, HashMD, Maj } from 'resource://ssi/protocols/hashes/_md.sys.mjs';
+import { rotr, wrapConstructor } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 /** Round constants: first 32 bits of fractional parts of the cube roots of the first 64 primes 2..311). */
 // prettier-ignore
 const SHA256_K = /* @__PURE__ */ new Uint32Array([

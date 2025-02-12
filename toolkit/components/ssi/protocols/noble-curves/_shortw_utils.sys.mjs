@@ -3,9 +3,9 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { hmac } from 'resource://ssi/protocols/hmac.sys.mjs';
-import { concatBytes, randomBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
-import { weierstrass } from 'resource://ssi/protocols/weierstrass.sys.mjs';
+import { hmac } from 'resource://ssi/protocols/hashes/hmac.sys.mjs';
+import { concatBytes, randomBytes } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
+import { weierstrass } from 'resource://ssi/protocols/curves/weierstrass.sys.mjs';
 /** connects noble-curves to noble-hashes */
 export function getHash(hash) {
     return {

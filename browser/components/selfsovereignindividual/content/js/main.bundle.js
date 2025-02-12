@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, S as StackDivider, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Switch, U as CardFooter, W as useEditableControls, X as hexToBytes, Y as Flex, Z as Tooltip, _ as Tabs, $ as TabList, a0 as Tab, a1 as TabPanels, a2 as TabPanel, a3 as Divider, a4 as NumberInput, a5 as NumberInputField, a6 as NumberInputStepper, a7 as NumberIncrementStepper, a8 as NumberDecrementStepper, a9 as Spinner, aa as createRoot, ab as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, S as StackDivider, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, U as Switch, W as CardFooter, X as useEditableControls, Y as hexToBytes, Z as Flex, _ as Tabs, $ as TabList, a0 as Tab, a1 as TabPanels, a2 as TabPanel, a3 as Divider, a4 as NumberInput, a5 as NumberInputField, a6 as NumberInputStepper, a7 as NumberIncrementStepper, a8 as NumberDecrementStepper, a9 as Spinner, aa as createRoot, ab as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -327,6 +327,29 @@ function MdHelp(props) {
         tag: "path",
         attr: {
           d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+        },
+        child: []
+      }
+    ]
+  })(props);
+}
+function MdOutlineTimerOff(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M9 1h6v2H9zM12 6c3.87 0 7 3.13 7 7 0 .94-.19 1.83-.52 2.65l1.5 1.5a8.963 8.963 0 0 0-.95-9.76l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42a8.962 8.962 0 0 0-9.77-.96l1.5 1.5A7.07 7.07 0 0 1 12 6z"
+        },
+        child: []
+      },
+      {
+        tag: "path",
+        attr: {
+          d: "m11 8.17 2 2V8h-2zM2.81 2.81 1.39 4.22l3.4 3.4a8.994 8.994 0 0 0 12.59 12.59l2.4 2.4 1.41-1.41L2.81 2.81zM12 20c-3.87 0-7-3.13-7-7 0-1.47.45-2.83 1.22-3.95l9.73 9.73A6.945 6.945 0 0 1 12 20z"
         },
         child: []
       }
@@ -775,35 +798,43 @@ function Secret(props) {
   ] });
 }
 function ExampleUrlMatch(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, maxW: props.maxW || "500px", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Examples" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "characters" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "match" })
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Tbody, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "*" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Accordion,
+    {
+      allowToggle: true,
+      maxW: props.maxW || "500px",
+      backgroundColor: props.backgroundColor ?? "transparent",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Examples" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "<all_urls>" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http*://*.example.com" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http://example.com, https://www.example.com, https://sub.example.com/path?query=value,..." })
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "characters" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Th, { children: "match" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Tbody, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "*" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "<all_urls>" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "all urls" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http*://*.example.com" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Td, { children: "http://example.com, https://www.example.com, https://sub.example.com/path?query=value,..." })
+            ] })
+          ] })
+        ] }) }) })
       ] })
-    ] }) }) })
-  ] }) });
+    }
+  );
 }
 function ExampleNostrKind(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
@@ -873,7 +904,6 @@ function KeyEditor(props) {
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
   const [newExtensions, setNewExtensions] = reactExports.useState([]);
-  const [editingNumForTrusted, setEditingNumForTrusted] = reactExports.useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -903,30 +933,36 @@ function KeyEditor(props) {
   const handleNewSiteChange = (e) => setNewSite(e.target.value);
   const handleRegisterSite = async (e) => {
     e.preventDefault();
-    if (!SafeProtocols.some((protocol) => newSite.startsWith(protocol)) && !SpecialCards.includes(newSite)) {
+    handleReenable(newSite);
+  };
+  const handleReenable = (url) => {
+    if (!SafeProtocols.some((protocol) => url.startsWith(protocol)) && !SpecialCards.includes(url)) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
     const existing = editingKey.trustedSites.some(
-      (site) => site.url === newSite && site.enabled
+      (site) => site.url === url && site.enabled
     );
     if (existing) {
       alert("The url exists already.");
       return;
     }
-    const value = {
-      trustedSites: editingKey.trustedSites.concat([
-        {
-          url: newSite,
-          name: newSite !== "*" ? "" : "<all_urls>",
-          enabled: true,
-          permissions: {}
-        }
-      ])
-    };
-    HandleChangeValue(value);
-    if (newSite.startsWith("moz-extension")) {
-      setNewExtensions((prev) => prev.concat([newSite]));
+    const value = editingKey.trustedSites.some((site) => site.url === url) ? editingKey.trustedSites.map((site) => {
+      if (site.url === url) {
+        site.enabled = true;
+      }
+      return site;
+    }) : editingKey.trustedSites.concat([
+      {
+        url,
+        name: url !== "*" ? "" : "<all_urls>",
+        enabled: true,
+        permissions: {}
+      }
+    ]);
+    HandleChangeValue({ trustedSites: value });
+    if (url.startsWith("moz-extension")) {
+      setNewExtensions((prev) => prev.concat([url]));
     }
   };
   const handleRemoveSite = (removedSite) => {
@@ -1074,17 +1110,20 @@ function KeyEditor(props) {
                       /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { maxW: "500px" })
                     ] }),
                     !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                    editingKey.trustedSites.filter((site) => site.enabled).map((site, i) => {
+                    editingKey.trustedSites.map((site) => {
                       return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
-                          site.url,
-                          site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                            " (",
-                            site.name,
-                            ")"
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                          !site.enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] })
                           ] })
                         ] }) }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: site.enabled ? /* @__PURE__ */ jsxRuntimeExports.jsx(
                           Button,
                           {
                             variant: "outline",
@@ -1092,8 +1131,15 @@ function KeyEditor(props) {
                             onClick: () => handleRemoveSite(site),
                             children: "Remove"
                           }
-                        ) }),
-                        editingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { backgroundColor: "white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: "N/A" }) }) })
+                        ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Button,
+                          {
+                            variant: "outline",
+                            colorScheme: "blue",
+                            onClick: () => handleReenable(site.url),
+                            children: "Re-enable"
+                          }
+                        ) })
                       ] });
                     })
                   ]
@@ -1104,20 +1150,23 @@ function KeyEditor(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
                 !editingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                editingKey.passwordAuthorizedSites.filter((site) => site.expiryTime > Date.now()).map((site, i) => {
+                editingKey.passwordAuthorizedSites.map((site, i) => {
                   const expiryTime = new Date(site.expiryTime);
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
-                      site.url,
-                      site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                        " (",
-                        site.name,
-                        ")"
-                      ] }),
-                      " - until ",
-                      expiryTime.toLocaleDateString(),
-                      " ",
-                      expiryTime.toLocaleTimeString()
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                      site.expiryTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
+                        site.url,
+                        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                          " (",
+                          site.name,
+                          ")"
+                        ] }),
+                        " - until ",
+                        expiryTime.toLocaleDateString(),
+                        " ",
+                        expiryTime.toLocaleTimeString()
+                      ] })
                     ] }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1134,7 +1183,7 @@ function KeyEditor(props) {
                           children: "Permission"
                         }
                       ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(
                         Button,
                         {
                           variant: "outline",
@@ -1157,9 +1206,7 @@ function KeyEditor(props) {
                               Textarea,
                               {
                                 size: "sm",
-                                value: site.permissions.excludedKinds.length > 0 ? site.permissions.excludedKinds.join(
-                                  ","
-                                ) : "",
+                                value: site.permissions.excludedKinds.length > 0 ? site.permissions.excludedKinds.join(",") : "",
                                 onChange: (e) => handleSaveExcludedKinds(i, e.target.value),
                                 placeholder: site.permissions.excludedKinds.length > 0 ? "" : "Input kind number",
                                 minW: "300px",
@@ -1272,7 +1319,6 @@ function Nostr$2(props) {
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   const nostrKeys = reactExports.useMemo(
     () => credentials.filter((credential) => credential.protocolName === "nostr").map(addInterpretedKeys).sort((a, b) => b.primary ? 1 : 0),
     [credentials]
@@ -1608,7 +1654,6 @@ function NIP07(props) {
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = reactExports.useState("");
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
@@ -1854,73 +1899,95 @@ function NIP07(props) {
           children: "Remove from All keys"
         }
       ) })
-    ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No site registered" });
+    ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.map((key) => ({
-      [key.identifier]: {
-        name: key.properties.displayName,
-        passwordAuthorizedSites: key.passwordAuthorizedSites
-      }
-    }));
-    return passwordAuthorizedSites.map((site, i) => {
-      const [identifier, value] = Object.entries(site)[0];
-      const validSites = value.passwordAuthorizedSites.filter(
-        (site2) => site2.expiryTime > Date.now()
-      );
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.nostr.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: value.name }),
-          " ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            IconButton,
-            {
-              icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
-              variant: "transparent",
-              "aria-label": "Edit Key",
-              onClick: () => updateState("nostr", { editingNo: i })
-            }
-          )
-        ] }),
-        validSites.length > 0 && validSites.map((validSite) => {
-          const expiryTime = new Date(validSite.expiryTime);
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h6", size: "sm", children: [
-              validSite.url,
-              validSite.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                " (",
-                validSite.name,
-                ")"
-              ] }),
-              " - until ",
-              expiryTime.toLocaleDateString(),
-              " ",
-              expiryTime.toLocaleTimeString()
-            ] }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                variant: "outline",
-                colorScheme: "blue",
-                onClick: () => handleRevokeSite(identifier, validSite),
-                children: "Revoke"
-              }
-            ) })
-          ] });
-        })
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          KeyEditor,
+    const passwordAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+      key.passwordAuthorizedSites.filter((site) => site.expiryTime > Date.now()).forEach((site) => {
+        const found = Object.keys(acc).find((url) => site.url === url);
+        if (found) {
+          acc[found].push({ key, site, keyNo: i });
+          return;
+        }
+        acc[site.url] = [{ key, site, keyNo: i }];
+      });
+      return acc;
+    }, {});
+    return Object.keys(passwordAuthorizedSites).length > 0 ? Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          AccordionButton,
           {
-            credential: nostrkeys[states.nostr.editingNo],
-            nostrKeys: nostrkeys,
-            usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-            goBack: () => resetState()
+            textAlign: "left",
+            css: { padding: 0, lineBreak: "anywhere" },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
+                url,
+                keys[0].site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                  " (",
+                  keys[0].site.name,
+                  ")"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
+            ]
           }
-        ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-      ] }) });
-    });
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: keys.map((item) => {
+          const expiryTime = new Date(item.site.expiryTime);
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === item.keyNo && states.nostr.editingUrl === url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Grid,
+            {
+              gridTemplateColumns: "700px 1fr",
+              gap: 6,
+              alignItems: "start",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: item.key.properties.displayName }),
+                  " ",
+                  " - until ",
+                  expiryTime.toLocaleDateString(),
+                  " ",
+                  expiryTime.toLocaleTimeString(),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                      variant: "transparent",
+                      "aria-label": "Edit Key",
+                      onClick: () => updateState("nostr", {
+                        editingNo: item.keyNo,
+                        editingUrl: url
+                      })
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: () => handleRevokeSite(
+                      item.key.identifier,
+                      item.site
+                    ),
+                    children: "Revoke"
+                  }
+                ) })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+            KeyEditor,
+            {
+              credential: nostrkeys[states.nostr.editingNo],
+              nostrKeys: nostrkeys,
+              usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              goBack: () => resetState()
+            }
+          ) });
+        }) })
+      ] }) }) }) });
+    }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -2158,7 +2225,6 @@ function Nostr$1(props) {
   const { prefs } = props;
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useState("");
   const handleUsedPrimarypasswordToSettings = async (checked) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
@@ -2259,7 +2325,7 @@ function Nostr(props) {
 function ECash(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Automation of the way we pay for goods and services is already underway, as can be seen by the variety and growth of electronic banking services available to consumers."' });
 }
-function SelfSovereignIndividual(props) {
+function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent();
   const { initStore: initStore2 } = dispatchEvents;
   const [selectedMenu, setSelectedMenu] = reactExports.useState("");

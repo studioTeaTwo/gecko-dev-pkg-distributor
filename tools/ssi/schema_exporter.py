@@ -198,7 +198,7 @@ def build_parameters(data):
         if 'type' in item and item['type'] == 'object':
             property = item['properties']
             for key in property:
-                output_text += f"> `{key}`"
+                output_text += f"> ##### `{key}`"
                 if 'optional' in property[key] and property[key]['optional']:
                     output_text += ' (optional)'
                 output_text += '\n>\n'

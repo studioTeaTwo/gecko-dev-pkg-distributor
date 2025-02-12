@@ -1,6 +1,7 @@
 import React from "react";
+import { SelfSovereignIndividualDefaultProps } from "../../custom.type";
 
-export default function ECash(props) {
+export default function ECash(props: SelfSovereignIndividualDefaultProps) {
   return (
     <div>
       &quot;Automation of the way we pay for goods and services is already

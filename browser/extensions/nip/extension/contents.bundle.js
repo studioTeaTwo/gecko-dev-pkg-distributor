@@ -632,19 +632,51 @@ function signEvent(event) {
 }
 exports.signEvent = signEvent;
 function nip04Encrypt(pubkey, plaintext) {
-    return window.Promise.resolve("Not implemented");
+    return new window.Promise(resolve => {
+        window.wrappedJSObject.ssi.nostr.encryptWithCallback(plaintext, exportFunction(ciphertext => {
+            resolve(ciphertext);
+        }, window), cloneInto({
+            type: "nip04",
+            pubkey,
+        }, window));
+        XPCNativeWrapper(window.wrappedJSObject.ssi);
+    });
 }
 exports.nip04Encrypt = nip04Encrypt;
 function nip04Decrypt(pubkey, ciphertext) {
-    return window.Promise.resolve("Not implemented");
+    return new window.Promise(resolve => {
+        window.wrappedJSObject.ssi.nostr.decryptWithCallback(ciphertext, exportFunction(plaintext => {
+            resolve(plaintext);
+        }, window), cloneInto({
+            type: "nip04",
+            pubkey,
+        }, window));
+        XPCNativeWrapper(window.wrappedJSObject.ssi);
+    });
 }
 exports.nip04Decrypt = nip04Decrypt;
 function nip44Encrypt(pubkey, plaintext) {
-    return window.Promise.resolve("Not implemented");
+    return new window.Promise(resolve => {
+        window.wrappedJSObject.ssi.nostr.encryptWithCallback(plaintext, exportFunction(ciphertext => {
+            resolve(ciphertext);
+        }, window), cloneInto({
+            type: "nip44",
+            pubkey,
+        }, window));
+        XPCNativeWrapper(window.wrappedJSObject.ssi);
+    });
 }
 exports.nip44Encrypt = nip44Encrypt;
 function nip44Decrypt(pubkey, ciphertext) {
-    return window.Promise.resolve("Not implemented");
+    return new window.Promise(resolve => {
+        window.wrappedJSObject.ssi.nostr.decryptWithCallback(ciphertext, exportFunction(plaintext => {
+            resolve(plaintext);
+        }, window), cloneInto({
+            type: "nip44",
+            pubkey,
+        }, window));
+        XPCNativeWrapper(window.wrappedJSObject.ssi);
+    });
 }
 exports.nip44Decrypt = nip44Decrypt;
 /**

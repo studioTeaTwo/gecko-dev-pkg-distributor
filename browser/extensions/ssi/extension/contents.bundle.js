@@ -7,12 +7,12 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.decrypt = exports.signWithCallback = exports.sign = exports.getPublicKeyWithCallback = exports.getPublicKey = exports.generate = void 0;
+exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.decryptWithCallback = exports.decrypt = exports.encryptWithCallback = exports.encrypt = exports.signWithCallback = exports.sign = exports.getPublicKeyWithCallback = exports.getPublicKey = exports.generate = void 0;
 const custom_type_1 = __webpack_require__(711);
 /**
  * Nostr
  */
-function generate(option) {
+function generate() {
     return window.Promise.resolve("Not implemented");
 }
 exports.generate = generate;
@@ -42,10 +42,38 @@ function signWithCallback(message, callback, option) {
     });
 }
 exports.signWithCallback = signWithCallback;
+function encrypt(plaintext, option) {
+    return _callRuntime(`nostr/${option.type}/encrypt`, {
+        plaintext,
+        ...option,
+    });
+}
+exports.encrypt = encrypt;
+function encryptWithCallback(plaintext, callback, option) {
+    return _callRuntime(`nostr/${option.type}/encrypt`, {
+        plaintext,
+        ...option,
+    }).then(ciphertext => {
+        callback(ciphertext);
+    });
+}
+exports.encryptWithCallback = encryptWithCallback;
 function decrypt(ciphertext, option) {
-    return window.Promise.resolve("Not implemented");
+    return _callRuntime(`nostr/${option.type}/decrypt`, {
+        ciphertext,
+        ...option,
+    });
 }
 exports.decrypt = decrypt;
+function decryptWithCallback(ciphertext, callback, option) {
+    return _callRuntime(`nostr/${option.type}/decrypt`, {
+        ciphertext,
+        ...option,
+    }).then(plaintext => {
+        callback(plaintext);
+    });
+}
+exports.decryptWithCallback = decryptWithCallback;
 /**
  * Event
  */
@@ -73,15 +101,40 @@ function removeEventListener(target) {
 exports.removeEventListener = removeEventListener;
 // Function to receive background in inpage.
 function _callRuntime(action, option) {
+    // Validate
     if (!custom_type_1.availableCalls.includes(action)) {
         throw new window.Error("Function not available. Is the provider enabled?");
     }
     // TODO(ssb): Validate option
     switch (action) {
         case "nostr/signEvent": {
-            if (typeof option.message !== "string") {
+            if (option.message == null || typeof option.message !== "string") {
                 throw new window.Error("Invalid message");
             }
+            break;
+        }
+        case "nostr/nip04/encrypt":
+        case "nostr/nip44/encrypt": {
+            if (option.plaintext == null || typeof option.plaintext !== "string") {
+                throw new window.Error("Invalid plaintext");
+            }
+            // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+            if (option.pubkey == null || typeof option.pubkey !== "string") {
+                throw new window.Error("Invalid partner's pubkey");
+            }
+            break;
+        }
+        case "nostr/nip04/decrypt":
+        case "nostr/nip44/decrypt": {
+            // TODO(ssb): validate in the terms of cryptography
+            if (option.ciphertext == null || typeof option.ciphertext !== "string") {
+                throw new window.Error("Invalid ciphertext");
+            }
+            // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
+            if (option.pubkey == null || typeof option.pubkey !== "string") {
+                throw new window.Error("Invalid partner's pubkey");
+            }
+            break;
         }
     }
     return new window.Promise(resolve => {
@@ -116,7 +169,10 @@ _nostr.getPublicKey = exportFunction(api_1.getPublicKey, window);
 _nostr.getPublicKeyWithCallback = exportFunction(api_1.getPublicKeyWithCallback, window);
 _nostr.sign = exportFunction(api_1.sign, window);
 _nostr.signWithCallback = exportFunction(api_1.signWithCallback, window);
+_nostr.encrypt = exportFunction(api_1.encrypt, window);
+_nostr.encryptWithCallback = exportFunction(api_1.encryptWithCallback, window);
 _nostr.decrypt = exportFunction(api_1.decrypt, window);
+_nostr.decryptWithCallback = exportFunction(api_1.decryptWithCallback, window);
 // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
 // ref: https://github.com/nostr-protocol/nips/pull/1174
 _nostr.messageBoard = cloneInto({}, window);
@@ -154,6 +210,10 @@ exports.availableCalls = void 0;
 exports.availableCalls = [
     "nostr/getPublicKey",
     "nostr/signEvent",
+    "nostr/nip04/encrypt",
+    "nostr/nip04/decrypt",
+    "nostr/nip44/encrypt",
+    "nostr/nip44/decrypt",
 ];
 const verifiedSymbol = Symbol("verified");
 

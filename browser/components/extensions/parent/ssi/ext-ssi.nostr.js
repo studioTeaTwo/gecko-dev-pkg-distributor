@@ -76,10 +76,13 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               if (!enabled) {
                 return errorValue;
               }
+              const pointing = {
+                protocolName: "nostr",
+                credentialName: "nsec",
+              };
               const credentials =
                 await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  protocolName: "nostr",
-                  credentialName: "nsec",
+                  ...pointing,
                   primary: true,
                 });
               if (credentials.length === 0) {
@@ -98,10 +101,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
                 tabTracker,
-                {
-                  protocolName: credentials[0].protocolName,
-                  credentialName: credentials[0].credentialName,
-                },
+                pointing,
                 {
                   type: "sign",
                   evidence: nEvent,
@@ -124,6 +124,187 @@ this["ssi.nostr"] = class extends ExtensionAPI {
                 credentials[0].guid
               );
               return signature;
+            } catch (e) {
+              console.error(e);
+              return errorValue;
+            }
+          },
+          async encrypt(
+            plaintext,
+            { type, pubkey, version = "0x02" },
+            { caption = "", submission = "", enforce = false }
+          ) {
+            const errorValue = null;
+
+            try {
+              // Validate params
+              switch (type) {
+                case "nip04":
+                case "nip44": {
+                  if (
+                    !lazy.browserSsiHelper.validateConversationPartnerPubkey(
+                      pubkey
+                    )
+                  ) {
+                    return errorValue;
+                  }
+                  if (type === "nip44" && version !== "0x02") {
+                    // Not implemented
+                    return errorValue;
+                  }
+                  break;
+                }
+                default: {
+                  // Not implemented
+                  return errorValue;
+                }
+              }
+              if (caption) {
+                if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                  return errorValue;
+                }
+              }
+              if (submission) {
+                if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                  return errorValue;
+                }
+              }
+
+              // Check permission
+              const enabled = Services.prefs.getBoolPref(
+                "selfsovereignindividual.nostr.enabled"
+              );
+              if (!enabled) {
+                return errorValue;
+              }
+              const pointing = {
+                protocolName: "nostr",
+                credentialName: "nsec",
+              };
+              const credentials =
+                await lazy.SsiHelper.searchCredentialsWithoutSecret({
+                  ...pointing,
+                  primary: true,
+                });
+              if (credentials.length === 0) {
+                return errorValue;
+              }
+              const isAuthorized = await lazy.browserSsiHelper.authorize(
+                context,
+                tabTracker,
+                pointing,
+                {
+                  type: "encrypt",
+                  evidence: { pubkey, plaintext },
+                  caption,
+                  submission,
+                  enforce,
+                },
+                false
+              );
+              if (!isAuthorized) {
+                return errorValue;
+              }
+
+              // Encrypt
+              const ciphertext = await lazy.Nostr.encrypt(
+                plaintext,
+                credentials[0].guid,
+                { type, pubkey }
+              );
+              return ciphertext;
+            } catch (e) {
+              console.error(e);
+              return errorValue;
+            }
+          },
+          async decrypt(
+            ciphertext,
+            { type, pubkey, version = "0x02" },
+            { caption = "", submission = "", enforce = false }
+          ) {
+            const errorValue = null;
+
+            try {
+              // Validate params
+              switch (type) {
+                case "nip04":
+                case "nip44": {
+                  if (!lazy.browserSsiHelper.validateCiphertext(ciphertext)) {
+                    return errorValue;
+                  }
+                  if (
+                    !lazy.browserSsiHelper.validateConversationPartnerPubkey(
+                      pubkey
+                    )
+                  ) {
+                    return errorValue;
+                  }
+                  if (type === "nip44" && version !== "0x02") {
+                    // Not implemented
+                    return errorValue;
+                  }
+                  break;
+                }
+                default: {
+                  // Not implemented
+                  return errorValue;
+                }
+              }
+              if (caption) {
+                if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                  return errorValue;
+                }
+              }
+              if (submission) {
+                if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                  return errorValue;
+                }
+              }
+
+              // Check permission
+              const enabled = Services.prefs.getBoolPref(
+                "selfsovereignindividual.nostr.enabled"
+              );
+              if (!enabled) {
+                return errorValue;
+              }
+              const pointing = {
+                protocolName: "nostr",
+                credentialName: "nsec",
+              };
+              const credentials =
+                await lazy.SsiHelper.searchCredentialsWithoutSecret({
+                  ...pointing,
+                  primary: true,
+                });
+              if (credentials.length === 0) {
+                return errorValue;
+              }
+              const isAuthorized = await lazy.browserSsiHelper.authorize(
+                context,
+                tabTracker,
+                pointing,
+                {
+                  type: "decrypt",
+                  evidence: { pubkey, ciphertext },
+                  caption,
+                  submission,
+                  enforce,
+                },
+                false
+              );
+              if (!isAuthorized) {
+                return errorValue;
+              }
+
+              // Decrypt
+              const plaintext = await lazy.Nostr.decrypt(
+                ciphertext,
+                credentials[0].guid,
+                { type, pubkey }
+              );
+              return plaintext;
             } catch (e) {
               console.error(e);
               return errorValue;

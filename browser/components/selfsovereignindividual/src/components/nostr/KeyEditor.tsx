@@ -22,11 +22,14 @@ import {
   HStack,
   Textarea,
   Switch,
+  Icon,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   MdEdit,
   MdSaveAlt,
   MdOutlineCancel,
+  MdOutlineTimerOff,
 } from "../shared/react-icons/Icons";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import { NostrCredential } from "../../custom.type";
@@ -50,7 +53,7 @@ export default function KeyEditor(props: Props) {
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
   const [newSite, setNewSite] = useState("");
   const [newExtensions, setNewExtensions] = useState([]);
-  const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
+  // const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
 
@@ -93,34 +96,44 @@ export default function KeyEditor(props: Props) {
   ) => {
     e.preventDefault();
 
+    handleReenable(newSite);
+  };
+  const handleReenable = (
+    url: NostrCredential["trustedSites"][number]["url"]
+  ) => {
     if (
-      !SafeProtocols.some(protocol => newSite.startsWith(protocol)) &&
-      !SpecialCards.includes(newSite)
+      !SafeProtocols.some(protocol => url.startsWith(protocol)) &&
+      !SpecialCards.includes(url)
     ) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
     const existing = editingKey.trustedSites.some(
-      site => site.url === newSite && site.enabled
+      site => site.url === url && site.enabled
     );
     if (existing) {
       alert("The url exists already.");
       return;
     }
 
-    const value = {
-      trustedSites: editingKey.trustedSites.concat([
-        {
-          url: newSite,
-          name: newSite !== "*" ? "" : "<all_urls>",
-          enabled: true,
-          permissions: {},
-        },
-      ]),
-    };
-    HandleChangeValue(value);
-    if (newSite.startsWith("moz-extension")) {
-      setNewExtensions(prev => prev.concat([newSite]));
+    const value = editingKey.trustedSites.some(site => site.url === url)
+      ? editingKey.trustedSites.map(site => {
+          if (site.url === url) {
+            site.enabled = true;
+          }
+          return site;
+        })
+      : editingKey.trustedSites.concat([
+          {
+            url: url,
+            name: url !== "*" ? "" : "<all_urls>",
+            enabled: true,
+            permissions: {},
+          },
+        ]);
+    HandleChangeValue({ trustedSites: value });
+    if (url.startsWith("moz-extension")) {
+      setNewExtensions(prev => prev.concat([url]));
     }
   };
 
@@ -281,19 +294,26 @@ export default function KeyEditor(props: Props) {
                   {!editingKey.trustedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {editingKey.trustedSites
-                    .filter(site => site.enabled)
-                    .map((site, i) => {
-                      return (
-                        <>
-                          <GridItem>
+                  {editingKey.trustedSites.map(site => {
+                    return (
+                      <>
+                        <GridItem>
+                          <HStack>
+                            {!site.enabled && (
+                              <Tooltip label="Expired">
+                                <Box display="flex" alignItems="baseline">
+                                  <Icon as={MdOutlineTimerOff} />
+                                </Box>
+                              </Tooltip>
+                            )}
                             <Text fontSize="md">
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
                             </Text>
-                          </GridItem>
-                          <GridItem>
-                            {/* <Button
+                          </HStack>
+                        </GridItem>
+                        <GridItem>
+                          {/* <Button
                               variant="outline"
                               colorScheme="blue"
                               onClick={() => setEditingNumForTrusted(i)}
@@ -301,6 +321,7 @@ export default function KeyEditor(props: Props) {
                             >
                               Permission
                             </Button> */}
+                          {site.enabled ? (
                             <Button
                               variant="outline"
                               colorScheme="blue"
@@ -308,17 +329,26 @@ export default function KeyEditor(props: Props) {
                             >
                               Remove
                             </Button>
-                          </GridItem>
-                          {editingNumForTrusted === i && (
+                          ) : (
+                            <Button
+                              variant="outline"
+                              colorScheme="blue"
+                              onClick={() => handleReenable(site.url)}
+                            >
+                              Re-enable
+                            </Button>
+                          )}
+                        </GridItem>
+                        {/* {editingNumForTrusted === i && (
                             <GridItem colSpan={2}>
                               <VStack backgroundColor="white">
                                 <Box>N/A</Box>
                               </VStack>
                             </GridItem>
-                          )}
-                        </>
-                      );
-                    })}
+                          )} */}
+                      </>
+                    );
+                  })}
                 </Grid>
               </Box>
               <Box>
@@ -329,13 +359,19 @@ export default function KeyEditor(props: Props) {
                   {!editingKey.passwordAuthorizedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {editingKey.passwordAuthorizedSites
-                    .filter(site => site.expiryTime > Date.now())
-                    .map((site, i) => {
-                      const expiryTime = new Date(site.expiryTime);
-                      return (
-                        <>
-                          <GridItem>
+                  {editingKey.passwordAuthorizedSites.map((site, i) => {
+                    const expiryTime = new Date(site.expiryTime);
+                    return (
+                      <>
+                        <GridItem>
+                          <HStack>
+                            {site.expiryTime <= Date.now() && (
+                              <Tooltip label="Expired">
+                                <Box display="flex" alignItems="baseline">
+                                  <Icon as={MdOutlineTimerOff} />
+                                </Box>
+                              </Tooltip>
+                            )}
                             <Text fontSize="md">
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
@@ -343,20 +379,22 @@ export default function KeyEditor(props: Props) {
                               {expiryTime.toLocaleDateString()}
                               &nbsp;{expiryTime.toLocaleTimeString()}
                             </Text>
-                          </GridItem>
-                          <GridItem>
-                            <Button
-                              variant="outline"
-                              colorScheme="blue"
-                              onClick={() => {
-                                setEditingNumForPassword(
-                                  i !== editingNumForPassword ? i : -1
-                                );
-                              }}
-                              mr="2"
-                            >
-                              Permission
-                            </Button>
+                          </HStack>
+                        </GridItem>
+                        <GridItem>
+                          <Button
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={() => {
+                              setEditingNumForPassword(
+                                i !== editingNumForPassword ? i : -1
+                              );
+                            }}
+                            mr="2"
+                          >
+                            Permission
+                          </Button>
+                          {site.expiryTime > Date.now() && (
                             <Button
                               variant="outline"
                               colorScheme="blue"
@@ -364,54 +402,53 @@ export default function KeyEditor(props: Props) {
                             >
                               Revoke
                             </Button>
-                          </GridItem>
-                          {editingNumForPassword === i && (
-                            <GridItem colSpan={2}>
-                              <VStack
-                                backgroundColor="white"
-                                p="2"
-                                alignItems="flex-start"
-                              >
-                                <Heading size="sm">
-                                  Event Kinds authorized every time
-                                </Heading>
-                                <HStack>
-                                  <Textarea
-                                    size="sm"
-                                    value={
-                                      site.permissions.excludedKinds.length > 0
-                                        ? site.permissions.excludedKinds.join(
-                                            ","
-                                          )
-                                        : ""
-                                    }
-                                    onChange={e =>
-                                      handleSaveExcludedKinds(i, e.target.value)
-                                    }
-                                    placeholder={
-                                      site.permissions.excludedKinds.length > 0
-                                        ? ""
-                                        : "Input kind number"
-                                    }
-                                    minW="300px"
-                                    backgroundColor="white"
-                                  />
-                                  <Button
-                                    variant="outline"
-                                    colorScheme="blue"
-                                    onClick={() => handleResetExcludedKinds(i)}
-                                    width="150px"
-                                  >
-                                    Revert to preset
-                                  </Button>
-                                </HStack>
-                                <ExampleNostrKind width="100%" />
-                              </VStack>
-                            </GridItem>
                           )}
-                        </>
-                      );
-                    })}
+                        </GridItem>
+                        {editingNumForPassword === i && (
+                          <GridItem colSpan={2}>
+                            <VStack
+                              backgroundColor="white"
+                              p="2"
+                              alignItems="flex-start"
+                            >
+                              <Heading size="sm">
+                                Event Kinds authorized every time
+                              </Heading>
+                              <HStack>
+                                <Textarea
+                                  size="sm"
+                                  value={
+                                    site.permissions.excludedKinds.length > 0
+                                      ? site.permissions.excludedKinds.join(",")
+                                      : ""
+                                  }
+                                  onChange={e =>
+                                    handleSaveExcludedKinds(i, e.target.value)
+                                  }
+                                  placeholder={
+                                    site.permissions.excludedKinds.length > 0
+                                      ? ""
+                                      : "Input kind number"
+                                  }
+                                  minW="300px"
+                                  backgroundColor="white"
+                                />
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() => handleResetExcludedKinds(i)}
+                                  width="150px"
+                                >
+                                  Revert to preset
+                                </Button>
+                              </HStack>
+                              <ExampleNostrKind width="100%" />
+                            </VStack>
+                          </GridItem>
+                        )}
+                      </>
+                    );
+                  })}
                 </Grid>
               </Box>
               <Box>

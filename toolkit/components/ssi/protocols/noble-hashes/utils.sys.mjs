@@ -9,8 +9,8 @@
 // from `crypto` to `cryptoNode`, which imports native module.
 // Makes the utils un-importable in browsers without a bundler.
 // Once node.js 18 is deprecated (2025-04-30), we can just drop the import.
-import { crypto } from 'resource://ssi/protocols/crypto.sys.mjs';
-import { abytes } from 'resource://ssi/protocols/_assert.sys.mjs';
+import { crypto } from 'resource://ssi/protocols/hashes/crypto.sys.mjs';
+import { abytes } from 'resource://ssi/protocols/hashes/_assert.sys.mjs';
 // export { isBytes } from './_assert.js';
 // We can't reuse isBytes from _assert, because somehow this causes huge perf issues
 export function isBytes(a) {

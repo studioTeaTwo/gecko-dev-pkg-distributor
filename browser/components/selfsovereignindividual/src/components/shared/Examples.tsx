@@ -19,9 +19,16 @@ import {
 import { DefaultExcludedKindList } from "../nostr/contants";
 import { MdHelp } from "./react-icons/Icons";
 
-export function ExampleUrlMatch(props: { maxW?: string }) {
+export function ExampleUrlMatch(props: {
+  maxW?: string;
+  backgroundColor?: string;
+}) {
   return (
-    <Accordion allowToggle maxW={props.maxW || "500px"}>
+    <Accordion
+      allowToggle
+      maxW={props.maxW || "500px"}
+      backgroundColor={props.backgroundColor ?? "transparent"}
+    >
       <AccordionItem css={{ border: "none" }}>
         <AccordionButton>
           <HStack as="span" flex="1" textAlign="left">

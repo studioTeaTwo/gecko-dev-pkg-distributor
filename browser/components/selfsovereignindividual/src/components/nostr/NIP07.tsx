@@ -60,7 +60,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
   useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
@@ -300,7 +300,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           .flat()
           .map(site => JSON.stringify(site))
       )
-    ).map(site => JSON.parse(site));
+    ).map(site => JSON.parse(site)) as NostrCredential["trustedSites"];
     return trustedSites.length > 0 ? (
       trustedSites.map(site => (
         <>
@@ -372,85 +372,118 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         </>
       ))
     ) : (
-      <Text fontSize="sm">No site registered</Text>
+      <Text>No site enabled</Text>
     );
   }, [nostrkeys, states.nostr]);
 
   const getPasswordAuthorizedSites = useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.map(key => ({
-      [key.identifier]: {
-        name: key.properties.displayName,
-        passwordAuthorizedSites: key.passwordAuthorizedSites,
-      },
-    }));
-    return passwordAuthorizedSites.map((site, i) => {
-      const [identifier, value] = Object.entries(site)[0];
-      const validSites = value.passwordAuthorizedSites.filter(
-        site => site.expiryTime > Date.now()
-      );
-
-      return (
-        <>
-          {states.nostr.editingNo !== i ? (
-            <>
-              <GridItem colSpan={2}>
-                <label>{value.name}</label>{" "}
-                <IconButton
-                  icon={<MdEdit />}
-                  variant="transparent"
-                  aria-label="Edit Key"
-                  onClick={() => updateState("nostr", { editingNo: i })}
-                />
-              </GridItem>
-              {validSites.length > 0 &&
-                validSites.map(validSite => {
-                  const expiryTime = new Date(validSite.expiryTime);
-                  return (
-                    <>
-                      <GridItem>
-                        <Heading as="h6" size="sm">
-                          {validSite.url}
-                          {validSite.name && (
-                            <>&nbsp;&#40;{validSite.name}&#41;</>
+    const passwordAuthorizedSites = nostrkeys.reduce<{
+      [url: string]: {
+        key: NostrCredential;
+        site: NostrCredential["passwordAuthorizedSites"][number];
+        keyNo: number;
+      }[];
+    }>((acc, key, i) => {
+      key.passwordAuthorizedSites
+        .filter(site => site.expiryTime > Date.now())
+        .forEach(site => {
+          const found = Object.keys(acc).find(url => site.url === url);
+          if (found) {
+            acc[found].push({ key, site, keyNo: i });
+            return;
+          }
+          acc[site.url] = [{ key, site, keyNo: i }];
+        });
+      return acc;
+    }, {});
+    return Object.keys(passwordAuthorizedSites).length > 0 ? (
+      Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+        return (
+          <>
+            <GridItem colSpan={2}>
+              <Accordion allowToggle>
+                <AccordionItem css={{ border: "none" }}>
+                  <AccordionButton
+                    textAlign="left"
+                    css={{ padding: 0, lineBreak: "anywhere" }}
+                  >
+                    <Heading as="h5" size="sm">
+                      {url}
+                      {keys[0].site.name && (
+                        <>&nbsp;&#40;{keys[0].site.name}&#41;</>
+                      )}
+                    </Heading>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    {keys.map(item => {
+                      const expiryTime = new Date(item.site.expiryTime);
+                      return (
+                        <>
+                          {!(
+                            states.nostr.editingNo === item.keyNo &&
+                            states.nostr.editingUrl === url
+                          ) ? (
+                            <Grid
+                              gridTemplateColumns={"700px 1fr"}
+                              gap={6}
+                              alignItems="start"
+                            >
+                              <GridItem>
+                                <label>{item.key.properties.displayName}</label>{" "}
+                                &nbsp;-&nbsp;until&nbsp;
+                                {expiryTime.toLocaleDateString()}
+                                &nbsp;{expiryTime.toLocaleTimeString()}
+                                <IconButton
+                                  icon={<MdEdit />}
+                                  variant="transparent"
+                                  aria-label="Edit Key"
+                                  onClick={() =>
+                                    updateState("nostr", {
+                                      editingNo: item.keyNo,
+                                      editingUrl: url,
+                                    })
+                                  }
+                                />
+                              </GridItem>
+                              <GridItem>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() =>
+                                    handleRevokeSite(
+                                      item.key.identifier,
+                                      item.site
+                                    )
+                                  }
+                                >
+                                  Revoke
+                                </Button>
+                              </GridItem>
+                            </Grid>
+                          ) : (
+                            <KeyEditor
+                              credential={nostrkeys[states.nostr.editingNo]}
+                              nostrKeys={nostrkeys}
+                              usedPrimarypasswordToSettings={
+                                prefs.nostr.usedPrimarypasswordToSettings
+                              }
+                              goBack={() => resetState()}
+                            ></KeyEditor>
                           )}
-                          &nbsp;-&nbsp;until&nbsp;
-                          {expiryTime.toLocaleDateString()}
-                          &nbsp;{expiryTime.toLocaleTimeString()}
-                        </Heading>
-                      </GridItem>
-                      <GridItem>
-                        <Button
-                          variant="outline"
-                          colorScheme="blue"
-                          onClick={() =>
-                            handleRevokeSite(identifier, validSite)
-                          }
-                        >
-                          Revoke
-                        </Button>
-                      </GridItem>
-                    </>
-                  );
-                })}
-            </>
-          ) : (
-            <>
-              <GridItem>
-                <KeyEditor
-                  credential={nostrkeys[states.nostr.editingNo]}
-                  nostrKeys={nostrkeys}
-                  usedPrimarypasswordToSettings={
-                    prefs.nostr.usedPrimarypasswordToSettings
-                  }
-                  goBack={() => resetState()}
-                ></KeyEditor>
-              </GridItem>
-              <GridItem></GridItem>
-            </>
-          )}
-        </>
-      );
-    });
+                        </>
+                      );
+                    })}
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </GridItem>
+          </>
+        );
+      })
+    ) : (
+      <Text>No site enabled</Text>
+    );
   }, [nostrkeys, states.nostr]);
 
   const cancelRef = React.useRef();

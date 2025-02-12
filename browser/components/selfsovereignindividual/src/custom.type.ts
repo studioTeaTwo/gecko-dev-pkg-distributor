@@ -90,7 +90,8 @@ export interface Credential
   guid?: string;
   timeCreated?: number;
 }
-interface PasswordAuthorizedSitesForNostr extends PasswordAuthorizedSites {
+export interface PasswordAuthorizedSitesForNostr
+  extends PasswordAuthorizedSites {
   permissions: {
     excludedKinds: string[];
   };

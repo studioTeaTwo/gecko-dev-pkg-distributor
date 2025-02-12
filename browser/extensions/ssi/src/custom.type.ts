@@ -1,10 +1,23 @@
 type ApplicationName = "ssb";
-type ProtocolName = "bitcoin" | "lightning" | "ecash" | "nostr" | "did:dht";
+export type ProtocolName =
+  | "bitcoin"
+  | "lightning"
+  | "ecash"
+  | "nostr"
+  | "did:dht";
 export const availableCalls = [
   "nostr/getPublicKey",
   "nostr/signEvent",
+  "nostr/nip04/encrypt",
+  "nostr/nip04/decrypt",
+  "nostr/nip44/encrypt",
+  "nostr/nip44/decrypt",
 ] as const;
-type AvailableCalls = (typeof availableCalls)[number];
+export type AvailableCalls = (typeof availableCalls)[number];
+
+export type SignType = "signEvent";
+export type EncryptType = "nip04" | "nip44";
+export type DecryptType = "nip04" | "nip44";
 
 interface SelfSovereignIndividualDefaultPrefs {
   enabled: boolean; // selfsovereignindividual.[protocolName].enabled
@@ -14,6 +27,7 @@ interface SelfSovereignIndividualDefaultPrefs {
 type PublicKey = string;
 type Signature = string;
 type PlainText = string;
+type CipherText = string;
 export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   _scope: "ssi";
   _proxy: EventTarget;
@@ -31,17 +45,50 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
     sign: (
       message: string,
       option: {
-        type: "signEvent";
+        type: SignType;
       }
     ) => Promise<Signature>;
     signWithCallback: (
       message: string,
       callback: (...argments) => unknown,
       option: {
-        type: "signEvent";
+        type: SignType;
       }
     ) => Signature;
-    decrypt: (ciphertext: string, option?) => Promise<PlainText>;
+    encrypt: (
+      plaintext: string,
+      option: {
+        type: EncryptType;
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+        version?: string;
+      }
+    ) => Promise<CipherText>;
+    encryptWithCallback: (
+      plaintext: string,
+      callback: (...argments) => unknown,
+      option: {
+        type: EncryptType;
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+        version?: string;
+      }
+    ) => CipherText;
+    decrypt: (
+      ciphertext: string,
+      option: {
+        type: DecryptType;
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+        version?: string;
+      }
+    ) => Promise<PlainText>;
+    decryptWithCallback: (
+      ciphertext: string,
+      callback: (...argments) => unknown,
+      option: {
+        type: DecryptType;
+        pubkey?: string; // Conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
+        version?: string;
+      }
+    ) => PlainText;
     messageBoard?: unknown;
   } & Omit<EventTarget, "dispatchEvent">;
 }

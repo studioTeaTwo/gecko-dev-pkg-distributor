@@ -2,8 +2,8 @@
  * HMAC: RFC2104 message authentication code.
  * @module
  */
-import { abytes, aexists, ahash } from 'resource://ssi/protocols/_assert.sys.mjs';
-import { Hash, toBytes } from 'resource://ssi/protocols/utils-hashes.sys.mjs';
+import { abytes, aexists, ahash } from 'resource://ssi/protocols/hashes/_assert.sys.mjs';
+import { Hash, toBytes } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 export class HMAC extends Hash {
     constructor(hash, _key) {
         super();
