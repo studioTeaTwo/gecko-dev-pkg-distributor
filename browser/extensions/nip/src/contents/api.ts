@@ -36,8 +36,7 @@ export function signEvent(event) {
           )
         );
         XPCNativeWrapper(window.wrappedJSObject.ssi);
-      }, window),
-      null
+      }, window)
     );
     XPCNativeWrapper(window.wrappedJSObject.ssi);
   });

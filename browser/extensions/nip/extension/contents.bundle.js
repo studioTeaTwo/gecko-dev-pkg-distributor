@@ -626,7 +626,7 @@ function signEvent(event) {
                 type: "signEvent",
             }, window));
             XPCNativeWrapper(window.wrappedJSObject.ssi);
-        }, window), null);
+        }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });
 }
