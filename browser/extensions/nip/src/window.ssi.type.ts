@@ -12,8 +12,11 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   nostr: WindowSSINostr;
 }
 
+/** Implementation list of Nostr signature spec. */
 export type NostrSignType = "signEvent";
+/** Implementation list of Nostr encyption spec. */
 export type NostrEncryptType = "nip04" | "nip44";
+/** Implementation list of Nostr encyption spec. */
 export type NostrDecryptType = "nip04" | "nip44";
 
 /**
