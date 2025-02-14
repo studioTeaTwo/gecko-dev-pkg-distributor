@@ -30,9 +30,6 @@ on:
       PAT:
         description: "Personal Access Token"
         required: true
-      READ_TOKEN:
-        description: "Personal Access Token to read only"
-        required: true
   workflow_dispatch:
     inputs:
       profgen:

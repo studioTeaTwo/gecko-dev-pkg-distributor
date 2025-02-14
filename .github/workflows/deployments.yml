@@ -128,7 +128,6 @@ jobs:
       profgen: true
     secrets:
       PAT: ${{ secrets.PAT }}
-      READ_TOKEN: ${{ secrets.READ_TOKEN }}
 
   Part2-macOS-Universal-gen-profdata-and-jarlog:
     needs: Part1-macOS-Universal-build-with-profgen
@@ -144,7 +143,6 @@ jobs:
       MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       PAT: ${{ secrets.PAT }}
-      READ_TOKEN: ${{ secrets.READ_TOKEN }}
 
   Part4-macOS-Universal-package-and-sign:
     uses: ./.github/workflows/macOS-integration.yml
