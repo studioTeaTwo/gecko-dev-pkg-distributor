@@ -124,10 +124,8 @@ jobs:
 
   Part1-macOS-Universal-build-with-profgen:
     uses: ./.github/workflows/macOS-Universal.yml
-    needs: [get-buildid]
     with:
       profgen: true
-      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
     secrets:
       PAT: ${{ secrets.PAT }}
       READ_TOKEN: ${{ secrets.READ_TOKEN }}
