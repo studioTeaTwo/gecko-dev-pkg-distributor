@@ -15,7 +15,7 @@
   },
   {
     "namespace": "ssi",
-    "description": "That's to empower individual on the self-sovereign way.",
+    "description": "That's to empower individual on the self-sovereign way.<br/><br/>browser.ssi is the powerful API (if chrome, it would be named chrome.ssi), which bridges the tasks related to credentials such like sign/decrypt between internal module and user land. It also provides setting states while paying attention to privacy and security, basically which are what user can choose whether to make open.",
     "permissions": ["ssi"],
     "types": [
       {
@@ -98,7 +98,7 @@
       {
         "name": "searchCredentialsWithoutSecret",
         "type": "function",
-        "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `ssi.askConsent`.",
+        "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {

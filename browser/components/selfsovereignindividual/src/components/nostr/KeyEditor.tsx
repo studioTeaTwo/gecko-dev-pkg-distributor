@@ -96,9 +96,9 @@ export default function KeyEditor(props: Props) {
   ) => {
     e.preventDefault();
 
-    handleReenable(newSite);
+    handleReRegister(newSite);
   };
-  const handleReenable = (
+  const handleReRegister = (
     url: NostrCredential["trustedSites"][number]["url"]
   ) => {
     if (
@@ -333,9 +333,9 @@ export default function KeyEditor(props: Props) {
                             <Button
                               variant="outline"
                               colorScheme="blue"
-                              onClick={() => handleReenable(site.url)}
+                              onClick={() => handleReRegister(site.url)}
                             >
-                              Re-enable
+                              Re-register
                             </Button>
                           )}
                         </GridItem>

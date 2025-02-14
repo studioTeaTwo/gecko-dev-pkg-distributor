@@ -1,4 +1,4 @@
-import { WindowSSI } from "../custom.type";
+import { WindowSSI } from "../window.ssi.type";
 import { log } from "../shared/logger";
 import {
   generate,

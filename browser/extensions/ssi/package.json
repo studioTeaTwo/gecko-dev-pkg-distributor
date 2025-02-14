@@ -8,6 +8,7 @@
     "watch": "npm run build -- -w",
     "lint": "eslint --config .eslintrc.json --ext .ts,.tsx,.js ./src",
     "lint:fix": "eslint --fix --config .eslintrc.json --ext .ts,.tsx,.js ./src",
+    "doc": "npx typedoc src/window.ssi.type.ts --json ../../../tools/ssi/output/window.ssi.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "teatwo <studioTeaTwo@proton.me>",

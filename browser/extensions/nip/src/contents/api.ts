@@ -1,7 +1,7 @@
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import { log } from "../shared/logger";
-import { NostrEvent } from "../ssi.type";
+import { NostrEvent } from "../custom.type";
 
 /**
  * APIs to export to inpages

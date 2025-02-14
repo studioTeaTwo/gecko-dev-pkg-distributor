@@ -30,9 +30,6 @@ on:
       PAT:
         description: "Personal Access Token"
         required: true
-      READ_TOKEN:
-        description: "Personal Access Token to read only"
-        required: true
   workflow_dispatch:
     inputs:
       profgen:
@@ -159,16 +156,16 @@ jobs:
 
         echo 'ac_add_options --with-branding=browser/branding/unofficial' >> mozconfig
 
-        # if [[ $GHA_profgen == 'true' ]]; then
-        #   echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
-        # elif [[ $GHA_profdata_jarlog_artifact_name == 'true' ]]; then
-        #   {
-        #     echo 'export MOZ_LTO=cross'
-        #     echo 'ac_add_options --enable-profile-use=cross'
-        #     echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
-        #     echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
-        #   } >> mozconfig
-        # fi
+        if [[ $GHA_profgen == 'true' ]]; then
+          echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
+        elif [[ $GHA_profdata_jarlog_artifact_name == 'true' ]]; then
+          {
+            echo 'export MOZ_LTO=cross'
+            echo 'ac_add_options --enable-profile-use=cross'
+            echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
+            echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
+          } >> mozconfig
+        fi
 
         # SCCACHE START
         {
@@ -238,10 +235,8 @@ jobs:
         fi
 
         if [[ $GHA_profgen = 'true' ]];then
-          # tar zcvf ${arch}-apple-darwin-output.tar.xz ./obj-${arch}-apple-darwin/dist/ssb
-          # mv ${arch}-apple-darwin-output.tar.xz ~/output/
-          tar -czf ${arch}-apple-darwin-output.tar.gz ./obj-${arch}-apple-darwin/dist/
-          mv ${arch}-apple-darwin-output.tar.gz ~/output/
+          tar zcvf ${arch}-apple-darwin-output.tar.xz ./obj-${arch}-apple-darwin/dist/ssb
+          mv ${arch}-apple-darwin-output.tar.xz ~/output/
         else
           tar -czf ssb-${arch}-apple-darwin-with-pgo.tar.gz ./obj-${arch}-apple-darwin/dist/
           mv ssb-${arch}-apple-darwin-with-pgo.tar.gz ~/output/
