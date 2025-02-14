@@ -6,7 +6,7 @@
 
 import { shouldInject } from "../shared/shouldInject";
 import { log } from "../shared/logger";
-import { WindowSSI } from "../custom.type";
+import { WindowSSI } from "../window.ssi.type";
 import { nostr, init as nostrInit } from "./nostr";
 import { _invoke, addEventListener, removeEventListener } from "./api";
 

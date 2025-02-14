@@ -1,10 +1,9 @@
 import {
-  type AvailableCalls,
-  availableCalls,
-  DecryptType,
-  EncryptType,
-  SignType,
-} from "../custom.type";
+  NostrSignType,
+  NostrEncryptType,
+  NostrDecryptType,
+} from "../window.ssi.type";
+import { type AvailableCalls, availableCalls } from "../custom.type";
 
 /**
  * Nostr
@@ -24,7 +23,7 @@ export function getPublicKeyWithCallback(callback, option) {
 export function sign(
   message,
   option: {
-    type: SignType;
+    type: NostrSignType;
   }
 ) {
   return _callRuntime<string>(`nostr/${option.type}`, {
@@ -36,7 +35,7 @@ export function signWithCallback(
   message,
   callback,
   option: {
-    type: SignType;
+    type: NostrSignType;
   }
 ) {
   _callRuntime<string>(`nostr/${option.type}`, {
@@ -49,7 +48,7 @@ export function signWithCallback(
 export function encrypt(
   plaintext,
   option: {
-    type: EncryptType;
+    type: NostrEncryptType;
     pubkey?: string;
     version?: string;
   }
@@ -63,7 +62,7 @@ export function encryptWithCallback(
   plaintext,
   callback,
   option: {
-    type: EncryptType;
+    type: NostrEncryptType;
     pubkey?: string;
     version?: string;
   }
@@ -78,7 +77,7 @@ export function encryptWithCallback(
 export function decrypt(
   ciphertext,
   option: {
-    type: DecryptType;
+    type: NostrDecryptType;
     pubkey?: string;
     version?: string;
   }
@@ -92,7 +91,7 @@ export function decryptWithCallback(
   ciphertext,
   callback,
   option: {
-    type: DecryptType;
+    type: NostrDecryptType;
     pubkey?: string;
     version?: string;
   }
