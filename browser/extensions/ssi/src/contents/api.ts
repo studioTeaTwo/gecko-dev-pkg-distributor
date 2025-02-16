@@ -16,9 +16,13 @@ export function getPublicKey(option) {
   return _callRuntime<string>("nostr/getPublicKey", option);
 }
 export function getPublicKeyWithCallback(callback, option) {
-  _callRuntime<string>("nostr/getPublicKey", option).then(publicKey => {
-    callback(publicKey);
-  });
+  _callRuntime<string>("nostr/getPublicKey", option)
+    .then(publicKey => {
+      callback(null, publicKey);
+    })
+    .catch(error => {
+      callback(error, "");
+    });
 }
 export function sign(
   message,
@@ -41,9 +45,13 @@ export function signWithCallback(
   _callRuntime<string>(`nostr/${option.type}`, {
     message,
     ...option,
-  }).then(signature => {
-    callback(signature);
-  });
+  })
+    .then(signature => {
+      callback(null, signature);
+    })
+    .catch(error => {
+      callback(error, "");
+    });
 }
 export function encrypt(
   plaintext,
@@ -70,9 +78,13 @@ export function encryptWithCallback(
   return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
     plaintext,
     ...option,
-  }).then(ciphertext => {
-    callback(ciphertext);
-  });
+  })
+    .then(ciphertext => {
+      callback(null, ciphertext);
+    })
+    .catch(error => {
+      callback(error, "");
+    });
 }
 export function decrypt(
   ciphertext,
@@ -99,9 +111,13 @@ export function decryptWithCallback(
   return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
     ciphertext,
     ...option,
-  }).then(plaintext => {
-    callback(plaintext);
-  });
+  })
+    .then(plaintext => {
+      callback(null, plaintext);
+    })
+    .catch(error => {
+      callback(error, "");
+    });
 }
 
 /**
@@ -177,7 +193,7 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
     }
   }
 
-  return new window.Promise<T>(resolve => {
+  return new window.Promise<T>((resolve, reject) => {
     browser.runtime
       .sendMessage({
         origin: location.origin,
@@ -186,6 +202,9 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
       })
       .then(response => {
         resolve(response);
+      })
+      .catch(error => {
+        reject(cloneInto(error, window));
       });
   });
 }

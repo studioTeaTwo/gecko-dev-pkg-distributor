@@ -363,6 +363,9 @@ def create_member_file_window(namespace, kind, data):
         output_text += '()'
     output_text += '\n\n'
 
+    if kind == 2097152:
+        output_text += f"```admonish attention\nThis is the difinition on TypeScript, does not exist in the execution environment. It's just a documentation commentary.\n```\n\n"
+
     if 'comment' in data:
         for node in data['comment']['summary']:
             output_text += node["text"]
@@ -422,23 +425,30 @@ def create_member_file_window(namespace, kind, data):
                     for node2 in node['comment']['summary']:
                         output_text += node2["text"]
                     output_text += '\n\n'
+
+                    parameters = []
                     if 'children' in node['type']['declaration']:
-                        for node2 in node['type']['declaration']['children']:
-                            output_text += f"> ##### {node2['name']}"
-                            if 'isOptional' in node2['flags']:
-                                output_text += '(optional)'
-                            output_text += '\n>\n'
-                            if 'name' in node2['type']:
-                                output_text += f"> `{node2['type']['name']}`."
-                            elif 'value' in node2['type']:
-                                output_text += f"> `{node2['type']['value']}`."
+                        parameters = node['type']['declaration']['children']
+                    elif 'signatures' in node['type']['declaration'] and "parameters" in node['type']['declaration']['signatures'][0]:
+                        parameters = node['type']['declaration']['signatures'][0]["parameters"]
+                    for node2 in parameters:
+                        output_text += f"> ##### {node2['name']}"
+                        if 'isOptional' in node2['flags']:
+                            output_text += '(optional)'
+                        output_text += '\n>\n'
+                        if 'name' in node2['type']:
+                            output_text += f"> `{node2['type']['name']}`. "
+                        elif 'value' in node2['type']:
+                            output_text += f"> `{node2['type']['value']}`. "
+                        if 'comment' in node2:
                             for node3 in node2['comment']['summary']:
                                 output_text += node3['text']
-                            output_text += '\n>\n'
+                        output_text += '\n>\n'
+
                 output_text += '\n'
 
             output_text += '### Return value\n\n'
-            returns = [node for node in data['comment']['blockTags'] if node['tag'] == '@returns']
+            returns = [node for node in data['comment'].get('blockTags', []) if node['tag'] == '@returns']
             if len(returns) > 0:
                 for node in returns[0]['content']:
                     output_text += node['text']
@@ -446,7 +456,7 @@ def create_member_file_window(namespace, kind, data):
                 output_text += 'None ([undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)).'
             output_text += "\n\n"
 
-            throws = [node for node in data['comment']['blockTags'] if node['tag'] == '@throws']
+            throws = [node for node in data['comment'].get('blockTags', []) if node['tag'] == '@throws']
             if len(throws) > 0:
                 output_text += '### Exceptions\n\n'
                 for node in throws[0]['content']:
