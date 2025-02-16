@@ -615,7 +615,10 @@ function signEvent(event) {
     let eventHash = "";
     return new window.Promise((resolve, reject) => {
         // Attach your holding public key to verify it is the same as the current primary key.
-        window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(exportFunction(pubkey => {
+        window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(exportFunction((error, pubkey) => {
+            if (error) {
+                reject(error);
+            }
             signedEvent.pubkey = pubkey;
             eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
             window.wrappedJSObject.ssi.nostr.signWithCallback(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {

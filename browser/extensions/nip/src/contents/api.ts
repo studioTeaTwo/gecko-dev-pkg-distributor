@@ -16,7 +16,10 @@ export function signEvent(event) {
   return new window.Promise((resolve, reject) => {
     // Attach your holding public key to verify it is the same as the current primary key.
     window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(
-      exportFunction(pubkey => {
+      exportFunction((error, pubkey) => {
+        if (error) {
+          reject(error);
+        }
         signedEvent.pubkey = pubkey;
         eventHash = bytesToHex(
           sha256(new window.TextEncoder().encode(serializeEvent(signedEvent)))
