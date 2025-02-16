@@ -21,8 +21,12 @@ function getPublicKey(option) {
 }
 exports.getPublicKey = getPublicKey;
 function getPublicKeyWithCallback(callback, option) {
-    _callRuntime("nostr/getPublicKey", option).then(publicKey => {
-        callback(publicKey);
+    _callRuntime("nostr/getPublicKey", option)
+        .then(publicKey => {
+        callback(null, publicKey);
+    })
+        .catch(error => {
+        callback(error, "");
     });
 }
 exports.getPublicKeyWithCallback = getPublicKeyWithCallback;
@@ -37,8 +41,12 @@ function signWithCallback(message, callback, option) {
     _callRuntime(`nostr/${option.type}`, {
         message,
         ...option,
-    }).then(signature => {
-        callback(signature);
+    })
+        .then(signature => {
+        callback(null, signature);
+    })
+        .catch(error => {
+        callback(error, "");
     });
 }
 exports.signWithCallback = signWithCallback;
@@ -53,8 +61,12 @@ function encryptWithCallback(plaintext, callback, option) {
     return _callRuntime(`nostr/${option.type}/encrypt`, {
         plaintext,
         ...option,
-    }).then(ciphertext => {
-        callback(ciphertext);
+    })
+        .then(ciphertext => {
+        callback(null, ciphertext);
+    })
+        .catch(error => {
+        callback(error, "");
     });
 }
 exports.encryptWithCallback = encryptWithCallback;
@@ -69,8 +81,12 @@ function decryptWithCallback(ciphertext, callback, option) {
     return _callRuntime(`nostr/${option.type}/decrypt`, {
         ciphertext,
         ...option,
-    }).then(plaintext => {
-        callback(plaintext);
+    })
+        .then(plaintext => {
+        callback(null, plaintext);
+    })
+        .catch(error => {
+        callback(error, "");
     });
 }
 exports.decryptWithCallback = decryptWithCallback;
@@ -137,7 +153,7 @@ function _callRuntime(action, option) {
             break;
         }
     }
-    return new window.Promise(resolve => {
+    return new window.Promise((resolve, reject) => {
         browser.runtime
             .sendMessage({
             origin: location.origin,
@@ -146,6 +162,9 @@ function _callRuntime(action, option) {
         })
             .then(response => {
             resolve(response);
+        })
+            .catch(error => {
+            reject(cloneInto(error, window));
         });
     });
 }

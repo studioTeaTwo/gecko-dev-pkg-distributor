@@ -13,7 +13,7 @@ export function getPublicKey() {
 export function signEvent(event) {
   const signedEvent = { ...event };
   let eventHash = "";
-  return new window.Promise(resolve => {
+  return new window.Promise((resolve, reject) => {
     // Attach your holding public key to verify it is the same as the current primary key.
     window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(
       exportFunction(pubkey => {
@@ -23,7 +23,10 @@ export function signEvent(event) {
         );
         window.wrappedJSObject.ssi.nostr.signWithCallback(
           window.JSON.stringify(signedEvent),
-          exportFunction(signature => {
+          exportFunction((error, signature) => {
+            if (error) {
+              reject(error);
+            }
             signedEvent.id = eventHash;
             signedEvent.sig = signature;
             resolve(cloneInto(signedEvent, window));
@@ -42,10 +45,13 @@ export function signEvent(event) {
   });
 }
 export function nip04Encrypt(pubkey, plaintext) {
-  return new window.Promise(resolve => {
+  return new window.Promise((resolve, reject) => {
     window.wrappedJSObject.ssi.nostr.encryptWithCallback(
       plaintext,
-      exportFunction(ciphertext => {
+      exportFunction((error, ciphertext) => {
+        if (error) {
+          reject(error);
+        }
         resolve(ciphertext);
       }, window),
       cloneInto(
@@ -60,10 +66,13 @@ export function nip04Encrypt(pubkey, plaintext) {
   });
 }
 export function nip04Decrypt(pubkey, ciphertext) {
-  return new window.Promise(resolve => {
+  return new window.Promise((resolve, reject) => {
     window.wrappedJSObject.ssi.nostr.decryptWithCallback(
       ciphertext,
-      exportFunction(plaintext => {
+      exportFunction((error, plaintext) => {
+        if (error) {
+          reject(error);
+        }
         resolve(plaintext);
       }, window),
       cloneInto(
@@ -78,10 +87,13 @@ export function nip04Decrypt(pubkey, ciphertext) {
   });
 }
 export function nip44Encrypt(pubkey, plaintext) {
-  return new window.Promise(resolve => {
+  return new window.Promise((resolve, reject) => {
     window.wrappedJSObject.ssi.nostr.encryptWithCallback(
       plaintext,
-      exportFunction(ciphertext => {
+      exportFunction((error, ciphertext) => {
+        if (error) {
+          reject(error);
+        }
         resolve(ciphertext);
       }, window),
       cloneInto(
@@ -96,10 +108,13 @@ export function nip44Encrypt(pubkey, plaintext) {
   });
 }
 export function nip44Decrypt(pubkey, ciphertext) {
-  return new window.Promise(resolve => {
+  return new window.Promise((resolve, reject) => {
     window.wrappedJSObject.ssi.nostr.decryptWithCallback(
       ciphertext,
-      exportFunction(plaintext => {
+      exportFunction((error, plaintext) => {
+        if (error) {
+          reject(error);
+        }
         resolve(plaintext);
       }, window),
       cloneInto(
