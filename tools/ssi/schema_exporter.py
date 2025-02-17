@@ -416,12 +416,12 @@ def create_member_file_window(namespace, kind, data):
                     output_text += '(optional)'
                 output_text += '\n\n'
                 if 'name' in node['type']:
-                    output_text += f"`{node['type']['name']}`."
+                    output_text += f"`{node['type']['name']}`. "
                     for node2 in node['comment']['summary']:
                         output_text += node2["text"]
                     output_text += '\n'
                 elif 'declaration' in node['type']:
-                    output_text += "`object`."
+                    output_text += "`object`. "
                     for node2 in node['comment']['summary']:
                         output_text += node2["text"]
                     output_text += '\n\n'
