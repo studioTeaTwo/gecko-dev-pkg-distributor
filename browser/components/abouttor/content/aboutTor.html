@@ -24,6 +24,10 @@
 
     <script
       type="module"
+      src="chrome://global/content/elements/moz-button.mjs"
+    ></script>
+    <script
+      type="module"
       src="chrome://global/content/elements/moz-toggle.mjs"
     ></script>
     <script src="chrome://browser/content/abouttor/aboutTor.js"></script>
@@ -44,7 +48,7 @@
         data-l10n-id="tor-browser-home-heading-testing"
       ></span>
     </h1>
-    <p id="tor-check">
+    <p id="tor-check" class="tor-home-box">
       <img
         id="tor-check-icon"
         alt=""
@@ -132,5 +136,26 @@
         ></a>
       </span>
     </p>
+    <!-- Survey element, initially used for tor-browser#43504. -->
+    <article id="survey" class="tor-home-box" aria-labelledby="survey-heading">
+      <img
+        id="survey-icon"
+        alt=""
+        src="chrome://browser/content/abouttor/1f44b-waving-hand.svg"
+      />
+      <h2 id="survey-heading"></h2>
+      <p id="survey-body"></p>
+      <div id="survey-buttons">
+        <button id="survey-launch" class="primary"></button>
+        <button id="survey-dismiss"></button>
+      </div>
+      <moz-button
+        id="survey-close"
+        type="icon ghost"
+        class="close"
+        size="16"
+        iconSrc="chrome://global/skin/icons/close.svg"
+      ></moz-button>
+    </article>
   </body>
 </html>
