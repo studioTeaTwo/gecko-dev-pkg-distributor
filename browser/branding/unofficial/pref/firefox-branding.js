@@ -35,13 +35,15 @@ pref("devtools.selfxss.count", 5);
 /**
  * ssb: modified
  */
+
+// Required to work encrypt DB
 pref("security.nocertdb", false);
 // pref("general.useragent.compatMode.firefox", true, locked); // Do on configure. See browser/branding/unofficial/configure.sh
 
 // privacy
 pref("breakpad.reportURL", "", locked);
-pref("browser.tabs.crashReporting.sendReport", false);
-pref("browser.crashReports.unsubmittedCheck.enabled",	false);
+pref("browser.tabs.crashReporting.sendReport", false, locked);
+pref("browser.crashReports.unsubmittedCheck.enabled",	false, locked);
 pref("toolkit.telemetry.archive.enabled", false, locked);
 pref("toolkit.telemetry.bhrPing.enabled", false, locked);
 pref("toolkit.telemetry.enabled", false, locked);
@@ -58,9 +60,9 @@ pref("toolkit.telemetry.unified", false, locked);
 pref("toolkit.telemetry.updatePing.enabled", false, locked);
 pref("dom.private-attribution.submission.enabled", false, locked);
 pref("app.shield.optoutstudies.enabled", false, locked);
-pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
+pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false, locked);
 pref("privacy.trackingprotection.origin_telemetry.enabled", false, locked);
 pref("privacy.userContext.enabled", true);
 pref("privacy.userContext.ui.enabled", true);
 pref("trailhead.firstrun.branches", "", locked);
-pref("extensions.webcompat-reporter.enabled", false);
+pref("extensions.webcompat-reporter.enabled", false, locked);
