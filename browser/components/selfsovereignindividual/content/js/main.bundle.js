@@ -1360,21 +1360,32 @@ function Nostr$2(props) {
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value);
   const handleSave = (e) => {
     e.preventDefault();
-    if (!NostrTypeGuard.isNSec(importedKey)) {
-      alert("The typed key is not nsec!");
-      return;
+    let nseckey = importedKey;
+    if (!NostrTypeGuard.isNSec(nseckey)) {
+      try {
+        const rawSeckey2 = hexToBytes(nseckey);
+        nseckey = encodeToNostrKey("nsec", rawSeckey2);
+        if (!NostrTypeGuard.isNSec(nseckey)) {
+          alert("The typed key is not nsec!");
+          return;
+        }
+      } catch (e2) {
+        alert("The typed key is not nsec!");
+        return;
+      }
     }
-    if (nostrKeys.some((key) => key.secret === importedKey)) {
+    const { data: rawSeckey } = decodeFromNostrKey(nseckey);
+    const seckey = bytesToHex(rawSeckey);
+    if (nostrKeys.some((key) => key.secret === seckey)) {
       alert("The typed key is existing!");
       return;
     }
-    const { data: seckey } = decodeFromNostrKey(importedKey);
     const pubkey = BIP340.generatePublicKey(seckey);
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: bytesToHex(seckey),
+      secret: seckey,
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
@@ -1483,7 +1494,7 @@ function Nostr$2(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Input,
                 {
-                  placeholder: "nsec key",
+                  placeholder: "nsec or hex secret key",
                   value: importedKey,
                   onChange: handleImportedKeyChange,
                   onKeyPress: (e) => {
@@ -1566,7 +1577,7 @@ function Nostr$2(props) {
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Raw Format" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "Hex Format" }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: item.rawPubkey }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,

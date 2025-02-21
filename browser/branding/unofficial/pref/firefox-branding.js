@@ -30,3 +30,37 @@ pref("app.update.badgeWaitTime", 0);
 // Number of usages of the web console.
 // If this is less than 5, then pasting code into the web console is disabled
 pref("devtools.selfxss.count", 5);
+
+
+/**
+ * ssb: modified
+ */
+pref("security.nocertdb", false);
+// pref("general.useragent.compatMode.firefox", true, locked); // Do on configure. See browser/branding/unofficial/configure.sh
+
+// privacy
+pref("breakpad.reportURL", "", locked);
+pref("browser.tabs.crashReporting.sendReport", false);
+pref("browser.crashReports.unsubmittedCheck.enabled",	false);
+pref("toolkit.telemetry.archive.enabled", false, locked);
+pref("toolkit.telemetry.bhrPing.enabled", false, locked);
+pref("toolkit.telemetry.enabled", false, locked);
+pref("toolkit.telemetry.firstShutdownPing.enabled", false, locked);
+pref("toolkit.telemetry.geckoview.streaming", false, locked);
+pref("toolkit.telemetry.newProfilePing.enabled", false, locked);
+pref("toolkit.telemetry.pioneer-new-studies-available", false, locked);
+pref("toolkit.telemetry.reportingpolicy.firstRun", false, locked);
+pref("toolkit.telemetry.server", "", locked);
+pref("toolkit.telemetry.shutdownPingSender.enabled", false, locked);
+pref("toolkit.telemetry.shutdownPingSender.enabledFirstSession", false, locked);
+pref("toolkit.telemetry.testing.overrideProductsCheck", false, locked);
+pref("toolkit.telemetry.unified", false, locked);
+pref("toolkit.telemetry.updatePing.enabled", false, locked);
+pref("dom.private-attribution.submission.enabled", false, locked);
+pref("app.shield.optoutstudies.enabled", false, locked);
+pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
+pref("privacy.trackingprotection.origin_telemetry.enabled", false, locked);
+pref("privacy.userContext.enabled", true);
+pref("privacy.userContext.ui.enabled", true);
+pref("trailhead.firstrun.branches", "", locked);
+pref("extensions.webcompat-reporter.enabled", false);

@@ -42,7 +42,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
   /**
    * Callback type of `getPublicKey`.
    *
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed, otherwise null, 2. The resulting public key.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting public key.
    * @param options - Not implemented
    */
   getPublicKeyWithCallback(
@@ -69,7 +69,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * Callback type of `sign`.
    *
    * @param message - The message to sign. If it's not a string it must be stringified.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed, otherwise null, 2. The resulting signature.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting signature.
    * @param options - Direction about sign detail
    * @param options.type - e.g., 'signEvent'
    */
@@ -104,7 +104,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * Callback type of `encrypt`.
    *
    * @param plaintext - The message to sign. If it's not a string it must be stringified.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed, otherwise null, 2. The resulting ciphertext.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting ciphertext.
    * @param options - Direction about sign detail
    * @param options.type - The encryption spec. e.g., 'nip04', 'nip44'
    * @param options.pubkey - The conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.
@@ -143,7 +143,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * Callback type of `decrypt`.
    *
    * @param ciphertext - The cipher text to decrypt
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed, otherwise null, 2. The resulting plaintext.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting plaintext.
    * @param options - Direction about sign detail
    * @param options.type - The encryption spec. e.g., 'nip04', 'nip44'
    * @param options.pubkey - The conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.

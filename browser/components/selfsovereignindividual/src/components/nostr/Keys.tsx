@@ -124,23 +124,35 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
-    if (!NostrTypeGuard.isNSec(importedKey)) {
-      alert("The typed key is not nsec!");
-      return;
+    let nseckey = importedKey;
+    if (!NostrTypeGuard.isNSec(nseckey)) {
+      try {
+        const rawSeckey = hexToBytes(nseckey);
+        nseckey = encodeToNostrKey("nsec", rawSeckey);
+        if (!NostrTypeGuard.isNSec(nseckey)) {
+          alert("The typed key is not nsec!");
+          return;
+        }
+      } catch (e) {
+        alert("The typed key is not nsec!");
+        return;
+      }
     }
-    if (nostrKeys.some(key => key.secret === importedKey)) {
+
+    const { data: rawSeckey } = decodeFromNostrKey(nseckey);
+    const seckey = bytesToHex(rawSeckey as Uint8Array);
+    if (nostrKeys.some(key => key.secret === seckey)) {
       alert("The typed key is existing!");
       return;
     }
 
-    const { data: seckey } = decodeFromNostrKey(importedKey);
     const pubkey = BIP340.generatePublicKey(seckey);
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
       ...NostrTemplate,
       identifier: npubkey,
-      secret: bytesToHex(seckey as Uint8Array),
+      secret: seckey,
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
@@ -277,7 +289,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
             <GridItem>
               <InputGroup>
                 <Input
-                  placeholder="nsec key"
+                  placeholder="nsec or hex secret key"
                   value={importedKey}
                   onChange={handleImportedKeyChange}
                   onKeyPress={e => {
@@ -374,7 +386,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                         </Box>
                         <Box mt={2}>
                           <Heading size="xs" textTransform="uppercase">
-                            Raw Format
+                            Hex Format
                           </Heading>
                           <Text fontSize="md" isTruncated>
                             {item.rawPubkey}

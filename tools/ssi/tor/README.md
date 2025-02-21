@@ -14,6 +14,7 @@ ssb-merge-2.patch
 ssb-merge-3.patch
 ssb-merge-4.patch
 ssb-merge-5.patch
+ssb-merge-6.patch
 
 ### ssb-merge-1.patch
 - git merge v0.2.0mvp-128.6.0esr
@@ -28,3 +29,6 @@ ssb-merge-5.patch
 - 9ebf3f0c
 ### ssb-merge-5.patch
 - 1879afc2
+### ssb-merge-6.patch
+- 61dc1ac7
+- 876dcb5f
