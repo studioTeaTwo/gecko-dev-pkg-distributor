@@ -20,13 +20,13 @@ import { DefaultExcludedKindList } from "../nostr/contants";
 import { MdHelp } from "./react-icons/Icons";
 
 export function ExampleUrlMatch(props: {
-  maxW?: string;
+  width?: string;
   backgroundColor?: string;
 }) {
   return (
     <Accordion
       allowToggle
-      maxW={props.maxW || "500px"}
+      width={props.width || "100%"}
       backgroundColor={props.backgroundColor ?? "transparent"}
     >
       <AccordionItem css={{ border: "none" }}>

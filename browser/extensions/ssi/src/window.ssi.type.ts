@@ -1,5 +1,5 @@
 /**
- * That's to empower individual on the self-sovereign way.<br/><br/>window.ssi is the most accessible API that is widely published on the web, which bridges the tasks related to credentials such like sign/decrypt between internal module and user land.
+ * That's to empower individuals on the self-sovereign path.<br/><br/>window.ssi is the most accessible API that is widely published on the web, bridging tasks related to credentials, such as signing/decrypting, between the internal module and user land.
  */
 export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
   /** @internal */

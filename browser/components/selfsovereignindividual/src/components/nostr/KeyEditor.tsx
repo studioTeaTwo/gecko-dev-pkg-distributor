@@ -289,7 +289,7 @@ export default function KeyEditor(props: Props) {
                         Register
                       </Button>
                     </InputGroup>
-                    <ExampleUrlMatch maxW="500px" />
+                    <ExampleUrlMatch width="100%" />
                   </GridItem>
                   {!editingKey.trustedSites.length && (
                     <Text fontSize="sm">No registered</Text>
