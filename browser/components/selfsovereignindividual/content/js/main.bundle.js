@@ -802,7 +802,7 @@ function ExampleUrlMatch(props) {
     Accordion,
     {
       allowToggle: true,
-      maxW: props.maxW || "500px",
+      width: props.width || "100%",
       backgroundColor: props.backgroundColor ?? "transparent",
       children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
@@ -1107,7 +1107,7 @@ function KeyEditor(props) {
                           }
                         )
                       ] }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { maxW: "500px" })
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
                     ] }),
                     !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
                     editingKey.trustedSites.map((site) => {
@@ -2098,7 +2098,7 @@ function NIP07(props) {
                                 }
                               )
                             ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { maxW: "500px" })
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
                           ] }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})

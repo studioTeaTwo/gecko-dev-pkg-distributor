@@ -15,7 +15,7 @@
   },
   {
     "namespace": "ssi",
-    "description": "That's to empower individual on the self-sovereign way.<br/><br/>browser.ssi is the powerful API (if chrome, it would be named chrome.ssi), which bridges the tasks related to credentials such like sign/decrypt between internal module and user land. It also provides setting states while paying attention to privacy and security, basically which are what user can choose whether to make open.",
+    "description": "That's to empower individuals on the self-sovereign path.<br/><br/>browser.ssi is a powerful API (in Chrome, it would be named chrome.ssi), bridging tasks related to credentials, such as signing/decrypting, between the internal module and user land. It also provides the state of settings while prioritizing privacy and security, allowing users to choose whether to make them open.",
     "permissions": ["ssi"],
     "types": [
       {

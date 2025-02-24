@@ -50,11 +50,10 @@ on:
 
 jobs:
   mac-build:
-    runs-on: ${{ matrix.runs-on }}
     strategy:
       matrix:
-        runs-on: ["ubuntu-latest"]
         arch: [x86_64, aarch64]
+    runs-on: ${{ github.ref == 'refs/heads/mvp' && 'buildjet-8vcpu-ubuntu-2204' || 'ubuntu-latest' }}
     steps:
     - name: Use Node.js
       uses: actions/setup-node@v4

@@ -597,7 +597,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                         Register to All keys
                       </Button>
                     </InputGroup>
-                    <ExampleUrlMatch maxW="500px" />
+                    <ExampleUrlMatch width="100%" />
                   </GridItem>
                   <GridItem>
                     <Divider />
