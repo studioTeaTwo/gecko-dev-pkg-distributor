@@ -149,7 +149,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     private fun setBackButton(screen: ConnectAssistUiState) {
         binding.backButton.visibility = if (screen.backButtonVisible) View.VISIBLE else View.INVISIBLE
         binding.backButton.setOnClickListener {
-            torConnectionAssistViewModel.handleBackButtonPressed()
+            onBackPressed()
         }
     }
 
@@ -314,7 +314,8 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     override fun onBackPressed(): Boolean {
-        return torConnectionAssistViewModel.handleBackButtonPressed()
+        torConnectionAssistViewModel.handleBackButtonPressed(requireActivity() as HomeActivity)
+        return true
     }
 
 }

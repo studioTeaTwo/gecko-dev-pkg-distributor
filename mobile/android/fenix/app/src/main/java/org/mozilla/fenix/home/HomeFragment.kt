@@ -1394,7 +1394,6 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     }
 
     override fun onBackPressed(): Boolean {
-        requireActivity().finish()
-        return true
+        (requireActivity() as HomeActivity).shutDown()
     }
 }

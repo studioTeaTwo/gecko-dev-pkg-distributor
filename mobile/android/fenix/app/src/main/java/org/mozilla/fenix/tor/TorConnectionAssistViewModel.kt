@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.ext.components
 
 class TorConnectionAssistViewModel(
@@ -150,10 +151,10 @@ class TorConnectionAssistViewModel(
         return true
     }
 
-    fun handleBackButtonPressed(): Boolean {
+    fun handleBackButtonPressed(homeActivity: HomeActivity) {
         when (torConnectScreen.value) {
-            ConnectAssistUiState.Splash -> return false
-            ConnectAssistUiState.Configuring -> return false
+            ConnectAssistUiState.Splash -> homeActivity.shutDown()
+            ConnectAssistUiState.Configuring -> homeActivity.shutDown()
             ConnectAssistUiState.Connecting -> cancelTorBootstrap()
             ConnectAssistUiState.InternetError -> {
                 _torController.lastKnownError = null
@@ -191,6 +192,5 @@ class TorConnectionAssistViewModel(
                 _torConnectScreen.value = ConnectAssistUiState.LocationCheck
             }
         }
-        return true
     }
 }

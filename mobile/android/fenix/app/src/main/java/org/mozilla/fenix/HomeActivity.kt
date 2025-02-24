@@ -158,6 +158,7 @@ import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.tor.UrlQuickLoadViewModel
 import org.mozilla.geckoview.TorAndroidIntegration
 import org.mozilla.geckoview.TorConnectStage
+import kotlin.system.exitProcess
 
 /**
  * The main activity of the application. The application is primarily a single Activity (this one)
@@ -1434,6 +1435,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorAn
         // PWA must have been used within last 30 days to be considered "recently used" for the
         // telemetry purposes.
         private const val PWA_RECENTLY_USED_THRESHOLD = DateUtils.DAY_IN_MILLIS * 30L
+    }
+
+    fun shutDown() : Nothing {
+        finishAndRemoveTask()
+        exitProcess(0)
     }
 
     override fun onBootstrapStateChange(state: String) = Unit
