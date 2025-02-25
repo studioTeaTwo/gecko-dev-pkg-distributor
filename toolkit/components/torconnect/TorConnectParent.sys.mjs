@@ -132,8 +132,8 @@ export class TorConnectParent extends JSWindowActorParent {
           stage: TorConnect.stage,
           quickstartEnabled: TorConnect.quickstart,
         };
-      case "torconnect:get-country-codes":
-        return TorConnect.getCountryCodes();
+      case "torconnect:get-frequent-regions":
+        return TorConnect.getFrequentRegions();
     }
     return undefined;
   }

@@ -241,7 +241,7 @@ export let RemotePageAccessManager = {
       ],
       RPMSendQuery: [
         "torconnect:get-init-args",
-        "torconnect:get-country-codes",
+        "torconnect:get-frequent-regions",
       ],
     },
     "about:welcome": {

@@ -610,7 +610,7 @@ class AboutTorConnect {
 
   showLocationForm(isChoose, buttonLabel) {
     this.hideButtons();
-    RPMSendQuery("torconnect:get-country-codes").then(codes => {
+    RPMSendQuery("torconnect:get-frequent-regions").then(codes => {
       if (codes && codes.length) {
         this.populateFrequentLocations(codes);
         this.setLocation();
