@@ -155,7 +155,7 @@ import java.util.Locale
 import mozilla.components.browser.engine.gecko.GeckoEngine
 import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.home.HomeFragment
-import org.mozilla.fenix.tor.TorConnectionAssistViewModel
+import org.mozilla.fenix.tor.UrlQuickLoadViewModel
 import org.mozilla.geckoview.TorAndroidIntegration
 
 /**
@@ -237,7 +237,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorAn
 
     private var dialog: RedirectDialogFragment? = null
 
-    private val torConnectionAssistViewModel: TorConnectionAssistViewModel by viewModels()
+    private val urlQuickLoadViewModel: UrlQuickLoadViewModel by viewModels()
 
     @Suppress("ComplexMethod")
     final override fun onCreate(savedInstanceState: Bundle?) {
@@ -1107,7 +1107,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorAn
             )
                 .setText(getString(R.string.connection_assist_connect_to_tor_before_opening_links))
                 .setAction(getString(R.string.connection_assist_connect_to_tor_before_opening_links_confirmation)) {
-                    torConnectionAssistViewModel.handleConnect(searchTermOrURL)
+                    urlQuickLoadViewModel.urlToLoadAfterConnecting.value = searchTermOrURL
                     if (navHost.navController.previousBackStackEntry?.destination?.id == R.id.torConnectionAssistFragment) {
                         supportFragmentManager.popBackStack()
                     } else {

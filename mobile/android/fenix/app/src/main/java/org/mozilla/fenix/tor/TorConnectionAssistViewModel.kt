@@ -7,89 +7,40 @@ package org.mozilla.fenix.tor
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.fenix.ext.components
 
 class TorConnectionAssistViewModel(
     application: Application,
-) : AndroidViewModel(application), TorEvents {
+) : AndroidViewModel(application) {
 
     private val TAG = "torConnectionAssistVM"
-    private val components = getApplication<Application>().components
-
-    private val _torController: TorControllerGV = components.torController
+    private val torIntegrationAndroid =
+        application.components.core.geckoRuntime.torIntegrationController
+    private val _torController: TorControllerGV = application.components.torController
 
     private val _torConnectScreen = MutableStateFlow(ConnectAssistUiState.Splash)
     internal val torConnectScreen: StateFlow<ConnectAssistUiState> = _torConnectScreen
 
-    private val _shouldOpenHome = MutableLiveData(false)
-    fun shouldOpenHome(): LiveData<Boolean> {
-        return _shouldOpenHome
+    val shouldOpenHome: MutableLiveData<Boolean> by lazy {
+        MutableLiveData(false)
     }
 
-    private val _progress = MutableLiveData(0)
-    fun progress(): LiveData<Int> {
-        return _progress
-    }
-
-    init {
-        Log.d(TAG, "initiating TorConnectionAssistViewModel $this")
-        _torController.registerTorListener(this)
-    }
-
-    var urlToLoadAfterConnecting: String? = null
-
-    fun handleConnect(
-        urlToLoadAfterConnecting: String? = null,
-        withDebugLogging: Boolean = false,
-        lifecycleScope: LifecycleCoroutineScope? = null,
-    ) {
-        this.urlToLoadAfterConnecting = urlToLoadAfterConnecting
-        if (_torController.lastKnownStatus.value.isOff()) {
-            Log.d(TAG, "handleConnect() triggered, initiatingTorBootstrap")
-            _torController.initiateTorBootstrap(
-                withDebugLogging = withDebugLogging,
-                lifecycleScope = lifecycleScope,
-            )
-        }
-    }
-
-    fun handleButton1Pressed(
-        screen: ConnectAssistUiState,
-        lifecycleScope: LifecycleCoroutineScope?,
-    ) {
-        if (screen.torBootstrapButton1ShouldShowTryingABridge) {
+    fun handleConnect() {
+        if (_torConnectScreen.value.torBootstrapButton1ShouldShowTryingABridge) {
             tryABridge()
         } else {
-            handleConnect(lifecycleScope = lifecycleScope)
+            if (_torController.lastKnownStatus.value.isOff()) {
+                torIntegrationAndroid.beginBootstrap()
+            }
         }
     }
 
     fun cancelTorBootstrap() {
-        _torController.stopTor()
+        torIntegrationAndroid.cancelBootstrap()
         _torController.setTorStopped()
-    }
-
-    override fun onTorConnecting() {
-        Log.d(TAG, "onTorConnecting()")
-    }
-
-    override fun onTorConnected() {
-        Log.d(TAG, "onTorConnected()")
-        _torController.unregisterTorListener(this)
-    }
-
-    override fun onTorStatusUpdate(entry: String?, status: String?, progress: Double?) {
-        Log.d(TAG, "onTorStatusUpdate($entry, $status, $progress)")
-        if (progress != null) {
-            _progress.value = progress.toInt()
-        }
-
     }
 
     suspend fun collectLastKnownStatus() {
@@ -99,8 +50,8 @@ class TorConnectionAssistViewModel(
                 TorConnectState.Configuring -> handleConfiguring()
                 TorConnectState.AutoBootstrapping -> handleBootstrap()
                 TorConnectState.Bootstrapping -> handleBootstrap()
-                TorConnectState.Bootstrapped -> _shouldOpenHome.value = true
-                TorConnectState.Disabled -> _shouldOpenHome.value = true
+                TorConnectState.Bootstrapped -> shouldOpenHome.value = true
+                TorConnectState.Disabled -> shouldOpenHome.value = true
                 TorConnectState.Error -> handleError()
             }
         }
@@ -145,10 +96,7 @@ class TorConnectionAssistViewModel(
             }
 
             else -> _torConnectScreen.value =
-                ConnectAssistUiState.Connecting.also { connectAssistUiState ->
-                    // covers the case of when the bootstrap is already in progress when the UiState "catches up"
-                    connectAssistUiState.progress = _progress.value ?: 0
-                }
+                ConnectAssistUiState.Connecting
         }
     }
 
@@ -184,10 +132,6 @@ class TorConnectionAssistViewModel(
         _torConnectScreen.value = ConnectAssistUiState.InternetError
     }
 
-    override fun onTorStopped() {
-        Log.d(TAG, "onTorStopped()")
-    }
-
     private fun tryABridge() {
         if (!locationFound()) {
             _torConnectScreen.value = ConnectAssistUiState.LocationError
@@ -198,7 +142,7 @@ class TorConnectionAssistViewModel(
             _torController.bridgeTransport =
                 TorBridgeTransportConfig.BUILTIN_SNOWFLAKE // TODO select based on country
         }
-        handleConnect(withDebugLogging = true)
+        torIntegrationAndroid.beginBootstrap()
     }
 
     private fun locationFound(): Boolean {
@@ -248,11 +192,5 @@ class TorConnectionAssistViewModel(
             }
         }
         return true
-    }
-
-    fun openHome(navController: NavController) {
-        navController.navigate(
-            TorConnectionAssistFragmentDirections.actionHome(),
-        )
     }
 }

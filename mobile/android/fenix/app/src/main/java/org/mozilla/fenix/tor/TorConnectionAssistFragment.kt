@@ -35,11 +35,13 @@ import org.mozilla.fenix.ext.hideToolbar
 class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
 
     private val TAG = "TorConnectionAssistFrag"
-    private val viewModel: TorConnectionAssistViewModel by activityViewModels()
+    private val progressViewModel: TorBootstrapProgressViewModel by viewModels()
+    private val quickstartViewModel: QuickstartViewModel by activityViewModels()
+    private val torConnectionAssistViewModel : TorConnectionAssistViewModel by viewModels()
+    private val urlQuickLoadViewModel : UrlQuickLoadViewModel by activityViewModels()
+
     private var _binding: FragmentTorConnectionAssistBinding? = null
     private val binding get() = _binding!!
-
-    private val quickstartViewModel: QuickstartViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,18 +51,23 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         _binding = FragmentTorConnectionAssistBinding.inflate(
             inflater, container, false,
         )
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.collectLastKnownStatus()
-            }
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.torConnectScreen.collect { screen ->
-                    Log.d(TAG, "torConnectScreen is $screen")
-                    showScreen(screen)
-                }
+                torConnectionAssistViewModel.collectLastKnownStatus()
+            }
+        }
+
+        torConnectionAssistViewModel.shouldOpenHome.observe(viewLifecycleOwner) {
+            Log.d(TAG, "shouldOpenHome = $it")
+            if (it) {
+                openHome()
+            }
+        }
+
+        urlQuickLoadViewModel.urlToLoadAfterConnecting.observe(viewLifecycleOwner) { url ->
+            if (!url.isNullOrBlank()) {
+                torConnectionAssistViewModel.handleConnect()
             }
         }
 
@@ -75,10 +82,13 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.progress().observe(
-            viewLifecycleOwner,
-        ) { progress ->
-            setProgressBarCompat(progress)
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                torConnectionAssistViewModel.torConnectScreen.collect { screen ->
+                    Log.d(TAG, "torConnectScreen is $screen")
+                    showScreen(screen)
+                }
+            }
         }
 
         quickstartViewModel.quickstart().observe(
@@ -87,13 +97,10 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             binding.quickstartSwitch.isChecked = it
         }
 
-        viewModel.shouldOpenHome().observe(
+        progressViewModel.progress.observe(
             viewLifecycleOwner,
-        ) {
-            Log.d(TAG, "shouldOpenHome() = $it")
-            if (it) {
-                openHome()
-            }
+        ) { progress ->
+            setProgressBarCompat(progress)
         }
 
     }
@@ -142,7 +149,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     private fun setBackButton(screen: ConnectAssistUiState) {
         binding.backButton.visibility = if (screen.backButtonVisible) View.VISIBLE else View.INVISIBLE
         binding.backButton.setOnClickListener {
-            viewModel.handleBackButtonPressed()
+            torConnectionAssistViewModel.handleBackButtonPressed()
         }
     }
 
@@ -204,10 +211,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             if (screen.torBootstrapButton1Visible) View.VISIBLE else View.GONE
         binding.torBootstrapButton1.text = getString(screen.torBootstrapButton1TextStringResource)
         binding.torBootstrapButton1.setOnClickListener {
-            viewModel.handleButton1Pressed(
-                screen,
-                lifecycleScope,
-            )
+            torConnectionAssistViewModel.handleConnect()
         }
     }
 
@@ -231,7 +235,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
                 }
         }
         binding.torBootstrapButton2.setOnClickListener {
-            viewModel.cancelTorBootstrap()
+            torConnectionAssistViewModel.cancelTorBootstrap()
             if (screen.torBootstrapButton2ShouldOpenSettings) {
                 openTorConnectionSettings()
             } else if (screen.torBootstrapButton2ShouldRestartApp) {
@@ -279,7 +283,9 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
 
     private fun openHome() {
         Log.d(TAG, "openHome()")
-        viewModel.openHome(findNavController())
+        findNavController().navigate(
+            TorConnectionAssistFragmentDirections.actionHome(),
+        )
     }
 
     private fun openSettings(preferenceToScrollTo: String? = null) {
@@ -308,7 +314,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     override fun onBackPressed(): Boolean {
-        return viewModel.handleBackButtonPressed()
+        return torConnectionAssistViewModel.handleBackButtonPressed()
     }
 
 }
