@@ -16,12 +16,6 @@
         app:popUpToInclusive="true" />
 
     <action
-        android:id="@+id/action_startup_torbootstrap"
-        app:destination="@id/torbootstrapFragment"
-        app:popUpTo="@id/startupFragment"
-        app:popUpToInclusive="true" />
-
-    <action
         android:id="@+id/action_global_home"
         app:destination="@id/homeFragment"
         app:popUpTo="@id/homeFragment"
@@ -230,25 +224,6 @@
         <action
             android:id="@+id/action_homeFragment_to_loginsListFragment"
             app:destination="@id/savedLogins"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/torbootstrapFragment"
-        android:name="org.mozilla.fenix.tor.TorBootstrapFragment"
-        tools:layout="@layout/fragment_home">
-
-        <action
-            android:id="@+id/action_home"
-            app:destination="@id/homeFragment"
-            app:popUpTo="@id/torbootstrapFragment"
-            app:popUpToInclusive="true" />
-        <action
-            android:id="@+id/action_torbootstrapFragment_to_SettingsFragment"
-            app:destination="@id/settingsFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
