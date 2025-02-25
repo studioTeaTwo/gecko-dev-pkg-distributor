@@ -2529,65 +2529,48 @@ const gConnectionPane = (function () {
             regionCode: location.value,
           });
         });
-        this._populateLocations = () => {
-          const currentValue = location.value;
-          locationEntries.textContent = "";
-          const createItem = (value, label, disabled) => {
-            const item = document.createXULElement("menuitem");
-            item.setAttribute("value", value);
-            item.setAttribute("label", label);
-            if (disabled) {
-              item.setAttribute("disabled", "true");
-            }
-            return item;
-          };
-          const addLocations = codes => {
-            const items = [];
-            for (const code of codes) {
-              items.push(
-                createItem(
-                  code,
-                  TorConnect.countryNames[code]
-                    ? TorConnect.countryNames[code]
-                    : code
-                )
-              );
-            }
-            items.sort((left, right) => left.label.localeCompare(right.label));
-            locationEntries.append(...items);
-          };
-          locationEntries.append(
-            createItem("automatic", TorStrings.settings.bridgeLocationAutomatic)
-          );
-          if (TorConnect.countryCodes.length) {
-            locationEntries.append(
-              createItem("", TorStrings.settings.bridgeLocationFrequent, true)
-            );
-            addLocations(TorConnect.countryCodes);
-            locationEntries.append(
-              createItem("", TorStrings.settings.bridgeLocationOther, true)
-            );
+        const createItem = (value, label, disabled) => {
+          const item = document.createXULElement("menuitem");
+          item.setAttribute("value", value);
+          item.setAttribute("label", label);
+          if (disabled) {
+            item.setAttribute("disabled", "true");
           }
-          addLocations(Object.keys(TorConnect.countryNames));
-          location.value = currentValue;
+          return item;
         };
+        const addLocations = codes => {
+          const items = [];
+          for (const code of codes) {
+            items.push(
+              createItem(
+                code,
+                TorConnect.countryNames[code]
+                  ? TorConnect.countryNames[code]
+                  : code
+              )
+            );
+          }
+          items.sort((left, right) => left.label.localeCompare(right.label));
+          locationEntries.append(...items);
+        };
+        // Add automatic before waiting for getFrequentRegions.
+        locationEntries.append(
+          createItem("automatic", TorStrings.settings.bridgeLocationAutomatic)
+        );
+        location.value = "automatic";
+        TorConnect.getFrequentRegions().then(frequentCodes => {
+          locationEntries.append(
+            createItem("", TorStrings.settings.bridgeLocationFrequent, true)
+          );
+          addLocations(frequentCodes);
+          locationEntries.append(
+            createItem("", TorStrings.settings.bridgeLocationOther, true)
+          );
+          addLocations(Object.keys(TorConnect.countryNames));
+        });
         this._showAutoconfiguration = () => {
-          if (
-            !TorConnect.canBeginAutoBootstrap ||
-            !TorConnect.potentiallyBlocked
-          ) {
-            locationGroup.setAttribute("hidden", "true");
-            return;
-          }
-          // Populate locations, even though we will show only the automatic
-          // item for a moment. In my opinion showing the button immediately is
-          // better then waiting for the Moat query to finish (after a while)
-          // and showing the controls only after that.
-          this._populateLocations();
-          locationGroup.removeAttribute("hidden");
-          if (!TorConnect.countryCodes.length) {
-            TorConnect.getCountryCodes().then(() => this._populateLocations());
-          }
+          locationGroup.hidden =
+            !TorConnect.canBeginAutoBootstrap || !TorConnect.potentiallyBlocked;
         };
         this._showAutoconfiguration();
       }
