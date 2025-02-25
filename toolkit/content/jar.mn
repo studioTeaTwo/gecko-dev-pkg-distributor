@@ -158,4 +158,9 @@ toolkit.jar:
    content/global/third_party/d3/d3.js                (/third_party/js/d3/d3.js)
    content/global/third_party/cfworker/json-schema.js (/third_party/js/cfworker/json-schema.js)
 
+   # The pt_config.json content should be replaced in the omni.ja in
+   # tor-browser-build. See tor-browser#42343.
    content/global/pt_config.json               (pt_config.json)
+   # The moat_countries.json content should be replaced in the omni.ja in
+   # tor-browser-build. See tor-browser#43463.
+   content/global/moat_countries.json          (moat_countries_dev_build.json)

@@ -817,8 +817,14 @@ export const TorConnect = {
     };
   },
 
-  // list of country codes Moat has settings for
-  _countryCodes: [],
+  /**
+   * Promise that resolves to a list of region codes that Moat has special
+   * bridge settings for.
+   *
+   * @type {Promise<string[]>}
+   */
+  _moatRegionsPromise: null,
+
   _countryNames: Object.freeze(
     (() => {
       const codes = Services.intl.getAvailableLocaleDisplayNames("region");
@@ -891,6 +897,18 @@ export const TorConnect = {
       this._setStage(TorConnectStage.Disabled);
       return;
     }
+
+    this._moatRegionsPromise = fetch(
+      "chrome://global/content/moat_countries.json"
+    )
+      .then(req => req.json())
+      // Filter out the "_comment" object in the moat_countries_dev_build.json
+      // file.
+      .then(regionList => regionList.filter(r => typeof r === "string"))
+      .catch(e => {
+        lazy.logger.error("Failed to fetch Moat region codes", e);
+        return [];
+      });
 
     let observeTopic = addTopic => {
       Services.obs.addObserver(this, addTopic);
@@ -1111,10 +1129,6 @@ export const TorConnect = {
     }
     lazy.logger.error(`Unknown state at stage ${this._stageName}`);
     return null;
-  },
-
-  get countryCodes() {
-    return this._countryCodes;
   },
 
   get countryNames() {
@@ -1526,25 +1540,12 @@ export const TorConnect = {
     this._makeStageRequest(TorConnectStage.ChooseRegion);
   },
 
-  /*
-    Further external commands and helper methods
+  /**
+   * Get the list of regions that Moat has settings for.
+   *
+   * @returns {string[]} - The list of region codes.
    */
-
-  async getCountryCodes() {
-    // Difference with the getter: this is to be called by TorConnectParent, and
-    // downloads the country codes if they are not already in cache.
-    if (this._countryCodes.length) {
-      return this._countryCodes;
-    }
-    const mrpc = new lazy.MoatRPC();
-    try {
-      await mrpc.init();
-      this._countryCodes = await mrpc.circumvention_countries();
-    } catch (err) {
-      lazy.logger.error("An error occurred while fetching country codes", err);
-    } finally {
-      mrpc.uninit();
-    }
-    return this._countryCodes;
+  async getFrequentRegions() {
+    return this._moatRegionsPromise ?? [];
   },
 };

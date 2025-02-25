@@ -1,0 +1,7 @@
+[
+    {
+        "_comment1": "Used for dev build, replaced for release builds in tor-browser-build.",
+        "_comment2": "List is taken from tpo/anti-censorship/rdsys-admin 810fb24b:conf/circumvention.json and filtered with `jq -c keys`."
+    },
+    "by","cn","eg","hk","ir","mm","ru","tm"
+]

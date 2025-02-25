@@ -335,20 +335,6 @@ export class MoatRPC {
     return settings;
   }
 
-  // Request a list of country codes with available censorship circumvention
-  // settings.
-  //
-  // returns an array of ISO 3166-1 alpha-2 country codes which we can query
-  // settings for.
-  async circumvention_countries() {
-    const args = {};
-    const { response } = await this.#makeRequest(
-      "circumvention/countries",
-      args
-    );
-    return response;
-  }
-
   // Request a copy of the builtin bridges, takes the following parameters:
   // - transports: optional, an array of transports we would like the latest
   //   bridge strings for; if empty (or not given) returns all of them
