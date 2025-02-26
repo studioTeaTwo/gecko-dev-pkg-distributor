@@ -37,12 +37,12 @@ jobs:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.PAT }}
-        sparse-checkout: 'browser/config/version_display.txt'
+        sparse-checkout: 'browser/config'
     - name: Get Display Version
       id: get
       shell: bash -xe {0}
       run: |
-        display_version=$(cat browser/config/version_display.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}
+        display_version=$(cat browser/config/version_forked.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}
         echo "display-version=${display_version}" >> "$GITHUB_OUTPUT"
 
   get-buildid:
