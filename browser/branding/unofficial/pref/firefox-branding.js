@@ -40,6 +40,9 @@ pref("devtools.selfxss.count", 5);
 pref("security.nocertdb", false);
 // pref("general.useragent.compatMode.firefox", true, locked); // Do on configure. See browser/branding/unofficial/configure.sh
 
+// Updater
+pref("app.update.auto", false);
+
 // privacy
 pref("breakpad.reportURL", "", locked);
 pref("browser.tabs.crashReporting.sendReport", false, locked);
@@ -66,3 +69,4 @@ pref("privacy.userContext.enabled", true);
 pref("privacy.userContext.ui.enabled", true);
 pref("trailhead.firstrun.branches", "", locked);
 pref("extensions.webcompat-reporter.enabled", false, locked);
+pref("browser.discovery.enabled", false);

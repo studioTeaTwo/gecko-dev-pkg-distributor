@@ -3,11 +3,11 @@ ac_add_options --with-app-basename=ssb
 
 ac_add_options --disable-crashreporter
 ac_add_options --enable-proxy-bypass-protection
-# ac_add_options --enable-unverified-updates
-# ac_add_options --enable-update-channel=release
+ac_add_options --enable-unverified-updates
+ac_add_options --enable-update-channel=release
 ac_add_options --disable-tests
 ac_add_options --enable-rust-simd
-# ac_add_options --enable-release
+ac_add_options --enable-release
 ac_add_options --enable-bootstrap
 
 ac_add_options RUSTC_OPT_LEVEL=3
