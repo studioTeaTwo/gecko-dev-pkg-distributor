@@ -11,8 +11,9 @@ class QuickstartViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
 
+    private val components = getApplication<Application>().components
     private val torIntegrationAndroid =
-        (getApplication<Application>().components.core.engine as GeckoEngine).getTorIntegrationController()
+        (components.core.engine as GeckoEngine).getTorIntegrationController()
 
     /**
      * NOTE: Whilst the initial value for _quickstart is fetched from
@@ -25,10 +26,11 @@ class QuickstartViewModel(
     init {
         torIntegrationAndroid.quickstartGet {
             _quickstart.value = it
+            components.settings.quickStart = it
         }
     }
 
-    private val _quickstart = MutableLiveData<Boolean>()
+    private val _quickstart = MutableLiveData(components.settings.quickStart)
     fun quickstart(): LiveData<Boolean> {
         return _quickstart
     }
@@ -36,6 +38,7 @@ class QuickstartViewModel(
     fun quickstartSet(value: Boolean) {
         torIntegrationAndroid.quickstartSet(value)
         _quickstart.value = value
+        components.settings.quickStart = value
     }
 
 }
