@@ -9,7 +9,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Lox: "resource://gre/modules/Lox.sys.mjs",
   LoxTopics: "resource://gre/modules/Lox.sys.mjs",
   TorParsers: "resource://gre/modules/TorParsers.sys.mjs",
-  TorProviderBuilder: "resource://gre/modules/TorProviderBuilder.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "logger", () => {
@@ -23,6 +22,7 @@ ChromeUtils.defineLazyGetter(lazy, "logger", () => {
 export const TorSettingsTopics = Object.freeze({
   Ready: "torsettings:ready",
   SettingsChanged: "torsettings:settings-changed",
+  ApplyError: "torsettings:apply-error",
 });
 
 /* Prefs used to store settings in TorBrowser prefs */
@@ -162,44 +162,74 @@ function arrayShuffle(array) {
   return array;
 }
 
+/**
+ * @typedef {Object} TorBridgeSettings
+ *
+ * Represents the Tor bridge settings.
+ *
+ * @property {boolean} enabled - Whether bridges are enabled.
+ * @property {integer} source - The source of bridges. One of the values in
+ *   `TorBridgeSource`.
+ * @property {string} lox_id - The ID of the lox credentials to get bridges for.
+ *   Or "" if not using a `Lox` `source`.
+ * @property {string} builtin_type - The name of the built-in bridge type. Or ""
+ *   if not using a `BuiltIn` `source`.
+ * @property {string[]} bridge_strings - The bridge lines to be passed to the
+ *   provider. Should be empty if and only if the `source` is `Invalid`.
+ */
+
+/**
+ * @typedef {Object} TorProxySettings
+ *
+ * Represents the Tor proxy settings.
+ *
+ * @property {boolean} enabled - Whether the proxy should be enabled.
+ * @property {integer} type - The proxy type. One of the values in
+ *   `TorProxyType`.
+ * @property {string} address - The proxy address, or "" if the proxy is not
+ *   being used.
+ * @property {integer} port - The proxy port, or 0 if the proxy is not being
+ *   used.
+ * @property {string} username - The proxy user name, or "" if this is not
+ *   needed.
+ * @property {string} password - The proxy password, or "" if this is not
+ *   needed.
+ */
+
+/**
+ * @typedef {Object} TorFirewallSettings
+ *
+ * Represents the Tor firewall settings.
+ *
+ * @property {boolean} enabled - Whether the firewall settings should be
+ *   enabled.
+ * @property {integer[]} allowed_ports - The list of ports that are allowed.
+ */
+
+/**
+ * @typedef {Object} TorCombinedSettings
+ *
+ * A combination of Tor settings.
+ *
+ * @property {TorBridgeSettings} bridges - The bridge settings.
+ * @property {TorProxySettings} proxy - The proxy settings.
+ * @property {TorFirewallSettings} firewall - The firewall settings.
+ */
+
 /* TorSettings module */
 
 class TorSettingsImpl {
   /**
-   * The underlying settings values.
+   * The default settings to use.
    *
-   * @type {object}
+   * @type {TorCombinedSettings}
    */
-  #settings = {
+  #defaultSettings = {
     bridges: {
-      /**
-       * Whether the bridges are enabled or not.
-       *
-       * @type {boolean}
-       */
       enabled: false,
       source: TorBridgeSource.Invalid,
-      /**
-       * The lox id is used with the Lox "source", and remains set with the
-       * stored value when other sources are used.
-       *
-       * @type {string}
-       */
       lox_id: "",
-      /**
-       * The built-in type to use when using the BuiltIn "source", or empty when
-       * using any other source.
-       *
-       * @type {string}
-       */
       builtin_type: "",
-      /**
-       * The current bridge strings.
-       *
-       * Can only be non-empty if the "source" is not Invalid.
-       *
-       * @type {Array<string>}
-       */
       bridge_strings: [],
     },
     proxy: {
@@ -217,9 +247,70 @@ class TorSettingsImpl {
   };
 
   /**
+   * The underlying settings values.
+   *
+   * @type {TorCombinedSettings}
+   */
+  #settings = structuredClone(this.#defaultSettings);
+
+  /**
+   * The last successfully applied settings for the current `TorProvider`, if
+   * any.
+   *
+   * NOTE: Should only be written to within `#applySettings`.
+   *
+   * @type {{
+   *   bridges: ?TorBridgeSettings,
+   *   proxy: ?TorProxySettings,
+   *   firewall: ?TorFirewallSettings
+   * }}
+   */
+  #successfulSettings = { bridges: null, proxy: null, firewall: null };
+
+  /**
+   * Whether temporary bridge settings have been applied to the current
+   * `TorProvider`.
+   *
+   * @type {boolean}
+   */
+  #temporaryBridgesApplied = false;
+
+  /**
+   * @typedef {TorSettingsApplyError}
+   *
+   * @property {boolean} canUndo - Whether the latest error can be "undone".
+   *   When this is `false`, the TorProvider will be using its default values
+   *   instead.
+   */
+
+  /**
+   * A summary of the latest failures to apply our settings, if any.
+   *
+   * NOTE: Should only be written to within `#applySettings`.
+   *
+   * @type {{
+   *   bridges: ?TorSettingsApplyError,
+   *   proxy: ?TorSettingsApplyError,
+   *   firewall: ?TorSettingsApplyError,
+   * }}
+   */
+  #applyErrors = { bridges: null, proxy: null, firewall: null };
+
+  /**
+   * Get the latest failure for the given setting, if any.
+   *
+   * @param {string} group - The settings to get the error details for.
+   *
+   * @returns {?TorSettingsApplyError} - The error details, if any.
+   */
+  getApplyError(group) {
+    return structuredClone(this.#applyErrors[group]);
+  }
+
+  /**
    * Temporary bridge settings to apply instead of #settings.bridges.
    *
-   * @type {?Object}
+   * @type {?TorBridgeSettings}
    */
   #temporaryBridgeSettings = null;
 
@@ -349,6 +440,30 @@ class TorSettingsImpl {
    */
   validPort(val) {
     return Number.isInteger(val) && val >= 1 && val <= 65535;
+  }
+
+  /**
+   * Verify that some SOCKS5 credentials are valid.
+   *
+   * @param {string} username - The SOCKS5 username.
+   * @param {string} password - The SOCKS5 password.
+   * @return {boolean} - Whether the credentials are valid.
+   */
+  validSocks5Credentials(username, password) {
+    if (!username && !password) {
+      // Both empty is valid.
+      return true;
+    }
+    for (const val of [username, password]) {
+      if (typeof val !== "string") {
+        return false;
+      }
+      const byteLen = new TextEncoder().encode(val).length;
+      if (byteLen < 1 || byteLen > 255) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -746,18 +861,220 @@ class TorSettingsImpl {
   }
 
   /**
+   * A blocker promise for the #applySettings method.
+   *
+   * Ensures only one active caller to protect the #applyErrors and
+   * #successfulSettings properties.
+   *
+   * @type {?Promise}
+   */
+  #applySettingsTask = null;
+
+  /**
    * Push our settings down to the tor provider.
    *
    * Even though this introduces a circular depdency, it makes the API nicer for
    * frontend consumers.
    *
-   * @param {boolean} flush - Whether to also flush the settings to disk.
+   * @param {Object} apply - The list of settings to apply.
+   * @param {boolean} [apply.bridges] - Whether to apply our bridge settings.
+   * @param {boolean} [apply.proxy] - Whether to apply our proxy settings.
+   * @param {boolean} [apply.firewall] - Whether to apply our firewall settings.
+   * @param {boolean} [details] - Optional details.
+   * @param {boolean} [details.useTemporaryBridges] - Whether the caller wants
+   *   to apply temporary bridges.
+   * @param {boolean} [details.newProvider] - Whether the caller is initialising
+   *   a new `TorProvider`.
    */
-  async #applySettings(flush) {
-    const provider = await lazy.TorProviderBuilder.build();
-    await provider.writeSettings();
-    if (flush) {
-      provider.flushSettings();
+  async #applySettings(apply, details) {
+    // Grab this provider before awaiting.
+    // In particular, if the provider is changed we do not want to switch to
+    // writing to the new instance.
+    const providerRef = this.#providerRef;
+    const provider = providerRef?.deref();
+    if (!provider) {
+      // Wait until setTorProvider is called.
+      lazy.logger.info("No TorProvider yet");
+      return;
+    }
+
+    // We only want one instance of #applySettings to be running at any given
+    // time, so we await the previous call first.
+    // Read and replace #applySettingsTask before we do any async operations.
+    // I.e. this is effectively an atomic read and replace.
+    const prevTask = this.#applySettingsTask;
+    let taskComplete;
+    ({ promise: this.#applySettingsTask, resolve: taskComplete } =
+      Promise.withResolvers());
+    await prevTask;
+
+    try {
+      let flush = false;
+      const errors = [];
+
+      // Test whether the provider is no longer running or has been replaced.
+      const providerRunning = () => {
+        return providerRef === this.#providerRef && provider.isRunning;
+      };
+
+      lazy.logger.debug("Passing on settings to the provider", apply, details);
+
+      if (details?.newProvider) {
+        // If we have a new provider we clear our successful settings.
+        // In particular, the user may have changed their settings several times
+        // whilst the tor process was not running. In the event of an
+        // "ApplyError", we want to correctly show to the user that they are now
+        // using default settings and we do not want to allow them to "undo"
+        // since the previous successful settings may be out of date.
+        // NOTE: We do not do this within `setTorProvider` since some other
+        // caller's `#applySettingsTask` may still be running and writing to
+        // these values when `setTorProvider` is called.
+        this.#successfulSettings.bridges = null;
+        this.#successfulSettings.proxy = null;
+        this.#successfulSettings.firewall = null;
+        this.#applyErrors.bridges = null;
+        this.#applyErrors.proxy = null;
+        this.#applyErrors.firewall = null;
+        // Temporary bridges are not applied to the new provider.
+        this.#temporaryBridgesApplied = false;
+      }
+
+      for (const group of ["bridges", "proxy", "firewall"]) {
+        if (!apply[group]) {
+          continue;
+        }
+
+        if (!providerRunning()) {
+          lazy.logger.info("The TorProvider is no longer running");
+          // Bail on this task since the old provider should not accept
+          // settings. setTorProvider will be called for the new provider and
+          // will already handle applying the same settings.
+          return;
+        }
+
+        let usingSettings = true;
+        if (group === "bridges") {
+          // Only record successes or failures when using the user settings.
+          if (this.#temporaryBridgeSettings && !details?.useTemporaryBridges) {
+            // #temporaryBridgeSettings were written whilst awaiting the
+            // previous task. Do nothing and allow applyTemporarySettings to
+            // apply the temporary bridges instead.
+            lazy.logger.info(
+              "Not apply bridges since temporary bridges were applied"
+            );
+            continue;
+          }
+          if (!this.#temporaryBridgeSettings && details?.useTemporaryBridges) {
+            // #temporaryBridgeSettings were cleared whilst awaiting the
+            // previous task. Do nothing and allow changeSettings or
+            // clearTemporaryBridges to apply the non-temporary bridges
+            // instead.
+            lazy.logger.info(
+              "Not apply temporary bridges since they were cleared"
+            );
+            continue;
+          }
+          usingSettings = !details?.useTemporaryBridges;
+        }
+
+        try {
+          switch (group) {
+            case "bridges": {
+              const bridges = structuredClone(
+                usingSettings
+                  ? this.#settings.bridges
+                  : this.#temporaryBridgeSettings
+              );
+
+              try {
+                await provider.writeBridgeSettings(bridges);
+              } catch (e) {
+                if (
+                  usingSettings &&
+                  this.#temporaryBridgesApplied &&
+                  providerRunning()
+                ) {
+                  lazy.logger.warn(
+                    "Recovering to clear temporary bridges from the provider"
+                  );
+                  // The TorProvider is still using the temporary bridges. As a
+                  // priority we want to try and restore the TorProvider to the
+                  // state it was in prior to the temporary bridges being
+                  // applied.
+                  const prevBridges = structuredClone(
+                    this.#successfulSettings.bridges ??
+                      this.#defaultSettings.bridges
+                  );
+                  try {
+                    await provider.writeBridgeSettings(prevBridges);
+                    this.#temporaryBridgesApplied = false;
+                  } catch (e) {
+                    lazy.logger.error(
+                      "Failed to clear the temporary bridges from the provider",
+                      e
+                    );
+                  }
+                }
+                throw e;
+              }
+
+              if (usingSettings) {
+                this.#successfulSettings.bridges = bridges;
+                this.#temporaryBridgesApplied = false;
+                this.#applyErrors.bridges = null;
+                flush = true;
+              } else {
+                this.#temporaryBridgesApplied = true;
+                // Do not flush the temporary bridge settings until they are
+                // saved.
+              }
+              break;
+            }
+            case "proxy": {
+              const proxy = structuredClone(this.#settings.proxy);
+              await provider.writeProxySettings(proxy);
+              this.#successfulSettings.proxy = proxy;
+              this.#applyErrors.proxy = null;
+              flush = true;
+              break;
+            }
+            case "firewall": {
+              const firewall = structuredClone(this.#settings.firewall);
+              await provider.writeFirewallSettings(firewall);
+              this.#successfulSettings.firewall = firewall;
+              this.#applyErrors.firewall = null;
+              flush = true;
+              break;
+            }
+          }
+        } catch (e) {
+          // Store the error and throw later.
+          errors.push(e);
+          if (usingSettings && providerRunning()) {
+            // Record and signal the error.
+            // NOTE: We do not signal ApplyError when we fail to apply temporary
+            // bridges.
+            this.#applyErrors[group] = {
+              canUndo: Boolean(this.#successfulSettings[group]),
+            };
+            lazy.logger.debug(`Signalling new ApplyError for ${group}`);
+            Services.obs.notifyObservers(
+              { group },
+              TorSettingsTopics.ApplyError
+            );
+          }
+        }
+      }
+      if (flush && providerRunning()) {
+        provider.flushSettings();
+      }
+      if (errors.length) {
+        lazy.logger.error("Failed to apply settings", errors);
+        throw new Error(`Failed to apply settings. ${errors.join(". ")}.`);
+      }
+    } finally {
+      // Allow the next caller to proceed.
+      taskComplete();
     }
   }
 
@@ -862,13 +1179,12 @@ class TorSettingsImpl {
         proxy.password = "";
         break;
       case TorProxyType.Socks5:
+        if (!this.validSocks5Credentials(proxy.username, proxy.password)) {
+          throw new Error("Invalid SOCKS5 credentials");
+        }
+        break;
       case TorProxyType.HTTPS:
-        if (proxy.username && !proxy.password) {
-          throw new Error("Missing proxy password");
-        }
-        if (proxy.password && !proxy.username) {
-          throw new Error("Missing proxy username");
-        }
+        // username and password are both optional.
         break;
     }
 
@@ -905,6 +1221,72 @@ class TorSettingsImpl {
   }
 
   /**
+   * The current `TorProvider` instance we are using, if any.
+   *
+   * @type {?WeakRef<TorProvider>}
+   */
+  #providerRef = null;
+
+  /**
+   * Called whenever we have a new provider to send settings to.
+   *
+   * @param {TorProvider} provider - The provider to apply our settings to.
+   */
+  async setTorProvider(provider) {
+    lazy.logger.debug("Applying settings to new provider");
+    this.#checkIfInitialized();
+
+    // Use a WeakRef to not keep the TorProvider instance alive.
+    this.#providerRef = new WeakRef(provider);
+    // NOTE: We need the caller to pass in the TorProvider instance because
+    // TorProvider's initialisation waits for this method. In particular, we
+    // cannot await TorProviderBuilder.build since it would hang!
+    await this.#applySettings(
+      { bridges: true, proxy: true, firewall: true },
+      { newProvider: true }
+    );
+  }
+
+  /**
+   * Undo settings that have failed to be applied by restoring the last
+   * successfully applied settings instead.
+   *
+   * @param {string} group - The group to undo the settings for.
+   */
+  async undoFailedSettings(group) {
+    if (!this.#applyErrors[group]) {
+      lazy.logger.warn(
+        `${group} settings have already been successfully replaced.`
+      );
+      return;
+    }
+    if (!this.#successfulSettings[group]) {
+      // Unexpected.
+      lazy.logger.warn(
+        `Cannot undo ${group} settings since we have no successful settings.`
+      );
+      return;
+    }
+    await this.changeSettings({ [group]: this.#successfulSettings[group] });
+  }
+
+  /**
+   * Clear settings that have failed to be applied by using the default settings
+   * instead.
+   *
+   * @param {string} group - The group to clear the settings for.
+   */
+  async clearFailedSettings(group) {
+    if (!this.#applyErrors[group]) {
+      lazy.logger.warn(
+        `${group} settings have already been successfully replaced.`
+      );
+      return;
+    }
+    await this.changeSettings({ [group]: this.#defaultSettings[group] });
+  }
+
+  /**
    * Change the Tor settings in use.
    *
    * It is possible to set all settings, or only some sections:
@@ -915,8 +1297,8 @@ class TorSettingsImpl {
    * + proxy settings can be set as a group.
    * + firewall settings can be set a group.
    *
-   * @param {object} newValues - The new setting values, a subset of the
-   *   complete settings that should be changed.
+   * @param {object} newValues - The new setting values that should be changed.
+   *   A subset of the `TorCombinedSettings` object.
    */
   async changeSettings(newValues) {
     lazy.logger.debug("changeSettings()", newValues);
@@ -928,6 +1310,7 @@ class TorSettingsImpl {
 
     const completeSettings = structuredClone(this.#settings);
     const changes = [];
+    const apply = {};
 
     /**
      * Change the given setting to a new value. Does nothing if the new value
@@ -946,10 +1329,11 @@ class TorSettingsImpl {
       }
       completeSettings[group][prop] = value;
       changes.push(`${group}.${prop}`);
+      // Apply these settings.
+      apply[group] = true;
     };
 
     if ("bridges" in newValues) {
-      const changesLength = changes.length;
       if ("source" in newValues.bridges) {
         this.#fixupBridgeSettings(newValues.bridges);
         changeSetting("bridges", "source", newValues.bridges.source);
@@ -980,7 +1364,7 @@ class TorSettingsImpl {
         changeSetting("bridges", "enabled", newValues.bridges.enabled);
       }
 
-      if (this.#temporaryBridgeSettings && changes.length !== changesLength) {
+      if (this.#temporaryBridgeSettings && apply.bridges) {
         // A change in the bridges settings.
         // We want to clear the temporary bridge settings to ensure that they
         // cannot be used to overwrite these user-provided settings.
@@ -1030,34 +1414,22 @@ class TorSettingsImpl {
 
     lazy.logger.debug("setSettings result", this.#settings, changes);
 
-    // After we have sent out the notifications for the changed settings and
-    // saved the preferences we send the new settings to TorProvider.
-    // Some properties are unread by TorProvider. So if only these values change
-    // there is no need to re-apply the settings.
-    const unreadProps = ["bridges.builtin_type", "bridges.lox_id"];
-    const shouldApply = changes.some(prop => !unreadProps.includes(prop));
-    if (shouldApply) {
-      await this.#applySettings(true);
+    if (apply.bridges || apply.proxy || apply.firewall) {
+      // After we have sent out the notifications for the changed settings and
+      // saved the preferences we send the new settings to TorProvider.
+      await this.#applySettings(apply);
     }
   }
 
   /**
    * Get a copy of all our settings.
    *
-   * @param {boolean} [useTemporary=false] - Whether the returned settings
-   *   should use the temporary bridge settings, if any, instead.
-   *
-   * @returns {object} A copy of the settings object
+   * @returns {TorCombinedSettings} A copy of the current settings.
    */
-  getSettings(useTemporary = false) {
+  getSettings() {
     lazy.logger.debug("getSettings()");
     this.#checkIfInitialized();
-    const settings = structuredClone(this.#settings);
-    if (useTemporary && this.#temporaryBridgeSettings) {
-      // Override the bridge settings with our temporary ones.
-      settings.bridges = structuredClone(this.#temporaryBridgeSettings);
-    }
-    return settings;
+    return structuredClone(this.#settings);
   }
 
   /**
@@ -1105,8 +1477,8 @@ class TorSettingsImpl {
 
     // After checks are complete, we commit them.
     this.#temporaryBridgeSettings = bridgeSettings;
-    // Do not flush the temporary bridge settings until they are saved.
-    await this.#applySettings(false);
+
+    await this.#applySettings({ bridges: true }, { useTemporaryBridges: true });
   }
 
   /**
@@ -1133,7 +1505,7 @@ class TorSettingsImpl {
       return;
     }
     this.#temporaryBridgeSettings = null;
-    await this.#applySettings();
+    await this.#applySettings({ bridges: true });
   }
 }
 
