@@ -210,7 +210,7 @@ export class TorProvider {
     if (this.ownsTorDaemon) {
       try {
         await lazy.TorSettings.initializedPromise;
-        await this.writeSettings();
+        await lazy.TorSettings.setTorProvider(this);
       } catch (e) {
         logger.warn(
           "Failed to initialize TorSettings or to write our initial settings. Continuing the initialization anyway.",
@@ -252,44 +252,65 @@ export class TorProvider {
   /**
    * Send settings to the tor daemon.
    *
-   * This should only be called internally or by the TorSettings module.
+   * @param {Map<string, ?string>} torSettings - The key value pairs to pass in.
    */
-  async writeSettings() {
-    // Fetch the current settings.
-    // We set the useTemporary parameter since we want to apply temporary
-    // bridges if they are available.
-    const settings = lazy.TorSettings.getSettings(true);
-    logger.debug("TorProvider.writeSettings", settings);
+  async #writeSettings(torSettings) {
+    logger.debug("Mapped settings object", torSettings);
+
+    // NOTE: The order in which TorProvider.#writeSettings should match the
+    // order in which the configuration is passed onto setConf. In turn,
+    // TorControlPort.setConf should similarly ensure that the configuration
+    // reaches the tor process in the same order.
+    // In particular, we do not want a race where an earlier call to
+    // TorProvider.#writeSettings for overlapping settings can be delayed and
+    // override a later call.
+    await this.#controller.setConf(Array.from(torSettings));
+  }
+
+  /**
+   * Send bridge settings to the tor daemon.
+   *
+   * This should only be called by the `TorSettings` module.
+   *
+   * @param {TorBridgeSettings} bridges - The bridge settings to apply.
+   */
+  async writeBridgeSettings(bridges) {
+    logger.debug("TorProvider.writeBridgeSettings", bridges);
     const torSettings = new Map();
 
     // Bridges
-    const haveBridges =
-      settings.bridges?.enabled && !!settings.bridges.bridge_strings.length;
+    const haveBridges = bridges?.enabled && !!bridges.bridge_strings.length;
     torSettings.set(TorConfigKeys.useBridges, haveBridges);
-    if (haveBridges) {
-      torSettings.set(
-        TorConfigKeys.bridgeList,
-        settings.bridges.bridge_strings
-      );
-    } else {
-      torSettings.set(TorConfigKeys.bridgeList, null);
-    }
+    torSettings.set(
+      TorConfigKeys.bridgeList,
+      haveBridges ? bridges.bridge_strings : null
+    );
 
-    // Proxy
+    await this.#writeSettings(torSettings);
+  }
+
+  /**
+   * Send proxy settings to the tor daemon.
+   *
+   * This should only be called by the `TorSettings` module.
+   *
+   * @param {TorProxySettings} proxy - The proxy settings to apply.
+   */
+  async writeProxySettings(proxy) {
+    logger.debug("TorProvider.writeProxySettings", proxy);
+    const torSettings = new Map();
+
     torSettings.set(TorConfigKeys.socks4Proxy, null);
     torSettings.set(TorConfigKeys.socks5Proxy, null);
     torSettings.set(TorConfigKeys.socks5ProxyUsername, null);
     torSettings.set(TorConfigKeys.socks5ProxyPassword, null);
     torSettings.set(TorConfigKeys.httpsProxy, null);
     torSettings.set(TorConfigKeys.httpsProxyAuthenticator, null);
-    if (settings.proxy && !settings.proxy.enabled) {
-      settings.proxy.type = null;
-    }
-    const address = settings.proxy?.address;
-    const port = settings.proxy?.port;
-    const username = settings.proxy?.username;
-    const password = settings.proxy?.password;
-    switch (settings.proxy?.type) {
+
+    const type = proxy.enabled ? proxy.type : null;
+    const { address, port, username, password } = proxy;
+
+    switch (type) {
       case lazy.TorProxyType.Socks4:
         torSettings.set(TorConfigKeys.socks4Proxy, `${address}:${port}`);
         break;
@@ -307,27 +328,28 @@ export class TorProvider {
         break;
     }
 
-    // Firewall
-    if (settings.firewall?.enabled) {
-      const reachableAddresses = settings.firewall.allowed_ports
-        .map(port => `*:${port}`)
-        .join(",");
-      torSettings.set(TorConfigKeys.reachableAddresses, reachableAddresses);
-    } else {
-      torSettings.set(TorConfigKeys.reachableAddresses, null);
-    }
+    await this.#writeSettings(torSettings);
+  }
 
-    logger.debug("Mapped settings object", settings, torSettings);
+  /**
+   * Send firewall settings to the tor daemon.
+   *
+   * This should only be called by the `TorSettings` module.
+   *
+   * @param {TorFirewallSettings} firewall - The firewall settings to apply.
+   */
+  async writeFirewallSettings(firewall) {
+    logger.debug("TorProvider.writeFirewallSettings", firewall);
+    const torSettings = new Map();
 
-    // Send settings to the tor process.
-    // NOTE: Since everything up to this point has been non-async, the order in
-    // which TorProvider.writeSettings is called should match the order in which
-    // the configuration is passed onto setConf. In turn, TorControlPort.setConf
-    // should similarly ensure that the configuration reaches the tor process in
-    // the same order.
-    // In particular, we do not want a race where an earlier call to
-    // TorProvider.writeSettings can be delayed and override a later call.
-    await this.#controller.setConf(Array.from(torSettings));
+    torSettings.set(
+      TorConfigKeys.reachableAddresses,
+      firewall.enabled
+        ? firewall.allowed_ports.map(port => `*:${port}`).join(",")
+        : null
+    );
+
+    await this.#writeSettings(torSettings);
   }
 
   async flushSettings() {
