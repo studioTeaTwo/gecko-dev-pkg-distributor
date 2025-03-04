@@ -5,6 +5,7 @@ const { TorSettings, TorProxyType } = ChromeUtils.importESModule(
 );
 
 const gConnectionSettingsDialog = {
+  _acceptButton: null,
   _useProxyCheckbox: null,
   _proxyTypeLabel: null,
   _proxyTypeMenulist: null,
@@ -38,25 +39,43 @@ const gConnectionSettingsDialog = {
       "input#torPreferences-connection-textboxAllowedPorts",
   },
 
-  // disables the provided list of elements
-  _setElementsDisabled(elements, disabled) {
-    for (let currentElement of elements) {
-      currentElement.disabled = disabled;
-    }
-  },
+  /**
+   * The "proxy" and "firewall" settings to pass on to TorSettings.
+   *
+   * Each group is `null` whilst the inputs are invalid.
+   *
+   * @type {{proxy: ?object, firewall: ?object}}
+   */
+  _settings: { proxy: null, firewall: null },
 
   init() {
+    const currentSettings = TorSettings.getSettings();
+
+    const dialog = document.getElementById("torPreferences-connection-dialog");
+    dialog.addEventListener("dialogaccept", event => {
+      if (!this._settings.proxy || !this._settings.firewall) {
+        // Do not close yet.
+        event.preventDefault();
+        return;
+      }
+      // TODO: Maybe wait for the method to resolve before closing. Although
+      // this can take a few seconds. See tor-browser#43467.
+      TorSettings.changeSettings(this._settings);
+    });
+    this._acceptButton = dialog.getButton("accept");
+
     const selectors = this.selectors;
 
     // Local Proxy
     this._useProxyCheckbox = document.querySelector(selectors.useProxyCheckbox);
+    this._useProxyCheckbox.checked = currentSettings.proxy.enabled;
     this._useProxyCheckbox.addEventListener("command", () => {
-      const checked = this._useProxyCheckbox.checked;
-      this.onToggleProxy(checked);
+      this.updateProxyType();
     });
+
     this._proxyTypeLabel = document.querySelector(selectors.proxyTypeLabel);
 
-    let mockProxies = [
+    const mockProxies = [
       {
         value: TorProxyType.Socks4,
         l10nId: "tor-advanced-dialog-proxy-socks4-menuitem",
@@ -72,15 +91,17 @@ const gConnectionSettingsDialog = {
     ];
     this._proxyTypeMenulist = document.querySelector(selectors.proxyTypeList);
     this._proxyTypeMenulist.addEventListener("command", () => {
-      const value = this._proxyTypeMenulist.value;
-      this.onSelectProxyType(value);
+      this.updateProxyType();
     });
-    for (let currentProxy of mockProxies) {
+    for (const currentProxy of mockProxies) {
       let menuEntry = window.document.createXULElement("menuitem");
       menuEntry.setAttribute("value", currentProxy.value);
       menuEntry.setAttribute("data-l10n-id", currentProxy.l10nId);
       this._proxyTypeMenulist.querySelector("menupopup").appendChild(menuEntry);
     }
+    this._proxyTypeMenulist.value = currentSettings.proxy.enabled
+      ? currentSettings.proxy.type
+      : "";
 
     this._proxyAddressLabel = document.querySelector(
       selectors.proxyAddressLabel
@@ -89,13 +110,15 @@ const gConnectionSettingsDialog = {
       selectors.proxyAddressTextbox
     );
     this._proxyAddressTextbox.addEventListener("blur", () => {
+      // If the address includes a port move it to the port input instead.
       let value = this._proxyAddressTextbox.value.trim();
       let colon = value.lastIndexOf(":");
       if (colon != -1) {
-        let maybePort = parseInt(value.substr(colon + 1));
-        if (!isNaN(maybePort) && maybePort > 0 && maybePort < 65536) {
+        let maybePort = this.parsePort(value.substr(colon + 1));
+        if (maybePort !== null) {
           this._proxyAddressTextbox.value = value.substr(0, colon);
           this._proxyPortTextbox.value = maybePort;
+          this.updateProxy();
         }
       }
     });
@@ -114,23 +137,36 @@ const gConnectionSettingsDialog = {
       selectors.proxyPasswordTextbox
     );
 
-    this.onToggleProxy(false);
-    if (TorSettings.proxy.enabled) {
-      this.onToggleProxy(true);
-      this.onSelectProxyType(TorSettings.proxy.type);
-      this._proxyAddressTextbox.value = TorSettings.proxy.address;
-      this._proxyPortTextbox.value = TorSettings.proxy.port;
-      this._proxyUsernameTextbox.value = TorSettings.proxy.username;
-      this._proxyPasswordTextbox.value = TorSettings.proxy.password;
+    if (currentSettings.proxy.enabled) {
+      this._proxyAddressTextbox.value = currentSettings.proxy.address;
+      this._proxyPortTextbox.value = currentSettings.proxy.port;
+      this._proxyUsernameTextbox.value = currentSettings.proxy.username;
+      this._proxyPasswordTextbox.value = currentSettings.proxy.password;
+    } else {
+      this._proxyAddressTextbox.value = "";
+      this._proxyPortTextbox.value = "";
+      this._proxyUsernameTextbox.value = "";
+      this._proxyPasswordTextbox.value = "";
+    }
+
+    for (const el of [
+      this._proxyAddressTextbox,
+      this._proxyPortTextbox,
+      this._proxyUsernameTextbox,
+      this._proxyPasswordTextbox,
+    ]) {
+      el.addEventListener("input", () => {
+        this.updateProxy();
+      });
     }
 
     // Local firewall
     this._useFirewallCheckbox = document.querySelector(
       selectors.useFirewallCheckbox
     );
+    this._useFirewallCheckbox.checked = currentSettings.firewall.enabled;
     this._useFirewallCheckbox.addEventListener("command", () => {
-      const checked = this._useFirewallCheckbox.checked;
-      this.onToggleFirewall(checked);
+      this.updateFirewallEnabled();
     });
     this._allowedPortsLabel = document.querySelector(
       selectors.firewallAllowedPortsLabel
@@ -138,182 +174,161 @@ const gConnectionSettingsDialog = {
     this._allowedPortsTextbox = document.querySelector(
       selectors.firewallAllowedPortsTextbox
     );
+    this._allowedPortsTextbox.value = currentSettings.firewall.enabled
+      ? currentSettings.firewall.allowed_ports.join(",")
+      : "80,443";
 
-    this.onToggleFirewall(false);
-    if (TorSettings.firewall.enabled) {
-      this.onToggleFirewall(true);
-      this._allowedPortsTextbox.value =
-        TorSettings.firewall.allowed_ports.join(", ");
-    }
-
-    const dialog = document.getElementById("torPreferences-connection-dialog");
-    dialog.addEventListener("dialogaccept", () => {
-      this._applySettings();
+    this._allowedPortsTextbox.addEventListener("input", () => {
+      this.updateFirewall();
     });
+
+    this.updateProxyType();
+    this.updateFirewallEnabled();
   },
 
-  // callback when proxy is toggled
-  onToggleProxy(enabled) {
-    this._useProxyCheckbox.checked = enabled;
-    let disabled = !enabled;
-
-    this._setElementsDisabled(
-      [
-        this._proxyTypeLabel,
-        this._proxyTypeMenulist,
-        this._proxyAddressLabel,
-        this._proxyAddressTextbox,
-        this._proxyPortLabel,
-        this._proxyPortTextbox,
-        this._proxyUsernameLabel,
-        this._proxyUsernameTextbox,
-        this._proxyPasswordLabel,
-        this._proxyPasswordTextbox,
-      ],
-      disabled
-    );
-    if (enabled) {
-      this.onSelectProxyType(this._proxyTypeMenulist.value);
+  /**
+   * Convert a string into a port number.
+   *
+   * @param {string} portStr - The string to convert.
+   * @returns {?integer} - The port number, or `null` if the given string could
+   *   not be converted.
+   */
+  parsePort(portStr) {
+    const portRegex = /^[1-9][0-9]*$/; // Strictly-positive decimal integer.
+    if (!portRegex.test(portStr)) {
+      return null;
     }
+    const port = parseInt(portStr, 10);
+    if (TorSettings.validPort(port)) {
+      return port;
+    }
+    return null;
   },
 
-  // callback when proxy type is changed
-  onSelectProxyType(value) {
-    if (typeof value === "string") {
-      value = parseInt(value);
+  /**
+   * Update the disabled state of the accept button.
+   */
+  updateAcceptButton() {
+    this._acceptButton.disabled =
+      !this._settings.proxy || !this._settings.firewall;
+  },
+
+  /**
+   * Update the UI when the proxy setting is enabled or disabled, or the proxy
+   * type changes.
+   */
+  updateProxyType() {
+    const enabled = this._useProxyCheckbox.checked;
+    const haveType = enabled && Boolean(this._proxyTypeMenulist.value);
+    const type = parseInt(this._proxyTypeMenulist.value, 10);
+
+    this._proxyTypeLabel.disabled = !enabled;
+    this._proxyTypeMenulist.disabled = !enabled;
+    this._proxyAddressLabel.disabled = !haveType;
+    this._proxyAddressTextbox.disabled = !haveType;
+    this._proxyPortLabel.disabled = !haveType;
+    this._proxyPortTextbox.disabled = !haveType;
+    this._proxyUsernameTextbox.disabled =
+      !haveType || type === TorProxyType.Socks4;
+    this._proxyPasswordTextbox.disabled =
+      !haveType || type === TorProxyType.Socks4;
+    if (type === TorProxyType.Socks4) {
+      // Clear unused value.
+      this._proxyUsernameTextbox.value = "";
+      this._proxyPasswordTextbox.value = "";
     }
 
-    this._proxyTypeMenulist.value = value;
-    switch (value) {
-      case TorProxyType.Invalid: {
-        this._setElementsDisabled(
-          [
-            this._proxyAddressLabel,
-            this._proxyAddressTextbox,
-            this._proxyPortLabel,
-            this._proxyPortTextbox,
-            this._proxyUsernameLabel,
-            this._proxyUsernameTextbox,
-            this._proxyPasswordLabel,
-            this._proxyPasswordTextbox,
-          ],
-          true
-        ); // DISABLE
+    this.updateProxy();
+  },
 
-        this._proxyAddressTextbox.value = "";
-        this._proxyPortTextbox.value = "";
-        this._proxyUsernameTextbox.value = "";
-        this._proxyPasswordTextbox.value = "";
-        break;
+  /**
+   * Update the dialog's stored proxy values.
+   */
+  updateProxy() {
+    if (this._useProxyCheckbox.checked) {
+      const typeStr = this._proxyTypeMenulist.value;
+      const type = parseInt(typeStr, 10);
+      // TODO: Validate the address. See tor-browser#43467.
+      const address = this._proxyAddressTextbox.value;
+      const portStr = this._proxyPortTextbox.value;
+      const username =
+        type === TorProxyType.Socks4 ? "" : this._proxyUsernameTextbox.value;
+      const password =
+        type === TorProxyType.Socks4 ? "" : this._proxyPasswordTextbox.value;
+      const port = parseInt(portStr, 10);
+      if (
+        !typeStr ||
+        !address ||
+        !portStr ||
+        !TorSettings.validPort(port) ||
+        // SOCKS5 needs either both username and password, or neither.
+        (type === TorProxyType.Socks5 &&
+          !TorSettings.validSocks5Credentials(username, password))
+      ) {
+        // Invalid.
+        this._settings.proxy = null;
+      } else {
+        this._settings.proxy = {
+          enabled: true,
+          type,
+          address,
+          port,
+          username,
+          password,
+        };
       }
-      case TorProxyType.Socks4: {
-        this._setElementsDisabled(
-          [
-            this._proxyAddressLabel,
-            this._proxyAddressTextbox,
-            this._proxyPortLabel,
-            this._proxyPortTextbox,
-          ],
-          false
-        ); // ENABLE
-        this._setElementsDisabled(
-          [
-            this._proxyUsernameLabel,
-            this._proxyUsernameTextbox,
-            this._proxyPasswordLabel,
-            this._proxyPasswordTextbox,
-          ],
-          true
-        ); // DISABLE
-
-        this._proxyUsernameTextbox.value = "";
-        this._proxyPasswordTextbox.value = "";
-        break;
-      }
-      case TorProxyType.Socks5:
-      case TorProxyType.HTTPS: {
-        this._setElementsDisabled(
-          [
-            this._proxyAddressLabel,
-            this._proxyAddressTextbox,
-            this._proxyPortLabel,
-            this._proxyPortTextbox,
-            this._proxyUsernameLabel,
-            this._proxyUsernameTextbox,
-            this._proxyPasswordLabel,
-            this._proxyPasswordTextbox,
-          ],
-          false
-        ); // ENABLE
-        break;
-      }
-    }
-  },
-
-  // callback when firewall proxy is toggled
-  onToggleFirewall(enabled) {
-    this._useFirewallCheckbox.checked = enabled;
-    let disabled = !enabled;
-
-    this._setElementsDisabled(
-      [this._allowedPortsLabel, this._allowedPortsTextbox],
-      disabled
-    );
-  },
-
-  // pushes settings from UI to tor
-  _applySettings() {
-    const type = this._useProxyCheckbox.checked
-      ? parseInt(this._proxyTypeMenulist.value)
-      : TorProxyType.Invalid;
-    const address = this._proxyAddressTextbox.value;
-    const port = this._proxyPortTextbox.value;
-    const username = this._proxyUsernameTextbox.value;
-    const password = this._proxyPasswordTextbox.value;
-    const settings = { proxy: {}, firewall: {} };
-    switch (type) {
-      case TorProxyType.Invalid:
-        settings.proxy.enabled = false;
-        break;
-      case TorProxyType.Socks4:
-        settings.proxy.enabled = true;
-        settings.proxy.type = type;
-        settings.proxy.address = address;
-        settings.proxy.port = port;
-        settings.proxy.username = "";
-        settings.proxy.password = "";
-        break;
-      case TorProxyType.Socks5:
-        settings.proxy.enabled = true;
-        settings.proxy.type = type;
-        settings.proxy.address = address;
-        settings.proxy.port = port;
-        settings.proxy.username = username;
-        settings.proxy.password = password;
-        break;
-      case TorProxyType.HTTPS:
-        settings.proxy.enabled = true;
-        settings.proxy.type = type;
-        settings.proxy.address = address;
-        settings.proxy.port = port;
-        settings.proxy.username = username;
-        settings.proxy.password = password;
-        break;
-    }
-
-    let portListString = this._useFirewallCheckbox.checked
-      ? this._allowedPortsTextbox.value
-      : "";
-    if (portListString) {
-      settings.firewall.enabled = true;
-      settings.firewall.allowed_ports = portListString;
     } else {
-      settings.firewall.enabled = false;
+      this._settings.proxy = { enabled: false };
     }
 
-    // FIXME: What if this fails? Should we prevent the dialog to close and show
-    // an error?
-    TorSettings.changeSettings(settings);
+    this.updateAcceptButton();
+  },
+
+  /**
+   * Update the UI when the firewall setting is enabled or disabled.
+   */
+  updateFirewallEnabled() {
+    const enabled = this._useFirewallCheckbox.checked;
+    this._allowedPortsLabel.disabled = !enabled;
+    this._allowedPortsTextbox.disabled = !enabled;
+
+    this.updateFirewall();
+  },
+
+  /**
+   * Update the dialog's stored firewall values.
+   */
+  updateFirewall() {
+    if (this._useFirewallCheckbox.checked) {
+      const portList = [];
+      let listInvalid = false;
+      for (const portStr of this._allowedPortsTextbox.value.split(
+        /(?:\s*,\s*)+/g
+      )) {
+        if (!portStr) {
+          // Trailing or leading comma.
+          continue;
+        }
+        const port = this.parsePort(portStr);
+        if (port === null) {
+          listInvalid = true;
+          break;
+        }
+        portList.push(port);
+      }
+      if (!listInvalid && portList.length) {
+        this._settings.firewall = {
+          enabled: true,
+          allowed_ports: portList,
+        };
+      } else {
+        this._settings.firewall = null;
+      }
+    } else {
+      this._settings.firewall = { enabled: false };
+    }
+
+    this.updateAcceptButton();
   },
 };
 

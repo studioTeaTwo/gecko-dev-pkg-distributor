@@ -61,6 +61,7 @@
         <html:input
           id="torPreferences-localProxy-textboxAddress"
           type="text"
+          required="required"
           class="torMarginFix"
           data-l10n-id="tor-advanced-dialog-proxy-address-input"
         />
@@ -75,7 +76,8 @@
           class="proxy-port-input torMarginFix"
           hidespinbuttons="true"
           type="number"
-          min="0"
+          required="required"
+          min="1"
           max="65535"
           maxlength="5"
         />
@@ -121,11 +123,14 @@
         />
       </hbox>
       <hbox id="torPreferences-connection-hboxAllowedPorts" align="center">
+        <!-- NOTE: The pattern allows comma-separated strictly positive
+           - integers. In particular "0" is not allowed. -->
         <html:input
           id="torPreferences-connection-textboxAllowedPorts"
           type="text"
+          required="required"
+          pattern="^(\s*,\s*)*[1-9][0-9]*((\s*,\s*)|([1-9][0-9]*))*$"
           class="torMarginFix"
-          value="80,443"
           data-l10n-id="tor-advanced-dialog-firewall-ports-input"
         />
       </hbox>
