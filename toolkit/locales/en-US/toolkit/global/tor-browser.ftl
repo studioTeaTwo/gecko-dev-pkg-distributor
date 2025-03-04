@@ -467,6 +467,29 @@ tor-advanced-dialog-firewall-ports-input-label = Allowed ports
 tor-advanced-dialog-firewall-ports-input =
     .placeholder = Comma-separated values
 
+## Tor settings error notification.
+
+# Shown when the user's Tor bridge settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-title-bridges = Your Tor bridge settings could not be applied
+# Shown when the user's Tor bridge settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-cause-bridges = This could be due to an invalid bridge address.
+# Shown when the user's Tor proxy settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-title-proxy = Your Tor proxy settings could not be applied
+# Shown when the user's Tor proxy settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-cause-proxy = This could be due to invalid proxy information.
+# Shown when the user's Tor firewall settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-title-firewall = Your Tor firewall settings could not be applied
+# Shown when the user's Tor firewall settings could not be passed on to the Tor daemon.
+tor-settings-failed-notification-cause-firewall = This could be due to invalid firewall information.
+tor-settings-failed-notification-body-undo = Until fixed, your Tor connection will continue to use your previous settings. You can either undo the latest changes to restore the previous working settings or check the Tor log to find and fix the issue yourself.
+tor-settings-failed-notification-body-default = Until fixed, your Tor connection will continue to use default settings. You can either clear the problematic settings to restore them to default or check the Tor log to find and fix the issue yourself.
+# Button to revert the latest user settings.
+tor-settings-failed-notification-button-undo = Undo changes
+# Button to clear the user settings.
+tor-settings-failed-notification-button-clear = Clear
+# Button for the user to declare that they will fix the problematic settings by themself.
+tor-settings-failed-notification-button-fix-myself = Fix myself
+
 ## About Tor Browser dialog.
 
 # '<label data-l10n-name="project-link">' and '</label>' should wrap the link text for the Tor Project, and will link to the Tor Project web page.
