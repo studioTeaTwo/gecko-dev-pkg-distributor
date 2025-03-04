@@ -342,38 +342,15 @@ class TorSettingsImpl {
   }
 
   /**
-   * Regular expression for a decimal non-negative integer.
+   * Verify a port number is within bounds.
    *
-   * @type {RegExp}
+   * @param {integer} val - The value to verify.
+   * @return {boolean} - Whether the port is within range.
    */
-  #portRegex = /^[0-9]+$/;
-  /**
-   * Parse a string as a port number.
-   *
-   * @param {string|integer} val - The value to parse.
-   * @param {boolean} trim - Whether a string value can be stripped of
-   *   whitespace before parsing.
-   *
-   * @return {integer?} - The port number, or null if the given value was not
-   *   valid.
-   */
-  #parsePort(val, trim) {
-    if (typeof val === "string") {
-      if (trim) {
-        val = val.trim();
-      }
-      // ensure port string is a valid positive integer
-      if (this.#portRegex.test(val)) {
-        val = Number.parseInt(val, 10);
-      } else {
-        throw new Error(`Invalid port string "${val}"`);
-      }
-    }
-    if (!Number.isInteger(val) || val < 1 || val > 65535) {
-      throw new Error(`Port out of range: ${val}`);
-    }
-    return val;
+  validPort(val) {
+    return Number.isInteger(val) && val >= 1 && val <= 65535;
   }
+
   /**
    * Test whether two arrays have equal members and order.
    *
@@ -659,10 +636,11 @@ class TorSettingsImpl {
       false
     );
     if (firewall.enabled) {
-      firewall.allowed_ports = Services.prefs.getStringPref(
-        TorSettingsPrefs.firewall.allowed_ports,
-        ""
-      );
+      firewall.allowed_ports = Services.prefs
+        .getStringPref(TorSettingsPrefs.firewall.allowed_ports, "")
+        .split(",")
+        .filter(p => p.trim())
+        .map(p => parseInt(p, 10));
     }
     try {
       this.#fixupFirewallSettings(firewall);
@@ -869,7 +847,31 @@ class TorSettingsImpl {
     if (!Object.values(TorProxyType).includes(proxy.type)) {
       throw new Error(`Invalid proxy type: ${proxy.type}`);
     }
-    proxy.port = this.#parsePort(proxy.port, false);
+    // Do not allow port value to be 0.
+    // Whilst Socks4Proxy, Socks5Proxy and HTTPSProxyPort allow you to pass in
+    // `<address>:0` this will select a default port. Our UI does not indicate
+    // that `0` maps to a different value, so we disallow it.
+    if (!this.validPort(proxy.port)) {
+      throw new Error(`Invalid proxy port: ${proxy.port}`);
+    }
+
+    switch (proxy.type) {
+      case TorProxyType.Socks4:
+        // Never use the username or password.
+        proxy.username = "";
+        proxy.password = "";
+        break;
+      case TorProxyType.Socks5:
+      case TorProxyType.HTTPS:
+        if (proxy.username && !proxy.password) {
+          throw new Error("Missing proxy password");
+        }
+        if (proxy.password && !proxy.username) {
+          throw new Error("Missing proxy username");
+        }
+        break;
+    }
+
     proxy.address = String(proxy.address);
     proxy.username = String(proxy.username);
     proxy.password = String(proxy.password);
@@ -890,22 +892,16 @@ class TorSettingsImpl {
       return;
     }
 
-    let allowed_ports = firewall.allowed_ports;
-    if (!Array.isArray(allowed_ports)) {
-      allowed_ports = allowed_ports === "" ? [] : allowed_ports.split(",");
+    if (!Array.isArray(firewall.allowed_ports)) {
+      throw new Error("allowed_ports should be an array of ports");
     }
-    // parse and remove duplicates
-    const portSet = new Set();
-
-    for (const port of allowed_ports) {
-      try {
-        portSet.add(this.#parsePort(port, true));
-      } catch (e) {
-        // Do not throw for individual ports.
-        lazy.logger.error(`Failed to parse the port ${port}. Ignoring.`, e);
+    for (const port of firewall.allowed_ports) {
+      if (!this.validPort(port)) {
+        throw new Error(`Invalid firewall port: ${port}`);
       }
     }
-    firewall.allowed_ports = [...portSet];
+    // Remove duplicates
+    firewall.allowed_ports = [...new Set(firewall.allowed_ports)];
   }
 
   /**
