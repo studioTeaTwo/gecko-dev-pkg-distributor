@@ -53,6 +53,9 @@ build:
 deploy:
 	./deploy.sh $(BINARIES) $(BUILD_OUTPUT)
 
+prepare-tests:
+	./prepare-tests.sh $(BINARIES) $(BUILD_OUTPUT)
+
 all: build deploy
 
 run:
