@@ -11,6 +11,7 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.geckoview.TorAndroidIntegration
 import org.mozilla.geckoview.TorAndroidIntegration.BootstrapStateChangeListener
 import org.mozilla.geckoview.TorAndroidIntegration.TorLogListener
+import org.mozilla.geckoview.TorConnectStage
 import org.mozilla.geckoview.TorSettings
 import org.mozilla.geckoview.TorSettings.BridgeBuiltinType
 import org.mozilla.geckoview.TorSettings.BridgeSource
@@ -321,6 +322,8 @@ class TorControllerGV(
         _lastKnownStatus.value = newState
         onTorStatusUpdate(null, newStateVal, null)
     }
+
+    override fun onBootstrapStageChange(stage: TorConnectStage) = Unit
 
     // TorEventsBootstrapStateChangeListener
     override fun onBootstrapProgress(progress: Double, hasWarnings: Boolean) {
