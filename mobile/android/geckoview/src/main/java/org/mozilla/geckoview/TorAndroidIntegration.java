@@ -37,7 +37,8 @@ public class TorAndroidIntegration implements BundleEventListener {
   private static final String EVENT_TOR_STOP = "GeckoView:Tor:StopTor";
   private static final String EVENT_MEEK_START = "GeckoView:Tor:StartMeek";
   private static final String EVENT_MEEK_STOP = "GeckoView:Tor:StopMeek";
-  private static final String EVENT_CONNECT_STATE_CHANGED = "GeckoView:Tor:ConnectStateChanged";
+  private static final String EVENT_CONNECT_STATE_CHANGED = "GeckoView:Tor:ConnectStateChanged"; // deprecation path
+  private static final String EVENT_CONNECT_STAGE_CHANGED = "GeckoView:Tor:ConnectStageChanged"; // replacement path
   private static final String EVENT_CONNECT_ERROR = "GeckoView:Tor:ConnectError";
   private static final String EVENT_BOOTSTRAP_PROGRESS = "GeckoView:Tor:BootstrapProgress";
   private static final String EVENT_BOOTSTRAP_COMPLETE = "GeckoView:Tor:BootstrapComplete";
@@ -114,6 +115,7 @@ public class TorAndroidIntegration implements BundleEventListener {
             EVENT_SETTINGS_READY,
             EVENT_SETTINGS_CHANGED,
             EVENT_CONNECT_STATE_CHANGED,
+            EVENT_CONNECT_STAGE_CHANGED,
             EVENT_CONNECT_ERROR,
             EVENT_BOOTSTRAP_PROGRESS,
             EVENT_BOOTSTRAP_COMPLETE,
@@ -149,6 +151,11 @@ public class TorAndroidIntegration implements BundleEventListener {
       String state = message.getString("state");
       for (BootstrapStateChangeListener listener : mBootstrapStateListeners) {
         listener.onBootstrapStateChange(state);
+      }
+    } else if (EVENT_CONNECT_STAGE_CHANGED.equals(event)) {
+      TorConnectStage stage = new TorConnectStage(message.getBundle("stage"));
+      for (BootstrapStateChangeListener listener : mBootstrapStateListeners) {
+        listener.onBootstrapStageChange(stage);
       }
     } else if (EVENT_CONNECT_ERROR.equals(event)) {
       String code = message.getString("code");
@@ -629,7 +636,9 @@ public class TorAndroidIntegration implements BundleEventListener {
   }
 
   public interface BootstrapStateChangeListener {
-    void onBootstrapStateChange(String state);
+    void onBootstrapStateChange(String state); // depreaction path
+
+    void onBootstrapStageChange(TorConnectStage stage); // new upgrade
 
     void onBootstrapProgress(double progress, boolean hasWarnings);
 

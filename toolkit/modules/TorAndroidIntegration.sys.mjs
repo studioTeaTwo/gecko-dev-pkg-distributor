@@ -25,7 +25,8 @@ const logger = console.createInstance({
 const EmittedEvents = Object.freeze({
   settingsReady: "GeckoView:Tor:SettingsReady",
   settingsChanged: "GeckoView:Tor:SettingsChanged",
-  connectStateChanged: "GeckoView:Tor:ConnectStateChanged",
+  connectStateChanged: "GeckoView:Tor:ConnectStateChanged", // deprecation path
+  connectStageChanged: "GeckoView:Tor:ConnectStageChanged", // new replacement path
   connectError: "GeckoView:Tor:ConnectError",
   bootstrapProgress: "GeckoView:Tor:BootstrapProgress",
   bootstrapComplete: "GeckoView:Tor:BootstrapComplete",
@@ -104,6 +105,12 @@ class TorAndroidIntegrationImpl {
         lazy.EventDispatcher.instance.sendRequest({
           type: EmittedEvents.connectStateChanged,
           state: subj.wrappedJSObject.state ?? "",
+        });
+        break;
+      case lazy.TorConnectTopics.StageChange:
+        lazy.EventDispatcher.instance.sendRequest({
+          type: EmittedEvents.connectStageChanged,
+          stage: subj.wrappedJSObject ?? "",
         });
         break;
       case lazy.TorConnectTopics.BootstrapProgress:
