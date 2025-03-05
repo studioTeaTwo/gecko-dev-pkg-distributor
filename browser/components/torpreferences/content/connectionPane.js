@@ -739,9 +739,16 @@ const gBridgeGrid = {
       }
       strings.splice(index, 1);
 
-      TorSettings.changeSettings({
-        bridges: { source, bridge_strings: strings },
-      });
+      if (strings.length) {
+        TorSettings.changeSettings({
+          bridges: { source, bridge_strings: strings },
+        });
+      } else {
+        // Remove all bridges and disable.
+        TorSettings.changeSettings({
+          bridges: { source: TorBridgeSource.Invalid },
+        });
+      }
     });
   },
 
