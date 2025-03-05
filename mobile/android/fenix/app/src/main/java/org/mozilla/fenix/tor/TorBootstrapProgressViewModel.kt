@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import org.mozilla.fenix.ext.components
 import org.mozilla.geckoview.TorAndroidIntegration.BootstrapStateChangeListener
+import org.mozilla.geckoview.TorConnectStage
 
 class TorBootstrapProgressViewModel(
     application: Application,
@@ -27,6 +28,7 @@ class TorBootstrapProgressViewModel(
     }
 
     override fun onBootstrapStateChange(state: String?) {}
+    override fun onBootstrapStageChange(stage: TorConnectStage) = Unit
 
     override fun onBootstrapProgress(progress: Double, hasWarnings: Boolean) {
         this.progress.value = progress.toInt()
