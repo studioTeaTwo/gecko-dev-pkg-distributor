@@ -175,7 +175,11 @@ export const browserSsiHelper = {
     // Prepare stuff
     const { protocolName, credentialName } = credential;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
-    const { site, extension, browsingContext } = getOrigin(context, tabTracker);
+    const { site, extension, browsingContext, window } = getOrigin(
+      context,
+      tabTracker
+    );
+    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     console.log(
       "authorize",
       type,
@@ -183,6 +187,10 @@ export const browserSsiHelper = {
       site.isSystemPrincipal,
       extension.url
     );
+
+    await openPopup(window, extension.name);
+
+    // Check permission
     if (site.isSystemPrincipal || site.url.startsWith("about:")) {
       // This is assumed `about:` pages.
       return false;
@@ -190,7 +198,6 @@ export const browserSsiHelper = {
     if (!site.origin || !extension.origin) {
       return false;
     }
-    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret({
       protocolName,
       credentialName,
@@ -233,6 +240,7 @@ export const browserSsiHelper = {
       submission,
       enforce,
       embedderElement: browsingContext.embedderElement,
+      window,
     };
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
@@ -333,10 +341,11 @@ function getOrigin(context, tabTracker) {
 
   // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
   // example, when pending password dialog and when only extension is executing independently.
-  const { browser } = context.extension.tabManager.get(activeTabId);
+  const { browser, window } = context.extension.tabManager.get(activeTabId);
 
   return {
     browsingContext: browser.browsingContext,
+    window,
     site: {
       origin: browser.contentPrincipal.originNoSuffix,
       url: browser.contentPrincipal.spec,
@@ -425,6 +434,7 @@ function isPasswordAuthorized(target, authCache) {
  * @param {string} dialogInfo.submission
  * @param {boolean} dialogInfo.enforce
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+ * @param {object} dialogInfo.window nativeTab.ownerGlobal
  * @returns {boolean}
  */
 async function authWithPassword(
@@ -581,4 +591,103 @@ function isAuthMandatory(
   }
 
   return false;
+}
+async function openPopup(window, extensionName) {
+  console.dir("panel", window);
+  // const template = `
+  //   <div>
+  //     <div id="dialogStack" hidden="true"/>
+  //     <div id="dialogTemplate" class="dialogOverlay" align="center" topmost="true" pack="center" hidden="true">
+  //       <div class="dialogBox"
+  //             pack="end"
+  //             role="dialog"
+  //             aria-labelledby="dialogTitle">
+  //         <div class="dialogTitleBar" align="center">
+  //           <label class="dialogTitle" flex="1"/>
+  //           <button class="dialogClose close-icon"
+  //                   data-l10n-id="close-button"/>
+  //         </div>
+  //         <browser class="dialogFrame"
+  //                 autoscroll="false"
+  //                 disablehistory="true"/>
+  //       </div>
+  //     </div>
+  //   </div>
+  // `;
+  // const parser = new DOMParser();
+  // // parser.forceEnableXULXBL();
+  // const parsed = parser.parseFromString(template, "text/html");
+  // console.dir(parsed);
+  // // const newNode = window.document.importNode(template, true);
+  // window.document.body.insertAdjacentHTML("afterend", template);
+  // const gSubDialog = new lazy.SubDialogManager({
+  //   dialogStack: window.document.getElementById("dialogStack"),
+  //   dialogTemplate: window.document.getElementById("dialogTemplate"),
+  //   dialogOptions: {
+  //     styleSheets: [
+  //       "chrome://browser/skin/preferences/dialog.css",
+  //       "chrome://browser/skin/preferences/preferences.css",
+  //     ],
+  //     // resizeCallback: async ({ title, frame }) => {
+  //     //   // Search within main document and highlight matched keyword.
+  //     //   await gSearchResultsPane.searchWithinNode(
+  //     //     title,
+  //     //     gSearchResultsPane.query
+  //     //   );
+
+  //     //   // Search within sub-dialog document and highlight matched keyword.
+  //     //   await gSearchResultsPane.searchWithinNode(
+  //     //     frame.contentDocument.firstElementChild,
+  //     //     gSearchResultsPane.query
+  //     //   );
+
+  //     //   // Creating tooltips for all the instances found
+  //     //   for (let node of gSearchResultsPane.listSearchTooltips) {
+  //     //     if (!node.tooltipNode) {
+  //     //       gSearchResultsPane.createSearchTooltip(
+  //     //         node,
+  //     //         gSearchResultsPane.query
+  //     //       );
+  //     //     }
+  //     //   }
+  //     // },
+  //   },
+  // });
+  // await gSubDialog.open(
+  //   "chrome://browser/content/preferences/dialogs/addEngine.xhtml",
+  //   { features: "resizable=no, modal=yes" }
+  // );
+  let div = window.document.querySelector(`#${extensionName}-popup`);
+  if (!div) {
+    div = window.document.createElement("div");
+    div.id = `${extensionName}-popup`;
+    div.classList.add(`browser-ssi-popup`);
+    div.innerHTML = `
+      <style>
+        .browser-ssi-popup {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+
+          background-color: white;
+          max-width: 500px;
+        }
+        .header {
+          color: red;
+        }
+      </style>
+      <div class="header">
+        Nightly
+      </div>
+      <div class="content">
+        test
+      </div>
+      <div class="bottom">
+        <button id="button-next" oncommand="console.log('clicked!')">next</button>
+        bottom
+      </div>
+    `;
+    window.document.body.appendChild(div);
+  }
 }
