@@ -1227,7 +1227,10 @@ export const TorConnect = {
         bootstrapOptions.simulateCensorship = true;
         bootstrapOptions.simulateMoatResponse = {
           country: "fi",
-          settings: [{}, {}],
+          bridgesList: [
+            { source: 0, builtin_type: "obfs4" },
+            { source: 0, builtin_type: "snowflake" },
+          ],
         };
       }
     } else if (censorshipLevel === 3) {
@@ -1235,7 +1238,7 @@ export const TorConnect = {
       bootstrapOptions.simulateCensorship = true;
       bootstrapOptions.simulateMoatResponse = {
         country: null,
-        settings: [],
+        bridgesList: [],
       };
     }
   },
@@ -1412,20 +1415,20 @@ export const TorConnect = {
           this._setStage(TorConnectStage.ChooseRegion);
           return;
         case TorConnectStage.ChooseRegion:
-          // TODO: Uncomment for behaviour in tor-browser#42550.
-          /*
-          if (regionCode !== "automatic") {
-            // Not automatic. Go straight to the final error.
-            this._setStage(TorConnectStage.FinalError);
+          if (regionCode === "automatic") {
+            // The automatic region failed.
+            if (bootstrapAttempt.detectedRegion) {
+              this._setStage(TorConnectStage.ConfirmRegion);
+            } else {
+              this._setStage(TorConnectStage.RegionNotFound);
+            }
             return;
           }
-          */
-          if (regionCode !== "automatic" || bootstrapAttempt.detectedRegion) {
-            this._setStage(TorConnectStage.ConfirmRegion);
-            return;
-          }
-          this._setStage(TorConnectStage.RegionNotFound);
-          return;
+          // Else, not automatic. Go straight to the final error since the user
+          // is unlikely to succeed re-selecting the same region and it would be
+          // unexpected for the user to select a different region.
+          // See tor-browser#42550.
+          break;
       }
       this._setStage(TorConnectStage.FinalError);
       return;
