@@ -1,0 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+#include "nsISupports.idl"
+
+/**
+ * An object representing a prompt or doorhanger.
+ */
+[scriptable, uuid(908c429b-b86d-479b-bc8f-e3e8143c957f)]
+interface nsISsiPromptInstance : nsISupports {
+  /**
+   * Dismiss this prompt (e.g. because it's not relevant anymore).
+   */
+  void dismiss();
+};

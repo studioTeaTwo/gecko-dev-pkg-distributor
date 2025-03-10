@@ -19,7 +19,10 @@ XPIDL_SOURCES += [
     "nsICredentialInfo.idl",
     "nsICredentialMetaInfo.idl",
     "nsISsi.idl",
+    "nsISsiAuthPrompter.idl",
     "nsISsiCrypto.idl",
+    "nsISsiPrompter.idl",
+    "nsISSiPromptInstance.idl",
 ]
 
 XPIDL_MODULE = "ssi"
@@ -30,7 +33,9 @@ EXTRA_JS_MODULES += [
     "ssi-crypto-SDR.sys.mjs",
     "ssi-storage-json.sys.mjs",
     "Ssi.sys.mjs",
+    "SsiAuthPrompter.sys.mjs",
     "SsiHelper.sys.mjs",
+    "SsiPrompter.sys.mjs",
 ]
 
 if CONFIG["OS_TARGET"] != "Android":
