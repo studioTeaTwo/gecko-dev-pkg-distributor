@@ -17,7 +17,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isEmpty
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -54,7 +57,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                torConnectionAssistViewModel.collectLastKnownStatus()
+                torConnectionAssistViewModel.collectTorConnectStage()
             }
         }
 
@@ -129,14 +132,10 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     private fun setProgressBar(screen: ConnectAssistUiState) {
         binding.torBootstrapProgressBar.visibility =
             if (screen.progressBarVisible) View.VISIBLE else View.GONE
-        binding.torBootstrapProgressBar.progress = screen.progress
-        binding.torBootstrapProgressBar.progressTintList =
-            screen.progressTintColorResource?.let {
-                AppCompatResources.getColorStateList(
-                    requireContext(),
-                    it,
-                )
-            }
+        binding.torBootstrapProgressBar.progressBackgroundTintList = AppCompatResources.getColorStateList(
+            requireContext(),
+            screen.progressBackgroundTintColorResource,
+        )
     }
 
     private fun setSettingsButton(screen: ConnectAssistUiState) {
@@ -201,17 +200,114 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     private fun setCountryDropDown(screen: ConnectAssistUiState) {
-        binding.unblockTheInternetInCountryDescription.visibility =
-            if (screen.unblockTheInternetInCountryDescriptionVisible) View.VISIBLE else View.GONE
-        binding.countryDropDown.visibility = if (screen.countryDropDownVisible) View.VISIBLE else View.GONE
+        if (screen.countryDropDownVisible) {
+            val spinnerAdapter: ArrayAdapter<String> = initializeSpinner()
+            if (binding.countryDropDown.isEmpty()) {
+                spinnerAdapter.add(getString(screen.countryDropDownDefaultItem))
+                populateCountryDropDown(spinnerAdapter)
+                setOnItemSelectedListener()
+            }
+            spinnerAdapter.remove(spinnerAdapter.getItem(0))
+            spinnerAdapter.insert(getString(screen.countryDropDownDefaultItem), 0)
+
+            if (screen == ConnectAssistUiState.ChooseRegion || screen == ConnectAssistUiState.ConfirmRegion || screen == ConnectAssistUiState.RegionNotFound) {
+                torConnectionAssistViewModel.selectDefaultRegion()
+                binding.countryDropDown.setSelection(spinnerAdapter.getPosition(torConnectionAssistViewModel.selectedCountryCode.value))
+            }
+
+            binding.unblockTheInternetInCountryDescription.visibility = View.VISIBLE
+            binding.countryDropDown.visibility = View.VISIBLE
+        } else {
+            binding.unblockTheInternetInCountryDescription.visibility = View.GONE
+            binding.countryDropDown.visibility = View.GONE
+        }
+    }
+
+    private fun initializeSpinner(): ArrayAdapter<String> {
+        val spinnerAdapter: ArrayAdapter<String> =
+            ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                android.R.id.text1,
+            )
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.countryDropDown.adapter = spinnerAdapter
+        return spinnerAdapter
+    }
+
+    private fun populateCountryDropDown(spinnerAdapter: ArrayAdapter<String>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                torConnectionAssistViewModel.countryCodeNameMap.collect {
+                    if (it != null) {
+                        spinnerAdapter.addAll(it.values)
+                    }
+                }
+            }
+        }
+        spinnerAdapter.notifyDataSetChanged()
+    }
+
+    private fun setOnItemSelectedListener() {
+        binding.countryDropDown.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long,
+                ) {
+                    torConnectionAssistViewModel.setCountryCodeToSelectedItem(position)
+                    updateButton1(torConnectionAssistViewModel.torConnectScreen.value)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
     }
 
     private fun setButton1(screen: ConnectAssistUiState) {
-        binding.torBootstrapButton1.visibility =
-            if (screen.torBootstrapButton1Visible) View.VISIBLE else View.GONE
-        binding.torBootstrapButton1.text = getString(screen.torBootstrapButton1TextStringResource)
-        binding.torBootstrapButton1.setOnClickListener {
-            torConnectionAssistViewModel.handleConnect()
+        binding.torBootstrapButton1.apply {
+            visibility =
+                if (screen.torBootstrapButton1Visible) View.VISIBLE else View.GONE
+            text = getString(screen.torBootstrapButton1TextStringResource)
+            setOnClickListener {
+                if (screen.torBootstrapButton1ShouldOpenSettings) {
+                    openTorConnectionSettings()
+                } else {
+                    torConnectionAssistViewModel.handleConnect()
+                }
+            }
+            updateButton1(screen)
+        }
+    }
+
+    private fun updateButton1(screen: ConnectAssistUiState) {
+        binding.torBootstrapButton1.apply {
+            if (!torConnectionAssistViewModel.button1ShouldBeDisabled(screen)) {
+                isEnabled = true
+                backgroundTintList = AppCompatResources.getColorStateList(
+                    requireContext(),
+                    R.color.connect_button_purple,
+                )
+                setTextColor(
+                    AppCompatResources.getColorStateList(
+                        requireContext(),
+                        R.color.photonLightGrey05,
+                    ),
+                )
+            } else {
+                isEnabled = false
+                backgroundTintList = AppCompatResources.getColorStateList(
+                    requireContext(),
+                    R.color.disabled_connect_button_purple,
+                )
+                setTextColor(
+                    AppCompatResources.getColorStateList(
+                        requireContext(),
+                        R.color.disabled_text_gray_purple,
+                    ),
+                )
+            }
         }
     }
 
@@ -235,13 +331,12 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
                 }
         }
         binding.torBootstrapButton2.setOnClickListener {
-            torConnectionAssistViewModel.cancelTorBootstrap()
             if (screen.torBootstrapButton2ShouldOpenSettings) {
                 openTorConnectionSettings()
             } else if (screen.torBootstrapButton2ShouldRestartApp) {
                 restartApplication()
             } else {
-                showScreen(ConnectAssistUiState.Configuring)
+                torConnectionAssistViewModel.cancelTorBootstrap()
             }
         }
     }
@@ -297,11 +392,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     private fun openTorConnectionSettings() {
-        findNavController().navigate(
-            TorConnectionAssistFragmentDirections.actionTorConnectionAssistFragmentToSettingsFragment(
-                requireContext().getString(R.string.pref_key_connection)
-            ),
-        )
+        openSettings(requireContext().getString(R.string.pref_key_connection))
     }
 
     private fun restartApplication() {

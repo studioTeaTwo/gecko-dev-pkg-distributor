@@ -12,19 +12,19 @@ class QuickstartViewModel(
 ) : AndroidViewModel(application) {
 
     private val components = getApplication<Application>().components
-    private val torIntegrationAndroid =
+    private val torAndroidIntegration =
         (components.core.engine as GeckoEngine).getTorIntegrationController()
 
     /**
      * NOTE: Whilst the initial value for _quickstart is fetched from
-     * TorIntegrationAndroid.quickstartGet (which is surfaced from TorConnect.quickstart), and we
+     * TorAndroidIntegration.quickstartGet (which is surfaced from TorConnect.quickstart), and we
      * pass on any changes in value up to TorConnect.quickstart (via quickstartSet()), we do not
      * listen for any changes to the TorConnect.quickstart value via "QuickstartChange" because we
      * do not expect anything outside of TorConnectViewModel to change its value, so we expect its
      * value to remain in sync with our local value.
      */
     init {
-        torIntegrationAndroid.quickstartGet {
+        torAndroidIntegration.quickstartGet {
             _quickstart.value = it
             components.settings.quickStart = it
         }
@@ -36,7 +36,7 @@ class QuickstartViewModel(
     }
 
     fun quickstartSet(value: Boolean) {
-        torIntegrationAndroid.quickstartSet(value)
+        torAndroidIntegration.quickstartSet(value)
         _quickstart.value = value
         components.settings.quickStart = value
     }

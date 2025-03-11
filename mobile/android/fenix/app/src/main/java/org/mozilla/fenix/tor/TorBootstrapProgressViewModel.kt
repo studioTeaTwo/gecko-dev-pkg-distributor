@@ -11,7 +11,7 @@ class TorBootstrapProgressViewModel(
     application: Application,
 ) : AndroidViewModel(application), BootstrapStateChangeListener {
 
-    private val torIntegrationAndroid =
+    private val torAndroidIntegration =
         application.components.core.geckoRuntime.torIntegrationController
 
     val progress: MutableLiveData<Int> by lazy {
@@ -19,11 +19,11 @@ class TorBootstrapProgressViewModel(
     }
 
     init {
-        torIntegrationAndroid.registerBootstrapStateChangeListener(this)
+        torAndroidIntegration.registerBootstrapStateChangeListener(this)
     }
 
     override fun onCleared() {
-        torIntegrationAndroid.unregisterBootstrapStateChangeListener(this)
+        torAndroidIntegration.unregisterBootstrapStateChangeListener(this)
         super.onCleared()
     }
 

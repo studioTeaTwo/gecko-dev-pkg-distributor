@@ -11,186 +11,140 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
+import org.mozilla.geckoview.TorAndroidIntegration.BootstrapStateChangeListener
+import org.mozilla.geckoview.TorConnectStage
+import org.mozilla.geckoview.TorConnectStageName
 
 class TorConnectionAssistViewModel(
     application: Application,
-) : AndroidViewModel(application) {
+) : AndroidViewModel(application), BootstrapStateChangeListener {
 
     private val TAG = "torConnectionAssistVM"
-    private val torIntegrationAndroid =
+    private val torAndroidIntegration =
         application.components.core.geckoRuntime.torIntegrationController
-    private val _torController: TorControllerGV = application.components.torController
 
-    private val _torConnectScreen = MutableStateFlow(ConnectAssistUiState.Splash)
+    init {
+        torAndroidIntegration.registerBootstrapStateChangeListener(this)
+
+        torAndroidIntegration.countryNamesGet { countryNamesMap : Map<String, String>? ->
+            if (countryNamesMap != null) {
+                countryCodeNameMap.value = countryNamesMap
+            }
+        }
+    }
+
+    override fun onCleared() {
+        torAndroidIntegration.unregisterBootstrapStateChangeListener(this)
+        super.onCleared()
+    }
+
+    private val torConnectStage: MutableStateFlow<TorConnectStage?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    private val _torConnectScreen = MutableStateFlow(ConnectAssistUiState.Loading)
     internal val torConnectScreen: StateFlow<ConnectAssistUiState> = _torConnectScreen
+
+    val countryCodeNameMap: MutableStateFlow<Map<String, String>?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val selectedCountryCode: MutableStateFlow<String> by lazy {
+        MutableStateFlow("automatic")
+    }
+
+    fun selectDefaultRegion() {
+        selectedCountryCode.value = torConnectStage.value?.defaultRegion ?: "automatic"
+    }
+
+    fun setCountryCodeToSelectedItem(position: Int) {
+        selectedCountryCode.value =
+            countryCodeNameMap.value?.keys?.toList()
+                ?.getOrNull(position - 1) ?: "automatic"
+        // position - 1 since we have the default/first value of automatic
+        Log.d(TAG, "selectedCountryCode = ${selectedCountryCode.value}")
+    }
 
     val shouldOpenHome: MutableLiveData<Boolean> by lazy {
         MutableLiveData(false)
     }
 
     fun handleConnect() {
-        if (_torConnectScreen.value.torBootstrapButton1ShouldShowTryingABridge) {
-            tryABridge()
+        val screen = _torConnectScreen.value
+        if (screen.torBootstrapButton1ShouldTryABridge && !button1ShouldBeDisabled(screen)) {
+            Log.d(TAG, "beginAutoBootstrap with countryCode: ${selectedCountryCode.value}")
+            torAndroidIntegration.beginAutoBootstrap(selectedCountryCode.value)
         } else {
-            if (_torController.lastKnownStatus.value.isOff()) {
-                torIntegrationAndroid.beginBootstrap()
-            }
+            torAndroidIntegration.beginBootstrap()
         }
     }
 
     fun cancelTorBootstrap() {
-        torIntegrationAndroid.cancelBootstrap()
-        _torController.setTorStopped()
+        torAndroidIntegration.cancelBootstrap()
     }
 
-    suspend fun collectLastKnownStatus() {
-        _torController.lastKnownStatus.collect {
-            when (it) {
-                TorConnectState.Initial -> _torConnectScreen.value = ConnectAssistUiState.Splash
-                TorConnectState.Configuring -> handleConfiguring()
-                TorConnectState.AutoBootstrapping -> handleBootstrap()
-                TorConnectState.Bootstrapping -> handleBootstrap()
-                TorConnectState.Bootstrapped -> shouldOpenHome.value = true
-                TorConnectState.Disabled -> shouldOpenHome.value = true
-                TorConnectState.Error -> handleError()
+    suspend fun collectTorConnectStage() {
+        torConnectStage.collect {
+            Log.d(TAG, "torConnectStageName: ${it?.name}")
+            when (it?.name) {
+                TorConnectStageName.Disabled       -> shouldOpenHome.value = true // TODO use TorConnect.enabled instead to determine this
+                TorConnectStageName.Loading        -> _torConnectScreen.value = ConnectAssistUiState.Loading
+                TorConnectStageName.Start          -> _torConnectScreen.value = ConnectAssistUiState.Start
+                TorConnectStageName.Bootstrapping  -> _torConnectScreen.value = handleBootstrapTrigger(it.bootstrapTrigger)
+                TorConnectStageName.Offline        -> _torConnectScreen.value = ConnectAssistUiState.Offline
+                TorConnectStageName.ChooseRegion   -> _torConnectScreen.value = ConnectAssistUiState.ChooseRegion
+                TorConnectStageName.RegionNotFound -> _torConnectScreen.value = ConnectAssistUiState.RegionNotFound
+                TorConnectStageName.ConfirmRegion  -> _torConnectScreen.value = ConnectAssistUiState.ConfirmRegion
+                TorConnectStageName.FinalError     -> _torConnectScreen.value = ConnectAssistUiState.FinalError
+                TorConnectStageName.Bootstrapped   -> shouldOpenHome.value = true
+                null                               -> {}
             }
         }
     }
 
-    private fun handleConfiguring() {
-        if (_torController.lastKnownError == null) {
-            _torConnectScreen.value = ConnectAssistUiState.Configuring
-        } else {
-            handleError()
-        }
-    }
-
-    private fun handleBootstrap() {
-        when (_torConnectScreen.value) {
-            ConnectAssistUiState.InternetError -> {
-                _torConnectScreen.value = ConnectAssistUiState.TryingAgain
-            }
-
-            ConnectAssistUiState.TryingAgain -> {
-                /** stay here */
-            }
-
-            ConnectAssistUiState.ConnectionAssist -> {
-                _torConnectScreen.value = ConnectAssistUiState.TryingABridge
-            }
-
-            ConnectAssistUiState.LocationError -> {
-                _torConnectScreen.value = ConnectAssistUiState.TryingABridge
-            }
-
-            ConnectAssistUiState.TryingABridge -> {
-                /** stay here */
-            }
-
-            ConnectAssistUiState.LocationCheck -> {
-                _torConnectScreen.value = ConnectAssistUiState.LastTry
-            }
-
-            ConnectAssistUiState.LastTry -> {
-                /** stay here */
-            }
-
-            else -> _torConnectScreen.value =
-                ConnectAssistUiState.Connecting
-        }
-    }
-
-    private fun handleError() {
-        _torController.lastKnownError?.apply {
-            Log.d(
-                TAG,
-                "TorError(message = $message, details = $details, phase = $phase, reason = $reason",
-            )
-            // TODO better error handling
-            when (reason) {
-//                "noroute" -> handleNoRoute() TODO re-add when working better
-                else -> handleUnknownError()
+    private fun handleBootstrapTrigger(bootstrapTrigger: TorConnectStageName) : ConnectAssistUiState {
+        Log.d(TAG, "bootstrapTrigger: $bootstrapTrigger")
+        return when (bootstrapTrigger) {
+            TorConnectStageName.Start          -> ConnectAssistUiState.Bootstrapping
+            TorConnectStageName.Offline        -> ConnectAssistUiState.TryingAgain
+            TorConnectStageName.ChooseRegion   -> ConnectAssistUiState.TryingABridge
+            TorConnectStageName.RegionNotFound -> ConnectAssistUiState.TryingABridgeRegionNotFound
+            TorConnectStageName.ConfirmRegion  -> ConnectAssistUiState.TryingABridgeConfirmRegion
+            else                               -> {
+                Log.e(TAG, "Unexpected bootstrapTrigger of $bootstrapTrigger")
+                ConnectAssistUiState.TryingAgain
             }
         }
-    }
-
-    private fun handleNoRoute() {
-        Log.d(TAG, "handleNoRoute(), _torConnectScreen.value = ${_torConnectScreen.value}")
-        when (_torConnectScreen.value) {
-            ConnectAssistUiState.Connecting -> _torConnectScreen.value = ConnectAssistUiState.ConnectionAssist
-            ConnectAssistUiState.ConnectionAssist -> {/** no op, likely a duplicate error */}
-            ConnectAssistUiState.TryingABridge -> _torConnectScreen.value = ConnectAssistUiState.LocationCheck
-            ConnectAssistUiState.LocationCheck -> {/** no op, likely a duplicate error */}
-            ConnectAssistUiState.LastTry -> _torConnectScreen.value = ConnectAssistUiState.FinalError
-            ConnectAssistUiState.FinalError -> {/** no op, likely a duplicate error */}
-            else -> _torConnectScreen.value = ConnectAssistUiState.InternetError
-        }
-    }
-
-    private fun handleUnknownError() {
-        // TODO should we have a dedicated screen for unknown errors?
-        _torConnectScreen.value = ConnectAssistUiState.InternetError
-    }
-
-    private fun tryABridge() {
-        if (!locationFound()) {
-            _torConnectScreen.value = ConnectAssistUiState.LocationError
-            return
-        }
-        if (!_torController.bridgesEnabled) {
-            _torController.bridgesEnabled = true
-            _torController.bridgeTransport =
-                TorBridgeTransportConfig.BUILTIN_SNOWFLAKE // TODO select based on country
-        }
-        torIntegrationAndroid.beginBootstrap()
-    }
-
-    private fun locationFound(): Boolean {
-        // TODO try to find location
-        return true
     }
 
     fun handleBackButtonPressed(homeActivity: HomeActivity) {
         when (torConnectScreen.value) {
-            ConnectAssistUiState.Splash -> homeActivity.shutDown()
-            ConnectAssistUiState.Configuring -> homeActivity.shutDown()
-            ConnectAssistUiState.Connecting -> cancelTorBootstrap()
-            ConnectAssistUiState.InternetError -> {
-                _torController.lastKnownError = null
-                _torConnectScreen.value = ConnectAssistUiState.Configuring
-            }
-
-            ConnectAssistUiState.TryingAgain -> {
-                cancelTorBootstrap()
-            }
-
-            ConnectAssistUiState.ConnectionAssist -> {
-                _torController.lastKnownError = null
-                _torConnectScreen.value = ConnectAssistUiState.Configuring
-            }
-
-            ConnectAssistUiState.TryingABridge -> {
-                _torController.stopTor()
-                _torConnectScreen.value = ConnectAssistUiState.ConnectionAssist
-            }
-
-            ConnectAssistUiState.LocationError -> {
-                _torConnectScreen.value = ConnectAssistUiState.ConnectionAssist
-            }
-
-            ConnectAssistUiState.LocationCheck -> {
-                _torConnectScreen.value = ConnectAssistUiState.LocationError
-            }
-
-            ConnectAssistUiState.LastTry -> {
-                _torController.stopTor()
-                _torConnectScreen.value = ConnectAssistUiState.LocationCheck
-            }
-
-            ConnectAssistUiState.FinalError -> {
-                _torConnectScreen.value = ConnectAssistUiState.LocationCheck
-            }
+            ConnectAssistUiState.Loading -> homeActivity.shutDown()
+            ConnectAssistUiState.Start   -> homeActivity.shutDown()
+            else                         -> torAndroidIntegration.startAgain()
         }
+    }
+
+    override fun onBootstrapStateChange(state: String?) {}
+
+    override fun onBootstrapStageChange(stage: TorConnectStage?) {
+        torConnectStage.value = stage
+    }
+
+    override fun onBootstrapProgress(progress: Double, hasWarnings: Boolean) {}
+
+    override fun onBootstrapComplete() {}
+
+    override fun onBootstrapError(
+        code: String?,
+        message: String?,
+        phase: String?,
+        reason: String?,
+    ) {}
+
+    fun button1ShouldBeDisabled(screen: ConnectAssistUiState): Boolean {
+        return selectedCountryCode.value == "automatic" && screen.countryDropDownDefaultItem == R.string.connection_assist_select_country_or_region
     }
 }

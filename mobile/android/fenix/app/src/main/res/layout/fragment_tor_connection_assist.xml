@@ -45,6 +45,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:visibility="invisible"
+        android:contentDescription="@string/connection_assist_back_button_content_description_start_again"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
