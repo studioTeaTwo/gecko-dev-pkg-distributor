@@ -15,7 +15,6 @@
     <string name="tor_bootstrap_connect">Connect</string>
     <string name="tor_bootstrap_connecting">Connecting</string>
     <string name="tor_bootstrap_connecting_failed">Connecting Failed</string>
-    <string name="tor_bootstrap_quick_start_label">Quick Start</string>
     <string name="tor_bootstrap_swipe_for_logs">Swipe to the left to see Tor logs</string>
     <string name="tor_initializing_log">Initializing Tor Log</string>
 
@@ -80,6 +79,7 @@
     <!-- Connection assist. -->
     <string name="connection_assist_tor_connect_title">Connect to Tor</string>
     <!-- Connection assist. -->
+    <string name="tor_connect_automatically_label">Connect automatically</string>
     <string name="connection_assist_always_connect_automatically_toggle_description">Always connect automatically</string>
     <!-- Connection assist. -->
     <string name="connection_assist_configure_connection_button">Configure connection…</string>
