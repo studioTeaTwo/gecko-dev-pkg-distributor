@@ -54,7 +54,7 @@ tor-connection-settings-heading = Connection
 tor-connection-settings-category =
     .tooltiptext = { tor-connection-settings-heading }
 # -brand-short-name refers to 'Tor Browser', localized.
-tor-connection-overview = { -brand-short-name } routes your traffic over the Tor Network, run by thousands of volunteers around the world.
+tor-connection-overview = { -brand-short-name } routes your traffic over the Tor network, run by thousands of volunteers around the world.
 tor-connection-browser-learn-more-link = Learn more
 tor-connection-automatic-heading = Connect automatically
 tor-connection-automatic-description = Automatically connect to the Tor network at launch using your current connection settings.
@@ -94,7 +94,7 @@ tor-connection-network-status-connect-button = Connect
 ## Tor Bridges Settings.
 
 tor-bridges-heading = Bridges
-tor-bridges-overview = Bridges help you securely access the Tor Network in places where Tor is blocked. Depending on where you are, one bridge may work better than another.
+tor-bridges-overview = Bridges help you securely access the Tor network in places where Tor is blocked. Depending on where you are, one bridge may work better than another.
 tor-bridges-learn-more-link = Learn more
 
 # Toggle button for enabling and disabling the use of bridges.
@@ -480,8 +480,8 @@ about-dialog-help-out = Want to help? <label data-l10n-name="donate-link">Donate
 
 # Link text for the Tor Project support page.
 about-dialog-questions-link = Questions?
-# Link text for the Tor Project page for Tor Network relay operators.
-about-dialog-grow-tor-network-link = Help the Tor Network Grow!
+# Link text for the Tor Project page for Tor network relay operators.
+about-dialog-grow-tor-network-link = Help the Tor network Grow!
 # Link text for the Tor Browser license page (about:license).
 about-dialog-browser-license-link = Licensing Information
 
