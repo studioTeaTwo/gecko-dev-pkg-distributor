@@ -46,12 +46,6 @@ const logger = console.createInstance({
  * @property {number} [port] The port number to use for a TCP proxy
  */
 /**
- * @typedef {object} LogEntry An object with a log message
- * @property {string} timestamp The local date-time stamp at which we received the message
- * @property {string} type The message level
- * @property {string} msg The message
- */
-/**
  * Stores the data associated with a circuit node.
  *
  * @typedef NodeData
@@ -69,7 +63,6 @@ const Preferences = Object.freeze({
   ControlUseIpc: "extensions.torlauncher.control_port_use_ipc",
   ControlHost: "extensions.torlauncher.control_host",
   ControlPort: "extensions.torlauncher.control_port",
-  MaxLogEntries: "extensions.torlauncher.max_tor_log_entries",
 });
 
 /* Config Keys used to configure tor daemon */
@@ -140,15 +133,6 @@ export class TorProvider {
    * @type {SocksSettings?}
    */
   #socksSettings = null;
-
-  /**
-   * The logs we received over the control port.
-   * We store a finite number of log entries which can be configured with
-   * extensions.torlauncher.max_tor_log_entries.
-   *
-   * @type {LogEntry[]}
-   */
-  #logs = [];
 
   #isBootstrapDone = false;
   /**
@@ -509,15 +493,6 @@ export class TorProvider {
    */
   async onionAuthViewKeys() {
     return this.#controller.onionAuthViewKeys();
-  }
-
-  /**
-   * Returns captured log messages.
-   *
-   * @returns {LogEntry[]} The logs we collected from the tor daemon so far.
-   */
-  getLog() {
-    return structuredClone(this.#logs);
   }
 
   /**
@@ -1033,15 +1008,6 @@ export class TorProvider {
       TorProviderTopics.TorLog
     );
 
-    const maxEntries = Services.prefs.getIntPref(
-      Preferences.MaxLogEntries,
-      1000
-    );
-    if (maxEntries > 0 && this.#logs.length >= maxEntries) {
-      this.#logs.splice(0, 1);
-    }
-
-    this.#logs.push({ type, msg, timestamp });
     switch (type) {
       case "ERR":
         logger.error(`[Tor error] ${msg}`);

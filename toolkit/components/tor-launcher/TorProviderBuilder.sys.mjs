@@ -24,6 +24,13 @@ export const TorProviders = Object.freeze({
 });
 
 /**
+ * @typedef {object} LogEntry An object with a log message
+ * @property {string} timestamp The local date-time stamp at which we received the message
+ * @property {string} type The message level
+ * @property {string} msg The message
+ */
+
+/**
  * The factory to get a Tor provider.
  * Currently we support only TorProvider, i.e., the one that interacts with
  * C-tor through the control port protocol.
@@ -35,6 +42,48 @@ export class TorProviderBuilder {
    * @type {Promise<TorProvider>?}
    */
   static #provider = null;
+
+  /**
+   * A record of the log messages from all TorProvider instances.
+   *
+   * @type {LogEntry[]}
+   */
+  static #log = [];
+
+  /**
+   * Get a record of historic log entries.
+   *
+   * @returns {LogEntry[]} - The record of entries.
+   */
+  static getLog() {
+    return structuredClone(this.#log);
+  }
+
+  /**
+   * The limit on the number of log entries we should store.
+   *
+   * @type {integer}
+   */
+  static #logLimit;
+
+  /**
+   * The observer that checks for new TorLog messages.
+   *
+   * @type {Function}
+   */
+  static #logObserver;
+
+  /**
+   * Add a new log message.
+   *
+   * @param {LogEntry} logEntry - The log entry to add.
+   */
+  static #addLogEntry(logEntry) {
+    if (this.#logLimit > 0 && this.#log.length >= this.#logLimit) {
+      this.#log.splice(0, 1);
+    }
+    this.#log.push(logEntry);
+  }
 
   /**
    * The observer that checks when the tor process exits, and reinitializes the
@@ -56,6 +105,15 @@ export class TorProviderBuilder {
    * Initialize the provider of choice.
    */
   static init() {
+    this.#logLimit = Services.prefs.getIntPref(
+      "extensions.torlauncher.max_tor_log_entries",
+      1000
+    );
+    this.#logObserver = subject => {
+      this.#addLogEntry(subject.wrappedJSObject);
+    };
+    Services.obs.addObserver(this.#logObserver, TorProviderTopics.TorLog);
+
     switch (this.providerType) {
       case TorProviders.tor:
         // Even though initialization of the initial TorProvider is
@@ -136,6 +194,7 @@ export class TorProviderBuilder {
       );
       this.#exitObserver = null;
     }
+    Services.obs.removeObserver(this.#logObserver, TorProviderTopics.TorLog);
   }
 
   /**
