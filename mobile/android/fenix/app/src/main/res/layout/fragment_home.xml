@@ -134,6 +134,12 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/campaignBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sessionControlRecyclerView"
         android:layout_width="match_parent"
