@@ -660,6 +660,7 @@ export const InternetStatus = Object.freeze({
   Online: 1,
 });
 
+// This enum is mirrored for Android in TorConnectStageName.java. Changes should be mirrored there
 export const TorConnectStage = Object.freeze({
   Disabled: "Disabled",
   Loading: "Loading",
@@ -677,6 +678,7 @@ export const TorConnectStage = Object.freeze({
  * @typedef {object} ConnectStage
  *
  * A summary of the user stage.
+ * (This class is mirrored for Android in TorConnectStage.java. Changes should be mirrored there)
  *
  * @property {string} name - The name of the stage.
  * @property {string} defaultRegion - The default region to show in the UI.
@@ -698,6 +700,7 @@ export const TorConnectStage = Object.freeze({
  * @typedef {object} BootstrappingStatus
  *
  * The status of a bootstrap.
+ * (This class is mirrored for Android in TorBootstrapping.java. Changes should be mirrored there)
  *
  * @property {number} progress - The percent progress.
  * @property {boolean} hasWarning - Whether this bootstrap has a warning in the
@@ -708,6 +711,7 @@ export const TorConnectStage = Object.freeze({
  * @typedef {object} BootstrapError
  *
  * Details about the error that caused bootstrapping to fail.
+ * (This class is mirrored for Android in TorError.java. Changes should be mirrored there)
  *
  * @property {string} code - The error code type.
  * @property {string} message - The error message.
