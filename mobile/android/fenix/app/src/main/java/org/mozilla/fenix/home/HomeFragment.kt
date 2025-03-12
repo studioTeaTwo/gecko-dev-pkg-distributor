@@ -12,33 +12,65 @@ import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
-import androidx.core.view.children
-import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -108,6 +140,7 @@ import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.PrivateShortcutCreateManager
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.components
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.toolbar.IncompleteRedesignToolbarFeature
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
@@ -151,13 +184,13 @@ import org.mozilla.fenix.messaging.DefaultMessageController
 import org.mozilla.fenix.messaging.FenixMessageSurfaceId
 import org.mozilla.fenix.messaging.MessagingFeature
 import org.mozilla.fenix.microsurvey.ui.MicrosurveyRequestPrompt
-import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.MarkersFragmentLifecycleCallbacks
 import org.mozilla.fenix.search.toolbar.DefaultSearchSelectorController
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.tabstray.TabsTrayAccessPoint
 import org.mozilla.fenix.theme.FirefoxTheme
+import org.mozilla.fenix.tor.CampaignStrings
 import org.mozilla.fenix.utils.Settings.Companion.TOP_SITES_PROVIDER_MAX_THRESHOLD
 import org.mozilla.fenix.utils.allowUndo
 import org.mozilla.fenix.wallpapers.Wallpaper
@@ -165,6 +198,9 @@ import java.lang.ref.WeakReference
 import org.mozilla.fenix.GleanMetrics.TabStrip as TabStripMetrics
 
 import org.mozilla.fenix.tor.UrlQuickLoadViewModel
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.Date
 
 @Suppress("TooManyFunctions", "LargeClass")
 class HomeFragment : Fragment(), UserInteractionHandler {
@@ -507,6 +543,8 @@ class HomeFragment : Fragment(), UserInteractionHandler {
 
         activity.themeManager.applyStatusBarTheme(activity)
 
+        tryShowUX2025Survey()
+
         // FxNimbus.features.homescreen.recordExposure()
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
@@ -516,6 +554,28 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             "HomeFragment.onCreateView",
         )
         return binding.root
+    }
+
+    private fun tryShowUX2025Survey() {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd-hh-zzz")
+        val startDate = dateFormat.parse("2025-04-14-12-UTC")
+
+        val endDate = dateFormat.parse("2025-04-28-00-UTC")
+        val currentDate = Date()
+
+        if (currentDate.before(startDate) || currentDate.after(endDate)) {
+            return // comment out to test
+        }
+
+        if (BuildConfig.BUILD_TYPE == "release" && !requireContext().settings().hideCampaign) {
+            binding.onionPatternImage.visibility = View.GONE
+            binding.campaignBox.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    CampaignBox()
+                }
+            }
+        }
     }
 
     private fun reinitializeNavBar() {
@@ -1395,5 +1455,218 @@ class HomeFragment : Fragment(), UserInteractionHandler {
 
     override fun onBackPressed(): Boolean {
         (requireActivity() as HomeActivity).shutDown()
+    }
+
+    @Composable
+    fun CampaignBox() {
+        BoxWithConstraints(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            val alternateLayout = this.maxWidth >= 500.dp
+
+            CampaignLayout(
+                alternateLayout,
+                maxWidth = this.maxWidth,
+                modifier = Modifier
+                    .padding(top = if (alternateLayout) 65.dp else 55.dp, bottom = 56.dp),
+            )
+        }
+    }
+
+    @Composable
+    private fun CampaignLayout(
+        alternateLayout: Boolean,
+        maxWidth: Dp,
+        modifier: Modifier
+    ) {
+        Column(
+            modifier = modifier
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(getVariableWidth(maxWidth)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            PurpleBox(alternateLayout)
+        }
+    }
+
+    private fun getVariableWidth(width: Dp): Float = (500.dp / width).coerceIn(0.75f, 1.0f)
+
+    @Composable
+    private fun PurpleBox(
+        alternateLayout: Boolean,
+    ) {
+        Box(
+            modifier = Modifier.background(PhotonColors.Violet90, shape = RoundedCornerShape(8.dp))
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Emoji()
+                    Spacer(Modifier.weight(1f))
+                    ExitIcon()
+                }
+                DynamicCampaignContent(alternateLayout)
+            }
+        }
+    }
+
+    @Composable
+    private fun Emoji() {
+        val alpha38Violet40 = Color(PhotonColors.Violet40.red, PhotonColors.Violet40.green, PhotonColors.Violet40.blue, 0.38f)
+        Image(
+            painter = painterResource(id = R.drawable.campaign_hand),
+            contentDescription = null,
+            modifier = Modifier
+                .size(48.dp)
+                .padding(top = (16+8).dp, start = (16+8).dp)
+                .drawBehind {
+                    drawCircle(
+                        color = alpha38Violet40,
+                        radius = this.size.height
+                    )
+                }
+        )
+    }
+
+    @Composable
+    private fun ExitIcon() {
+        IconButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {
+                binding.campaignBox.visibility = View.GONE
+                binding.onionPatternImage.visibility = View.VISIBLE
+                context?.components?.settings?.hideCampaign = true
+            },
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_close),
+                tint = Color(
+                    getColor(
+                        requireContext(),
+                        R.color.photonWhite,
+                    ),
+                ),
+                contentDescription = CampaignStrings.get(CampaignStrings.CloseKey),
+                modifier = Modifier
+                    .padding(0.dp)
+            )
+        }
+    }
+
+
+    @Composable
+    private fun DynamicCampaignContent(
+        alternateLayout: Boolean
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                TitleText()
+                MainText()
+
+                if (alternateLayout) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Button1(alternateLayout)
+                        Button2()
+                    }
+                } else {
+                    Button1(alternateLayout)
+                    Button2()
+                }
+
+            }
+        }
+    }
+
+    @Composable
+    private fun TitleText() {
+
+        Text(text = CampaignStrings.get(CampaignStrings.HeaderKey),
+            color = PhotonColors.LightGrey05,
+            textAlign = TextAlign.Left,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
+            modifier =  Modifier.padding(bottom = 16.dp)
+        )
+    }
+
+    @Composable
+    private fun MainText() {
+
+        Text(text =  CampaignStrings.get(CampaignStrings.BodyKey),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 0.dp,
+                    end = 0.dp,
+                    bottom = 18.dp,
+                ),
+            color = PhotonColors.LightGrey05,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Left,
+            )
+    }
+
+    @Composable
+    private fun Button1(alternateLayout: Boolean) {
+        TextButton(
+            onClick = {
+                var locale = CampaignStrings.getLocale()
+                if (locale == "pt") {
+                    locale = "pt-BR"
+                }
+                (activity as HomeActivity).openToBrowserAndLoad(
+                    searchTermOrURL = "https://survey.torproject.org/index.php/923269?lang=${locale}",
+                    newTab = true,
+                    from = BrowserDirection.FromHome,
+                )
+            },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = PhotonColors.Violet60),
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.padding(0.dp)
+                .fillMaxWidth(fraction = if (alternateLayout) 0.5f else 1f),
+
+        ) {
+            Text(text = CampaignStrings.get(CampaignStrings.CTAKey),
+                color = PhotonColors.LightGrey05,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(8.dp))
+        }
+    }
+
+    @Composable
+    private fun Button2() {
+        TextButton(
+            onClick = {
+                binding.campaignBox.visibility = View.GONE
+                binding.onionPatternImage.visibility = View.VISIBLE
+                context?.components?.settings?.hideCampaign = true
+            },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = PhotonColors.Violet90),
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.padding(0.dp)
+                .fillMaxWidth()
+        ) {
+            Text(text = CampaignStrings.get(CampaignStrings.DismissKey),
+            color = PhotonColors.Violet20,
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(8.dp))
+        }
     }
 }

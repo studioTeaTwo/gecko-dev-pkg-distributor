@@ -430,4 +430,5 @@
     <string name="pref_key_tor_network_settings_bridges_enabled">pref_key_tor_network_settings_bridges_enabled</string>
 
     <string name="pref_key_spoof_english" translatable="false">pref_key_spoof_english</string>
+    <string name="pref_key_hide_campaign_2025_ux_survey" translatable="false">pref_key_hide_campaign_2025_ux_survey_test</string>
 </resources>
