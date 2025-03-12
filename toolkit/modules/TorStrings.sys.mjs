@@ -69,7 +69,7 @@ const Loader = {
     const strings = {
       // Message box
       torPreferencesDescription:
-        "Tor Browser routes your traffic over the Tor Network, run by thousands of volunteers around the world.",
+        "Tor Browser routes your traffic over the Tor network, run by thousands of volunteers around the world.",
       // Quickstart
       quickstartCheckbox: "Always connect automatically",
       bridgeLocation: "Your location",
