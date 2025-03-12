@@ -66,28 +66,22 @@ const gTorLogDialog = {
       );
     });
 
-    // A waiting state should not be needed at this point.
-    // Also, we probably cannot even arrive here if the provider failed to
-    // initialize, otherwise we could use a try/catch, and write the exception
-    // text in the logs, instead.
-    TorProviderBuilder.build().then(provider => {
-      Services.obs.addObserver(this, TorProviderTopics.TorLog);
-      window.addEventListener(
-        "unload",
-        () => {
-          Services.obs.removeObserver(this, TorProviderTopics.TorLog);
-        },
-        { once: true }
-      );
+    Services.obs.addObserver(this, TorProviderTopics.TorLog);
+    window.addEventListener(
+      "unload",
+      () => {
+        Services.obs.removeObserver(this, TorProviderTopics.TorLog);
+      },
+      { once: true }
+    );
 
-      for (const logEntry of provider.getLog()) {
-        this.addLogEntry(logEntry, true);
-      }
-      // Set the initial scroll to the bottom.
-      this._logTable.scrollTo({
-        top: this._logTable.scrollTopMax,
-        behaviour: "instant",
-      });
+    for (const logEntry of TorProviderBuilder.getLog()) {
+      this.addLogEntry(logEntry, true);
+    }
+    // Set the initial scroll to the bottom.
+    this._logTable.scrollTo({
+      top: this._logTable.scrollTopMax,
+      behaviour: "instant",
     });
   },
 
