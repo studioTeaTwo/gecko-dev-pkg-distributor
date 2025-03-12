@@ -16,8 +16,6 @@
     <string name="tor_bootstrap_connecting">Connecting</string>
     <string name="tor_bootstrap_connecting_failed">Connecting Failed</string>
     <string name="tor_bootstrap_quick_start_label">Quick Start</string>
-    <string name="tor_bootstrap_quick_start_disabled">Enable Quick Start to connect automatically in the future</string>
-    <string name="tor_bootstrap_quick_start_enabled">%s will connect automatically to the Tor Network in the future</string>
     <string name="tor_bootstrap_swipe_for_logs">Swipe to the left to see Tor logs</string>
     <string name="tor_initializing_log">Initializing Tor Log</string>
 
@@ -34,13 +32,12 @@
     <string name="library_new_circuit">New circuit</string>
 
     <string name="preferences_tor_connection_settings_title">Connection</string>
-    <string name="preferences_tor_network_settings">Tor Network</string>
-    <string name="preferences_tor_network_settings_explanation">Tor Browser routes your traffic over the Tor Network, run by thousands of volunteers around the world.</string>
+    <string name="preferences_tor_network_settings_explanation">Tor Browser routes your traffic over the Tor network, run by thousands of volunteers around the world.</string>
     <string name="preferences_tor_network_settings_bridge_config">Config Bridge</string>
     <string name="preferences_tor_network_settings_bridge_config_description">Use a Bridge to connect to Tor</string>
     <string name="preferences_tor_network_settings_bridge_config_description_builtin_transport_enabled">You’re using a built-in bridge to connect to Tor</string>
     <string name="preferences_tor_network_settings_bridge_config_description_user_provided_enabled">You provided a bridge to connect to Tor</string>
-    <string name="preferences_tor_network_settings_bridge_config_explanation">Bridges are unlisted relays that make it more difficult to block connections to the Tor Network. Because of how certain countries try to block Tor, certain bridges work in certain countries but not others.</string>
+    <string name="preferences_tor_network_settings_bridge_config_explanation">Bridges are unlisted relays that make it more difficult to block connections to the Tor network. Because of how certain countries try to block Tor, certain bridges work in certain countries but not others.</string>
     <string name="preferences_tor_network_settings_bridge_config_toggle">Use a Bridge</string>
     <string name="preferences_tor_network_settings_bridge_config_toggle_description">Config a bridge to connect to Tor</string>
     <string name="preferences_tor_network_settings_bridge_config_builtin_bridge_obfs4">obfs4</string>
