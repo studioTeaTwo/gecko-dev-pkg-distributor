@@ -680,10 +680,14 @@ export const TorConnectStage = Object.freeze({
  * A summary of the user stage.
  * (This class is mirrored for Android in TorConnectStage.java. Changes should be mirrored there)
  *
- * @property {string} name - The name of the stage.
+ * @property {string} name - The name of the stage. One of the values in
+ *   `TorConnectStage`.
  * @property {string} defaultRegion - The default region to show in the UI.
- * @property {?string} bootstrapTrigger - The TorConnectStage prior to this
+ * @property {?string} bootstrapTrigger - The name of the stage prior to this
  *   bootstrap attempt. Only set during the "Bootstrapping" stage.
+ * @property {boolean} isQuickstart - Whether the current bootstrap attempt was
+ *   triggered by the `TorConnect.quickstart` preference. Will be `false`
+ *   outside of the "Bootstrapping" stage.
  * @property {?BootstrapError} error - The last bootstrapping error.
  * @property {boolean} tryAgain - Whether a bootstrap attempt has failed, so
  *   that a normal bootstrap should be shown as "Try Again" instead of
@@ -753,6 +757,14 @@ export const TorConnect = {
   _bootstrapTrigger: null,
 
   /**
+   * Whether the current bootstrapping attempt was triggered by the quickstart
+   * preference.
+   *
+   * @type {boolean}
+   */
+  _isQuickstart: false,
+
+  /**
    * The alternative stage that we should move to after bootstrapping completes.
    *
    * @type {?string}
@@ -807,6 +819,7 @@ export const TorConnect = {
       name: this._stageName,
       defaultRegion: this._defaultRegion,
       bootstrapTrigger: this._bootstrapTrigger,
+      isQuickstart: this._isQuickstart,
       error: this._errorDetails
         ? {
             code: this._errorDetails.code,
@@ -935,7 +948,7 @@ export const TorConnect = {
       // And the previous bootstrap attempt must have succeeded.
       !Services.prefs.getBoolPref(TorConnectPrefs.prompt_at_startup, true)
     ) {
-      this.beginBootstrapping();
+      this._beginBootstrappingInternal(undefined, true);
     }
   },
 
@@ -1303,6 +1316,19 @@ export const TorConnect = {
    *   an auto-bootstrap attempt.
    */
   async beginBootstrapping(regionCode) {
+    await this._beginBootstrappingInternal(regionCode, false);
+  },
+
+  /**
+   * Begin a bootstrap attempt.
+   *
+   * @param {string} [regionCode] - An optional region code string to use, or
+   *   "automatic" to automatically determine the region. If given, will start
+   *   an auto-bootstrap attempt.
+   * @param {boolean} isQuickstart - Whether this was triggered by the
+   *   quickstart option.
+   */
+  async _beginBootstrappingInternal(regionCode, isQuickstart) {
     lazy.logger.debug("TorConnect.beginBootstrapping()");
 
     if (!this._confirmBootstrapping(regionCode)) {
@@ -1331,6 +1357,7 @@ export const TorConnect = {
     }
     this._requestedStage = null;
     this._bootstrapTrigger = beginStage;
+    this._isQuickstart = isQuickstart;
     this._setStage(TorConnectStage.Bootstrapping);
     this._bootstrapAttempt = bootstrapAttempt;
 
@@ -1349,6 +1376,7 @@ export const TorConnect = {
     const requestedStage = this._requestedStage;
     this._requestedStage = null;
     this._bootstrapTrigger = null;
+    this._isQuickstart = false;
     this._bootstrapAttempt = null;
 
     if (bootstrapAttempt.detectedRegion) {
