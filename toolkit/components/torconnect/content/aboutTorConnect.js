@@ -32,7 +32,6 @@ class AboutTorConnect {
   selectors = Object.freeze({
     textContainer: {
       title: "div.title",
-      titleText: "h1.title-text",
       longContentText: "#connectLongContentText",
     },
     progress: {
@@ -77,7 +76,7 @@ class AboutTorConnect {
 
   elements = Object.freeze({
     title: document.querySelector(this.selectors.textContainer.title),
-    titleText: document.querySelector(this.selectors.textContainer.titleText),
+    heading: document.getElementById("tor-connect-heading"),
     longContentText: document.querySelector(
       this.selectors.textContainer.longContentText
     ),
@@ -138,18 +137,44 @@ class AboutTorConnect {
 
   locations = {};
 
-  beginBootstrapping() {
-    RPMSendAsyncMessage("torconnect:begin-bootstrapping", {});
+  /**
+   * Whether the user requested a cancellation of the bootstrap from *this*
+   * page.
+   *
+   * @type {boolean}
+   */
+  userCancelled = false;
+
+  /**
+   * Start a normal bootstrap attempt.
+   *
+   * @param {boolean} userClickedConnect - Whether this request was triggered by
+   *   the user clicking the "Connect" button on the "Start" page.
+   */
+  beginBootstrapping(userClickedConnect) {
+    RPMSendAsyncMessage("torconnect:begin-bootstrapping", {
+      userClickedConnect,
+    });
   }
 
+  /**
+   * Start an auto bootstrap attempt.
+   *
+   * @param {string} regionCode - The region code to use for the bootstrap, or
+   *   "automatic".
+   */
   beginAutoBootstrapping(regionCode) {
     RPMSendAsyncMessage("torconnect:begin-bootstrapping", {
       regionCode,
     });
   }
 
+  /**
+   * Try and cancel the current bootstrap attempt.
+   */
   cancelBootstrapping() {
     RPMSendAsyncMessage("torconnect:cancel-bootstrapping");
+    this.userCancelled = true;
   }
 
   /*
@@ -260,7 +285,7 @@ class AboutTorConnect {
   }
 
   setTitle(title, className) {
-    this.elements.titleText.textContent = title;
+    this.elements.heading.textContent = title;
     this.elements.title.className = "title";
     if (className) {
       this.elements.title.classList.add(className);
@@ -349,18 +374,88 @@ class AboutTorConnect {
     }
   }
 
+  /**
+   * The connect button that was focused just prior to a bootstrap attempt, if
+   * any.
+   *
+   * @type {?Element}
+   */
+  preBootstrappingFocus = null;
+
+  /**
+   * The stage that was shown on this page just prior to a bootstrap attempt.
+   *
+   * @type {?string}
+   */
+  preBootstrappingStage = null;
+
   /*
   These methods update the UI based on the current TorConnect state
   */
 
-  updateStage(stage) {
+  /**
+   * Update the shown stage.
+   *
+   * @param {ConnectStage} stage - The new stage to show.
+   * @param {boolean} [focusConnect=false] - Whether to try and focus the
+   *   connect button, if we are in the Start stage.
+   */
+  updateStage(stage, focusConnect = false) {
     if (stage.name === this.shownStage) {
       return;
     }
 
+    const prevStage = this.shownStage;
     this.shownStage = stage.name;
     this.selectedLocation = stage.defaultRegion;
 
+    // By default we want to reset the focus to the top of the page when
+    // changing the displayed page since we want a user to read the new page
+    // before activating a control.
+    let moveFocus = this.elements.heading;
+
+    if (stage.name === "Bootstrapping") {
+      this.preBootstrappingStage = prevStage;
+      this.preBootstrappingFocus = null;
+      if (focusConnect && stage.isQuickstart) {
+        // If this is the initial automatic bootstrap triggered by the
+        // quickstart preference, treat as if the previous shown stage was
+        // "Start" and the user clicked the "Connect" button.
+        // Then, if the user cancels, the focus should still move to the
+        // "Connect" button.
+        this.preBootstrappingStage = "Start";
+        this.preBootstrappingFocus = this.elements.connectButton;
+      } else if (this.elements.connectButton.contains(document.activeElement)) {
+        this.preBootstrappingFocus = this.elements.connectButton;
+      } else if (
+        this.elements.tryBridgeButton.contains(document.activeElement)
+      ) {
+        this.preBootstrappingFocus = this.elements.tryBridgeButton;
+      }
+    } else {
+      if (
+        this.userCancelled &&
+        prevStage === "Bootstrapping" &&
+        stage.name === this.preBootstrappingStage &&
+        this.preBootstrappingFocus &&
+        this.elements.cancelButton.contains(document.activeElement)
+      ) {
+        // If returning back to the same stage after the user tried to cancel
+        // bootstrapping from within this page, then we restore the focus to the
+        // connect button to allow the user to quickly re-try.
+        // If the bootstrap was cancelled for any other reason, we reset the
+        // focus as usual.
+        moveFocus = this.preBootstrappingFocus;
+      }
+      // Clear the Bootstrapping variables.
+      this.preBootstrappingStage = null;
+      this.preBootstrappingFocus = null;
+    }
+
+    // Clear the recording of the cancellation request.
+    this.userCancelled = false;
+
+    let isLoaded = true;
     let showProgress = false;
     let showLog = false;
     switch (stage.name) {
@@ -368,14 +463,21 @@ class AboutTorConnect {
         console.error("Should not be open when TorConnect is disabled");
         break;
       case "Loading":
+        // Unexpected for this page to open so early.
+        console.warn("Page opened whilst loading");
+        isLoaded = false;
+        break;
       case "Start":
-        // Loading is not currnetly handled, treat the same as "Start", but UI
-        // will be unresponsive.
         this.showStart(stage.tryAgain, stage.potentiallyBlocked);
+        if (focusConnect) {
+          moveFocus = this.elements.connectButton;
+        }
         break;
       case "Bootstrapping":
         showProgress = true;
         this.showBootstrapping(stage.bootstrapTrigger, stage.tryAgain);
+        // Always focus the cancel button.
+        moveFocus = this.elements.cancelButton;
         break;
       case "Offline":
         showLog = true;
@@ -419,6 +521,9 @@ class AboutTorConnect {
     } else {
       this.hide(this.elements.viewLogButton);
     }
+
+    document.body.classList.toggle("loaded", isLoaded);
+    moveFocus.focus();
   }
 
   updateBootstrappingStatus(data) {
@@ -452,10 +557,9 @@ class AboutTorConnect {
     this.show(this.elements.quickstartContainer);
     this.show(this.elements.configureButton);
     this.show(this.elements.connectButton, true);
-    this.elements.connectButton.focus();
-    if (tryAgain) {
-      this.elements.connectButton.textContent = TorStrings.torConnect.tryAgain;
-    }
+    this.elements.connectButton.textContent = tryAgain
+      ? TorStrings.torConnect.tryAgain
+      : TorStrings.torConnect.torConnectButton;
     if (potentiallyBlocked) {
       this.setBreadcrumbsStatus(
         BreadcrumbStatus.Active,
@@ -511,7 +615,6 @@ class AboutTorConnect {
     }
     this.hideButtons();
     this.show(this.elements.cancelButton);
-    this.elements.cancelButton.focus();
   }
 
   showOffline() {
@@ -541,7 +644,6 @@ class AboutTorConnect {
       BreadcrumbStatus.Disabled
     );
     this.showLocationForm(true, TorStrings.torConnect.tryBridge);
-    this.elements.tryBridgeButton.focus();
   }
 
   showRegionNotFound() {
@@ -557,7 +659,6 @@ class AboutTorConnect {
       BreadcrumbStatus.Disabled
     );
     this.showLocationForm(false, TorStrings.torConnect.tryBridge);
-    this.elements.tryBridgeButton.focus();
   }
 
   showConfirmRegion(error) {
@@ -573,7 +674,6 @@ class AboutTorConnect {
       BreadcrumbStatus.Active
     );
     this.showLocationForm(false, TorStrings.torConnect.tryAgain);
-    this.elements.tryBridgeButton.focus();
   }
 
   showFinalError(error) {
@@ -719,7 +819,8 @@ class AboutTorConnect {
     this.elements.connectButton.textContent =
       TorStrings.torConnect.torConnectButton;
     this.elements.connectButton.addEventListener("click", () => {
-      this.beginBootstrapping();
+      // Record as userClickedConnect if we are in the Start stage.
+      this.beginBootstrapping(this.shownStage === "Start");
     });
 
     this.populateLocations();
@@ -799,7 +900,13 @@ class AboutTorConnect {
     this.initObservers();
     this.initKeyboardShortcuts();
 
-    this.updateStage(args.stage);
+    // If we have previously opened about:torconnect and the user tried the
+    // "Connect" button we want to focus the "Connect" button for easy
+    // activation.
+    // Otherwise, we do not want to focus it for first time users so they can
+    // read the full page first.
+    const focusConnect = args.userHasEverClickedConnect;
+    this.updateStage(args.stage, focusConnect);
     this.updateQuickstart(args.quickstartEnabled);
   }
 }

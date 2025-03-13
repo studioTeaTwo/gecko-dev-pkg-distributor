@@ -13,6 +13,9 @@ ChromeUtils.defineESModuleGetters(lazy, {
   HomePage: "resource:///modules/HomePage.sys.mjs",
 });
 
+const userHasEverClickedConnectPref =
+  "torbrowser.about_torconnect.user_has_ever_clicked_connect";
+
 /*
 This object is basically a marshalling interface between the TorConnect module
 and a particular about:torconnect page
@@ -117,6 +120,9 @@ export class TorConnectParent extends JSWindowActorParent {
         TorConnect.chooseRegion();
         break;
       case "torconnect:begin-bootstrapping":
+        if (message.data.userClickedConnect) {
+          Services.prefs.setBoolPref(userHasEverClickedConnectPref, true);
+        }
         TorConnect.beginBootstrapping(message.data.regionCode);
         break;
       case "torconnect:cancel-bootstrapping":
@@ -130,6 +136,10 @@ export class TorConnectParent extends JSWindowActorParent {
           Direction: Services.locale.isAppLocaleRTL ? "rtl" : "ltr",
           CountryNames: TorConnect.countryNames,
           stage: TorConnect.stage,
+          userHasEverClickedConnect: Services.prefs.getBoolPref(
+            userHasEverClickedConnectPref,
+            false
+          ),
           quickstartEnabled: TorConnect.quickstart,
         };
       case "torconnect:get-frequent-regions":

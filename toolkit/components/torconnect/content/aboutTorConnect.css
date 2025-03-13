@@ -10,6 +10,11 @@
   --onion-color: var(--card-outline-color);
 }
 
+body:not(.loaded) {
+  /* Keep blank whilst loading. */
+  display: none;
+}
+
 #breadcrumbs {
   display: flex;
   align-items: center;
@@ -86,6 +91,11 @@
 
 .breadcrumb-item.hidden, .breadcrumb-separator.hidden {
   display: none;
+}
+
+#tor-connect-heading {
+  /* Do not show the focus outline. */
+  outline: none;
 }
 
 #connect-to-tor {
