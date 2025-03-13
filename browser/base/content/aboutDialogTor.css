@@ -26,6 +26,10 @@
   margin-block: 10px;
 }
 
+#releasenotes {
+  margin-inline-end: .9em; /* Same as #submit-feedback */
+}
+
 #contributeDesc {
   display: none;
 }
