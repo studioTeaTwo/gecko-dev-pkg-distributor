@@ -1,14 +1,7 @@
 #include 001-base-profile.js
 
 pref("app.update.notifyDuringDownload", true);
-pref("app.update.url.manual", "https://www.torproject.org/download/languages/");
-pref("app.update.url.details", "https://www.torproject.org/download/");
 pref("app.update.badgeWaitTime", 0);
-pref("app.releaseNotesURL", "about:blank");
-// disables the 'What's New?' link in the about dialog, otherwise we need to
-// duplicate logic for generating the url to the blog post that is already more
-// easily found in about:tor
-pref("app.releaseNotesURL.aboutDialog", "about:blank");
 // point to our feedback url rather than Mozilla's
 pref("app.feedback.baseURL", "https://support.torproject.org/%LOCALE%/misc/bug-or-feedback/");
 
