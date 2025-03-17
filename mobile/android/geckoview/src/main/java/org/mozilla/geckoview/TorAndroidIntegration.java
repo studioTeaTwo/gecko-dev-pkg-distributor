@@ -53,8 +53,10 @@ public class TorAndroidIntegration implements BundleEventListener {
   private static final String EVENT_BOOTSTRAP_BEGIN_AUTO = "GeckoView:Tor:BootstrapBeginAuto";
   private static final String EVENT_BOOTSTRAP_CANCEL = "GeckoView:Tor:BootstrapCancel";
   private static final String EVENT_BOOTSTRAP_GET_STATE = "GeckoView:Tor:BootstrapGetState";
+  private static final String EVENT_START_AGAIN = "GeckoView:Tor:StartAgain";
   private static final String EVENT_QUICKSTART_GET = "GeckoView:Tor:QuickstartGet";
   private static final String EVENT_QUICKSTART_SET = "GeckoView:Tor:QuickstartSet";
+  private static final String EVENT_COUNTRY_NAMES_GET = "GeckoView:Tor:CountryNamesGet";
 
   private static final String CONTROL_PORT_FILE = "/control-ipc";
   private static final String SOCKS_FILE = "/socks-ipc";
@@ -693,6 +695,10 @@ public class TorAndroidIntegration implements BundleEventListener {
     return EventDispatcher.getInstance().queryVoid(EVENT_SETTINGS_SET, bundle);
   }
 
+  public @NonNull GeckoResult<Void> startAgain() {
+    return EventDispatcher.getInstance().queryVoid(EVENT_START_AGAIN);
+  }
+
   public interface QuickstartGetter {
     void onValue(boolean enabled);
   }
@@ -708,6 +714,27 @@ public class TorAndroidIntegration implements BundleEventListener {
     final GeckoBundle bundle = new GeckoBundle(1);
     bundle.putBoolean("enabled", enabled);
     return EventDispatcher.getInstance().queryVoid(EVENT_QUICKSTART_SET, bundle);
+  }
+
+  public interface CountryNamesGetter {
+    void onValue(Map<String, String> regions);
+  }
+
+  public void countryNamesGet(CountryNamesGetter countryNamesGetter) {
+    EventDispatcher.getInstance().queryBundle(EVENT_COUNTRY_NAMES_GET).then(countryNames -> {
+      if (countryNames != null) {
+        String[] codes = countryNames.keys();
+        Map<String, String> regions = new HashMap<>(codes.length);
+        for (String code : codes) {
+          regions.put(code, countryNames.getString(code));
+        }
+        countryNamesGetter.onValue(regions);
+      } else {
+        Log.e(TAG, "countryNames was null");
+        countryNamesGetter.onValue(null);
+      }
+      return new GeckoResult<Void>();
+    });
   }
 
   public @NonNull GeckoResult<Void> beginBootstrap() {

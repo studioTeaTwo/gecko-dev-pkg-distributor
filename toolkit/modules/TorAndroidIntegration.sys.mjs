@@ -42,8 +42,10 @@ const ListenedEvents = Object.freeze({
   bootstrapBeginAuto: "GeckoView:Tor:BootstrapBeginAuto",
   bootstrapCancel: "GeckoView:Tor:BootstrapCancel",
   bootstrapGetState: "GeckoView:Tor:BootstrapGetState",
+  startAgain: "GeckoView:Tor:StartAgain",
   quickstartGet: "GeckoView:Tor:QuickstartGet",
   quickstartSet: "GeckoView:Tor:QuickstartSet",
+  countryNamesGet: "GeckoView:Tor:CountryNamesGet",
 });
 
 class TorAndroidIntegrationImpl {
@@ -190,14 +192,18 @@ class TorAndroidIntegrationImpl {
         case ListenedEvents.bootstrapGetState:
           callback?.onSuccess(lazy.TorConnect.state);
           return;
-        // TODO: Expose TorConnect.startAgain() to allow users to begin
-        // from the start again.
+        case ListenedEvents.startAgain:
+          lazy.TorConnect.startAgain();
+          break;
         case ListenedEvents.quickstartGet:
           callback?.onSuccess(lazy.TorConnect.quickstart);
           return;
         case ListenedEvents.quickstartSet:
           lazy.TorConnect.quickstart = data.enabled;
           break;
+        case ListenedEvents.countryNamesGet:
+          callback?.onSuccess(lazy.TorConnect.countryNames)
+          return;
       }
       callback?.onSuccess();
     } catch (e) {
