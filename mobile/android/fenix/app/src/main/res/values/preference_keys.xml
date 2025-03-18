@@ -415,6 +415,7 @@
     <string name="pref_key_tor_network_settings_bridge_config" translatable="false">pref_key_tor_network_settings_bridge_config</string>
     <string name="pref_key_tor_logs" translatable="false">pref_key_tor_logs</string>
     <string name="pref_key_use_html_connection_ui" translatable="false">pref_key_use_html_connection_ui</string> <!-- Changing the pref_key should reset it to off for users that had it enabled   -->
+    <string name="pref_key_about_config_shortcut" translatable="false">pref_key_about_config_shortcut</string>
     <string name="pref_key_tor_network_settings_bridge_config_explanation" translatable="false">pref_key_tor_network_settings_bridge_config_explanation</string>
     <string name="pref_key_tor_network_settings_bridge_config_toggle" translatable="false">pref_key_tor_network_settings_bridge_config_toggle</string>
     <string name="pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4" translatable="false">pref_key_tor_network_settings_bridge_config_builtin_bridge_obfs4</string>

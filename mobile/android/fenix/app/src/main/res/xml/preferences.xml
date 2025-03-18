@@ -194,6 +194,12 @@
             android:title="@string/preferences_tor_logs"
             android:summary="@string/preferences_tor_logs_description" />
 
+        <Preference
+            android:key="@string/pref_key_about_config_shortcut"
+            app:iconSpaceReserved="false"
+            android:title="about:config"/>
+
+
         <!-- Auto connect -->
 
         <!-- Tor Logs -->
