@@ -2545,17 +2545,14 @@ const gConnectionPane = (function () {
           }
           return item;
         };
+
+        // TODO: Re-fetch when intl:app-locales-changed is fired, if we keep
+        // this after tor-browser#42477.
+        const regionNames = TorConnect.getRegionNames();
         const addLocations = codes => {
           const items = [];
           for (const code of codes) {
-            items.push(
-              createItem(
-                code,
-                TorConnect.countryNames[code]
-                  ? TorConnect.countryNames[code]
-                  : code
-              )
-            );
+            items.push(createItem(code, regionNames[code] || code));
           }
           items.sort((left, right) => left.label.localeCompare(right.label));
           locationEntries.append(...items);
@@ -2573,7 +2570,7 @@ const gConnectionPane = (function () {
           locationEntries.append(
             createItem("", TorStrings.settings.bridgeLocationOther, true)
           );
-          addLocations(Object.keys(TorConnect.countryNames));
+          addLocations(Object.keys(regionNames));
         });
         this._showAutoconfiguration = () => {
           locationGroup.hidden =
