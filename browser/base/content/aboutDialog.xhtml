@@ -117,6 +117,9 @@
                 <label id="version" class="update"/>
               </hbox>
               <description class="text-blurb">
+                <!-- Place release notes on the same line as the help and feedback links.
+                   - We do not want the release notes on the same line as the version because it may overflow.
+                   - See tor-browerr#42720. -->
                 <label id="releasenotes" is="text-link" hidden="true" data-l10n-id="releaseNotes-link"/>
                 <label is="text-link" onclick="openHelpLink('firefox-help')" data-l10n-id="aboutdialog-help-user"/>
                 <label id="submit-feedback" is="text-link" onclick="openFeedbackPage()" data-l10n-id="aboutdialog-submit-feedback"/>
