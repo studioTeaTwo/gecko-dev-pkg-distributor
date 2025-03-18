@@ -89,6 +89,7 @@ export const TorConnectTopics = Object.freeze({
   StateChange: "torconnect:state-change",
   QuickstartChange: "torconnect:quickstart-change",
   InternetStatusChange: "torconnect:internet-status-change",
+  RegionNamesChange: "torconnect:region-names-change",
   BootstrapProgress: "torconnect:bootstrap-progress",
   BootstrapComplete: "torconnect:bootstrap-complete",
   // TODO: Remove torconnect:error when pages have switched to stage.
@@ -842,17 +843,13 @@ export const TorConnect = {
    */
   _moatRegionsPromise: null,
 
-  _countryNames: Object.freeze(
-    (() => {
-      const codes = Services.intl.getAvailableLocaleDisplayNames("region");
-      const names = Services.intl.getRegionDisplayNames(undefined, codes);
-      let codesNames = {};
-      for (let i = 0; i < codes.length; i++) {
-        codesNames[codes[i]] = names[i];
-      }
-      return codesNames;
-    })()
-  ),
+  /**
+   * The map of all regions and their localized names. Or `null` when
+   * uninitialized.
+   *
+   * @type {?object}
+   */
+  _regionNames: null,
 
   /**
    * The status of the most recent bootstrap attempt.
@@ -937,6 +934,7 @@ export const TorConnect = {
     observeTopic(lazy.TorProviderTopics.HasWarnOrErr);
     observeTopic(lazy.TorSettingsTopics.SettingsChanged);
     observeTopic(NETWORK_LINK_TOPIC);
+    observeTopic("intl:app-locales-changed");
 
     this._updateInternetStatus();
 
@@ -1002,6 +1000,12 @@ export const TorConnect = {
         break;
       case NETWORK_LINK_TOPIC:
         this._updateInternetStatus();
+        break;
+      case "intl:app-locales-changed":
+        // Unset the regionNames to use the new app locale when requested.
+        this._regionNames = null;
+        // Let consumers know that the list of names has changed.
+        Services.obs.notifyObservers(null, TorConnectTopics.RegionNamesChange);
         break;
     }
   },
@@ -1148,8 +1152,22 @@ export const TorConnect = {
     return null;
   },
 
-  get countryNames() {
-    return this._countryNames;
+  /**
+   * Get a map of all region codes and their localized names.
+   *
+   * @returns {object} - The region names in the current locale.
+   */
+  getRegionNames() {
+    if (!this._regionNames) {
+      this._regionNames = {};
+      const codes = Services.intl.getAvailableLocaleDisplayNames("region");
+      // Get the localised names, for the current app locale.
+      const names = Services.intl.getRegionDisplayNames(undefined, codes);
+      for (let i = 0; i < codes.length; i++) {
+        this._regionNames[codes[i]] = names[i];
+      }
+    }
+    return structuredClone(this._regionNames);
   },
 
   /**
