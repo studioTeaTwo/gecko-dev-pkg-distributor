@@ -75,7 +75,11 @@
           ></button>
           <label id="locationDropdownLabel" for="countries"></label>
           <form id="locationDropdown" hidden="true">
-            <select id="countries"></select>
+            <select id="regions-select">
+              <option id="first-region-option"></option>
+              <optgroup id="frequent-regions-option-group"></optgroup>
+              <optgroup id="full-regions-option-group"></optgroup>
+            </select>
           </form>
           <button
             id="tryBridgeButton"

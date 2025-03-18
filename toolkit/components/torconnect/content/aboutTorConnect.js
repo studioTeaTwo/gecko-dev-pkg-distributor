@@ -70,7 +70,7 @@ class AboutTorConnect {
       tryBridge: "button#tryBridgeButton",
       locationDropdownLabel: "#locationDropdownLabel",
       locationDropdown: "form#locationDropdown",
-      locationDropdownSelect: "form#locationDropdown select",
+      locationDropdownSelect: "#regions-select",
     },
   });
 
@@ -129,13 +129,38 @@ class AboutTorConnect {
     locationDropdownSelect: document.querySelector(
       this.selectors.buttons.locationDropdownSelect
     ),
+    firstRegionOption: document.getElementById("first-region-option"),
+    frequentRegionsOptionGroup: document.getElementById(
+      "frequent-regions-option-group"
+    ),
+    fullRegionsOptionGroup: document.getElementById(
+      "full-regions-option-group"
+    ),
     tryBridgeButton: document.querySelector(this.selectors.buttons.tryBridge),
   });
 
-  selectedLocation;
+  /**
+   * The currently shown stage, or `null` if the page in uninitialised.
+   *
+   * @type {?string}
+   */
   shownStage = null;
 
-  locations = {};
+  /**
+   * A promise that resolves to a list of region names and frequent regions, or
+   * `null` if this needs to be re-fetched from the TorConnectParent.
+   *
+   * @type {?Promise<object>}
+   */
+  regions = null;
+
+  /**
+   * The option value that *should* be selected when the list of regions is
+   * populated.
+   *
+   * @type {string}
+   */
+  selectedRegion = "";
 
   /**
    * Whether the user requested a cancellation of the bootstrap from *this*
@@ -199,89 +224,6 @@ class AboutTorConnect {
     this.hide(this.elements.locationDropdownLabel);
     this.hide(this.elements.locationDropdown);
     this.hide(this.elements.tryBridgeButton);
-  }
-
-  populateLocations() {
-    const selectCountryRegion = document.createElement("option");
-    selectCountryRegion.textContent = TorStrings.torConnect.selectCountryRegion;
-    selectCountryRegion.value = "";
-
-    // get all codes and names from TorStrings
-    const locationNodes = [];
-    for (const [code, name] of Object.entries(this.locations)) {
-      let option = document.createElement("option");
-      option.value = code;
-      option.textContent = name;
-      locationNodes.push(option);
-    }
-    // locale sort by name
-    locationNodes.sort((left, right) =>
-      left.textContent.localeCompare(right.textContent)
-    );
-    this.elements.locationDropdownSelect.append(
-      selectCountryRegion,
-      ...locationNodes
-    );
-  }
-
-  populateFrequentLocations(locations) {
-    this.removeFrequentLocations();
-    if (!locations || !locations.length) {
-      return;
-    }
-
-    const locationNodes = [];
-    for (const code of locations) {
-      const option = document.createElement("option");
-      option.value = code;
-      option.className = "frequent-location";
-      // codes (partially) come from rdsys service, so make sure we have a
-      // string defined for it
-      let name = this.locations[code];
-      if (!name) {
-        name = code;
-      }
-      option.textContent = name;
-      locationNodes.push(option);
-    }
-    // locale sort by name
-    locationNodes.sort((left, right) =>
-      left.textContent.localeCompare(right.textContent)
-    );
-
-    const frequentGroup = document.createElement("optgroup");
-    frequentGroup.setAttribute(
-      "label",
-      TorStrings.torConnect.frequentLocations
-    );
-    frequentGroup.className = "frequent-location";
-    const locationGroup = document.createElement("optgroup");
-    locationGroup.setAttribute("label", TorStrings.torConnect.otherLocations);
-    locationGroup.className = "frequent-location";
-    // options[0] is either "Select Country or Region" or "Automatic"
-    this.elements.locationDropdownSelect.options[0].after(
-      frequentGroup,
-      ...locationNodes,
-      locationGroup
-    );
-  }
-
-  removeFrequentLocations() {
-    const select = this.elements.locationDropdownSelect;
-    for (const option of select.querySelectorAll(".frequent-location")) {
-      option.remove();
-    }
-  }
-
-  validateLocation() {
-    const selectedIndex = this.elements.locationDropdownSelect.selectedIndex;
-    const selectedOption =
-      this.elements.locationDropdownSelect.options[selectedIndex];
-    if (!selectedOption.value) {
-      this.elements.tryBridgeButton.setAttribute("disabled", "disabled");
-    } else {
-      this.elements.tryBridgeButton.removeAttribute("disabled");
-    }
   }
 
   setTitle(title, className) {
@@ -407,7 +349,9 @@ class AboutTorConnect {
 
     const prevStage = this.shownStage;
     this.shownStage = stage.name;
-    this.selectedLocation = stage.defaultRegion;
+    // Make a request to change the selected region in the next call to
+    // selectRegionOption.
+    this.selectedRegion = stage.defaultRegion;
 
     // By default we want to reset the focus to the top of the page when
     // changing the displayed page since we want a user to read the new page
@@ -708,24 +652,105 @@ class AboutTorConnect {
     }
   }
 
+  /**
+   * Try and select the region specified in `selectedRegion`.
+   */
+  selectRegionOption() {
+    // NOTE: If the region appears in both the frequent list and the full list,
+    // then this will select the region option in
+    // frequentRegionsOptionGroup, even if the user had prior selected the
+    // option from fullRegionsOptionGroup. But the overall value should be the
+    // same.
+    this.elements.locationDropdownSelect.value = this.selectedRegion;
+    if (this.elements.locationDropdownSelect.selectedIndex === -1) {
+      // Select the first, as a fallback. E.g. in RegionNotFound the
+      // selectedRegion may still be "automatic", but this is no longer
+      // available.
+      this.elements.locationDropdownSelect.selectedIndex = 0;
+    }
+    this.validateRegion();
+  }
+
+  /**
+   * Ensure that the current selected region is valid for the shown stage.
+   */
+  validateRegion() {
+    this.elements.tryBridgeButton.toggleAttribute(
+      "disabled",
+      !this.elements.locationDropdownSelect.value
+    );
+  }
+
+  /**
+   * Populate the full list of regions, if necessary.
+   */
+  async populateDelayedRegionOptions() {
+    if (this.regions) {
+      // Already populated, or about to populate.
+      return;
+    }
+
+    this.regions = RPMSendQuery("torconnect:get-regions");
+    const regions = this.regions;
+    const { names, frequent } = await regions;
+
+    if (regions !== this.regions) {
+      // Replaced by a new call.
+      return;
+    }
+
+    this.setRegionOptions(
+      this.elements.frequentRegionsOptionGroup,
+      frequent.map(code => [code, names[code]])
+    );
+
+    this.setRegionOptions(
+      this.elements.fullRegionsOptionGroup,
+      Object.entries(names)
+    );
+
+    // Now that the list has been re-populated we want to re-select the
+    // requested region.
+    this.selectRegionOption();
+  }
+
+  /**
+   * Set the shown region options.
+   *
+   * @param {HTMLOptGroupElement} group - The group to set the children of.
+   * @param {[string, string|undefined][]} regions - The list of region
+   *   key-value entries to fill the group with. The key is the region code and
+   *   the value is the region's localised name.
+   */
+  setRegionOptions(group, regions) {
+    const regionNodes = regions
+      .sort(([_code1, name1], [_code2, name2]) => name1.localeCompare(name2))
+      .map(([code, name]) => {
+        const option = document.createElement("option");
+        option.value = code;
+        // If the name is unexpectedly empty or undefined we use the code
+        // instead.
+        option.textContent = name || code;
+        return option;
+      });
+    group.replaceChildren(...regionNodes);
+  }
+
   showLocationForm(isChoose, buttonLabel) {
     this.hideButtons();
-    RPMSendQuery("torconnect:get-frequent-regions").then(codes => {
-      if (codes && codes.length) {
-        this.populateFrequentLocations(codes);
-        this.setLocation();
-      }
-    });
-    let firstOpt = this.elements.locationDropdownSelect.options[0];
-    if (isChoose) {
-      firstOpt.value = "automatic";
-      firstOpt.textContent = TorStrings.torConnect.automatic;
-    } else {
-      firstOpt.value = "";
-      firstOpt.textContent = TorStrings.torConnect.selectCountryRegion;
-    }
-    this.setLocation();
-    this.validateLocation();
+
+    this.elements.firstRegionOption.textContent = isChoose
+      ? TorStrings.torConnect.automatic
+      : TorStrings.torConnect.selectCountryRegion;
+    this.elements.firstRegionOption.value = isChoose ? "automatic" : "";
+
+    // Try and select the region now, prior to waiting for
+    // populateDelayedRegionOptions.
+    this.selectRegionOption();
+
+    // Async fill the rest of the region options, if needed.
+    this.populateDelayedRegionOptions();
+
     this.show(this.elements.locationDropdownLabel);
     this.show(this.elements.locationDropdown);
     this.elements.locationDropdownLabel.classList.toggle("error", !isChoose);
@@ -733,29 +758,6 @@ class AboutTorConnect {
     if (buttonLabel !== undefined) {
       this.elements.tryBridgeButton.textContent = buttonLabel;
     }
-  }
-
-  getLocation() {
-    const selectedIndex = this.elements.locationDropdownSelect.selectedIndex;
-    return this.elements.locationDropdownSelect.options[selectedIndex].value;
-  }
-
-  setLocation() {
-    const code = this.selectedLocation;
-    if (this.getLocation() === code) {
-      return;
-    }
-    const options = this.elements.locationDropdownSelect.options;
-    // We need to do this way, because we have repeated values that break
-    // the .value way to select (which would however require the label,
-    // rather than the code)...
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].value === code) {
-        this.elements.locationDropdownSelect.selectedIndex = i;
-        break;
-      }
-    }
-    this.validateLocation();
   }
 
   initElements(direction) {
@@ -823,17 +825,32 @@ class AboutTorConnect {
       this.beginBootstrapping(this.shownStage === "Start");
     });
 
-    this.populateLocations();
     this.elements.locationDropdownSelect.addEventListener("change", () => {
-      this.validateLocation();
+      // Overwrite the stage requested selectedRegion.
+      // NOTE: This should not fire in response to a programmatic change in
+      // value.
+      // E.g. if the user selects a region, then changes locale, we want the
+      // same region to be re-selected after the option list is rebuilt.
+      this.selectedRegion = this.elements.locationDropdownSelect.value;
+
+      this.validateRegion();
     });
 
     this.elements.locationDropdownLabel.textContent =
       TorStrings.torConnect.unblockInternetIn;
 
+    this.elements.frequentRegionsOptionGroup.setAttribute(
+      "label",
+      TorStrings.torConnect.frequentLocations
+    );
+    this.elements.fullRegionsOptionGroup.setAttribute(
+      "label",
+      TorStrings.torConnect.otherLocations
+    );
+
     this.elements.tryBridgeButton.textContent = TorStrings.torConnect.tryBridge;
     this.elements.tryBridgeButton.addEventListener("click", () => {
-      const value = this.getLocation();
+      const value = this.elements.locationDropdownSelect.value;
       if (value) {
         this.beginAutoBootstrapping(value);
       }
@@ -876,6 +893,15 @@ class AboutTorConnect {
     RPMAddMessageListener("torconnect:quickstart-change", ({ data }) => {
       this.updateQuickstart(data);
     });
+    RPMAddMessageListener("torconnect:region-names-change", () => {
+      // Reset the regions list.
+      this.regions = null;
+      if (!this.elements.locationDropdown.hidden) {
+        // Re-populate immediately.
+        this.populateDelayedRegionOptions();
+      }
+      // Else, wait until we show the region select to re-populate.
+    });
   }
 
   initKeyboardShortcuts() {
@@ -894,7 +920,6 @@ class AboutTorConnect {
 
     // various constants
     TorStrings = Object.freeze(args.TorStrings);
-    this.locations = args.CountryNames;
 
     this.initElements(args.Direction);
     this.initObservers();

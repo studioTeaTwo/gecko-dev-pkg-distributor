@@ -53,6 +53,9 @@ export class TorConnectParent extends JSWindowActorParent {
               TorConnect.quickstart
             );
             break;
+          case TorConnectTopics.RegionNamesChange:
+            self.sendAsyncMessage("torconnect:region-names-change");
+            break;
         }
       },
     };
@@ -69,6 +72,10 @@ export class TorConnectParent extends JSWindowActorParent {
       this.torConnectObserver,
       TorConnectTopics.QuickstartChange
     );
+    Services.obs.addObserver(
+      this.torConnectObserver,
+      TorConnectTopics.RegionNamesChange
+    );
   }
 
   didDestroy() {
@@ -83,6 +90,10 @@ export class TorConnectParent extends JSWindowActorParent {
     Services.obs.removeObserver(
       this.torConnectObserver,
       TorConnectTopics.QuickstartChange
+    );
+    Services.obs.removeObserver(
+      this.torConnectObserver,
+      TorConnectTopics.RegionNamesChange
     );
   }
 
@@ -134,7 +145,6 @@ export class TorConnectParent extends JSWindowActorParent {
         return {
           TorStrings,
           Direction: Services.locale.isAppLocaleRTL ? "rtl" : "ltr",
-          CountryNames: TorConnect.countryNames,
           stage: TorConnect.stage,
           userHasEverClickedConnect: Services.prefs.getBoolPref(
             userHasEverClickedConnectPref,
@@ -142,8 +152,10 @@ export class TorConnectParent extends JSWindowActorParent {
           ),
           quickstartEnabled: TorConnect.quickstart,
         };
-      case "torconnect:get-frequent-regions":
-        return TorConnect.getFrequentRegions();
+      case "torconnect:get-regions":
+        return TorConnect.getFrequentRegions().then(frequent => {
+          return { names: TorConnect.getRegionNames(), frequent };
+        });
     }
     return undefined;
   }
