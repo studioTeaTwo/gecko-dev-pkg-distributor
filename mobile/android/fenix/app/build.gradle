@@ -311,12 +311,14 @@ android.applicationVariants.configureEach { variant ->
     def isDebugOrDCD = isDebug || isDataCollectionDisabled
     def useReleaseVersioning = variant.buildType.buildConfigFields['USE_RELEASE_VERSIONING']?.value ?: false
 
-    // only set this property to pass to our patched application-service if it's defined in
-    // local.poperties, indicating this is a local dev build,
-    // otherwise we are in a TBB build env and the env var should be set and will be picked up
-    if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopsrcdir')) {
-        System.setProperty("nimbusFml", "${topsrcdir}/mobile/android/fenix/tools/nimbus-fml")
-    }
+    // env var NIMBUS_FML always overrides this in the tbb built patched application services
+    // https://gitlab.torproject.org/tpo/applications/tor-browser-build/-/blob/main/projects/application-services/offline-nimbus-fml.diff?ref_type=heads
+    // so safe to have always set so local builds and supply their expected location as fetched by
+    // fenix/tools/tba-fetch-deps.sh
+    // We normalize the path because it is valid to open/build from both tb and fenix roots
+    def normalizedTBPath = rootProject.projectDir.absolutePath.minus("mobile/android/fenix")
+    System.setProperty("nimbusFml",  normalizedTBPath + "/mobile/android/fenix/tools/nimbus-fml")
+
 
     println("----------------------------------------------")
     println("Variant name:      " + variant.name)
