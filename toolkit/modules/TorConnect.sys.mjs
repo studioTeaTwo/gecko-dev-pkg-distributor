@@ -1441,28 +1441,45 @@ export const TorConnect = {
 
       this._signalError(error);
 
+      let errorStage = TorConnectStage.FinalError;
+
       switch (beginStage) {
         case TorConnectStage.Start:
         case TorConnectStage.Offline:
-          this._setStage(TorConnectStage.ChooseRegion);
-          return;
+          if (
+            error instanceof TorConnectError &&
+            error.code === TorConnectError.BootstrapError
+          ) {
+            errorStage = TorConnectStage.ChooseRegion;
+          }
+          // Else, some other unexpected error type. Skip straight to the
+          // "FinalError". See tor-browser#43488.
+          break;
         case TorConnectStage.ChooseRegion:
-          if (regionCode === "automatic") {
+          // TODO: Handle a Moat error of the type
+          // DomainFrontRequestNetworkError to show a different stage. See
+          // tor-browser#43569.
+          if (
+            regionCode === "automatic" &&
+            error instanceof TorConnectError &&
+            (error.code === TorConnectError.AllSettingsFailed ||
+              error.code === TorConnectError.CannotDetermineCountry ||
+              error.code === TorConnectError.NoSettingsForCountry)
+          ) {
             // The automatic region failed.
-            if (bootstrapAttempt.detectedRegion) {
-              this._setStage(TorConnectStage.ConfirmRegion);
-            } else {
-              this._setStage(TorConnectStage.RegionNotFound);
-            }
-            return;
+            errorStage = bootstrapAttempt.detectedRegion
+              ? TorConnectStage.ConfirmRegion
+              : TorConnectStage.RegionNotFound;
           }
           // Else, not automatic. Go straight to the final error since the user
           // is unlikely to succeed re-selecting the same region and it would be
           // unexpected for the user to select a different region.
           // See tor-browser#42550.
+          // Else, some other error type. Skip straight to the "FinalError". See
+          // tor-browser#43488.
           break;
       }
-      this._setStage(TorConnectStage.FinalError);
+      this._setStage(errorStage);
       return;
     }
 
