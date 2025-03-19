@@ -17,8 +17,6 @@ pref("app.releaseNotesURL.aboutDialog", "about:blank");
 
 // The time interval between checks for a new version (in seconds)
 pref("app.update.interval", 14400); // 4 hours
-// Give the user x seconds to react before showing the big UI. default=12 hours
-pref("app.update.promptWaitTime", 43200);
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that
 // app.update.checkInstallTime is true.

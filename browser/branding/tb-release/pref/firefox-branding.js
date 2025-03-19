@@ -17,8 +17,6 @@ pref("app.releaseNotesURL.aboutDialog", "https://blog.torproject.org/new-release
 
 // Interval: Time between checks for a new version (in seconds)
 pref("app.update.interval", 43200); // 12 hours
-// Give the user x seconds to react before showing the big UI. default=192 hours
-pref("app.update.promptWaitTime", 691200);
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that
 // app.update.checkInstallTime is true.
