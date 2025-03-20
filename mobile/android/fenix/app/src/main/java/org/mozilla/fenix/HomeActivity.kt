@@ -1110,6 +1110,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, TorAn
                 .setText(getString(R.string.connection_assist_connect_to_tor_before_opening_links))
                 .setAction(getString(R.string.connection_assist_connect_to_tor_before_opening_links_confirmation)) {
                     urlQuickLoadViewModel.urlToLoadAfterConnecting.value = searchTermOrURL
+                    urlQuickLoadViewModel.maybeBeginBootstrap()
                     if (navHost.navController.previousBackStackEntry?.destination?.id == R.id.torConnectionAssistFragment) {
                         supportFragmentManager.popBackStack()
                     } else {

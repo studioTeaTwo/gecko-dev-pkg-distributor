@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
+import org.mozilla.gecko.util.GeckoBundle
 import org.mozilla.geckoview.TorAndroidIntegration.BootstrapStateChangeListener
 import org.mozilla.geckoview.TorConnectStage
 import org.mozilla.geckoview.TorConnectStageName
@@ -27,10 +28,17 @@ class TorConnectionAssistViewModel(
 
     init {
         torAndroidIntegration.registerBootstrapStateChangeListener(this)
+    }
 
-        torAndroidIntegration.countryNamesGet { countryNamesMap : Map<String, String>? ->
-            if (countryNamesMap != null) {
-                countryCodeNameMap.value = countryNamesMap
+    fun fetchCountryNamesGet() {
+        torAndroidIntegration.countryNamesGet { countryNames : GeckoBundle? ->
+            if (countryNames != null) {
+                val codes: Array<String> = countryNames.keys()
+                val regions = mutableMapOf<String, String>()
+                for (code in codes) {
+                    regions[code] = countryNames.getString(code)
+                }
+                countryCodeNameMap.value = regions
             }
         }
     }
@@ -41,7 +49,7 @@ class TorConnectionAssistViewModel(
     }
 
     private val torConnectStage: MutableStateFlow<TorConnectStage?> by lazy {
-        MutableStateFlow(null)
+        MutableStateFlow(torAndroidIntegration.lastKnowStage.value)
     }
 
     private val _torConnectScreen = MutableStateFlow(ConnectAssistUiState.Loading)

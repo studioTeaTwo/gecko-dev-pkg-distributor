@@ -4,6 +4,8 @@
 
 package org.mozilla.fenix.tor
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -41,7 +43,6 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     private val progressViewModel: TorBootstrapProgressViewModel by viewModels()
     private val quickstartViewModel: QuickstartViewModel by activityViewModels()
     private val torConnectionAssistViewModel : TorConnectionAssistViewModel by viewModels()
-    private val urlQuickLoadViewModel : UrlQuickLoadViewModel by activityViewModels()
 
     private var _binding: FragmentTorConnectionAssistBinding? = null
     private val binding get() = _binding!!
@@ -55,6 +56,15 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             inflater, container, false,
         )
 
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action === Intent.ACTION_LOCALE_CHANGED) {
+                    Log.v("LocaleReceiver", "received ACTION_LOCALE_CHANGED")
+                    torConnectionAssistViewModel.fetchCountryNamesGet()
+                }
+            }
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 torConnectionAssistViewModel.collectTorConnectStage()
@@ -65,12 +75,6 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             Log.d(TAG, "shouldOpenHome = $it")
             if (it) {
                 openHome()
-            }
-        }
-
-        urlQuickLoadViewModel.urlToLoadAfterConnecting.observe(viewLifecycleOwner) { url ->
-            if (!url.isNullOrBlank()) {
-                torConnectionAssistViewModel.handleConnect()
             }
         }
 
@@ -203,12 +207,11 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         if (screen.countryDropDownVisible) {
             val spinnerAdapter: ArrayAdapter<String> = initializeSpinner()
             if (binding.countryDropDown.isEmpty()) {
-                spinnerAdapter.add(getString(screen.countryDropDownDefaultItem))
                 populateCountryDropDown(spinnerAdapter)
                 setOnItemSelectedListener()
             }
-            spinnerAdapter.remove(spinnerAdapter.getItem(0))
-            spinnerAdapter.insert(getString(screen.countryDropDownDefaultItem), 0)
+
+            setFirstItemInCountryDropDown(spinnerAdapter, getString(screen.countryDropDownDefaultItem))
 
             if (screen == ConnectAssistUiState.ChooseRegion || screen == ConnectAssistUiState.ConfirmRegion || screen == ConnectAssistUiState.RegionNotFound) {
                 torConnectionAssistViewModel.selectDefaultRegion()
@@ -221,6 +224,16 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             binding.unblockTheInternetInCountryDescription.visibility = View.GONE
             binding.countryDropDown.visibility = View.GONE
         }
+    }
+
+    private fun setFirstItemInCountryDropDown(
+        spinnerAdapter: ArrayAdapter<String>,
+        item: String,
+    ) {
+        if (!spinnerAdapter.isEmpty) {
+            spinnerAdapter.remove(spinnerAdapter.getItem(0))
+        }
+        spinnerAdapter.insert(item, 0)
     }
 
     private fun initializeSpinner(): ArrayAdapter<String> {
@@ -236,16 +249,19 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     private fun populateCountryDropDown(spinnerAdapter: ArrayAdapter<String>) {
+        torConnectionAssistViewModel.fetchCountryNamesGet()
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 torConnectionAssistViewModel.countryCodeNameMap.collect {
+                    Log.d(TAG, "countryCodeNameMap: $it")
                     if (it != null) {
+                        spinnerAdapter.clear()
+                        spinnerAdapter.add(getString(torConnectionAssistViewModel.torConnectScreen.value.countryDropDownDefaultItem))
                         spinnerAdapter.addAll(it.values)
                     }
                 }
             }
         }
-        spinnerAdapter.notifyDataSetChanged()
     }
 
     private fun setOnItemSelectedListener() {
