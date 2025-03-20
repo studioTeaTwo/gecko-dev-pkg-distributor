@@ -10,6 +10,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,6 +86,9 @@ public class TorAndroidIntegration implements BundleEventListener {
 
   private int mMeekCounter;
 
+  private final MutableLiveData<TorConnectStage> _lastKnownStage = new MutableLiveData<>(null);
+  public LiveData<TorConnectStage> lastKnowStage = _lastKnownStage;
+
   /**
    * mSettings is a Java-side copy of the authoritative settings in the JS code. It's useful to
    * maintain as the UI may be fetching these options often and we don't watch each fetch to be a
@@ -156,6 +161,7 @@ public class TorAndroidIntegration implements BundleEventListener {
       }
     } else if (EVENT_CONNECT_STAGE_CHANGED.equals(event)) {
       TorConnectStage stage = new TorConnectStage(message.getBundle("stage"));
+      _lastKnownStage.setValue(stage);
       for (BootstrapStateChangeListener listener : mBootstrapStateListeners) {
         listener.onBootstrapStageChange(stage);
       }
@@ -717,22 +723,12 @@ public class TorAndroidIntegration implements BundleEventListener {
   }
 
   public interface CountryNamesGetter {
-    void onValue(Map<String, String> regions);
+    void onValue(GeckoBundle regions);
   }
 
   public void countryNamesGet(CountryNamesGetter countryNamesGetter) {
     EventDispatcher.getInstance().queryBundle(EVENT_COUNTRY_NAMES_GET).then(countryNames -> {
-      if (countryNames != null) {
-        String[] codes = countryNames.keys();
-        Map<String, String> regions = new HashMap<>(codes.length);
-        for (String code : codes) {
-          regions.put(code, countryNames.getString(code));
-        }
-        countryNamesGetter.onValue(regions);
-      } else {
-        Log.e(TAG, "countryNames was null");
-        countryNamesGetter.onValue(null);
-      }
+      countryNamesGetter.onValue(countryNames);
       return new GeckoResult<Void>();
     });
   }
