@@ -202,7 +202,7 @@ class TorAndroidIntegrationImpl {
           lazy.TorConnect.quickstart = data.enabled;
           break;
         case ListenedEvents.countryNamesGet:
-          callback?.onSuccess(lazy.TorConnect.countryNames)
+          callback?.onSuccess(lazy.TorConnect.countryNames);
           return;
       }
       callback?.onSuccess();
