@@ -31,6 +31,7 @@ EXTRA_JS_MODULES += [
     "ssi-storage-json.sys.mjs",
     "Ssi.sys.mjs",
     "SsiHelper.sys.mjs",
+    "SsiPrompter.sys.mjs", #ssb(todo): Android has a separate module
 ]
 
 if CONFIG["OS_TARGET"] != "Android":
