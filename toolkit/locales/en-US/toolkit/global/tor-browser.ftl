@@ -307,9 +307,12 @@ bridge-qr-dialog-title =
 
 ## Common button used in bridge dialogs.
 
-bridge-dialog-button-connect = Connect
-bridge-dialog-button-accept = OK
-bridge-dialog-button-submit = Submit
+bridge-dialog-button-connect2 =
+    .label = Connect
+bridge-dialog-button-accept2 =
+    .label = OK
+bridge-dialog-button-submit2 =
+    .label = Submit
 
 ## User provided bridge dialog.
 
