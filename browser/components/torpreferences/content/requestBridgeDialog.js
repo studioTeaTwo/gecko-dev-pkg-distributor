@@ -105,7 +105,7 @@ const gRequestBridgeDialog = {
     this._result.connect = connect;
     this._submitButton.setAttribute(
       "data-l10n-id",
-      connect ? "bridge-dialog-button-connect" : "bridge-dialog-button-submit"
+      connect ? "bridge-dialog-button-connect2" : "bridge-dialog-button-submit2"
     );
     this._submitButton.classList.toggle("tor-button", connect);
   },

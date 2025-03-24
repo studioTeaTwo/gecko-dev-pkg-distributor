@@ -99,7 +99,7 @@ const gBuiltinBridgeDialog = {
     this._result.connect = connect;
     this._acceptButton.setAttribute(
       "data-l10n-id",
-      connect ? "bridge-dialog-button-connect" : "bridge-dialog-button-accept"
+      connect ? "bridge-dialog-button-connect2" : "bridge-dialog-button-accept2"
     );
     this._acceptButton.classList.toggle("tor-button", connect);
   },
