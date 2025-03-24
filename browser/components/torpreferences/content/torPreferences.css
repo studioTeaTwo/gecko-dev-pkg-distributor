@@ -173,12 +173,17 @@ button.spoof-button-disabled {
   display: none;
 }
 
-.bridge-status-badge.bridge-status-connected {
-  color: var(--tor-accent-color);
-}
+@media not ((forced-colors) or (prefers-contrast)) {
+  /* Accent colors are usually only used for background colors. Here we are
+   * using it for text colors, so we only enable these rules when not using a
+   * high contrast theme or forced colors. */
+  .bridge-status-badge.bridge-status-connected {
+    color: var(--tor-accent-color);
+  }
 
-.bridge-status-badge.bridge-status-current-built-in {
-  color: var(--in-content-accent-color);
+  .bridge-status-badge.bridge-status-current-built-in {
+    color: var(--color-accent-primary);
+  }
 }
 
 .bridge-status-badge > * {
@@ -230,7 +235,7 @@ button.spoof-button-disabled {
   padding-block: 64px;
   padding-inline: 32px;
   gap: 16px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   color: var(--text-color-deemphasized);
   border: 2px dashed color-mix(in srgb, currentColor 20%, transparent);
 }
@@ -243,10 +248,18 @@ button.spoof-button-disabled {
   fill: currentColor;
 }
 
-#tor-bridges-current {
+.tor-bridges-box,
+.tor-bridges-details-box {
   padding: 16px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   background: var(--in-content-box-info-background);
+  border: 1px solid var(--in-content-box-border-color);
+}
+
+@media not forced-colors {
+  .tor-bridges-box {
+    border-color: transparent;
+  }
 }
 
 #tor-bridges-current-header-bar {
@@ -409,7 +422,7 @@ button.spoof-button-disabled {
   height: 16px;
   /* color-light-gray-10, color-dark-gray-60 */
   background: light-dark(#f9f9fb, #2b2a33);
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   padding: 8px;
 }
 
@@ -463,9 +476,6 @@ button.spoof-button-disabled {
 
 .tor-bridges-details-box {
   margin-block-start: 24px;
-  border-radius: 4px;
-  border: 1px solid var(--in-content-border-color);
-  padding: 16px;
 }
 
 #tor-bridges-share:not([hidden]) {
@@ -705,9 +715,6 @@ button.spoof-button-disabled {
   align-items: center;
   text-align: center;
   justify-content: center;
-  padding: 16px;
-  background: var(--in-content-box-info-background);
-  border-radius: 4px;
 }
 
 #tor-bridges-request-box > * {
@@ -778,7 +785,7 @@ dialog#torPreferences-requestBridge-dialog > hbox {
   with whatever the default background color is. */
   padding: 10px;
   margin-block: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   display: grid;
   align-items: center;
   justify-items: center;
@@ -798,7 +805,7 @@ dialog#torPreferences-requestBridge-dialog > hbox {
   grid-area: qr;
   content: url("chrome://browser/content/torpreferences/bridge.svg");
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--border-radius-medium);
   box-sizing: content-box;
   width: 52px;
   height: 52px;
