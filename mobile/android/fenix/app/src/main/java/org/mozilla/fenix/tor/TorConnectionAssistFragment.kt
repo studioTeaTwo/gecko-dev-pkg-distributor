@@ -290,7 +290,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
                 if (screen.torBootstrapButton1ShouldOpenSettings) {
                     openTorConnectionSettings()
                 } else {
-                    torConnectionAssistViewModel.handleConnect()
+                    torConnectionAssistViewModel.handleConnect(screen)
                 }
             }
             updateButton1(screen)

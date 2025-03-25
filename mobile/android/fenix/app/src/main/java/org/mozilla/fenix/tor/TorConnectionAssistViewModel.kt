@@ -97,12 +97,12 @@ class TorConnectionAssistViewModel(
         MutableLiveData(false)
     }
 
-    fun handleConnect() {
-        val screen = _torConnectScreen.value
-        if (screen.torBootstrapButton1ShouldTryABridge && !button1ShouldBeDisabled(screen)) {
+    fun handleConnect(screen: ConnectAssistUiState) {
+        if (screen.torBootstrapButton1ShouldTryABridge) {
             Log.d(TAG, "beginAutoBootstrap with countryCode: ${selectedCountryCode.value}")
             torAndroidIntegration.beginAutoBootstrap(selectedCountryCode.value)
         } else {
+            Log.d(TAG, "beginBootstrap() on screen $screen")
             torAndroidIntegration.beginBootstrap()
         }
     }
