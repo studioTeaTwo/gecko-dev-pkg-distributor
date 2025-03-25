@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import mozilla.components.browser.state.ext.getUrl
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
@@ -23,11 +24,27 @@ class TorConnectionAssistViewModel(
 ) : AndroidViewModel(application), BootstrapStateChangeListener {
 
     private val TAG = "torConnectionAssistVM"
+    private val components = application.components
     private val torAndroidIntegration =
-        application.components.core.geckoRuntime.torIntegrationController
+        components.core.geckoRuntime.torIntegrationController
 
     init {
         torAndroidIntegration.registerBootstrapStateChangeListener(this)
+        loadDummyPage()
+    }
+
+    private fun loadDummyPage() {
+        // Load local url (it just needs to begin with "about:" to get past filter) to initialize the browser,
+        // Domain fronting needs Services.io.getProtocolHandler("http")... to actually work, and it
+        // does not till the browser/engine is initialized, and this is so far the easiest way to do that.
+        // Load early here so that it is ready when needed if we get to the step where DF is invoked
+        // Then later remove it in onCleared so it doesn't show for the user
+        components.useCases.tabsUseCases.addTab.invoke("about:")
+    }
+
+    private fun clearDummyPage() {
+        // Remove loaded URL so it doesn't show up
+        components.useCases.tabsUseCases.removeTab.invoke(components.core.store.state.tabs.find {it.getUrl() == "about:"}?.id ?: "")
     }
 
     fun fetchCountryNamesGet() {
@@ -45,6 +62,7 @@ class TorConnectionAssistViewModel(
 
     override fun onCleared() {
         torAndroidIntegration.unregisterBootstrapStateChangeListener(this)
+        clearDummyPage()
         super.onCleared()
     }
 
