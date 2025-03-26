@@ -115,6 +115,10 @@ class TorAndroidIntegrationImpl {
           stage: subj.wrappedJSObject ?? "",
         });
         break;
+      case lazy.TorConnectTopics.RegionNamesChange:
+        // TODO: Respond to change in region names if we are showing a
+        // TorConnectStage that uses them.
+        break;
       case lazy.TorConnectTopics.BootstrapProgress:
         lazy.EventDispatcher.instance.sendRequest({
           type: EmittedEvents.bootstrapProgress,
@@ -202,7 +206,7 @@ class TorAndroidIntegrationImpl {
           lazy.TorConnect.quickstart = data.enabled;
           break;
         case ListenedEvents.countryNamesGet:
-          callback?.onSuccess(lazy.TorConnect.countryNames);
+          callback?.onSuccess(lazy.TorConnect.getRegionNames());
           return;
       }
       callback?.onSuccess();
