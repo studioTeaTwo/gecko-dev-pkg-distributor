@@ -17,9 +17,7 @@ import { showConfirmation } from "resource://gre/modules/FillHelpers.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  CreditCard: "resource://gre/modules/CreditCard.sys.mjs",
   formAutofillStorage: "resource://autofill/FormAutofillStorage.sys.mjs",
-  OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "log", () =>
@@ -35,21 +33,19 @@ const l10n = new Localization(
   true
 );
 
-const { ENABLED_AUTOFILL_CREDITCARDS_PREF } = FormAutofill;
-
 let CONTENT = {};
 
 /**
- * `AutofillDoorhanger` provides a base for both address capture and credit card
+ * `SsiDoorhanger` provides a base for both address capture and credit card
  * capture doorhanger notifications. It handles the UI generation and logic
  * related to displaying the doorhanger,
  *
  * The UI data sourced from the `CONTENT` variable is used for rendering. Derived classes
  * should override the `render()` method to customize the layout.
  */
-export class AutofillDoorhanger {
+export class SsiDoorhanger {
   /**
-   * Constructs an instance of the `AutofillDoorhanger` class.
+   * Constructs an instance of the `SsiDoorhanger` class.
    *
    * @param {object} browser   The browser where the doorhanger will be displayed.
    * @param {object} oldRecord The old record that can be merged with the new record
@@ -63,10 +59,10 @@ export class AutofillDoorhanger {
   static preferenceURL = null;
   static learnMoreURL = null;
 
-  constructor(browser, oldRecord, newRecord, flowId) {
+  constructor(browser, preference, data, flowId) {
     this.browser = browser;
-    this.oldRecord = oldRecord ?? {};
-    this.newRecord = newRecord;
+    this.preference = preference ?? {};
+    this.data = data ?? {};
     this.flowId = flowId;
   }
 
@@ -100,51 +96,49 @@ export class AutofillDoorhanger {
 
   // The container of the header part
   static header(panel) {
-    return panel.querySelector(`.${AutofillDoorhanger.headerClass}`);
+    return panel.querySelector(`.${SsiDoorhanger.headerClass}`);
   }
   get header() {
-    return AutofillDoorhanger.header(this.panel);
+    return SsiDoorhanger.header(this.panel);
   }
 
   // The container of the description part
   static description(panel) {
-    return panel.querySelector(`.${AutofillDoorhanger.descriptionClass}`);
+    return panel.querySelector(`.${SsiDoorhanger.descriptionClass}`);
   }
   get description() {
-    return AutofillDoorhanger.description(this.panel);
+    return SsiDoorhanger.description(this.panel);
   }
 
   // The container of the content part
   static content(panel) {
-    return panel.querySelector(`.${AutofillDoorhanger.contentClass}`);
+    return panel.querySelector(`.${SsiDoorhanger.contentClass}`);
   }
   get content() {
-    return AutofillDoorhanger.content(this.panel);
+    return SsiDoorhanger.content(this.panel);
   }
 
   static menuButton(panel) {
-    return panel.querySelector(`#${AutofillDoorhanger.menuButtonId}`);
+    return panel.querySelector(`#${SsiDoorhanger.menuButtonId}`);
   }
   get menuButton() {
-    return AutofillDoorhanger.menuButton(this.panel);
+    return SsiDoorhanger.menuButton(this.panel);
   }
 
   static menuPopup(panel) {
-    return AutofillDoorhanger.menuButton(panel).querySelector(
-      `.toolbar-menupopup`
-    );
+    return SsiDoorhanger.menuButton(panel).querySelector(`.toolbar-menupopup`);
   }
   get menuPopup() {
-    return AutofillDoorhanger.menuPopup(this.panel);
+    return SsiDoorhanger.menuPopup(this.panel);
   }
 
   static preferenceButton(panel) {
-    return AutofillDoorhanger.menuButton(panel).querySelector(
+    return SsiDoorhanger.menuButton(panel).querySelector(
       `[data-l10n-id=address-capture-manage-address-button]`
     );
   }
   static learnMoreButton(panel) {
-    return AutofillDoorhanger.menuButton(panel).querySelector(
+    return SsiDoorhanger.menuButton(panel).querySelector(
       `[data-l10n-id=address-capture-learn-more-button]`
     );
   }
@@ -192,17 +186,17 @@ export class AutofillDoorhanger {
     this.doc.l10n.setAttributes(text, this.ui.header.l10nId);
 
     // Render the menu button
-    if (!this.ui.menu?.length || AutofillDoorhanger.menuButton(this.panel)) {
+    if (!this.ui.menu?.length || SsiDoorhanger.menuButton(this.panel)) {
       return;
     }
 
     const button = this.doc.createElement("button");
-    button.setAttribute("id", AutofillDoorhanger.menuButtonId);
+    button.setAttribute("id", SsiDoorhanger.menuButtonId);
     button.setAttribute("class", "address-capture-icon-button");
     this.doc.l10n.setAttributes(button, "address-capture-open-menu-button");
 
     const menupopup = this.doc.createXULElement("menupopup");
-    menupopup.setAttribute("id", AutofillDoorhanger.menuButtonId);
+    menupopup.setAttribute("id", SsiDoorhanger.menuButtonId);
     menupopup.setAttribute("class", "toolbar-menupopup");
 
     for (const [index, element] of this.ui.menu.entries()) {
@@ -365,7 +359,7 @@ export class AutofillDoorhanger {
   }
 }
 
-export class AddressSaveDoorhanger extends AutofillDoorhanger {
+export class AddressSaveDoorhanger extends SsiDoorhanger {
   static preferenceURL = "privacy-address-autofill";
   static learnMoreURL = "automatically-fill-your-address-web-forms";
   static editButtonId = "address-capture-edit-address-button";
@@ -373,8 +367,8 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
   static telemetryType = AutofillTelemetry.ADDRESS;
   static telemetryObject = "capture_doorhanger";
 
-  constructor(browser, oldRecord, newRecord, flowId) {
-    super(browser, oldRecord, newRecord, flowId);
+  constructor(browser, preference, data, flowId) {
+    super(browser, preference, data, flowId);
   }
 
   static editButton(panel) {
@@ -467,11 +461,9 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
           [
             fieldName,
             FormAutofillUtils.toOneLineAddress(
-              this.oldRecord["street-address"]
+              this.preference["street-address"]
             ),
-            FormAutofillUtils.toOneLineAddress(
-              this.newRecord["street-address"]
-            ),
+            FormAutofillUtils.toOneLineAddress(this.data["street-address"]),
           ],
         ];
         break;
@@ -479,24 +471,24 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
         data = [
           [
             "address-level2",
-            this.oldRecord["address-level2"],
-            this.newRecord["address-level2"],
+            this.preference["address-level2"],
+            this.data["address-level2"],
           ],
           [
             "address-level1",
             FormAutofillUtils.getAbbreviatedSubregionName(
-              this.oldRecord["address-level1"],
-              this.oldRecord.country
-            ) || this.oldRecord["address-level1"],
+              this.preference["address-level1"],
+              this.preference.country
+            ) || this.preference["address-level1"],
             FormAutofillUtils.getAbbreviatedSubregionName(
-              this.newRecord["address-level1"],
-              this.newRecord.country
-            ) || this.newRecord["address-level1"],
+              this.data["address-level1"],
+              this.data.country
+            ) || this.data["address-level1"],
           ],
           [
             "postal-code",
-            this.oldRecord["postal-code"],
-            this.newRecord["postal-code"],
+            this.preference["postal-code"],
+            this.data["postal-code"],
           ],
         ];
         break;
@@ -505,22 +497,20 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
       case "tel":
       case "email":
       case "organization":
-        data = [
-          [fieldName, this.oldRecord[fieldName], this.newRecord[fieldName]],
-        ];
+        data = [[fieldName, this.preference[fieldName], this.data[fieldName]]];
         break;
     }
 
-    const showDiff = !!Object.keys(this.oldRecord).length;
+    const showDiff = !!Object.keys(this.preference).length;
     return this.#formatLine(data, showDiff);
   }
 
   renderDescription() {
-    if (lazy.formAutofillStorage.addresses.isEmpty()) {
-      super.renderDescription();
-    } else {
-      this.description?.setAttribute("style", "display:none");
-    }
+    // if (lazy.formAutofillStorage.addresses.isEmpty()) {
+    super.renderDescription();
+    // } else {
+    //   this.description?.setAttribute("style", "display:none");
+    // }
   }
 
   renderContent() {
@@ -532,11 +522,15 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
       // Add all the address fields that are in the same category
       let texts = [];
       categories.forEach(category => {
-        const line = this.#formatTextByAddressCategory(category);
-        if (line.length) {
-          texts.push(line);
-        }
+        // const line = this.#formatTextByAddressCategory(category);
+        // if (line.length) {
+        //   texts.push(line);
+        // }
       });
+
+      const s = this.doc.createElement("span");
+      s.textContent = "違う、違う、そうじゃない\n Here is on URL address bar";
+      texts.push([s]);
 
       // If there is no data for this section, just ignore it.
       if (!texts.length) {
@@ -588,448 +582,7 @@ export class AddressSaveDoorhanger extends AutofillDoorhanger {
 
   // The record to be saved by this doorhanger
   recordToSave() {
-    return this.newRecord;
-  }
-}
-
-/**
- * Address Update doorhanger and Address Save doorhanger have the same implementation.
- * The only difference is UI.
- */
-export class AddressUpdateDoorhanger extends AddressSaveDoorhanger {
-  static telemetryObject = "update_doorhanger";
-}
-
-export class AddressEditDoorhanger extends AutofillDoorhanger {
-  static telemetryType = AutofillTelemetry.ADDRESS;
-  static telemetryObject = "edit_doorhanger";
-
-  constructor(browser, record, flowId) {
-    // Address edit dialog doesn't have "old" record
-    super(browser, null, record, flowId);
-
-    this.country = record.country || FormAutofill.DEFAULT_REGION;
-  }
-
-  // Address edit doorhanger changes layout according to the country
-  #layout = null;
-  get layout() {
-    if (this.#layout?.country != this.country) {
-      this.#layout = FormAutofillUtils.getFormFormat(this.country);
-    }
-    return this.#layout;
-  }
-
-  get country() {
-    return this.newRecord.country;
-  }
-
-  set country(c) {
-    if (this.newRecord.country == c) {
-      return;
-    }
-
-    // `recordToSave` only contains the latest data the current country support.
-    // For example, if a country doesn't have `address-level2`, `recordToSave`
-    // will not have the address field.
-    // `newRecord` is where we keep all the data regardless what the country is.
-    // Merge `recordToSave` to `newRecord` before switching country to keep
-    // `newRecord` update-to-date.
-    this.newRecord = Object.assign(this.newRecord, this.recordToSave());
-
-    // The layout of the address edit doorhanger should be changed when the
-    // country is changed.
-    this.#buildCountrySpecificAddressFields();
-  }
-
-  renderContent() {
-    this.content.replaceChildren();
-
-    this.#buildAddressFields(this.content, this.ui.content.fixedFields);
-
-    this.#buildCountrySpecificAddressFields();
-  }
-
-  // Put address fields that should be in the same line together.
-  // Determined by the `newLine` property that is defined in libaddressinput
-  #buildAddressFields(container, fields) {
-    const createRowContainer = () => {
-      const div = this.doc.createElement("div");
-      div.setAttribute("class", "address-edit-row-container");
-      container.appendChild(div);
-      return div;
-    };
-
-    let row = null;
-    let createRow = true;
-    for (const { fieldId, newLine } of fields) {
-      if (createRow) {
-        row = createRowContainer();
-      }
-      row.appendChild(this.#createInputField(fieldId));
-      createRow = newLine;
-    }
-  }
-
-  #buildCountrySpecificAddressFields() {
-    const fixedFieldIds = this.ui.content.fixedFields.map(f => f.fieldId);
-    let container = this.doc.getElementById(
-      "country-specific-fields-container"
-    );
-    if (container) {
-      // Country-specific fields might be rebuilt after users update the country
-      // field, so if the container already exists, we remove all its childern and
-      // then rebuild it.
-      container.replaceChildren();
-    } else {
-      container = this.doc.createElement("div");
-      container.setAttribute("id", "country-specific-fields-container");
-
-      // Find where to insert country-specific fields
-      const nth = fixedFieldIds.indexOf(
-        this.ui.content.countrySpecificFieldsBefore
-      );
-      this.content.insertBefore(container, this.content.children[nth]);
-    }
-
-    this.#buildAddressFields(
-      container,
-      // Filter out fields that are always displayed
-      this.layout.fieldsOrder.filter(f => !fixedFieldIds.includes(f.fieldId))
-    );
-  }
-
-  #buildCountryMenupopup() {
-    const menupopup = this.doc.createXULElement("menupopup");
-
-    let menuitem = this.doc.createXULElement("menuitem");
-    menuitem.setAttribute("value", "");
-    menupopup.appendChild(menuitem);
-
-    const countries = [...FormAutofill.countries.entries()].sort((e1, e2) =>
-      e1[1].localeCompare(e2[1])
-    );
-    for (const [country] of countries) {
-      const countryName = Services.intl.getRegionDisplayNames(undefined, [
-        country.toLowerCase(),
-      ]);
-      menuitem = this.doc.createXULElement("menuitem");
-      menuitem.setAttribute("label", countryName);
-      menuitem.setAttribute("value", country);
-      menupopup.appendChild(menuitem);
-    }
-
-    return menupopup;
-  }
-
-  #buildAddressLevel1Menupopup() {
-    const menupopup = this.doc.createXULElement("menupopup");
-
-    let menuitem = this.doc.createXULElement("menuitem");
-    menuitem.setAttribute("value", "");
-    menupopup.appendChild(menuitem);
-
-    for (const [regionCode, regionName] of this.layout.addressLevel1Options) {
-      menuitem = this.doc.createXULElement("menuitem");
-      menuitem.setAttribute("label", regionCode);
-      menuitem.setAttribute("value", regionName);
-      menupopup.appendChild(menuitem);
-    }
-
-    return menupopup;
-  }
-
-  /**
-   * Creates an input field with a label and attaches it to a container element.
-   * The type of the input field is determined by the `fieldName`.
-   *
-   * @param {string} fieldName The name of the address field
-   */
-  #createInputField(fieldName) {
-    const div = this.doc.createElement("div");
-    div.setAttribute("class", "address-edit-input-container");
-
-    const inputId = AddressEditDoorhanger.getInputId(fieldName);
-    const label = this.doc.createElement("label");
-    label.setAttribute("for", inputId);
-
-    switch (fieldName) {
-      case "address-level1":
-        this.doc.l10n.setAttributes(label, this.layout.addressLevel1L10nId);
-        break;
-      case "address-level2":
-        this.doc.l10n.setAttributes(label, this.layout.addressLevel2L10nId);
-        break;
-      case "address-level3":
-        this.doc.l10n.setAttributes(label, this.layout.addressLevel3L10nId);
-        break;
-      case "postal-code":
-        this.doc.l10n.setAttributes(label, this.layout.postalCodeL10nId);
-        break;
-      case "country":
-        // workaround because `autofill-address-country` is already defined
-        this.doc.l10n.setAttributes(
-          label,
-          `autofill-address-${fieldName}-only`
-        );
-        break;
-      default:
-        this.doc.l10n.setAttributes(label, `autofill-address-${fieldName}`);
-        break;
-    }
-    div.appendChild(label);
-
-    let input;
-    let popup;
-    if ("street-address".includes(fieldName)) {
-      input = this.doc.createElement("textarea");
-      input.setAttribute("rows", 3);
-    } else if (fieldName == "country") {
-      input = this.doc.createXULElement("menulist");
-      popup = this.#buildCountryMenupopup();
-      popup.addEventListener("popuphidden", e => e.stopPropagation());
-      input.appendChild(popup);
-
-      // The element will be removed after the popup is closed
-      /* eslint-disable mozilla/balanced-listeners */
-      input.addEventListener("command", event => {
-        event.stopPropagation();
-        this.country = input.selectedItem.value;
-      });
-    } else if (
-      fieldName == "address-level1" &&
-      this.layout.addressLevel1Options
-    ) {
-      input = this.doc.createXULElement("menulist");
-      popup = this.#buildAddressLevel1Menupopup();
-      popup.addEventListener("popuphidden", e => e.stopPropagation());
-      input.appendChild(popup);
-    } else {
-      input = this.doc.createElement("input");
-    }
-
-    input.setAttribute("id", inputId);
-
-    if (popup) {
-      input.selectedItem =
-        FormAutofillUtils.findAddressSelectOptionWithMenuPopup(
-          popup,
-          this.newRecord,
-          fieldName
-        );
-    } else {
-      input.value = this.newRecord[fieldName] ?? "";
-    }
-
-    div.appendChild(input);
-
-    return div;
-  }
-
-  /*
-   * This method generates a unique input ID using the field name of the address field.
-   *
-   * @param {string} fieldName The name of the address field
-   */
-  static getInputId(fieldName) {
-    return `address-edit-${fieldName}-input`;
-  }
-
-  /*
-   * Return a regular expression that matches the ID pattern generated by getInputId.
-   */
-  static #getInputIdMatchRegexp() {
-    const regex = /^address-edit-(.+)-input$/;
-    return regex;
-  }
-
-  /**
-   * Collects data from all visible address field inputs within the doorhanger.
-   * Since address fields may vary by country, only fields present for the
-   * current country's address format are included in the record.
-   */
-  recordToSave() {
-    let record = {};
-    const regex = AddressEditDoorhanger.#getInputIdMatchRegexp();
-    const elements = this.panel.querySelectorAll("input, textarea, menulist");
-    for (const element of elements) {
-      const match = element.id.match(regex);
-      if (match && match[1]) {
-        record[match[1]] = element.value;
-      }
-    }
-    return record;
-  }
-
-  onEventCallback(state) {
-    super.onEventCallback(state);
-
-    // Close the edit address doorhanger when it has been dismissed.
-    if (state == "dismissed") {
-      this.closeDoorhanger("cancel");
-    }
-  }
-}
-
-export class CreditCardSaveDoorhanger extends AutofillDoorhanger {
-  static contentClass = "credit-card-capture-content";
-
-  static telemetryType = AutofillTelemetry.CREDIT_CARD;
-  static telemetryObject = "capture_doorhanger";
-
-  static spotlightURL = "about:preferences#privacy-credit-card-autofill";
-
-  constructor(browser, oldRecord, newRecord, flowId) {
-    super(browser, oldRecord, newRecord, flowId);
-  }
-
-  /**
-   * We have not yet sync address and credit card design. After syncing,
-   * we should be able to use the same "class"
-   */
-  static content(panel) {
-    return panel.querySelector(`.${CreditCardSaveDoorhanger.contentClass}`);
-  }
-  get content() {
-    return CreditCardSaveDoorhanger.content(this.panel);
-  }
-
-  addCheckboxListener() {
-    if (!this.ui.options.checkbox) {
-      return;
-    }
-
-    const { checkbox } = this.panel;
-    if (checkbox && !checkbox.hidden) {
-      checkbox.addEventListener("command", event => {
-        let { secondaryButton, menubutton } =
-          event.target.closest("popupnotification");
-        let checked = event.target.checked;
-        Services.prefs.setBoolPref("services.sync.engine.creditcards", checked);
-        secondaryButton.disabled = checked;
-        menubutton.disabled = checked;
-        lazy.log.debug("Set creditCard sync to", checked);
-      });
-    }
-  }
-
-  removeCheckboxListener() {
-    if (!this.ui.options.checkbox) {
-      return;
-    }
-
-    const { checkbox } = this.panel;
-
-    if (checkbox && !checkbox.hidden) {
-      checkbox.removeEventListener(
-        "command",
-        this.ui.options.checkbox.callback
-      );
-    }
-  }
-
-  appendDescription() {
-    const docFragment = this.doc.createDocumentFragment();
-
-    const label = this.doc.createXULElement("label");
-    this.doc.l10n.setAttributes(label, this.ui.description.l10nId);
-    docFragment.appendChild(label);
-
-    const descriptionWrapper = this.doc.createXULElement("hbox");
-    descriptionWrapper.className = "desc-message-box";
-
-    const number =
-      this.newRecord["cc-number"] || this.newRecord["cc-number-decrypted"];
-    const name = this.newRecord["cc-name"];
-    const network = lazy.CreditCard.getType(number);
-
-    const descriptionIcon = lazy.CreditCard.getCreditCardLogo(network);
-    if (descriptionIcon) {
-      const icon = this.doc.createXULElement("image");
-      if (
-        typeof descriptionIcon == "string" &&
-        (descriptionIcon.includes("cc-logo") ||
-          descriptionIcon.includes("icon-credit"))
-      ) {
-        icon.setAttribute("src", descriptionIcon);
-      }
-      descriptionWrapper.appendChild(icon);
-    }
-
-    const description = this.doc.createXULElement("description");
-    description.textContent =
-      `${lazy.CreditCard.getMaskedNumber(number)}` + (name ? `, ${name}` : ``);
-
-    descriptionWrapper.appendChild(description);
-    docFragment.appendChild(descriptionWrapper);
-
-    this.content.appendChild(docFragment);
-  }
-
-  appendPrivacyPanelLink() {
-    const privacyLinkElement = this.doc.createXULElement("label", {
-      is: "text-link",
-    });
-    privacyLinkElement.setAttribute("useoriginprincipal", true);
-    privacyLinkElement.setAttribute(
-      "href",
-      CreditCardSaveDoorhanger.spotlightURL ||
-        "about:preferences#privacy-form-autofill"
-    );
-
-    const linkId = `autofill-options-link${
-      AppConstants.platform == "macosx" ? "-osx" : ""
-    }`;
-    this.doc.l10n.setAttributes(privacyLinkElement, linkId);
-
-    this.content.appendChild(privacyLinkElement);
-  }
-
-  // TODO: Currently, the header and description are unused. Align
-  // these with the address doorhanger's implementation during
-  // the credit card doorhanger redesign.
-  getNotificationHeader() {
-    return l10n.formatValueSync(this.ui.header.l10nId);
-  }
-
-  renderHeader() {
-    // Not implement
-  }
-
-  renderDescription() {
-    // Not implement
-  }
-
-  renderContent() {
-    this.content.replaceChildren();
-
-    this.appendDescription();
-
-    this.appendPrivacyPanelLink();
-  }
-
-  onEventCallback(state) {
-    super.onEventCallback(state);
-
-    if (state == "removed" || state == "dismissed") {
-      this.removeCheckboxListener();
-    } else if (state == "shown") {
-      this.addCheckboxListener();
-    }
-  }
-
-  // The record to be saved by this doorhanger
-  recordToSave() {
-    return this.newRecord;
-  }
-}
-
-export class CreditCardUpdateDoorhanger extends CreditCardSaveDoorhanger {
-  static telemetryType = AutofillTelemetry.CREDIT_CARD;
-  static telemetryObject = "update_doorhanger";
-
-  constructor(browser, oldRecord, newRecord, flowId) {
-    super(browser, oldRecord, newRecord, flowId);
+    return this.data;
   }
 }
 
@@ -1094,269 +647,20 @@ CONTENT = {
       hideClose: true,
     },
   },
-
-  [AddressUpdateDoorhanger.name]: {
-    id: "address-save-update",
-    anchor: {
-      id: "autofill-address-notification-icon",
-      URL: "chrome://formautofill/content/formfill-anchor.svg",
-      tooltiptext: l10n.formatValueSync("autofill-message-tooltip"),
-    },
-    header: {
-      l10nId: "address-capture-update-doorhanger-header",
-    },
-    menu: [
-      {
-        l10nId: "address-capture-manage-address-button",
-        evt: "open-pref",
-      },
-      {
-        l10nId: "address-capture-learn-more-button",
-        evt: "learn-more",
-      },
-    ],
-    content: {
-      // Addresses fields are categoried into two sections, each section
-      // has its own icon
-      sections: [
-        {
-          imgClass: "address-capture-img-address",
-          categories: [
-            "name",
-            "organization",
-            "street-address",
-            "address",
-            "country",
-          ],
-        },
-        {
-          imgClass: "address-capture-img-email",
-          categories: ["email", "tel"],
-        },
-      ],
-    },
-    footer: {
-      mainAction: {
-        l10nId: "address-capture-update-button",
-        callbackState: "update",
-      },
-      secondaryActions: [
-        {
-          l10nId: "address-capture-not-now-button",
-          callbackState: "cancel",
-        },
-      ],
-    },
-    options: {
-      autofocus: true,
-      persistWhileVisible: true,
-      hideClose: true,
-    },
-  },
-
-  [AddressEditDoorhanger.name]: {
-    id: "address-edit",
-    anchor: {
-      id: "autofill-address-notification-icon",
-      URL: "chrome://formautofill/content/formfill-anchor.svg",
-      tooltiptext: l10n.formatValueSync("autofill-message-tooltip"),
-    },
-    header: {
-      l10nId: "address-capture-edit-doorhanger-header",
-    },
-    menu: null,
-    content: {
-      // We start by organizing the fields in a specific order:
-      // name, organization, and country are fixed and come first.
-      // These are followed by country-specific fields, which are
-      // laid out differently for each country (as referenced from libaddressinput).
-      // Finally, we place the telephone and email fields at the end.
-      countrySpecificFieldsBefore: "tel",
-      fixedFields: [
-        { fieldId: "name", newLine: true },
-        { fieldId: "organization", newLine: true },
-        { fieldId: "country", newLine: true },
-        { fieldId: "tel", newLine: false },
-        { fieldId: "email", newLine: true },
-      ],
-    },
-    footer: {
-      mainAction: {
-        l10nId: "address-capture-save-button",
-        callbackState: "save",
-      },
-      secondaryActions: [
-        {
-          l10nId: "address-capture-cancel-button",
-          callbackState: "cancel",
-          dismiss: true,
-        },
-      ],
-    },
-    options: {
-      autofocus: true,
-      persistWhileVisible: true,
-      hideClose: true,
-    },
-  },
-
-  [CreditCardSaveDoorhanger.name]: {
-    id: "credit-card-save-update",
-    anchor: {
-      id: "autofill-credit-card-notification-icon",
-      URL: "chrome://formautofill/content/formfill-anchor.svg",
-      tooltiptext: l10n.formatValueSync("autofill-message-tooltip"),
-    },
-    header: {
-      l10nId: "credit-card-save-doorhanger-header",
-    },
-    description: {
-      l10nId: "credit-card-save-doorhanger-description",
-    },
-    content: {},
-    footer: {
-      mainAction: {
-        l10nId: "credit-card-capture-save-button",
-        callbackState: "create",
-      },
-      secondaryActions: [
-        {
-          l10nId: "credit-card-capture-cancel-button",
-          callbackState: "cancel",
-        },
-        {
-          l10nId: "credit-card-capture-never-save-button",
-          callbackState: "disable",
-        },
-      ],
-    },
-    options: {
-      persistWhileVisible: true,
-      popupIconURL: "chrome://formautofill/content/icon-credit-card.svg",
-      hideClose: true,
-
-      checkbox: {
-        get checked() {
-          return Services.prefs.getBoolPref("services.sync.engine.creditcards");
-        },
-        get label() {
-          // Only set the label when the fallowing conditions existed:
-          // - sync account is set
-          // - credit card sync is disabled
-          // - credit card sync is available
-          // otherwise return null label to hide checkbox.
-          return Services.prefs.prefHasUserValue("services.sync.username") &&
-            !Services.prefs.getBoolPref("services.sync.engine.creditcards") &&
-            Services.prefs.getBoolPref(
-              "services.sync.engine.creditcards.available"
-            )
-            ? l10n.formatValueSync(
-                "credit-card-doorhanger-credit-cards-sync-checkbox"
-              )
-            : null;
-        },
-      },
-    },
-  },
-
-  [CreditCardUpdateDoorhanger.name]: {
-    id: "credit-card-save-update",
-    anchor: {
-      id: "autofill-credit-card-notification-icon",
-      URL: "chrome://formautofill/content/formfill-anchor.svg",
-      tooltiptext: l10n.formatValueSync("autofill-message-tooltip"),
-    },
-    header: {
-      l10nId: "credit-card-update-doorhanger-header",
-    },
-    description: {
-      l10nId: "credit-card-update-doorhanger-description",
-    },
-    content: {},
-    footer: {
-      mainAction: {
-        l10nId: "credit-card-capture-update-button",
-        callbackState: "update",
-      },
-      secondaryActions: [
-        {
-          l10nId: "credit-card-capture-save-new-button",
-          callbackState: "create",
-        },
-      ],
-    },
-    options: {
-      persistWhileVisible: true,
-      popupIconURL: "chrome://formautofill/content/icon-credit-card.svg",
-      hideClose: true,
-    },
-  },
 };
 
-export let FormAutofillPrompter = {
-  async promptToSaveCreditCard(
-    browser,
-    storage,
-    flowId,
-    { oldRecord, newRecord }
-  ) {
-    const showUpdateDoorhanger = !!Object.keys(oldRecord).length;
-
-    const { ownerGlobal: win } = browser;
-    win.MozXULElement.insertFTLIfNeeded(
-      "toolkit/formautofill/formAutofill.ftl"
-    );
-
-    let action;
-    const doorhanger = showUpdateDoorhanger
-      ? new CreditCardUpdateDoorhanger(browser, oldRecord, newRecord, flowId)
-      : new CreditCardSaveDoorhanger(browser, oldRecord, newRecord, flowId);
-    action = await doorhanger.show();
-
-    lazy.log.debug(`Doorhanger action is ${action}`);
-
-    if (action == "cancel") {
-      return;
-    } else if (action == "disable") {
-      Services.prefs.setBoolPref(ENABLED_AUTOFILL_CREDITCARDS_PREF, false);
-      return;
-    }
-
-    if (!(await lazy.OSKeyStore.ensureLoggedIn(false)).authenticated) {
-      lazy.log.warn("User canceled encryption login");
-      return;
-    }
-
-    this._updateStorageAfterInteractWithPrompt(
-      browser,
-      storage,
-      "credit-card",
-      action == "update" ? oldRecord : null,
-      doorhanger.recordToSave()
-    );
-  },
-
+export let SsiPrompter = {
   /**
    * Show save or update address doorhanger
    *
    * @param {Element<browser>} browser  Browser to show the save/update address prompt
-   * @param {object} storage Address storage
    * @param {string} flowId Unique GUID to record a series of the same user action
    * @param {object} options
-   * @param {object} [options.oldRecord] Record to be merged
-   * @param {object} [options.newRecord] Record with more information
+   * @param {object} [options.preference] Record to be merged
+   * @param {object} [options.data] Record with more information
    */
-  async promptToSaveAddress(
-    browser,
-    storage,
-    flowId,
-    { oldRecord, newRecord }
-  ) {
-    const showUpdateDoorhanger = !!Object.keys(oldRecord).length;
-
-    lazy.log.debug(
-      `Show the ${showUpdateDoorhanger ? "update" : "save"} address doorhanger`
-    );
+  async promptToSaveAddress(browser, flowId, { preference, data }) {
+    lazy.log.debug(`Show the save address doorhanger`);
 
     const { ownerGlobal: win } = browser;
     win.MozXULElement.insertFTLIfNeeded(
@@ -1365,31 +669,13 @@ export let FormAutofillPrompter = {
     // address-autofill-* are defined in browser/preferences now
     win.MozXULElement.insertFTLIfNeeded("browser/preferences/formAutofill.ftl");
 
-    let doorhanger;
-    let action;
-    while (true) {
-      doorhanger = showUpdateDoorhanger
-        ? new AddressUpdateDoorhanger(browser, oldRecord, newRecord, flowId)
-        : new AddressSaveDoorhanger(browser, oldRecord, newRecord, flowId);
-      action = await doorhanger.show();
-
-      if (action == "edit-address") {
-        doorhanger = new AddressEditDoorhanger(
-          browser,
-          { ...oldRecord, ...newRecord },
-          flowId
-        );
-        action = await doorhanger.show();
-
-        // If users cancel the edit address doorhanger, show the save/update
-        // doorhanger again.
-        if (action == "cancel") {
-          continue;
-        }
-      }
-
-      break;
-    }
+    const doorhanger = new AddressSaveDoorhanger(
+      browser,
+      preference,
+      data,
+      flowId
+    );
+    const action = await doorhanger.show();
 
     lazy.log.debug(`Doorhanger action is ${action}`);
 
@@ -1397,35 +683,11 @@ export let FormAutofillPrompter = {
       return;
     }
 
-    this._updateStorageAfterInteractWithPrompt(
-      browser,
-      storage,
-      "address",
-      showUpdateDoorhanger ? oldRecord : null,
-      doorhanger.recordToSave()
-    );
+    this._updateStorageAfterInteractWithPrompt(doorhanger.recordToSave());
   },
 
-  // TODO: Simplify the code after integrating credit card prompt to use AutofillDoorhanger
-  async _updateStorageAfterInteractWithPrompt(
-    browser,
-    storage,
-    type,
-    oldRecord,
-    newRecord
-  ) {
+  async _updateStorageAfterInteractWithPrompt(newRecord) {
     let changedGUID = null;
-    if (oldRecord) {
-      changedGUID = oldRecord.guid;
-      await storage.update(changedGUID, newRecord, true);
-    } else {
-      changedGUID = await storage.add(newRecord);
-    }
-    storage.notifyUsed(changedGUID);
-
-    const hintId = `confirmation-hint-${type}-${
-      oldRecord ? "updated" : "created"
-    }`;
-    showConfirmation(browser, hintId);
+    // Save to AuthCache
   },
 };

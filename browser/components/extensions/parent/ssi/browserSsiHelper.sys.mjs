@@ -9,6 +9,7 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
+  SsiPrompter: "resource://gre/modules/SsiPrompter.sys.mjs",
 });
 
 const PROTOCOL_NAMES = ["nostr"];
@@ -175,7 +176,7 @@ export const browserSsiHelper = {
     // Prepare stuff
     const { protocolName, credentialName } = credential;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
-    const { site, extension, browsingContext, window } = getOrigin(
+    const { site, extension, browsingContext, browser } = getOrigin(
       context,
       tabTracker
     );
@@ -188,7 +189,7 @@ export const browserSsiHelper = {
       extension.url
     );
 
-    await openPopup(window, extension.name);
+    await openPopup(browser, extension.name);
 
     // Check permission
     if (site.isSystemPrincipal || site.url.startsWith("about:")) {
@@ -240,7 +241,7 @@ export const browserSsiHelper = {
       submission,
       enforce,
       embedderElement: browsingContext.embedderElement,
-      window,
+      browser,
     };
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
@@ -341,11 +342,11 @@ function getOrigin(context, tabTracker) {
 
   // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
   // example, when pending password dialog and when only extension is executing independently.
-  const { browser, window } = context.extension.tabManager.get(activeTabId);
+  const { browser } = context.extension.tabManager.get(activeTabId);
 
   return {
     browsingContext: browser.browsingContext,
-    window,
+    browser,
     site: {
       origin: browser.contentPrincipal.originNoSuffix,
       url: browser.contentPrincipal.spec,
@@ -592,8 +593,13 @@ function isAuthMandatory(
 
   return false;
 }
-async function openPopup(window, extensionName) {
-  console.dir("panel", window);
+async function openPopup(browser, extensionName) {
+  console.dir("panel", browser);
+  const result = await lazy.SsiPrompter.promptToSaveAddress(browser, "aaa", {
+    preference: null,
+    data: null,
+  });
+  console.log("result", result);
   // const template = `
   //   <div>
   //     <div id="dialogStack" hidden="true"/>
@@ -657,9 +663,9 @@ async function openPopup(window, extensionName) {
   //   "chrome://browser/content/preferences/dialogs/addEngine.xhtml",
   //   { features: "resizable=no, modal=yes" }
   // );
-  let div = window.document.querySelector(`#${extensionName}-popup`);
+  let div = browser.window.document.querySelector(`#${extensionName}-popup`);
   if (!div) {
-    div = window.document.createElement("div");
+    div = browser.window.document.createElement("div");
     div.id = `${extensionName}-popup`;
     div.classList.add(`browser-ssi-popup`);
     div.innerHTML = `
@@ -688,6 +694,6 @@ async function openPopup(window, extensionName) {
         bottom
       </div>
     `;
-    window.document.body.appendChild(div);
+    browser.window.document.body.appendChild(div);
   }
 }
