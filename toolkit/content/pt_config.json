@@ -1,14 +1,12 @@
 {
-  "_comment": "Used for dev build, replaced for release builds in tor-browser-build. This file is copied from tor-browser-build 4ffa9e31:projects/tor-expert-bundle/pt_config.json",
+  "_comment": "Used for dev build, replaced for release builds in tor-browser-build. This file is copied from tor-browser-build efdc0f34475ac8e4df241d3c8ff7253e8470019f:projects/tor-expert-bundle/pt_config.json",
   "recommendedDefault" : "obfs4",
   "pluggableTransports" : {
-    "lyrebird" : "ClientTransportPlugin meek_lite,obfs2,obfs3,obfs4,scramblesuit,webtunnel exec ${pt_path}lyrebird${pt_extension}",
-    "snowflake" : "ClientTransportPlugin snowflake exec ${pt_path}snowflake-client${pt_extension}",
+    "lyrebird" : "ClientTransportPlugin meek_lite,obfs2,obfs3,obfs4,scramblesuit,snowflake,webtunnel exec ${pt_path}lyrebird${pt_extension}",
     "conjure" : "ClientTransportPlugin conjure exec ${pt_path}conjure-client${pt_extension} -registerURL https://registration.refraction.network/api"
   },
   "bridges" : {
     "meek-azure" : [
-      "meek_lite 192.0.2.18:80 BE776A53492E1E044A26F17306E1BC46A55A1625 url=https://meek.azureedge.net/ front=ajax.aspnetcdn.com",
       "meek_lite 192.0.2.20:80 url=https://1314488750.rsc.cdn77.org front=www.phpmyadmin.net utls=HelloRandomizedALPN"
     ],
     "obfs4" : [
