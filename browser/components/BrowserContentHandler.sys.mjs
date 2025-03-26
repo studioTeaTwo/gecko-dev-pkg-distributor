@@ -876,18 +876,12 @@ nsBrowserContentHandler.prototype = {
               "%OLD_BASE_BROWSER_VERSION%",
               old_forkVersion
             );
-            if (overridePage && AppConstants.BASE_BROWSER_UPDATE) {
+            if (AppConstants.BASE_BROWSER_UPDATE) {
               // Tor Browser: Instead of opening the post-update "override page"
               // directly, we ensure that about:tor will be opened, which should
               // notify the user that their browser was updated.
-              //
-              // The overridePage comes from the openURL attribute within the
-              // updates.xml file or, if no showURL action is present, from the
-              // startup.homepage_override_url pref.
-              Services.prefs.setCharPref(
-                "torbrowser.post_update.url",
-                overridePage
-              );
+              // NOTE: We ignore any overridePage value, which can come from the
+              // openURL attribute within the updates.xml file.
               Services.prefs.setBoolPref(
                 "torbrowser.post_update.shouldNotify",
                 true
