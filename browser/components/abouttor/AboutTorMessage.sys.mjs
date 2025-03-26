@@ -26,13 +26,20 @@ export const AboutTorMessage = {
     const shouldNotifyPref = "torbrowser.post_update.shouldNotify";
     if (Services.prefs.getBoolPref(shouldNotifyPref, false)) {
       Services.prefs.clearUserPref(shouldNotifyPref);
+      // Try use the same URL as the about dialog. See tor-browser#43567.
+      let updateURL = Services.urlFormatter.formatURLPref(
+        "app.releaseNotesURL.aboutDialog"
+      );
+      if (updateURL === "about:blank") {
+        updateURL = Services.urlFormatter.formatURLPref(
+          "startup.homepage_override_url"
+        );
+      }
       return {
         updateVersion: Services.prefs.getCharPref(
           "browser.startup.homepage_override.torbrowser.version"
         ),
-        updateURL:
-          Services.prefs.getCharPref("torbrowser.post_update.url", "") ||
-          Services.urlFormatter.formatURLPref("startup.homepage_override_url"),
+        updateURL,
       };
     }
     const number = this._count;
