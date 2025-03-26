@@ -4830,7 +4830,9 @@ BrowserGlue.prototype = {
     // Version 6: Tor Browser 14.5a3: Clear preference for TorSettings that is
     //            no longer used (tor-browser#41921).
     //            Drop unused TorConnect setting (tor-browser#43462).
-    const TBB_MIGRATION_VERSION = 6;
+    // Version 6: Tor Browser 14.5a6: Clear home page update url preference
+    //            (tor-browser#43567).
+    const TBB_MIGRATION_VERSION = 7;
     const MIGRATION_PREF = "torbrowser.migration.version";
 
     // If we decide to force updating users to pass through any version
@@ -4915,6 +4917,10 @@ BrowserGlue.prototype = {
     if (currentVersion < 6) {
       Services.prefs.clearUserPref("torbrowser.settings.enabled");
       Services.prefs.clearUserPref("torbrowser.bootstrap.allow_internet_test");
+    }
+
+    if (currentVersion < 7) {
+      Services.prefs.clearUserPref("torbrowser.post_update.url");
     }
 
     Services.prefs.setIntPref(MIGRATION_PREF, TBB_MIGRATION_VERSION);
