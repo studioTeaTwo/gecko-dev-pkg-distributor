@@ -496,7 +496,7 @@ public class TorAndroidIntegration implements BundleEventListener {
     MeekTransport(final EventCallback callback, int id, String[] args) {
       setName("meek-" + id);
 
-      final String command = mLibraryDir + "/libObfs4proxy.so";
+      final String command = mLibraryDir + "/libLyrebird.so";
       ArrayList<String> argList = new ArrayList<String>();
       argList.add(command);
       if (args != null && args.length > 0) {
