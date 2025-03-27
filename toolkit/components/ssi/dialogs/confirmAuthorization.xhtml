@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!DOCTYPE window>
+
+<window
+  data-l10n-id="ssi-authorization-title"
+  data-l10n-attrs="style"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  onload="onLoad();"
+>
+  <dialog
+    id="confirmAuthorization"
+    buttons="accept,cancel"
+    buttonlabelcancel="Cancel"
+    buttonlabelaccept="Next"
+  >
+    <linkset>
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link
+        rel="stylesheet"
+        href="chrome://ssi/content/dialogs/confirmAuthorization.css"
+      />
+
+      <html:link rel="localization" href="toolkit/ssi/authorization.ftl" />
+    </linkset>
+
+    <script src="chrome://ssi/content/dialogs/confirmAuthorization.js" />
+
+    <description id="caption" />
+    <description id="permission" />
+    <richlistbox id="evidence" class="box-padded" />
+    <description id="submission" />
+  </dialog>
+</window>

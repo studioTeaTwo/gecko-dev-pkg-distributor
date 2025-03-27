@@ -3,7 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 toolkit.jar:
-%   content ssi %content/ssi/
+% content ssi %content/ssi/
+  content/ssi/dialogs/confirmAuthorization.css    (./dialogs/confirmAuthorization.css)
+  content/ssi/dialogs/confirmAuthorization.js    (./dialogs/confirmAuthorization.js)
+  content/ssi/dialogs/confirmAuthorization.xhtml (./dialogs/confirmAuthorization.xhtml)
 % resource ssi %ssi/
 #ifdef ANDROID
   ssi/ssistorage.sys.mjs (./ssi-storage-geckoview.sys.mjs)

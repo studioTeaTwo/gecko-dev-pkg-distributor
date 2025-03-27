@@ -188,8 +188,6 @@ export const browserSsiHelper = {
       extension.url
     );
 
-    await openPopup(window, extension.name);
-
     // Check permission
     if (site.isSystemPrincipal || site.url.startsWith("about:")) {
       // This is assumed `about:` pages.
@@ -286,6 +284,7 @@ export const browserSsiHelper = {
  * @param {string} dialogInfo.submission
  * @param {boolean} dialogInfo.enforce
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+ * @param {boolean} dialogInfo.window nativeTab.ownerGlobal
  * @returns {Promise<boolean>}
  */
 async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
@@ -446,34 +445,11 @@ async function authWithPassword(
 ) {
   const { url, origin } = target;
   const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
-  const { system, evidence, caption, submission, enforce, embedderElement } =
-    dialogInfo;
+  const { system, evidence, enforce, embedderElement } = dialogInfo;
 
-  // Build Dialog
+  // Common text among two dialogs
   const eol = AppConstants.platform === "win" ? "\r\n" : "\n";
-  const messageText = {
-    value: `${
-      AppConstants.platform === "win" ? "Nightly is trying to " : ""
-    }${system}${eol}to ${origin}`,
-  };
-  if (caption) {
-    messageText.value += `${eol}${JSON.stringify(caption, null, 1)}`;
-  }
-  if (evidence) {
-    messageText.value += `${eol}${eol}${JSON.stringify(evidence, null, 1)}`;
-  }
-  if (submission) {
-    messageText.value += `${eol}${eol}${JSON.stringify(submission, null, 1)}`;
-  }
-  const captionText = {
-    value: AppConstants.platform === "win" ? "Nightly" : "",
-  }; // caption only works on windows.
-  const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-    lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-  );
-  if (isOSAuthEnabled) {
-    const messageId = MESSAGE_ID + "-" + AppConstants.platform;
-  }
+  const baseCaption = `${system}${eol}to ${origin}`;
 
   // Prepare expiration time.
   const protocolName = cacheKey.split(":")[0];
@@ -511,7 +487,39 @@ async function authWithPassword(
     _authExpirationTime = 0;
   }
 
+  // Do we have a recent authorization?
+  if (Date.now() < _authExpirationTime) {
+    return true;
+  }
+
+  // Dispaly confirmation dialog
+  const permission = `Permission: ${baseCaption}`;
+  const confrimed = await lazy.SsiHelper.showConfirmAuthorizationDialog({
+    window: dialogInfo.window,
+    permission,
+    caption: dialogInfo.caption,
+    evidence: dialogInfo.evidence,
+    submission: dialogInfo.submission,
+  });
+  if (!confrimed) {
+    return false;
+  }
+
   // Suggest password prompt
+  const messageText = {
+    value: `${
+      AppConstants.platform === "win" ? "Nightly is trying to " : ""
+    }${baseCaption}`,
+  };
+  const captionText = {
+    value: AppConstants.platform === "win" ? "Nightly" : "",
+  }; // caption only works on windows.
+  const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+    lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+  );
+  if (isOSAuthEnabled) {
+    const messageId = MESSAGE_ID + "-" + AppConstants.platform;
+  }
   const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
     embedderElement,
     isOSAuthEnabled,
@@ -591,103 +599,4 @@ function isAuthMandatory(
   }
 
   return false;
-}
-async function openPopup(window, extensionName) {
-  console.dir("panel", window);
-  // const template = `
-  //   <div>
-  //     <div id="dialogStack" hidden="true"/>
-  //     <div id="dialogTemplate" class="dialogOverlay" align="center" topmost="true" pack="center" hidden="true">
-  //       <div class="dialogBox"
-  //             pack="end"
-  //             role="dialog"
-  //             aria-labelledby="dialogTitle">
-  //         <div class="dialogTitleBar" align="center">
-  //           <label class="dialogTitle" flex="1"/>
-  //           <button class="dialogClose close-icon"
-  //                   data-l10n-id="close-button"/>
-  //         </div>
-  //         <browser class="dialogFrame"
-  //                 autoscroll="false"
-  //                 disablehistory="true"/>
-  //       </div>
-  //     </div>
-  //   </div>
-  // `;
-  // const parser = new DOMParser();
-  // // parser.forceEnableXULXBL();
-  // const parsed = parser.parseFromString(template, "text/html");
-  // console.dir(parsed);
-  // // const newNode = window.document.importNode(template, true);
-  // window.document.body.insertAdjacentHTML("afterend", template);
-  // const gSubDialog = new lazy.SubDialogManager({
-  //   dialogStack: window.document.getElementById("dialogStack"),
-  //   dialogTemplate: window.document.getElementById("dialogTemplate"),
-  //   dialogOptions: {
-  //     styleSheets: [
-  //       "chrome://browser/skin/preferences/dialog.css",
-  //       "chrome://browser/skin/preferences/preferences.css",
-  //     ],
-  //     // resizeCallback: async ({ title, frame }) => {
-  //     //   // Search within main document and highlight matched keyword.
-  //     //   await gSearchResultsPane.searchWithinNode(
-  //     //     title,
-  //     //     gSearchResultsPane.query
-  //     //   );
-
-  //     //   // Search within sub-dialog document and highlight matched keyword.
-  //     //   await gSearchResultsPane.searchWithinNode(
-  //     //     frame.contentDocument.firstElementChild,
-  //     //     gSearchResultsPane.query
-  //     //   );
-
-  //     //   // Creating tooltips for all the instances found
-  //     //   for (let node of gSearchResultsPane.listSearchTooltips) {
-  //     //     if (!node.tooltipNode) {
-  //     //       gSearchResultsPane.createSearchTooltip(
-  //     //         node,
-  //     //         gSearchResultsPane.query
-  //     //       );
-  //     //     }
-  //     //   }
-  //     // },
-  //   },
-  // });
-  // await gSubDialog.open(
-  //   "chrome://browser/content/preferences/dialogs/addEngine.xhtml",
-  //   { features: "resizable=no, modal=yes" }
-  // );
-  let div = window.document.querySelector(`#${extensionName}-popup`);
-  if (!div) {
-    div = window.document.createElement("div");
-    div.id = `${extensionName}-popup`;
-    div.classList.add(`browser-ssi-popup`);
-    div.innerHTML = `
-      <style>
-        .browser-ssi-popup {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-
-          background-color: white;
-          max-width: 500px;
-        }
-        .header {
-          color: red;
-        }
-      </style>
-      <div class="header">
-        Nightly
-      </div>
-      <div class="content">
-        test
-      </div>
-      <div class="bottom">
-        <button id="button-next" oncommand="console.log('clicked!')">next</button>
-        bottom
-      </div>
-    `;
-    window.document.body.appendChild(div);
-  }
 }
