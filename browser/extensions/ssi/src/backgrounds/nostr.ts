@@ -12,12 +12,12 @@ const MapBetweenPrefAndState = {
 };
 
 const DialogMessage = {
-  "nostr/getPublicKey": "OK?",
-  "nostr/signEvent": "OK?",
-  "nostr/nip04/encrypt": "OK?",
-  "nostr/nip04/decrypt": "OK?",
-  "nostr/nip44/encrypt": "OK?",
-  "nostr/nip44/decrypt": "OK?",
+  "nostr/getPublicKey": "App is requesting you.",
+  "nostr/signEvent": "App is requesting you.",
+  "nostr/nip04/encrypt": "App is requesting you.",
+  "nostr/nip04/decrypt": "App is requesting you.",
+  "nostr/nip44/encrypt": "App is requesting you.",
+  "nostr/nip44/decrypt": "App is requesting you.",
 };
 
 const ERR_MSG_NOT_ENABLED =

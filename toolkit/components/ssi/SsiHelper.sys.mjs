@@ -763,8 +763,10 @@ export const SsiHelper = {
   async showConfirmAuthorizationDialog(dialogInfo) {
     const { window, permission, caption, evidence, submission } = dialogInfo;
 
-    // TODO(ssb): adjust the postion aligning with password dialog
-    let features = "chrome,modal,dialog=yes,centerscreen";
+    // TODO(ssb): adjust the postion aligning with password dialog per OS
+    const screenX = window.screen.width / 2 - 300;
+    const screenY = window.screen.height / 2 - 300;
+    let features = `chrome,modal,dialog=yes,resizable,screenX=${screenX},screenY=${screenY}`;
     let returnVals = {
       confirmed: false,
     };
@@ -776,7 +778,7 @@ export const SsiHelper = {
       returnVals
     );
 
-    return returnVals.confirmed;
+    return returnVals;
   },
 };
 

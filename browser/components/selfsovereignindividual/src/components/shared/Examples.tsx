@@ -18,6 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { DefaultExcludedKindList } from "../nostr/contants";
 import { MdHelp } from "./react-icons/Icons";
+import { ProtocolName } from "src/custom.type";
 
 export function ExampleUrlMatch(props: {
   width?: string;
@@ -65,6 +66,40 @@ export function ExampleUrlMatch(props: {
               </Tbody>
             </Table>
           </TableContainer>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+export function ExplainMethod(props: {
+  width?: string;
+  protocolName: ProtocolName;
+}) {
+  return (
+    <Accordion allowToggle width={props.width || "100%"}>
+      <AccordionItem css={{ border: "none" }}>
+        <AccordionButton>
+          <HStack as="span" flex="1" textAlign="left">
+            <Icon as={MdHelp} />
+            <Text>Explanation</Text>
+          </HStack>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <Text>
+            Checking &ldquo;[method]&ldquo; is skipping both of confirm dialog
+            and password dialog.
+            <br />
+            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
+            dialog and prompting password dialog alone.
+          </Text>
+          {props.protocolName === "nostr" && (
+            <Text>
+              This has lower priority than the excluded kinds above., so if both
+              are present, authorization will proceed.
+            </Text>
+          )}
         </AccordionPanel>
       </AccordionItem>
     </Accordion>

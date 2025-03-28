@@ -13,13 +13,19 @@ import {
   AccordionPanel,
   Box,
   Button,
+  Checkbox,
   Divider,
   Grid,
   GridItem,
   Heading,
+  HStack,
   IconButton,
   Input,
   InputGroup,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -45,8 +51,18 @@ import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
-import { DefaultExcludedKinds, SafeProtocols, SpecialCards } from "./contants";
-import { ExampleNostrKind, ExampleUrlMatch } from "../shared/Examples";
+import {
+  DefaultExcludedKinds,
+  DefaultTrustedMethods,
+  SafeProtocols,
+  SpecialCards,
+  TrustedMethodOptions,
+} from "./contants";
+import {
+  ExampleNostrKind,
+  ExampleUrlMatch,
+  ExplainMethod,
+} from "../shared/Examples";
 import { StateContext } from "../../contexts/StatesProvider";
 
 const OneHour = 60 * 60 * 1000;
@@ -58,6 +74,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
   const [newSite, setNewSite] = useState("");
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
+  const [newTrustedMethodsPreset, setNewTrustedMethodsPreset] = useState([]);
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
@@ -65,6 +82,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
+  useEffect(() => {
+    setNewTrustedMethodsPreset(prefs.nostr.trustedMethodsPreset.split(","));
+  }, [prefs.nostr.trustedMethodsPreset]);
 
   const tabPin = (tabId: number) =>
     TabPin(
@@ -290,6 +310,37 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     if (sort === "default") {
       setNewExcludedKindsPreset(DefaultExcludedKinds.join(","));
     }
+  };
+  const handleChangeTrustedMethods = (value: string) => {
+    let newVal = [];
+    if (newTrustedMethodsPreset.includes(value)) {
+      newVal = newTrustedMethodsPreset.filter(method => method !== value);
+    } else {
+      newVal = newTrustedMethodsPreset.concat([value]);
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      trustedMethodsPreset: newVal.filter(Boolean).join(","),
+    });
+    setNewTrustedMethodsPreset(newVal);
+  };
+  const handleEditTrustedMethods = async () => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      trustedMethodsPreset: DefaultTrustedMethods.filter(Boolean).join(","),
+    });
+    setNewTrustedMethodsPreset(DefaultTrustedMethods);
   };
 
   const getTrustedSites = useCallback(() => {
@@ -702,6 +753,52 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                           </InputGroup>
                           <ExampleNostrKind width="100%" />
                         </VStack>
+                      </GridItem>
+                      <GridItem>
+                        <label>
+                          Preset for the excluded specific methods related to
+                          the key from authorization
+                        </label>
+                      </GridItem>
+                      <GridItem>
+                        <HStack>
+                          <Menu>
+                            <MenuButton
+                              as={Button}
+                              variant="outline"
+                              colorScheme="blue"
+                            >
+                              Select Options
+                            </MenuButton>
+                            <MenuList>
+                              {TrustedMethodOptions.map(option => (
+                                <MenuItem key={option}>
+                                  <Checkbox
+                                    isChecked={newTrustedMethodsPreset.includes(
+                                      option
+                                    )}
+                                    onChange={() =>
+                                      handleChangeTrustedMethods(option)
+                                    }
+                                  >
+                                    {option}
+                                  </Checkbox>
+                                </MenuItem>
+                              ))}
+                            </MenuList>
+                          </Menu>
+                          <Button
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={e => {
+                              e.preventDefault();
+                              handleEditTrustedMethods();
+                            }}
+                          >
+                            Reset to default
+                          </Button>
+                        </HStack>
+                        <ExplainMethod width="100%" protocolName="nostr" />
                       </GridItem>
                     </>
                   )}

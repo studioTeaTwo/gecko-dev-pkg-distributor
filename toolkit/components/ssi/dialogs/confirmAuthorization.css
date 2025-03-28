@@ -7,9 +7,14 @@ dialog::part(content-box) {
 }
 
 #caption,
+#permission,
 #submission {
   /* We don't want these to impact the horizontal size of the dialog */
   contain: inline-size;
+}
+
+#permission {
+  font-weight: bold;
 }
 
 #submission {

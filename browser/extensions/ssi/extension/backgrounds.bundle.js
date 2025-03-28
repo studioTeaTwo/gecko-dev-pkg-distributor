@@ -879,12 +879,12 @@ const MapBetweenPrefAndState = {
     enabled: "enabled",
 };
 const DialogMessage = {
-    "nostr/getPublicKey": "OK?",
-    "nostr/signEvent": "OK?",
-    "nostr/nip04/encrypt": "OK?",
-    "nostr/nip04/decrypt": "OK?",
-    "nostr/nip44/encrypt": "OK?",
-    "nostr/nip44/decrypt": "OK?",
+    "nostr/getPublicKey": "App is requesting you.",
+    "nostr/signEvent": "App is requesting you.",
+    "nostr/nip04/encrypt": "App is requesting you.",
+    "nostr/nip04/decrypt": "App is requesting you.",
+    "nostr/nip44/encrypt": "App is requesting you.",
+    "nostr/nip44/decrypt": "App is requesting you.",
 };
 const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
 const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;

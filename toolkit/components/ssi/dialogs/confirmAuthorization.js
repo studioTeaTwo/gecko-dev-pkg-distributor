@@ -16,6 +16,8 @@
  * @type {object}
  * @property {boolean} confirmed
  *           Set to true if the user confirmed, false otherwise.
+ * @property {string} settingValue
+ *           Setting value for whether to trust
  */
 
 /**
@@ -25,8 +27,15 @@ function onLoad() {
   const { permission, caption, evidence, submission } = window.arguments[0];
 
   document.getElementById("caption").textContent = caption;
-  document.getElementById("permission").textContent = permission;
+  document.getElementById("permission").textContent = permission.text;
   document.getElementById("submission").textContent = submission;
+
+  document.getElementById(
+    "methodTrust"
+  ).label = `Don't ask again for this method - "${permission.method}"`;
+  document.getElementById(
+    "skipConfirm"
+  ).label = `Skip confirmation, only password - "${permission.method}"`;
 
   document.addEventListener("dialogaccept", onDialogAccept);
   document.addEventListener("dialogcancel", onDialogCancel);
@@ -47,6 +56,8 @@ function onLoad() {
 function onDialogAccept() {
   let returnVals = window.arguments[1];
   returnVals.confirmed = true;
+  returnVals.settingValue =
+    document.getElementById("settingValue").selectedItem.id;
 }
 
 /**
@@ -55,4 +66,5 @@ function onDialogAccept() {
 function onDialogCancel() {
   let returnVals = window.arguments[1];
   returnVals.confirmed = false;
+  returnVals.settingValue = "noop";
 }
