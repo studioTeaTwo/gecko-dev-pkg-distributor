@@ -163,7 +163,7 @@ export const browserSsiHelper = {
   /**
    *
    * @param {Context} context
-   * @param {TabTracker} tabTracker
+   * @param {number} tabId
    * @param {object} credential
    * @param {string} credential.protocolName
    * @param {string} credential.credentialName
@@ -176,13 +176,13 @@ export const browserSsiHelper = {
    * @param {boolean} onlyExtension
    * @returns {Promise<bool>}
    */
-  async authorize(context, tabTracker, credential, dialogInfo, onlyExtension) {
+  async authorize(context, tabId, credential, dialogInfo, onlyExtension) {
     // Prepare stuff
     const { protocolName, credentialName } = credential;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
     const { site, extension, browsingContext, window } = getOrigin(
       context,
-      tabTracker
+      tabId
     );
     const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     console.log(
@@ -349,13 +349,8 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   return false;
 }
 
-function getOrigin(context, tabTracker) {
-  // TODO(ssb): Background exec check
-  const activeTabId = tabTracker.getId(tabTracker.activeTab);
-
-  // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
-  // example, when pending password dialog and when only extension is executing independently.
-  const { browser, window } = context.extension.tabManager.get(activeTabId);
+function getOrigin(context, tabId) {
+  const { browser, window } = context.extension.tabManager.get(tabId);
 
   return {
     browsingContext: browser.browsingContext,

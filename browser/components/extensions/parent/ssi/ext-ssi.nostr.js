@@ -36,6 +36,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             return lazy.browserSsiHelper.getPrefs("nostr");
           },
           async sign(
+            tabId,
             message,
             { type },
             { caption = "", submission = "", enforce = false }
@@ -100,7 +101,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               }
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
-                tabTracker,
+                tabId,
                 pointing,
                 {
                   type: "sign",
@@ -130,6 +131,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             }
           },
           async encrypt(
+            tabId,
             plaintext,
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
@@ -191,7 +193,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               }
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
-                tabTracker,
+                tabId,
                 pointing,
                 {
                   type: "encrypt",
@@ -219,6 +221,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             }
           },
           async decrypt(
+            tabId,
             ciphertext,
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
@@ -283,7 +286,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               }
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
-                tabTracker,
+                tabId,
                 pointing,
                 {
                   type: "decrypt",

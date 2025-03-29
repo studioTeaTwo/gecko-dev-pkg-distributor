@@ -102,6 +102,12 @@
         "async": true,
         "parameters": [
           {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+          },
+          {
             "name": "criteria",
             "$ref": "SearchCriteria",
             "description": "Criteria to search credentials"
@@ -126,6 +132,12 @@
         "type": "function",
         "description": "Ask the user whether to give a permission to the requsting web app",
         "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+          },
           {
             "name": "protocolName",
             "type": "string",
