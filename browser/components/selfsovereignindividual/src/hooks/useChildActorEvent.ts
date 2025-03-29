@@ -5,7 +5,10 @@ import {
   ProtocolName,
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
-import { DefaultExcludedKinds } from "../components/nostr/contants";
+import {
+  DefaultExcludedKinds,
+  DefaultTrustedMethods,
+} from "../components/nostr/contants";
 
 /**
  * Send to child actor
@@ -173,7 +176,8 @@ export default function useChildActorEvent() {
       expiryTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 86400000,
-      excludedKindsPreset: DefaultExcludedKinds.join(","),
+      trustedMethodsPreset: DefaultTrustedMethods.filter(Boolean).join(","),
+      excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedTrustedSites: false,
       usedBuiltinNip07: true,
       usedAccountChanged: true,

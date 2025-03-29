@@ -117,11 +117,16 @@ export const browserSsiHelper = {
         "primarypassword.toApps.expiryTime": Services.prefs.getIntPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
+        "primarypassword.toApps.trustedMethodsPreset":
+          Services.prefs.getStringPref(
+            `selfsovereignindividual.${protocolName}.primarypassword.toApps.trustedMethodsPreset`
+          ),
       };
       if (protocolName === "nostr") {
-        prefs.excludedKindsPreset = Services.prefs.getStringPref(
-          "selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset"
-        );
+        prefs["primarypassword.toApps.excludedKindsPreset"] =
+          Services.prefs.getStringPref(
+            "selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset"
+          );
       }
       return prefs;
     } catch (e) {
@@ -158,7 +163,7 @@ export const browserSsiHelper = {
   /**
    *
    * @param {Context} context
-   * @param {TabTracker} tabTracker
+   * @param {number} tabId
    * @param {object} credential
    * @param {string} credential.protocolName
    * @param {string} credential.credentialName
@@ -171,11 +176,15 @@ export const browserSsiHelper = {
    * @param {boolean} onlyExtension
    * @returns {Promise<bool>}
    */
-  async authorize(context, tabTracker, credential, dialogInfo, onlyExtension) {
+  async authorize(context, tabId, credential, dialogInfo, onlyExtension) {
     // Prepare stuff
     const { protocolName, credentialName } = credential;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
-    const { site, extension, browsingContext } = getOrigin(context, tabTracker);
+    const { site, extension, browsingContext, window } = getOrigin(
+      context,
+      tabId
+    );
+    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     console.log(
       "authorize",
       type,
@@ -183,6 +192,8 @@ export const browserSsiHelper = {
       site.isSystemPrincipal,
       extension.url
     );
+
+    // Check permission
     if (site.isSystemPrincipal || site.url.startsWith("about:")) {
       // This is assumed `about:` pages.
       return false;
@@ -190,7 +201,6 @@ export const browserSsiHelper = {
     if (!site.origin || !extension.origin) {
       return false;
     }
-    const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret({
       protocolName,
       credentialName,
@@ -212,10 +222,19 @@ export const browserSsiHelper = {
     const prefs = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
+      trustedMethodsPreset: internalPrefs[
+        "primarypassword.toApps.trustedMethodsPreset"
+      ]
+        ? internalPrefs["primarypassword.toApps.trustedMethodsPreset"].split(
+            ","
+          )
+        : [],
     };
     if (protocolName === "nostr") {
-      prefs.excludedKindsPreset = internalPrefs.excludedKindsPreset
-        ? internalPrefs.excludedKindsPreset.split(",")
+      prefs.excludedKindsPreset = internalPrefs[
+        "primarypassword.toApps.excludedKindsPreset"
+      ]
+        ? internalPrefs["primarypassword.toApps.excludedKindsPreset"].split(",")
         : [];
     }
     const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
@@ -227,12 +246,13 @@ export const browserSsiHelper = {
       expiryTimePref: internalPrefs["primarypassword.toApps.expiryTime"],
     };
     const dialog = {
-      system: DIALOG_SYSTEM_MESSAGE(protocolName)[type],
+      type,
       evidence,
       caption,
       submission,
       enforce,
       embedderElement: browsingContext.embedderElement,
+      window,
     };
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
@@ -265,6 +285,7 @@ export const browserSsiHelper = {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
+ * @param {string[]} prefs.trustedMethodsPreset
  * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
@@ -272,12 +293,13 @@ export const browserSsiHelper = {
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
  * @param {number} authCache.expiryTimePref
  * @param {object} dialogInfo
- * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
+ * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
  * @param {object} dialogInfo.evidence
  * @param {string} dialogInfo.caption
  * @param {string} dialogInfo.submission
  * @param {boolean} dialogInfo.enforce
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+ * @param {boolean} dialogInfo.window nativeTab.ownerGlobal
  * @returns {Promise<boolean>}
  */
 async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
@@ -327,16 +349,12 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   return false;
 }
 
-function getOrigin(context, tabTracker) {
-  // TODO(ssb): Background exec check
-  const activeTabId = tabTracker.getId(tabTracker.activeTab);
-
-  // FIXME(ssb): Set more robust tabId than activeTab by finding a way to identify the caller. For
-  // example, when pending password dialog and when only extension is executing independently.
-  const { browser } = context.extension.tabManager.get(activeTabId);
+function getOrigin(context, tabId) {
+  const { browser, window } = context.extension.tabManager.get(tabId);
 
   return {
     browsingContext: browser.browsingContext,
+    window,
     site: {
       origin: browser.contentPrincipal.originNoSuffix,
       url: browser.contentPrincipal.spec,
@@ -412,6 +430,7 @@ function isPasswordAuthorized(target, authCache) {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
+ * @param {string[]} prefs.trustedMethodsPreset
  * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
@@ -419,12 +438,13 @@ function isPasswordAuthorized(target, authCache) {
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
  * @param {number} authCache.expiryTimePref
  * @param {object} dialogInfo
- * @param {string} dialogInfo.system DIALOG_SYSTEM_MESSAGE
+ * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
  * @param {object} dialogInfo.evidence
  * @param {string} dialogInfo.caption
  * @param {string} dialogInfo.submission
  * @param {boolean} dialogInfo.enforce
  * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
+ * @param {object} dialogInfo.window nativeTab.ownerGlobal
  * @returns {boolean}
  */
 async function authWithPassword(
@@ -436,34 +456,7 @@ async function authWithPassword(
 ) {
   const { url, origin } = target;
   const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
-  const { system, evidence, caption, submission, enforce, embedderElement } =
-    dialogInfo;
-
-  // Build Dialog
-  const eol = AppConstants.platform === "win" ? "\r\n" : "\n";
-  const messageText = {
-    value: `${
-      AppConstants.platform === "win" ? "Nightly is trying to " : ""
-    }${system}${eol}to ${origin}`,
-  };
-  if (caption) {
-    messageText.value += `${eol}${JSON.stringify(caption, null, 1)}`;
-  }
-  if (evidence) {
-    messageText.value += `${eol}${eol}${JSON.stringify(evidence, null, 1)}`;
-  }
-  if (submission) {
-    messageText.value += `${eol}${eol}${JSON.stringify(submission, null, 1)}`;
-  }
-  const captionText = {
-    value: AppConstants.platform === "win" ? "Nightly" : "",
-  }; // caption only works on windows.
-  const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-    lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-  );
-  if (isOSAuthEnabled) {
-    const messageId = MESSAGE_ID + "-" + AppConstants.platform;
-  }
+  const { type, evidence, enforce, embedderElement } = dialogInfo;
 
   // Prepare expiration time.
   const protocolName = cacheKey.split(":")[0];
@@ -480,6 +473,8 @@ async function authWithPassword(
     if (protocolName === "nostr") {
       passwordAuthorizedSite.permissions.excludedKinds =
         prefs.excludedKindsPreset;
+      passwordAuthorizedSite.permissions.trustedMethods =
+        prefs.trustedMethodsPreset;
     }
     Services.ssi.authCache.update(cacheKey, {
       passwordAuthorizedSites: [passwordAuthorizedSite],
@@ -489,19 +484,110 @@ async function authWithPassword(
 
   // Special cases of mandatory authorization.
   // Don't need to update cache, do as it is.
-  if (
-    isAuthMandatory(
-      url,
-      protocolName,
-      passwordAuthorizedSites,
-      enforce,
-      evidence
-    )
-  ) {
+  const _isAuthMandatory = isAuthMandatory(
+    url,
+    protocolName,
+    passwordAuthorizedSites,
+    enforce,
+    evidence
+  );
+  if (_isAuthMandatory) {
     _authExpirationTime = 0;
   }
 
-  // Suggest password prompt
+  // Do we have a recent authorization?
+  if (Date.now() < _authExpirationTime) {
+    return true;
+  }
+  // Is this method trusted?
+  // The excludedKind takes precedence over trustedMethod, so if both are present, authorization will proceed.
+  const trustedMethod =
+    passwordAuthorizedSite.permissions.trustedMethods.includes(type);
+  if (!_isAuthMandatory && trustedMethod) {
+    return true;
+  }
+
+  // Execute two-step auth dialogs
+  // 1. confirmation dialog
+  // 2. password prompt
+
+  // Common text among two dialogs
+  const systemMessage = DIALOG_SYSTEM_MESSAGE(protocolName)[type];
+  const eol = AppConstants.platform === "win" ? "\r\n" : "\n";
+  const baseCaption = `${systemMessage}${eol}to ${origin}`;
+
+  // 1. Dispaly confirmation dialog
+  const skippedConfirm = passwordAuthorizedSite.permissions.trustedMethods.some(
+    method => method === `${type}-passwordOnly`
+  );
+  if (_isAuthMandatory || !skippedConfirm) {
+    const permissionText = `Permission: ${baseCaption}`;
+    const result = await lazy.SsiHelper.showConfirmAuthorizationDialog({
+      window: dialogInfo.window,
+      permission: {
+        text: permissionText,
+        method: type,
+        cacheKey,
+      },
+      caption: dialogInfo.caption,
+      evidence: dialogInfo.evidence,
+      submission: dialogInfo.submission,
+    });
+    // The user has trusted this time, so return true.
+    if (
+      result.confirmed &&
+      ["fullTrust", "methodTrust", "skipConfirm"].includes(result.settingValue)
+    ) {
+      // Save new setting value
+      if (["methodTrust", "skipConfirm"].includes(result.settingValue)) {
+        const registration =
+          result.settingValue === "methodTrust" ? type : `${type}-passwordOnly`;
+        passwordAuthorizedSite.permissions.trustedMethods.push(registration);
+        Services.ssi.authCache.update(cacheKey, {
+          passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
+        });
+      } else if (result.settingValue === "fullTrust") {
+        // Save new trusted site
+        const auth = Services.ssi.authCache.get(cacheKey);
+        const idx = auth.trustedSites.findIndex(site => site.url === origin);
+        let newVal;
+        if (idx >= 0) {
+          newVal = { ...auth.trustedSites[idx] };
+          newVal.enabled = true;
+        } else {
+          newVal = {
+            url: origin,
+            name: extensionName,
+            enabled: true,
+            permissions: {},
+          };
+        }
+        Services.ssi.authCache.update(cacheKey, {
+          trustedSites: [newVal],
+        });
+      }
+      return true;
+    } else if (!result.confirmed) {
+      // The user has canceled, so return false.
+      return false;
+    }
+  }
+
+  // 2. Suggest password prompt
+  const messageText = {
+    value: `${
+      AppConstants.platform === "win" ? "Nightly is trying to " : ""
+    }${baseCaption}`,
+  };
+  const captionText = {
+    value: AppConstants.platform === "win" ? "Nightly" : "",
+  }; // caption only works on windows.
+  const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+    lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+  );
+  if (isOSAuthEnabled) {
+    const messageId = MESSAGE_ID + "-" + AppConstants.platform;
+  }
   const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
     embedderElement,
     isOSAuthEnabled,
@@ -526,7 +612,7 @@ async function authWithPassword(
     isAuthorized,
     telemetryEvent,
     origin,
-    system,
+    type,
     Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
   );
   return isAuthorized;

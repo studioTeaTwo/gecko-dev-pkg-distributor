@@ -141,6 +141,9 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         expiryTimeForPrimarypasswordToApps: Services.prefs.getIntPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
+        trustedMethodsPreset: Services.prefs.getStringPref(
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.trustedMethodsPreset`
+        ),
         usedTrustedSites: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.trustedSites.enabled`
         ),

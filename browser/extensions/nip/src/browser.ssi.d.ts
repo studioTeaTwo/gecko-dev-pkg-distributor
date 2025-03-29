@@ -10,6 +10,7 @@ declare namespace browser.ssi {
   };
 
   const searchCredentialsWithoutSecret: (
+    tabId: number,
     criteria: {
       protocolName: string;
       credentialName: string;
@@ -24,6 +25,7 @@ declare namespace browser.ssi {
     | null
   >;
   const askConsent: (
+    tabId: number,
     protocolName: string,
     credentialName: string,
     dialogOption?: dialogOption
@@ -48,6 +50,7 @@ declare namespace browser.ssi {
 
   const nostr: {
     sign: (
+      tabId: number,
       message: string,
       option: {
         type: "signEvent";
@@ -55,6 +58,7 @@ declare namespace browser.ssi {
       dialogOption?: dialogOption
     ) => Promise<string | null>;
     encrypt: (
+      tabId: number,
       plaintext: string,
       option: {
         type: "nip04" | "nip44";
@@ -64,6 +68,7 @@ declare namespace browser.ssi {
       dialogOption?: dialogOption
     ) => Promise<string | null>;
     decrypt: (
+      tabId: number,
       ciphertext: string,
       option: {
         type: "nip04" | "nip44";

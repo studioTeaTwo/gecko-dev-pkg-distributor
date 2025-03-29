@@ -759,6 +759,27 @@ export const SsiHelper = {
       return rest;
     });
   },
+
+  async showConfirmAuthorizationDialog(dialogInfo) {
+    const { window, permission, caption, evidence, submission } = dialogInfo;
+
+    // TODO(ssb): adjust the postion aligning with password dialog per OS
+    const screenX = window.screen.width / 2 - 300;
+    const screenY = window.screen.height / 2 - 300;
+    let features = `chrome,modal,dialog=yes,resizable,screenX=${screenX},screenY=${screenY}`;
+    let returnVals = {
+      confirmed: false,
+    };
+    const win = window.openDialog(
+      "chrome://ssi/content/dialogs/confirmAuthorization.xhtml",
+      "",
+      features,
+      { permission, caption, evidence, submission },
+      returnVals
+    );
+
+    return returnVals;
+  },
 };
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {

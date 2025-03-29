@@ -9,6 +9,7 @@ export interface ProtocolDefaultPrefs {
   expiryTimeForPrimarypasswordToSettings: number; // selfsovereignindividual.[protocolName].primarypassword.toSettings.expiryTime
   usedPrimarypasswordToApps: boolean; // selfsovereignindividual.[protocolName].primarypassword.toApps.enabled
   expiryTimeForPrimarypasswordToApps: number; // selfsovereignindividual.[protocolName].primarypassword.ToApps.expiryTime
+  trustedMethodsPreset: string; // selfsovereignindividual.[protocolName].primarypassword.toApps.excludedKindsPreset
   usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled
   usedAccountChanged: boolean; // selfsovereignindividual.[protocolName].event.accountChanged.enabled
 }
@@ -93,6 +94,7 @@ export interface Credential
 export interface PasswordAuthorizedSitesForNostr
   extends PasswordAuthorizedSites {
   permissions: {
+    trustedMethods: string[];
     excludedKinds: string[];
   };
 }

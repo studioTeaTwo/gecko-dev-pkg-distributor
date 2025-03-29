@@ -22,6 +22,7 @@ this.ssi = class extends ExtensionAPI {
     return {
       ssi: {
         async searchCredentialsWithoutSecret(
+          tabId,
           { protocolName = "", credentialName = "", primary = true },
           { caption = "", submission = "", enforce = false }
         ) {
@@ -70,18 +71,21 @@ this.ssi = class extends ExtensionAPI {
             }
 
             // FIXME(ssb): Mitigation. Move inside credentials.filter, if OS auth dialog makes stable or other resolutions find out.
-            const isAuthorized = await lazy.browserSsiHelper.authorize(
-              context,
-              tabTracker,
-              {
-                protocolName: "nostr",
-                credentialName: "nsec",
-              },
-              { type: "read", caption, submission, enforce },
-              false
-            );
-            if (!isAuthorized) {
-              return false;
+            // FIXME(ssb): tabId is unreliable. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+            if (tabId > -1) {
+              const isAuthorized = await lazy.browserSsiHelper.authorize(
+                context,
+                tabId,
+                {
+                  protocolName: "nostr",
+                  credentialName: "nsec",
+                },
+                { type: "read", caption, submission, enforce },
+                false
+              );
+              if (!isAuthorized) {
+                return false;
+              }
             }
 
             const credentials =
@@ -94,7 +98,7 @@ this.ssi = class extends ExtensionAPI {
                 }
                 // const isAuthorized = await lazy.browserSsiHelper.authorize(
                 //   context,
-                //   tabTracker,
+                //   tabId,
                 //   {
                 //     protocolName: credential.protocolName,
                 //     credentialName: credential.credentialName,
@@ -105,6 +109,7 @@ this.ssi = class extends ExtensionAPI {
                 // if (!isAuthorized) {
                 //   return false;
                 // }
+
                 // NOTE(ssb): If the app wants to do a full search but the user has accountChanged notification turned off, return only primary.
                 if (
                   !params.primary &&
@@ -139,6 +144,7 @@ this.ssi = class extends ExtensionAPI {
           }
         },
         async askConsent(
+          tabId,
           protocolName,
           credentialName,
           { caption = "", submission = "", enforce = false }
@@ -173,7 +179,7 @@ this.ssi = class extends ExtensionAPI {
 
             const isAuthorized = await lazy.browserSsiHelper.authorize(
               context,
-              tabTracker,
+              tabId,
               { protocolName, credentialName },
               { type: "custom", caption, submission, enforce },
               false

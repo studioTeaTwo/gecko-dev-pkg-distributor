@@ -27,7 +27,7 @@ async function init() {
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
         prefs[_state] =
-            results && results[_pref] ? results[_pref] : state_1.state.nostr.prefs[_pref];
+            results && results[_pref] ? results[_pref] : state_1.state.nostr.prefs[_state];
     });
     state_1.state.nostr = {
         ...state_1.state.nostr,
@@ -54,8 +54,10 @@ const onPrefChangedCallback = async (prefKey) => {
         ...(await browser.ssi.nostr.getPrefs()),
         ...(await browser.builtinNip.getPrefs()),
     };
-    const stateName = MapBetweenPrefAndState[prefKey];
-    const newVal = results[stateName];
+    const stateName = Object.entries(MapBetweenPrefAndState)
+        .filter(([, _pref]) => _pref === prefKey)
+        .map(([_state]) => _state)[0];
+    const newVal = results[prefKey];
     state_1.state.nostr.prefs[stateName] = newVal;
     (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.nostr);
     // Send the message to the contents

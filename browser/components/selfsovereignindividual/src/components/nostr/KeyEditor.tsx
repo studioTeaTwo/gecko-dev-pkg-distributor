@@ -24,6 +24,11 @@ import {
   Switch,
   Icon,
   Tooltip,
+  Checkbox,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
 } from "@chakra-ui/react";
 import {
   MdEdit,
@@ -35,8 +40,18 @@ import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import { NostrCredential } from "../../custom.type";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
-import { DefaultExcludedKinds, SafeProtocols, SpecialCards } from "./contants";
-import { ExampleNostrKind, ExampleUrlMatch } from "../shared/Examples";
+import {
+  DefaultExcludedKinds,
+  DefaultTrustedMethods,
+  SafeProtocols,
+  SpecialCards,
+  TrustedMethodOptions,
+} from "./contants";
+import {
+  ExampleNostrKind,
+  ExampleUrlMatch,
+  ExplainMethod,
+} from "../shared/Examples";
 import { changePrimary } from "../shared/functions";
 
 interface Props {
@@ -185,6 +200,31 @@ export default function KeyEditor(props: Props) {
     );
     passwordAuthorizedSites[siteNo].permissions.excludedKinds =
       DefaultExcludedKinds;
+    HandleChangeValue({ passwordAuthorizedSites });
+  };
+
+  const handleSaveTrustedMethods = (siteNo: number, value: string) => {
+    const passwordAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.passwordAuthorizedSites)
+    );
+    if (
+      passwordAuthorizedSites[siteNo].permissions.trustedMethods.includes(value)
+    ) {
+      passwordAuthorizedSites[siteNo].permissions.trustedMethods =
+        passwordAuthorizedSites[siteNo].permissions.trustedMethods.filter(
+          method => method !== value
+        );
+    } else {
+      passwordAuthorizedSites[siteNo].permissions.trustedMethods.push(value);
+    }
+    HandleChangeValue({ passwordAuthorizedSites });
+  };
+  const handleResetTrustedMethods = (siteNo: number) => {
+    const passwordAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.passwordAuthorizedSites)
+    );
+    passwordAuthorizedSites[siteNo].permissions.trustedMethods =
+      DefaultTrustedMethods;
     HandleChangeValue({ passwordAuthorizedSites });
   };
 
@@ -419,7 +459,9 @@ export default function KeyEditor(props: Props) {
                                   size="sm"
                                   value={
                                     site.permissions.excludedKinds.length > 0
-                                      ? site.permissions.excludedKinds.join(",")
+                                      ? site.permissions.excludedKinds
+                                          .filter(Boolean)
+                                          .join(",")
                                       : ""
                                   }
                                   onChange={e =>
@@ -443,6 +485,52 @@ export default function KeyEditor(props: Props) {
                                 </Button>
                               </HStack>
                               <ExampleNostrKind width="100%" />
+                              <Heading size="sm">
+                                Exclude specific methods related to the key from
+                                authorization
+                              </Heading>
+                              <HStack>
+                                <Menu>
+                                  <MenuButton
+                                    as={Button}
+                                    variant="outline"
+                                    colorScheme="blue"
+                                  >
+                                    Select Options
+                                  </MenuButton>
+                                  <MenuList>
+                                    {TrustedMethodOptions.map(option => (
+                                      <MenuItem
+                                        key={option}
+                                        closeOnSelect={false}
+                                      >
+                                        <Checkbox
+                                          isChecked={site.permissions.trustedMethods.includes(
+                                            option
+                                          )}
+                                          onChange={() =>
+                                            handleSaveTrustedMethods(i, option)
+                                          }
+                                        >
+                                          {option}
+                                        </Checkbox>
+                                      </MenuItem>
+                                    ))}
+                                  </MenuList>
+                                </Menu>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() => handleResetTrustedMethods(i)}
+                                  width="150px"
+                                >
+                                  Revert to preset
+                                </Button>
+                              </HStack>
+                              <ExplainMethod
+                                width="100%"
+                                protocolName="nostr"
+                              />
                             </VStack>
                           </GridItem>
                         )}

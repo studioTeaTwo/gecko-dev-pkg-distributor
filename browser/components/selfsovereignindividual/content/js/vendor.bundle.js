@@ -6991,7 +6991,7 @@ var m$1 = reactDomExports;
   createRoot = m$1.createRoot;
   m$1.hydrateRoot;
 }
-function isHTMLElement$1(el2) {
+function isHTMLElement$2(el2) {
   return el2 != null && typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
 }
 function isBrowser$2() {
@@ -7008,6 +7008,16 @@ function isContentEditableElement(element) {
 }
 function isDisabledElement(element) {
   return Boolean(element.getAttribute("disabled")) === true || Boolean(element.getAttribute("aria-disabled")) === true;
+}
+function getOwnerWindow(node2) {
+  var _a2;
+  return ((_a2 = getOwnerDocument$2(node2)) == null ? void 0 : _a2.defaultView) ?? window;
+}
+function getOwnerDocument$2(node2) {
+  return isHTMLElement$2(node2) ? node2.ownerDocument : document;
+}
+function getActiveElement$1(node2) {
+  return getOwnerDocument$2(node2).activeElement;
 }
 function assignAfter(target, ...sources) {
   if (target == null) {
@@ -7151,6 +7161,11 @@ function analyzeBreakpoints(breakpoints2) {
     }
   };
 }
+function callAll(...fns) {
+  return function mergedFn(...args) {
+    fns.forEach((fn2) => fn2 == null ? void 0 : fn2(...args));
+  };
+}
 function callAllHandlers(...fns) {
   return function func(event) {
     fns.some((fn2) => {
@@ -7203,8 +7218,9 @@ function createContext(options = {}) {
 }
 const cx = (...classNames2) => classNames2.filter(Boolean).join(" ");
 const hasTabIndex = (element) => element.hasAttribute("tabindex");
+const hasNegativeTabIndex = (element) => hasTabIndex(element) && element.tabIndex === -1;
 function isFocusable(element) {
-  if (!isHTMLElement$1(element) || isHiddenElement(element) || isDisabledElement(element)) {
+  if (!isHTMLElement$2(element) || isHiddenElement(element) || isDisabledElement(element)) {
     return false;
   }
   const { localName } = element;
@@ -7222,6 +7238,11 @@ function isFocusable(element) {
   if (isContentEditableElement(element))
     return true;
   return hasTabIndex(element);
+}
+function isTabbable(element) {
+  if (!element)
+    return false;
+  return isHTMLElement$2(element) && isFocusable(element) && !hasNegativeTabIndex(element);
 }
 const focusableElList = [
   "input:not(:disabled):not([disabled])",
@@ -7368,7 +7389,7 @@ function getScrollParent$1(el2) {
   if (["html", "body", "#document"].includes(el2.localName)) {
     return el2.ownerDocument.body;
   }
-  if (isHTMLElement$1(el2) && isScrollParent$1(el2)) {
+  if (isHTMLElement$2(el2) && isScrollParent$1(el2)) {
     return el2;
   }
   return getScrollParent$1(getParent(el2));
@@ -8121,6 +8142,34 @@ function useEventListener(target, event, handler, options) {
     node2 == null ? void 0 : node2.removeEventListener(event, listener, options);
   };
 }
+function useAnimationState(props) {
+  const { isOpen, ref } = props;
+  const [mounted, setMounted] = reactExports.useState(isOpen);
+  const [once, setOnce] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    if (!once) {
+      setMounted(isOpen);
+      setOnce(true);
+    }
+  }, [isOpen, once, mounted]);
+  useEventListener(
+    () => ref.current,
+    "animationend",
+    () => {
+      setMounted(isOpen);
+    }
+  );
+  const hidden = isOpen ? false : !mounted;
+  return {
+    present: !hidden,
+    onComplete() {
+      var _a2;
+      const win = getOwnerWindow(ref.current);
+      const evt = new win.CustomEvent("animationend", { bubbles: true });
+      (_a2 = ref.current) == null ? void 0 : _a2.dispatchEvent(evt);
+    }
+  };
+}
 function useControllableState(props) {
   const {
     value: valueProp,
@@ -8347,6 +8396,40 @@ const useUpdateEffect = (effect2, deps) => {
     };
   }, []);
 };
+function preventReturnFocus(containerRef) {
+  const el2 = containerRef.current;
+  if (!el2)
+    return false;
+  const activeElement = getActiveElement$1(el2);
+  if (!activeElement)
+    return false;
+  if (el2.contains(activeElement))
+    return false;
+  if (isTabbable(activeElement))
+    return true;
+  return false;
+}
+function useFocusOnHide(containerRef, options) {
+  const { shouldFocus: shouldFocusProp, visible, focusRef } = options;
+  const shouldFocus = shouldFocusProp && !visible;
+  useUpdateEffect(() => {
+    if (!shouldFocus)
+      return;
+    if (preventReturnFocus(containerRef)) {
+      return;
+    }
+    const el2 = (focusRef == null ? void 0 : focusRef.current) || containerRef.current;
+    let rafId;
+    if (el2) {
+      rafId = requestAnimationFrame(() => {
+        el2.focus({ preventScroll: true });
+      });
+      return () => {
+        cancelAnimationFrame(rafId);
+      };
+    }
+  }, [shouldFocus, containerRef, focusRef]);
+}
 function isRefObject$1(val) {
   return "current" in val;
 }
@@ -8380,6 +8463,19 @@ function useFocusOnPointerDown(props) {
       target.focus();
     }
   });
+}
+function useId(idProp, prefix2) {
+  const id2 = reactExports.useId();
+  return reactExports.useMemo(
+    () => idProp || [prefix2, id2].filter(Boolean).join("-"),
+    [idProp, prefix2, id2]
+  );
+}
+function useIds$1(idProp, ...prefixes) {
+  const id2 = useId(idProp);
+  return reactExports.useMemo(() => {
+    return prefixes.map((prefix2) => `${prefix2}-${id2}`);
+  }, [id2, prefixes]);
 }
 function useInterval(callback, delay2) {
   const fn2 = useCallbackRef$1(callback);
@@ -8418,6 +8514,65 @@ function mergeRefs(...refs) {
 }
 function useMergeRefs$1(...refs) {
   return reactExports.useMemo(() => mergeRefs(...refs), refs);
+}
+function useOutsideClick(props) {
+  const { ref, handler, enabled = true } = props;
+  const savedHandler = useCallbackRef$1(handler);
+  const stateRef = reactExports.useRef({
+    isPointerDown: false,
+    ignoreEmulatedMouseEvents: false
+  });
+  const state2 = stateRef.current;
+  reactExports.useEffect(() => {
+    if (!enabled)
+      return;
+    const onPointerDown = (e2) => {
+      if (isValidEvent(e2, ref)) {
+        state2.isPointerDown = true;
+      }
+    };
+    const onMouseUp = (event) => {
+      if (state2.ignoreEmulatedMouseEvents) {
+        state2.ignoreEmulatedMouseEvents = false;
+        return;
+      }
+      if (state2.isPointerDown && handler && isValidEvent(event, ref)) {
+        state2.isPointerDown = false;
+        savedHandler(event);
+      }
+    };
+    const onTouchEnd = (event) => {
+      state2.ignoreEmulatedMouseEvents = true;
+      if (handler && state2.isPointerDown && isValidEvent(event, ref)) {
+        state2.isPointerDown = false;
+        savedHandler(event);
+      }
+    };
+    const doc = getOwnerDocument$1(ref.current);
+    doc.addEventListener("mousedown", onPointerDown, true);
+    doc.addEventListener("mouseup", onMouseUp, true);
+    doc.addEventListener("touchstart", onPointerDown, true);
+    doc.addEventListener("touchend", onTouchEnd, true);
+    return () => {
+      doc.removeEventListener("mousedown", onPointerDown, true);
+      doc.removeEventListener("mouseup", onMouseUp, true);
+      doc.removeEventListener("touchstart", onPointerDown, true);
+      doc.removeEventListener("touchend", onTouchEnd, true);
+    };
+  }, [handler, ref, savedHandler, state2, enabled]);
+}
+function isValidEvent(event, ref) {
+  var _a2, _b2;
+  const target = ((_a2 = event.composedPath) == null ? void 0 : _a2.call(event)[0]) ?? event.target;
+  if (target) {
+    const doc = getOwnerDocument$1(target);
+    if (!doc.contains(target))
+      return false;
+  }
+  return !((_b2 = ref.current) == null ? void 0 : _b2.contains(target));
+}
+function getOwnerDocument$1(node2) {
+  return (node2 == null ? void 0 : node2.ownerDocument) ?? document;
 }
 function useTimeout(callback, delay2) {
   const fn2 = useCallbackRef$1(callback);
@@ -22985,7 +23140,7 @@ const ToastComponent = reactExports.memo((props) => {
     position: position2 = "bottom",
     duration = 5e3,
     containerStyle,
-    motionVariants = toastMotionVariants,
+    motionVariants: motionVariants2 = toastMotionVariants,
     toastSpacing = "0.5rem"
   } = props;
   const [delay2, setDelay] = reactExports.useState(duration);
@@ -23026,7 +23181,7 @@ const ToastComponent = reactExports.memo((props) => {
     {
       layout: true,
       className: "chakra-toast",
-      variants: motionVariants,
+      variants: motionVariants2,
       initial: "initial",
       animate: "animate",
       exit: "exit",
@@ -23225,7 +23380,7 @@ const Icon = forwardRef((props, ref) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.svg, { verticalAlign: "middle", viewBox: _viewBox, ...shared, ...rest, children: _path });
 });
 Icon.displayName = "Icon";
-function CheckIcon(props) {
+function CheckIcon$1(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { viewBox: "0 0 24 24", ...props, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
     "path",
     {
@@ -23307,7 +23462,7 @@ const [AlertStylesProvider, useAlertStyles] = createContext({
 const STATUSES = {
   info: { icon: InfoIcon, colorScheme: "blue" },
   warning: { icon: WarningIcon, colorScheme: "orange" },
-  success: { icon: CheckIcon, colorScheme: "green" },
+  success: { icon: CheckIcon$1, colorScheme: "green" },
   error: { icon: WarningIcon, colorScheme: "red" },
   loading: { icon: Spinner, colorScheme: "blue" }
 };
@@ -23737,7 +23892,7 @@ const ToastProvider = (props) => {
     toastStore.getState
   );
   const {
-    motionVariants,
+    motionVariants: motionVariants2,
     component: Component = ToastComponent,
     portalProps,
     animatePresenceProps
@@ -23756,7 +23911,7 @@ const ToastProvider = (props) => {
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { ...animatePresenceProps, initial: false, children: toasts.map((toast) => /* @__PURE__ */ jsxRuntimeExports.jsx(
           Component,
           {
-            motionVariants,
+            motionVariants: motionVariants2,
             ...toast
           },
           toast.id
@@ -23797,7 +23952,7 @@ function sortNodes(nodes) {
     }
   });
 }
-const isElement$1 = (el2) => typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
+const isElement$2 = (el2) => typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
 function getNextIndex(current, max2, loop) {
   let next2 = current + 1;
   if (loop && next2 >= max2)
@@ -23824,7 +23979,7 @@ class DescendantsManager {
     __publicField$1(this, "register", (nodeOrOptions) => {
       if (nodeOrOptions == null)
         return;
-      if (isElement$1(nodeOrOptions)) {
+      if (isElement$2(nodeOrOptions)) {
         return this.registerNode(nodeOrOptions);
       }
       return (node2) => {
@@ -24707,6 +24862,55 @@ const CardHeader = forwardRef(
     );
   }
 );
+const [CheckboxGroupProvider, useCheckboxGroupContext] = createContext({
+  name: "CheckboxGroupContext",
+  strict: false
+});
+function CheckIcon(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.svg,
+    {
+      width: "1.2em",
+      viewBox: "0 0 12 10",
+      style: {
+        fill: "none",
+        strokeWidth: 2,
+        stroke: "currentColor",
+        strokeDasharray: 16
+      },
+      ...props,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "1.5 6 4.5 9 10.5 1" })
+    }
+  );
+}
+function IndeterminateIcon(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.svg,
+    {
+      width: "1.2em",
+      viewBox: "0 0 24 24",
+      style: { stroke: "currentColor", strokeWidth: 4 },
+      ...props,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "21", x2: "3", y1: "12", y2: "12" })
+    }
+  );
+}
+function CheckboxIcon(props) {
+  const { isIndeterminate, isChecked, ...rest } = props;
+  const BaseIcon = isIndeterminate ? IndeterminateIcon : CheckIcon;
+  return isChecked || isIndeterminate ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.div,
+    {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%"
+      },
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(BaseIcon, { ...rest })
+    }
+  ) : null;
+}
 var isDom = () => typeof document !== "undefined";
 var hasSetup = false;
 var modality = null;
@@ -25333,6 +25537,155 @@ function stopEvent(event) {
   event.preventDefault();
   event.stopPropagation();
 }
+function useInitialAnimationState(isChecked) {
+  const [previousIsChecked, setPreviousIsChecked] = reactExports.useState(isChecked);
+  const [shouldAnimate, setShouldAnimate] = reactExports.useState(false);
+  if (isChecked !== previousIsChecked) {
+    setShouldAnimate(true);
+    setPreviousIsChecked(isChecked);
+  }
+  return shouldAnimate;
+}
+const controlStyles = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  verticalAlign: "top",
+  userSelect: "none",
+  flexShrink: 0
+};
+const rootStyles = {
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  verticalAlign: "top",
+  position: "relative"
+};
+const checkAnim = keyframes$1({
+  from: {
+    opacity: 0,
+    strokeDashoffset: 16,
+    transform: "scale(0.95)"
+  },
+  to: {
+    opacity: 1,
+    strokeDashoffset: 0,
+    transform: "scale(1)"
+  }
+});
+const indeterminateOpacityAnim = keyframes$1({
+  from: {
+    opacity: 0
+  },
+  to: {
+    opacity: 1
+  }
+});
+const indeterminateScaleAnim = keyframes$1({
+  from: {
+    transform: "scaleX(0.65)"
+  },
+  to: {
+    transform: "scaleX(1)"
+  }
+});
+const Checkbox = forwardRef(
+  function Checkbox2(props, ref) {
+    const group = useCheckboxGroupContext();
+    const mergedProps = { ...group, ...props };
+    const styles2 = useMultiStyleConfig("Checkbox", mergedProps);
+    const ownProps = omitThemingProps(props);
+    const {
+      spacing: spacing2 = "0.5rem",
+      className,
+      children,
+      iconColor,
+      iconSize,
+      icon = /* @__PURE__ */ jsxRuntimeExports.jsx(CheckboxIcon, {}),
+      isChecked: isCheckedProp,
+      isDisabled = group == null ? void 0 : group.isDisabled,
+      onChange: onChangeProp,
+      inputProps,
+      ...rest
+    } = ownProps;
+    let isChecked = isCheckedProp;
+    if ((group == null ? void 0 : group.value) && ownProps.value) {
+      isChecked = group.value.includes(ownProps.value);
+    }
+    let onChange = onChangeProp;
+    if ((group == null ? void 0 : group.onChange) && ownProps.value) {
+      onChange = callAll(group.onChange, onChangeProp);
+    }
+    const {
+      state: state2,
+      getInputProps,
+      getCheckboxProps,
+      getLabelProps,
+      getRootProps
+    } = useCheckbox({
+      ...rest,
+      isDisabled,
+      isChecked,
+      onChange
+    });
+    const shouldAnimate = useInitialAnimationState(state2.isChecked);
+    const iconStyles = reactExports.useMemo(
+      () => ({
+        animation: !shouldAnimate ? void 0 : state2.isIndeterminate ? `${indeterminateOpacityAnim} 20ms linear, ${indeterminateScaleAnim} 200ms linear` : `${checkAnim} 200ms linear`,
+        ...styles2.icon,
+        ...compact({
+          fontSize: iconSize,
+          color: iconColor
+        })
+      }),
+      [iconColor, iconSize, shouldAnimate, state2.isIndeterminate, styles2.icon]
+    );
+    const clonedIcon = reactExports.cloneElement(icon, {
+      __css: iconStyles,
+      isIndeterminate: state2.isIndeterminate,
+      isChecked: state2.isChecked
+    });
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      chakra.label,
+      {
+        __css: { ...rootStyles, ...styles2.container },
+        className: cx("chakra-checkbox", className),
+        ...getRootProps(),
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              className: "chakra-checkbox__input",
+              ...getInputProps(inputProps, ref)
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            chakra.span,
+            {
+              __css: { ...controlStyles, ...styles2.control },
+              className: "chakra-checkbox__control",
+              ...getCheckboxProps(),
+              children: clonedIcon
+            }
+          ),
+          children && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            chakra.span,
+            {
+              className: "chakra-checkbox__label",
+              ...getLabelProps(),
+              __css: {
+                marginStart: spacing2,
+                ...styles2.label
+              },
+              children
+            }
+          )
+        ]
+      }
+    );
+  }
+);
+Checkbox.displayName = "Checkbox";
 const Divider = forwardRef(
   function Divider2(props, ref) {
     const {
@@ -27413,6 +27766,78 @@ const Link = forwardRef(function Link2(props, ref) {
   );
 });
 Link.displayName = "Link";
+function getNextItemFromSearch(items, searchString, itemToString, currentItem) {
+  if (searchString == null) {
+    return currentItem;
+  }
+  if (!currentItem) {
+    const foundItem = items.find(
+      (item) => itemToString(item).toLowerCase().startsWith(searchString.toLowerCase())
+    );
+    return foundItem;
+  }
+  const matchingItems = items.filter(
+    (item) => itemToString(item).toLowerCase().startsWith(searchString.toLowerCase())
+  );
+  if (matchingItems.length > 0) {
+    let nextIndex;
+    if (matchingItems.includes(currentItem)) {
+      const currentIndex = matchingItems.indexOf(currentItem);
+      nextIndex = currentIndex + 1;
+      if (nextIndex === matchingItems.length) {
+        nextIndex = 0;
+      }
+      return matchingItems[nextIndex];
+    }
+    nextIndex = items.indexOf(matchingItems[0]);
+    return items[nextIndex];
+  }
+  return currentItem;
+}
+function isPrintableCharacter(event) {
+  const { key } = event;
+  return key.length === 1 || key.length > 1 && /[^a-zA-Z0-9]/.test(key);
+}
+function useShortcut(props = {}) {
+  const { timeout = 300, preventDefault = () => true } = props;
+  const [keys2, setKeys] = reactExports.useState([]);
+  const timeoutRef = reactExports.useRef();
+  const flush = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+  const clearKeysAfterDelay = () => {
+    flush();
+    timeoutRef.current = setTimeout(() => {
+      setKeys([]);
+      timeoutRef.current = null;
+    }, timeout);
+  };
+  reactExports.useEffect(() => flush, []);
+  function onKeyDown(fn2) {
+    return (event) => {
+      if (event.key === "Backspace") {
+        const keysCopy = [...keys2];
+        keysCopy.pop();
+        setKeys(keysCopy);
+        return;
+      }
+      if (isPrintableCharacter(event)) {
+        const keysCopy = keys2.concat(event.key);
+        if (preventDefault(event)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        setKeys(keysCopy);
+        fn2(keysCopy.join(""));
+        clearKeysAfterDelay();
+      }
+    };
+  }
+  return onKeyDown;
+}
 var top = "top";
 var bottom = "bottom";
 var right = "right";
@@ -27454,11 +27879,11 @@ function getWindow(node2) {
   }
   return node2;
 }
-function isElement(node2) {
+function isElement$1(node2) {
   var OwnElement = getWindow(node2).Element;
   return node2 instanceof OwnElement || node2 instanceof Element;
 }
-function isHTMLElement(node2) {
+function isHTMLElement$1(node2) {
   var OwnElement = getWindow(node2).HTMLElement;
   return node2 instanceof OwnElement || node2 instanceof HTMLElement;
 }
@@ -27475,7 +27900,7 @@ function applyStyles(_ref2) {
     var style = state2.styles[name] || {};
     var attributes = state2.attributes[name] || {};
     var element = state2.elements[name];
-    if (!isHTMLElement(element) || !getNodeName(element)) {
+    if (!isHTMLElement$1(element) || !getNodeName(element)) {
       return;
     }
     Object.assign(element.style, style);
@@ -27517,7 +27942,7 @@ function effect$2(_ref2) {
         style2[property] = "";
         return style2;
       }, {});
-      if (!isHTMLElement(element) || !getNodeName(element)) {
+      if (!isHTMLElement$1(element) || !getNodeName(element)) {
         return;
       }
       Object.assign(element.style, style);
@@ -27563,11 +27988,11 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy) {
   var clientRect = element.getBoundingClientRect();
   var scaleX = 1;
   var scaleY = 1;
-  if (includeScale && isHTMLElement(element)) {
+  if (includeScale && isHTMLElement$1(element)) {
     scaleX = element.offsetWidth > 0 ? round(clientRect.width) / element.offsetWidth || 1 : 1;
     scaleY = element.offsetHeight > 0 ? round(clientRect.height) / element.offsetHeight || 1 : 1;
   }
-  var _ref2 = isElement(element) ? getWindow(element) : window, visualViewport = _ref2.visualViewport;
+  var _ref2 = isElement$1(element) ? getWindow(element) : window, visualViewport = _ref2.visualViewport;
   var addVisualOffsets = !isLayoutViewport() && isFixedStrategy;
   var x2 = (clientRect.left + (addVisualOffsets && visualViewport ? visualViewport.offsetLeft : 0)) / scaleX;
   var y2 = (clientRect.top + (addVisualOffsets && visualViewport ? visualViewport.offsetTop : 0)) / scaleY;
@@ -27623,7 +28048,7 @@ function isTableElement(element) {
   return ["table", "td", "th"].indexOf(getNodeName(element)) >= 0;
 }
 function getDocumentElement(element) {
-  return ((isElement(element) ? element.ownerDocument : (
+  return ((isElement$1(element) ? element.ownerDocument : (
     // $FlowFixMe[prop-missing]
     element.document
   )) || window.document).documentElement;
@@ -27644,7 +28069,7 @@ function getParentNode(element) {
   );
 }
 function getTrueOffsetParent(element) {
-  if (!isHTMLElement(element) || // https://github.com/popperjs/popper-core/issues/837
+  if (!isHTMLElement$1(element) || // https://github.com/popperjs/popper-core/issues/837
   getComputedStyle$1(element).position === "fixed") {
     return null;
   }
@@ -27653,7 +28078,7 @@ function getTrueOffsetParent(element) {
 function getContainingBlock(element) {
   var isFirefox = /firefox/i.test(getUAString());
   var isIE = /Trident/i.test(getUAString());
-  if (isIE && isHTMLElement(element)) {
+  if (isIE && isHTMLElement$1(element)) {
     var elementCss = getComputedStyle$1(element);
     if (elementCss.position === "fixed") {
       return null;
@@ -27663,7 +28088,7 @@ function getContainingBlock(element) {
   if (isShadowRoot(currentNode)) {
     currentNode = currentNode.host;
   }
-  while (isHTMLElement(currentNode) && ["html", "body"].indexOf(getNodeName(currentNode)) < 0) {
+  while (isHTMLElement$1(currentNode) && ["html", "body"].indexOf(getNodeName(currentNode)) < 0) {
     var css2 = getComputedStyle$1(currentNode);
     if (css2.transform !== "none" || css2.perspective !== "none" || css2.contain === "paint" || ["transform", "perspective"].indexOf(css2.willChange) !== -1 || isFirefox && css2.willChange === "filter" || isFirefox && css2.filter && css2.filter !== "none") {
       return currentNode;
@@ -28012,7 +28437,7 @@ function getScrollParent(node2) {
   if (["html", "body", "#document"].indexOf(getNodeName(node2)) >= 0) {
     return node2.ownerDocument.body;
   }
-  if (isHTMLElement(node2) && isScrollParent(node2)) {
+  if (isHTMLElement$1(node2) && isScrollParent(node2)) {
     return node2;
   }
   return getScrollParent(getParentNode(node2));
@@ -28053,17 +28478,17 @@ function getInnerBoundingClientRect(element, strategy) {
   return rect;
 }
 function getClientRectFromMixedType(element, clippingParent, strategy) {
-  return clippingParent === viewport ? rectToClientRect(getViewportRect(element, strategy)) : isElement(clippingParent) ? getInnerBoundingClientRect(clippingParent, strategy) : rectToClientRect(getDocumentRect(getDocumentElement(element)));
+  return clippingParent === viewport ? rectToClientRect(getViewportRect(element, strategy)) : isElement$1(clippingParent) ? getInnerBoundingClientRect(clippingParent, strategy) : rectToClientRect(getDocumentRect(getDocumentElement(element)));
 }
 function getClippingParents(element) {
   var clippingParents2 = listScrollParents(getParentNode(element));
   var canEscapeClipping = ["absolute", "fixed"].indexOf(getComputedStyle$1(element).position) >= 0;
-  var clipperElement = canEscapeClipping && isHTMLElement(element) ? getOffsetParent(element) : element;
-  if (!isElement(clipperElement)) {
+  var clipperElement = canEscapeClipping && isHTMLElement$1(element) ? getOffsetParent(element) : element;
+  if (!isElement$1(clipperElement)) {
     return [];
   }
   return clippingParents2.filter(function(clippingParent) {
-    return isElement(clippingParent) && contains(clippingParent, clipperElement) && getNodeName(clippingParent) !== "body";
+    return isElement$1(clippingParent) && contains(clippingParent, clipperElement) && getNodeName(clippingParent) !== "body";
   });
 }
 function getClippingRect(element, boundary, rootBoundary, strategy) {
@@ -28145,7 +28570,7 @@ function detectOverflow(state2, options) {
   var altContext = elementContext === popper ? reference : popper;
   var popperRect = state2.rects.popper;
   var element = state2.elements[altBoundary ? altContext : elementContext];
-  var clippingClientRect = getClippingRect(isElement(element) ? element : element.contextElement || getDocumentElement(state2.elements.popper), boundary, rootBoundary, strategy);
+  var clippingClientRect = getClippingRect(isElement$1(element) ? element : element.contextElement || getDocumentElement(state2.elements.popper), boundary, rootBoundary, strategy);
   var referenceClientRect = getBoundingClientRect(state2.elements.reference);
   var popperOffsets2 = computeOffsets({
     reference: referenceClientRect,
@@ -28509,7 +28934,7 @@ function getHTMLElementScroll(element) {
   };
 }
 function getNodeScroll(node2) {
-  if (node2 === getWindow(node2) || !isHTMLElement(node2)) {
+  if (node2 === getWindow(node2) || !isHTMLElement$1(node2)) {
     return getWindowScroll(node2);
   } else {
     return getHTMLElementScroll(node2);
@@ -28525,8 +28950,8 @@ function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
   if (isFixed === void 0) {
     isFixed = false;
   }
-  var isOffsetParentAnElement = isHTMLElement(offsetParent);
-  var offsetParentIsScaled = isHTMLElement(offsetParent) && isElementScaled(offsetParent);
+  var isOffsetParentAnElement = isHTMLElement$1(offsetParent);
+  var offsetParentIsScaled = isHTMLElement$1(offsetParent) && isElementScaled(offsetParent);
   var documentElement = getDocumentElement(offsetParent);
   var rect = getBoundingClientRect(elementOrVirtualElement, offsetParentIsScaled, isFixed);
   var scroll2 = {
@@ -28542,7 +28967,7 @@ function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
     isScrollParent(documentElement)) {
       scroll2 = getNodeScroll(offsetParent);
     }
-    if (isHTMLElement(offsetParent)) {
+    if (isHTMLElement$1(offsetParent)) {
       offsets = getBoundingClientRect(offsetParent, true);
       offsets.x += offsetParent.clientLeft;
       offsets.y += offsetParent.clientTop;
@@ -28662,7 +29087,7 @@ function popperGenerator(generatorOptions) {
         cleanupModifierEffects();
         state2.options = Object.assign({}, defaultOptions2, state2.options, options2);
         state2.scrollParents = {
-          reference: isElement(reference2) ? listScrollParents(reference2) : reference2.contextElement ? listScrollParents(reference2.contextElement) : [],
+          reference: isElement$1(reference2) ? listScrollParents(reference2) : reference2.contextElement ? listScrollParents(reference2.contextElement) : [],
           popper: listScrollParents(popper2)
         };
         var orderedModifiers = orderModifiers(mergeByName([].concat(defaultModifiers2, state2.options.modifiers)));
@@ -29346,6 +29771,653 @@ function useClickable(props = {}) {
     onMouseLeave: handleMouseLeave
   };
 }
+const [
+  MenuDescendantsProvider,
+  useMenuDescendantsContext,
+  useMenuDescendants,
+  useMenuDescendant
+] = createDescendantContext();
+const [MenuProvider, useMenuContext] = createContext({
+  strict: false,
+  name: "MenuContext"
+});
+function getOwnerDocument(node2) {
+  return (node2 == null ? void 0 : node2.ownerDocument) ?? document;
+}
+function isActiveElement(element) {
+  const doc = getOwnerDocument(element);
+  return doc.activeElement === element;
+}
+function useMenu(props = {}) {
+  const {
+    id: id2,
+    closeOnSelect = true,
+    closeOnBlur = true,
+    initialFocusRef,
+    autoSelect = true,
+    isLazy,
+    isOpen: isOpenProp,
+    defaultIsOpen,
+    onClose: onCloseProp,
+    onOpen: onOpenProp,
+    placement = "bottom-start",
+    lazyBehavior = "unmount",
+    direction: direction2,
+    computePositionOnMount = false,
+    ...popperProps
+  } = props;
+  const menuRef = reactExports.useRef(null);
+  const buttonRef = reactExports.useRef(null);
+  const scrollIntoViewRef = reactExports.useRef(true);
+  const descendants = useMenuDescendants();
+  const focusMenu = reactExports.useCallback(() => {
+    requestAnimationFrame(() => {
+      var _a2;
+      (_a2 = menuRef.current) == null ? void 0 : _a2.focus({ preventScroll: false });
+    });
+  }, []);
+  const focusFirstItem = reactExports.useCallback(() => {
+    const id22 = setTimeout(() => {
+      var _a2, _b2;
+      if (initialFocusRef) {
+        (_a2 = initialFocusRef.current) == null ? void 0 : _a2.focus();
+      } else if (!descendants.count()) {
+        (_b2 = menuRef.current) == null ? void 0 : _b2.focus({ preventScroll: false });
+      } else {
+        const first = descendants.firstEnabled();
+        if (first)
+          setFocusedIndex(first.index);
+      }
+    });
+    timeoutIds.current.add(id22);
+  }, [descendants, initialFocusRef]);
+  const focusLastItem = reactExports.useCallback(() => {
+    const id22 = setTimeout(() => {
+      var _a2;
+      if (!descendants.count()) {
+        (_a2 = menuRef.current) == null ? void 0 : _a2.focus({ preventScroll: false });
+      } else {
+        const last = descendants.lastEnabled();
+        if (last)
+          setFocusedIndex(last.index);
+      }
+    });
+    timeoutIds.current.add(id22);
+  }, [descendants]);
+  const onOpenInternal = reactExports.useCallback(() => {
+    onOpenProp == null ? void 0 : onOpenProp();
+    if (autoSelect) {
+      focusFirstItem();
+    } else {
+      focusMenu();
+    }
+  }, [autoSelect, focusFirstItem, focusMenu, onOpenProp]);
+  const { isOpen, onOpen, onClose, onToggle } = useDisclosure({
+    isOpen: isOpenProp,
+    defaultIsOpen,
+    onClose: onCloseProp,
+    onOpen: onOpenInternal
+  });
+  useOutsideClick({
+    enabled: isOpen && closeOnBlur,
+    ref: menuRef,
+    handler: (event) => {
+      var _a2, _b2, _c2;
+      const target = ((_b2 = (_a2 = event.composedPath) == null ? void 0 : _a2.call(event)) == null ? void 0 : _b2[0]) ?? event.target;
+      if (!((_c2 = buttonRef.current) == null ? void 0 : _c2.contains(target))) {
+        onClose();
+      }
+    }
+  });
+  const popper2 = usePopper({
+    ...popperProps,
+    enabled: isOpen || computePositionOnMount,
+    placement,
+    direction: direction2
+  });
+  const [focusedIndex, setFocusedIndex] = reactExports.useState(-1);
+  useFocusOnHide(menuRef, {
+    focusRef: buttonRef,
+    visible: isOpen,
+    shouldFocus: true
+  });
+  const animationState = useAnimationState({ isOpen, ref: menuRef });
+  const [buttonId, menuId] = useIds$1(id2, `menu-button`, `menu-list`);
+  const openAndFocusMenu = reactExports.useCallback(() => {
+    onOpen();
+    focusMenu();
+  }, [onOpen, focusMenu]);
+  const timeoutIds = reactExports.useRef(/* @__PURE__ */ new Set([]));
+  reactExports.useEffect(() => {
+    const ids = timeoutIds.current;
+    return () => {
+      ids.forEach((id22) => clearTimeout(id22));
+      ids.clear();
+    };
+  }, []);
+  useUpdateEffect(() => {
+    var _a2;
+    if (isOpen)
+      return;
+    setFocusedIndex(-1);
+    (_a2 = menuRef.current) == null ? void 0 : _a2.scrollTo(0, 0);
+  }, [isOpen]);
+  useUpdateEffect(() => {
+    if (!isOpen)
+      return;
+    if (focusedIndex === -1) {
+      focusMenu();
+    }
+  }, [focusedIndex, isOpen]);
+  reactExports.useEffect(() => {
+    var _a2;
+    if (!isOpen)
+      return;
+    const item = descendants.item(focusedIndex);
+    (_a2 = item == null ? void 0 : item.node) == null ? void 0 : _a2.focus({ preventScroll: !scrollIntoViewRef.current });
+  }, [descendants, focusedIndex, isOpen]);
+  const openAndFocusFirstItem = reactExports.useCallback(() => {
+    onOpen();
+    focusFirstItem();
+  }, [focusFirstItem, onOpen]);
+  const openAndFocusLastItem = reactExports.useCallback(() => {
+    scrollIntoViewRef.current = true;
+    onOpen();
+    focusLastItem();
+  }, [onOpen, focusLastItem]);
+  const refocus = reactExports.useCallback(() => {
+    var _a2, _b2;
+    const doc = getOwnerDocument(menuRef.current);
+    const hasFocusWithin = (_a2 = menuRef.current) == null ? void 0 : _a2.contains(doc.activeElement);
+    const shouldRefocus = isOpen && !hasFocusWithin;
+    if (!shouldRefocus)
+      return;
+    const node2 = (_b2 = descendants.item(focusedIndex)) == null ? void 0 : _b2.node;
+    node2 == null ? void 0 : node2.focus({ preventScroll: !scrollIntoViewRef.current });
+  }, [isOpen, focusedIndex, descendants]);
+  return {
+    openAndFocusMenu,
+    openAndFocusFirstItem,
+    openAndFocusLastItem,
+    onTransitionEnd: refocus,
+    unstable__animationState: animationState,
+    descendants,
+    popper: popper2,
+    buttonId,
+    menuId,
+    forceUpdate: popper2.forceUpdate,
+    orientation: "vertical",
+    isOpen,
+    onToggle,
+    onOpen,
+    onClose,
+    menuRef,
+    buttonRef,
+    focusedIndex,
+    closeOnSelect,
+    closeOnBlur,
+    autoSelect,
+    setFocusedIndex,
+    isLazy,
+    lazyBehavior,
+    initialFocusRef,
+    scrollIntoViewRef
+  };
+}
+function useMenuButton(props = {}, externalRef = null) {
+  const menu = useMenuContext();
+  const {
+    onToggle,
+    popper: popper2,
+    openAndFocusFirstItem,
+    openAndFocusLastItem,
+    scrollIntoViewRef
+  } = menu;
+  const onKeyDown = reactExports.useCallback(
+    (event) => {
+      const eventKey = event.key;
+      const keyMap = {
+        Enter: openAndFocusFirstItem,
+        ArrowDown: openAndFocusFirstItem,
+        ArrowUp: openAndFocusLastItem
+      };
+      const action = keyMap[eventKey];
+      if (action) {
+        scrollIntoViewRef.current = true;
+        event.preventDefault();
+        event.stopPropagation();
+        action(event);
+      }
+    },
+    [openAndFocusFirstItem, openAndFocusLastItem, scrollIntoViewRef]
+  );
+  return {
+    ...props,
+    ref: mergeRefs(menu.buttonRef, externalRef, popper2.referenceRef),
+    id: menu.buttonId,
+    "data-active": dataAttr(menu.isOpen),
+    "aria-expanded": menu.isOpen,
+    "aria-haspopup": "menu",
+    "aria-controls": menu.menuId,
+    onClick: callAllHandlers(props.onClick, onToggle),
+    onKeyDown: callAllHandlers(props.onKeyDown, onKeyDown)
+  };
+}
+function isTargetMenuItem(target) {
+  var _a2;
+  return isHTMLElement(target) && !!((_a2 = target == null ? void 0 : target.getAttribute("role")) == null ? void 0 : _a2.startsWith("menuitem"));
+}
+function useMenuList(props = {}, ref = null) {
+  const menu = useMenuContext();
+  if (!menu) {
+    throw new Error(
+      `useMenuContext: context is undefined. Seems you forgot to wrap component within <Menu>`
+    );
+  }
+  const {
+    focusedIndex,
+    setFocusedIndex,
+    menuRef,
+    isOpen,
+    onClose,
+    menuId,
+    isLazy,
+    lazyBehavior,
+    scrollIntoViewRef,
+    unstable__animationState: animated
+  } = menu;
+  const descendants = useMenuDescendantsContext();
+  const createTypeaheadHandler = useShortcut({
+    preventDefault: (event) => event.key !== " " && isTargetMenuItem(event.target)
+  });
+  const onKeyDown = reactExports.useCallback(
+    (event) => {
+      if (!event.currentTarget.contains(event.target))
+        return;
+      const eventKey = event.key;
+      const keyMap = {
+        Tab: (event2) => event2.preventDefault(),
+        Escape: (event2) => {
+          event2.stopPropagation();
+          onClose();
+        },
+        ArrowDown: () => {
+          scrollIntoViewRef.current = true;
+          const next2 = descendants.nextEnabled(focusedIndex) ?? descendants.firstEnabled();
+          if (next2)
+            setFocusedIndex(next2.index);
+        },
+        ArrowUp: () => {
+          scrollIntoViewRef.current = true;
+          const prev2 = descendants.prevEnabled(focusedIndex) ?? descendants.firstEnabled();
+          if (prev2)
+            setFocusedIndex(prev2.index);
+        }
+      };
+      const fn2 = keyMap[eventKey];
+      if (fn2) {
+        event.preventDefault();
+        fn2(event);
+        return;
+      }
+      const onTypeahead = createTypeaheadHandler((character2) => {
+        const nextItem = getNextItemFromSearch(
+          descendants.values(),
+          character2,
+          (item) => {
+            var _a2;
+            return ((_a2 = item == null ? void 0 : item.node) == null ? void 0 : _a2.textContent) ?? "";
+          },
+          descendants.item(focusedIndex)
+        );
+        if (nextItem) {
+          const index = descendants.indexOf(nextItem.node);
+          setFocusedIndex(index);
+        }
+      });
+      if (isTargetMenuItem(event.target)) {
+        onTypeahead(event);
+      }
+    },
+    [
+      descendants,
+      focusedIndex,
+      createTypeaheadHandler,
+      onClose,
+      setFocusedIndex,
+      scrollIntoViewRef
+    ]
+  );
+  const hasBeenOpened = reactExports.useRef(false);
+  if (isOpen) {
+    hasBeenOpened.current = true;
+  }
+  const shouldRenderChildren = lazyDisclosure({
+    wasSelected: hasBeenOpened.current,
+    enabled: isLazy,
+    mode: lazyBehavior,
+    isSelected: animated.present
+  });
+  return {
+    ...props,
+    ref: mergeRefs(menuRef, ref),
+    children: shouldRenderChildren ? props.children : null,
+    tabIndex: -1,
+    role: "menu",
+    id: menuId,
+    style: {
+      ...props.style,
+      transformOrigin: "var(--popper-transform-origin)"
+    },
+    "aria-orientation": "vertical",
+    onKeyDown: callAllHandlers(props.onKeyDown, onKeyDown)
+  };
+}
+function useMenuPositioner(props = {}) {
+  const { popper: popper2, isOpen } = useMenuContext();
+  return popper2.getPopperProps({
+    ...props,
+    style: {
+      visibility: isOpen ? "visible" : "hidden",
+      ...props.style
+    }
+  });
+}
+function useMenuItem(props = {}, externalRef = null) {
+  const {
+    onMouseEnter: onMouseEnterProp,
+    onMouseMove: onMouseMoveProp,
+    onMouseLeave: onMouseLeaveProp,
+    onClick: onClickProp,
+    onFocus: onFocusProp,
+    isDisabled,
+    isFocusable: isFocusable2,
+    closeOnSelect,
+    type: typeProp,
+    ...htmlProps
+  } = props;
+  const menu = useMenuContext();
+  const {
+    setFocusedIndex,
+    focusedIndex,
+    closeOnSelect: menuCloseOnSelect,
+    onClose,
+    menuId,
+    scrollIntoViewRef
+  } = menu;
+  const ref = reactExports.useRef(null);
+  const id2 = `${menuId}-menuitem-${reactExports.useId()}`;
+  const { index, register } = useMenuDescendant({
+    disabled: isDisabled && !isFocusable2
+  });
+  const onMouseEnter = reactExports.useCallback(
+    (event) => {
+      onMouseEnterProp == null ? void 0 : onMouseEnterProp(event);
+      if (isDisabled)
+        return;
+      scrollIntoViewRef.current = false;
+      setFocusedIndex(index);
+    },
+    [setFocusedIndex, index, isDisabled, onMouseEnterProp, scrollIntoViewRef]
+  );
+  const onMouseMove = reactExports.useCallback(
+    (event) => {
+      onMouseMoveProp == null ? void 0 : onMouseMoveProp(event);
+      if (ref.current && !isActiveElement(ref.current)) {
+        onMouseEnter(event);
+      }
+    },
+    [onMouseEnter, onMouseMoveProp]
+  );
+  const onMouseLeave = reactExports.useCallback(
+    (event) => {
+      onMouseLeaveProp == null ? void 0 : onMouseLeaveProp(event);
+      if (isDisabled)
+        return;
+      setFocusedIndex(-1);
+    },
+    [setFocusedIndex, isDisabled, onMouseLeaveProp]
+  );
+  const onClick = reactExports.useCallback(
+    (event) => {
+      onClickProp == null ? void 0 : onClickProp(event);
+      if (!isTargetMenuItem(event.currentTarget))
+        return;
+      if (closeOnSelect ?? menuCloseOnSelect) {
+        onClose();
+      }
+    },
+    [onClose, onClickProp, menuCloseOnSelect, closeOnSelect]
+  );
+  const onFocus3 = reactExports.useCallback(
+    (event) => {
+      onFocusProp == null ? void 0 : onFocusProp(event);
+      setFocusedIndex(index);
+    },
+    [setFocusedIndex, onFocusProp, index]
+  );
+  const isFocused = index === focusedIndex;
+  const clickableProps = useClickable({
+    onClick,
+    onFocus: onFocus3,
+    onMouseEnter,
+    onMouseMove,
+    onMouseLeave,
+    ref: mergeRefs(register, ref, externalRef),
+    isDisabled,
+    isFocusable: isFocusable2
+  });
+  return {
+    ...htmlProps,
+    ...clickableProps,
+    type: typeProp ?? clickableProps.type,
+    id: id2,
+    role: "menuitem",
+    tabIndex: isFocused ? 0 : -1
+  };
+}
+function isHTMLElement(el2) {
+  if (!isElement(el2))
+    return false;
+  const win = el2.ownerDocument.defaultView ?? window;
+  return el2 instanceof win.HTMLElement;
+}
+function isElement(el2) {
+  return el2 != null && typeof el2 == "object" && "nodeType" in el2 && el2.nodeType === Node.ELEMENT_NODE;
+}
+const [MenuStylesProvider, useMenuStyles] = createContext({
+  name: `MenuStylesContext`,
+  errorMessage: `useMenuStyles returned is 'undefined'. Seems you forgot to wrap the components in "<Menu />" `
+});
+const Menu = (props) => {
+  const { children } = props;
+  const styles2 = useMultiStyleConfig("Menu", props);
+  const ownProps = omitThemingProps(props);
+  const { direction: direction2 } = useTheme();
+  const { descendants, ...ctx } = useMenu({ ...ownProps, direction: direction2 });
+  const context = reactExports.useMemo(() => ctx, [ctx]);
+  const { isOpen, onClose, forceUpdate } = context;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(MenuDescendantsProvider, { value: descendants, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MenuProvider, { value: context, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MenuStylesProvider, { value: styles2, children: runIfFn$1(children, { isOpen, onClose, forceUpdate }) }) }) });
+};
+Menu.displayName = "Menu";
+const StyledMenuButton = forwardRef((props, ref) => {
+  const styles2 = useMenuStyles();
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    chakra.button,
+    {
+      ref,
+      ...props,
+      __css: {
+        display: "inline-flex",
+        appearance: "none",
+        alignItems: "center",
+        outline: 0,
+        ...styles2.button
+      }
+    }
+  );
+});
+const MenuButton = forwardRef(
+  (props, ref) => {
+    const { children, as: As, ...rest } = props;
+    const buttonProps = useMenuButton(rest, ref);
+    const Element2 = As || StyledMenuButton;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Element2,
+      {
+        ...buttonProps,
+        className: cx("chakra-menu__menu-button", props.className),
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          chakra.span,
+          {
+            __css: { pointerEvents: "none", flex: "1 1 auto", minW: 0 },
+            children: props.children
+          }
+        )
+      }
+    );
+  }
+);
+MenuButton.displayName = "MenuButton";
+const MenuCommand = forwardRef(
+  (props, ref) => {
+    const styles2 = useMenuStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.span,
+      {
+        ref,
+        ...props,
+        __css: styles2.command,
+        className: "chakra-menu__command"
+      }
+    );
+  }
+);
+MenuCommand.displayName = "MenuCommand";
+const MenuIcon = (props) => {
+  const { className, children, ...rest } = props;
+  const styles2 = useMenuStyles();
+  const child = reactExports.Children.only(children);
+  const clone = reactExports.isValidElement(child) ? reactExports.cloneElement(child, {
+    focusable: "false",
+    "aria-hidden": true,
+    className: cx("chakra-menu__icon", child.props.className)
+  }) : null;
+  const _className = cx("chakra-menu__icon-wrapper", className);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.span, { className: _className, ...rest, __css: styles2.icon, children: clone });
+};
+MenuIcon.displayName = "MenuIcon";
+const StyledMenuItem = forwardRef(
+  (props, ref) => {
+    const { type, ...rest } = props;
+    const styles2 = useMenuStyles();
+    const btnType = rest.as || type ? type ?? void 0 : "button";
+    const buttonStyles = reactExports.useMemo(
+      () => ({
+        textDecoration: "none",
+        color: "inherit",
+        userSelect: "none",
+        display: "flex",
+        width: "100%",
+        alignItems: "center",
+        textAlign: "start",
+        flex: "0 0 auto",
+        outline: 0,
+        ...styles2.item
+      }),
+      [styles2.item]
+    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(chakra.button, { ref, type: btnType, ...rest, __css: buttonStyles });
+  }
+);
+const MenuItem = forwardRef((props, ref) => {
+  const {
+    icon,
+    iconSpacing: iconSpacing2 = "0.75rem",
+    command,
+    commandSpacing = "0.75rem",
+    children,
+    ...rest
+  } = props;
+  const menuitemProps = useMenuItem(rest, ref);
+  const shouldWrap = icon || command;
+  const _children = shouldWrap ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { pointerEvents: "none", flex: 1 }, children }) : children;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    StyledMenuItem,
+    {
+      ...menuitemProps,
+      className: cx("chakra-menu__menuitem", menuitemProps.className),
+      children: [
+        icon && /* @__PURE__ */ jsxRuntimeExports.jsx(MenuIcon, { fontSize: "0.8em", marginEnd: iconSpacing2, children: icon }),
+        _children,
+        command && /* @__PURE__ */ jsxRuntimeExports.jsx(MenuCommand, { marginStart: commandSpacing, children: command })
+      ]
+    }
+  );
+});
+MenuItem.displayName = "MenuItem";
+const motionVariants = {
+  enter: {
+    visibility: "visible",
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  },
+  exit: {
+    transitionEnd: {
+      visibility: "hidden"
+    },
+    opacity: 0,
+    scale: 0.8,
+    transition: {
+      duration: 0.1,
+      easings: "easeOut"
+    }
+  }
+};
+const MenuTransition = chakra(motion.div);
+const MenuList = forwardRef(
+  function MenuList2(props, ref) {
+    var _a2;
+    const { rootProps, motionProps, ...rest } = props;
+    const {
+      isOpen,
+      onTransitionEnd,
+      unstable__animationState: animated
+    } = useMenuContext();
+    const listProps = useMenuList(rest, ref);
+    const positionerProps = useMenuPositioner(rootProps);
+    const styles2 = useMenuStyles();
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      chakra.div,
+      {
+        ...positionerProps,
+        __css: { zIndex: props.zIndex ?? ((_a2 = styles2.list) == null ? void 0 : _a2.zIndex) },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          MenuTransition,
+          {
+            variants: motionVariants,
+            initial: false,
+            animate: isOpen ? "enter" : "exit",
+            __css: { outline: 0, ...styles2.list },
+            ...motionProps,
+            ...listProps,
+            className: cx("chakra-menu__menu-list", listProps.className),
+            onUpdate: onTransitionEnd,
+            onAnimationComplete: callAll(
+              animated.onComplete,
+              listProps.onAnimationComplete
+            )
+          }
+        )
+      }
+    );
+  }
+);
+MenuList.displayName = "MenuList";
 var getDefaultParent = function(originalTarget) {
   if (typeof document === "undefined") {
     return null;
@@ -34611,7 +35683,7 @@ function genBech32(encoding) {
 }
 const bech32 = /* @__PURE__ */ genBech32("bech32");
 export {
-  TabList as $,
+  CardFooter as $,
   AlertDialog as A,
   Button as B,
   Card as C,
@@ -34632,26 +35704,31 @@ export {
   React as R,
   StackDivider as S,
   Text as T,
-  Switch as U,
+  Menu as U,
   VStack as V,
-  CardFooter as W,
-  useEditableControls as X,
-  hexToBytes$1 as Y,
-  Flex as Z,
-  Tabs as _,
+  MenuButton as W,
+  MenuList as X,
+  MenuItem as Y,
+  Checkbox as Z,
+  Switch as _,
   bech32 as a,
-  Tab as a0,
-  TabPanels as a1,
-  TabPanel as a2,
-  Divider as a3,
-  NumberInput as a4,
-  NumberInputField as a5,
-  NumberInputStepper as a6,
-  NumberIncrementStepper as a7,
-  NumberDecrementStepper as a8,
-  Spinner as a9,
-  createRoot as aa,
-  ChakraProvider as ab,
+  useEditableControls as a0,
+  hexToBytes$1 as a1,
+  Flex as a2,
+  Tabs as a3,
+  TabList as a4,
+  Tab as a5,
+  TabPanels as a6,
+  TabPanel as a7,
+  Divider as a8,
+  NumberInput as a9,
+  NumberInputField as aa,
+  NumberInputStepper as ab,
+  NumberIncrementStepper as ac,
+  NumberDecrementStepper as ad,
+  Spinner as ae,
+  createRoot as af,
+  ChakraProvider as ag,
   bytesToHex$1 as b,
   AlertDialogContent as c,
   ModalHeader as d,

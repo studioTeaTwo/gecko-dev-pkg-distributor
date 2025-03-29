@@ -12,12 +12,12 @@ const MapBetweenPrefAndState = {
 };
 
 const DialogMessage = {
-  "nostr/getPublicKey": "OK?",
-  "nostr/signEvent": "OK?",
-  "nostr/nip04/encrypt": "OK?",
-  "nostr/nip04/decrypt": "OK?",
-  "nostr/nip44/encrypt": "OK?",
-  "nostr/nip44/decrypt": "OK?",
+  "nostr/getPublicKey": "App is requesting you.",
+  "nostr/signEvent": "App is requesting you.",
+  "nostr/nip04/encrypt": "App is requesting you.",
+  "nostr/nip04/decrypt": "App is requesting you.",
+  "nostr/nip44/encrypt": "App is requesting you.",
+  "nostr/nip44/decrypt": "App is requesting you.",
 };
 
 const ERR_MSG_NOT_ENABLED =
@@ -26,9 +26,10 @@ const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only su
 
 // Proceed calls from contents
 export const doNostrAction = async (
+  tabId: number,
+  origin: string,
   action: string,
-  args: FixMe,
-  origin: string
+  args: FixMe
 ) => {
   if (!state.nostr.prefs.enabled) {
     throw new Error(ERR_MSG_NOT_ENABLED);
@@ -40,6 +41,7 @@ export const doNostrAction = async (
   switch (action) {
     case "nostr/getPublicKey": {
       const credentials = await browser.ssi.searchCredentialsWithoutSecret(
+        tabId,
         {
           protocolName: "nostr",
           credentialName: state.nostr.credentialName,
@@ -66,6 +68,7 @@ export const doNostrAction = async (
 
       // Sign
       const signature = await browser.ssi.nostr.sign(
+        tabId,
         args.message,
         { type: args.type },
         {
@@ -93,6 +96,7 @@ export const doNostrAction = async (
 
       // Encrypt
       const ciphertext = await browser.ssi.nostr.encrypt(
+        tabId,
         args.plaintext,
         { type: args.type, pubkey: args.pubkey },
         {
@@ -121,6 +125,7 @@ export const doNostrAction = async (
 
       // Decrypt
       const plaintext = await browser.ssi.nostr.decrypt(
+        tabId,
         args.ciphertext,
         { type: args.type, pubkey: args.pubkey },
         {
@@ -162,6 +167,7 @@ export async function init() {
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
   const credentials = await browser.ssi.searchCredentialsWithoutSecret(
+    -1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
     {
       protocolName: "nostr",
       credentialName: state.nostr.credentialName,

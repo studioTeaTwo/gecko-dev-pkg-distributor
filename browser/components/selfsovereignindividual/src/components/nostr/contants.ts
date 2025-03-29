@@ -18,6 +18,19 @@ export const DefaultExcludedKindList = {
   23194: { nip: 47, name: "NWC Wallet Request" },
 };
 export const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
+export const TrustedMethodOptions = [
+  "read",
+  "read-passwordOnly",
+  "sign",
+  "sign-passwordOnly",
+  "encrypt",
+  "encrypt-passwordOnly",
+  "decrypt",
+  "decrypt-passwordOnly",
+  "custom",
+  "custom-passwordOnly",
+];
+export const DefaultTrustedMethods = [];
 
 // "guid", "timeCreated" are generated on services.ssi.
 export const NostrTemplate: Omit<NostrCredential, "guid" | "timeCreated"> = {

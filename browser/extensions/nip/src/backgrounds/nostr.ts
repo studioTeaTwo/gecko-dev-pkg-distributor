@@ -21,7 +21,7 @@ export async function init() {
   const prefs = {} as FixMe;
   Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
     prefs[_state] =
-      results && results[_pref] ? results[_pref] : state.nostr.prefs[_pref];
+      results && results[_pref] ? results[_pref] : state.nostr.prefs[_state];
   });
   state.nostr = {
     ...state.nostr,
@@ -55,8 +55,10 @@ const onPrefChangedCallback = async (prefKey: string) => {
     ...(await browser.ssi.nostr.getPrefs()),
     ...(await browser.builtinNip.getPrefs()),
   };
-  const stateName = MapBetweenPrefAndState[prefKey];
-  const newVal = results[stateName];
+  const stateName = Object.entries(MapBetweenPrefAndState)
+    .filter(([, _pref]) => _pref === prefKey)
+    .map(([_state]) => _state)[0];
+  const newVal = results[prefKey];
   state.nostr.prefs[stateName] = newVal;
   log("pref changed!", prefKey, newVal, state.nostr);
 

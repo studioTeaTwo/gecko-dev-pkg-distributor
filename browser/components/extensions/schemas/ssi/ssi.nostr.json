@@ -64,6 +64,12 @@
         "async": true,
         "parameters": [
           {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+          },
+          {
             "name": "message",
             "type": "string",
             "description": "The message to sign. If it's not a string it must be stringified."
@@ -98,6 +104,12 @@
         "description": "Pass plain text and return the cipher text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+          },
           {
             "name": "plaintext",
             "type": "string",
@@ -144,6 +156,12 @@
         "description": "Pass cipher text and return the plain text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+          },
           {
             "name": "ciphertext",
             "type": "string",
