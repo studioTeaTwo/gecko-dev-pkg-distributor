@@ -44,7 +44,8 @@ jobs:
       - name:  Unpack artifact
         run: |
           cd C:\artifact
-          zstd -d ssb-*.tar.zst
+          ren ssb-*.tar.zst ssb.tar.zst
+          zstd -d ssb.tar.zst
           7z x ssb-*.tar
 
       - uses: actions/checkout@v4
