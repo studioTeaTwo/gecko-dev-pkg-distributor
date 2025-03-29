@@ -46,7 +46,7 @@ jobs:
           cd C:\artifact
           ren ssb-*.tar.zst ssb.tar.zst
           zstd -d ssb.tar.zst
-          7z x ssb-*.tar
+          7z x ssb.tar
 
       - uses: actions/checkout@v4
         name: Clone 🧬
