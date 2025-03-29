@@ -1259,7 +1259,7 @@ function KeyEditor(props) {
                               Textarea,
                               {
                                 size: "sm",
-                                value: site.permissions.excludedKinds.length > 0 ? site.permissions.excludedKinds.join(",") : "",
+                                value: site.permissions.excludedKinds.length > 0 ? site.permissions.excludedKinds.filter(Boolean).join(",") : "",
                                 onChange: (e) => handleSaveExcludedKinds(i, e.target.value),
                                 placeholder: site.permissions.excludedKinds.length > 0 ? "" : "Input kind number",
                                 minW: "300px",
@@ -1948,7 +1948,7 @@ function NIP07(props) {
       excludedKindsPreset: sort === "edit" ? newExcludedKindsPreset : DefaultExcludedKinds.join(",")
     });
     if (sort === "default") {
-      setNewExcludedKindsPreset(DefaultExcludedKinds.join(","));
+      setNewExcludedKindsPreset(DefaultExcludedKinds.filter(Boolean).join(","));
     }
   };
   const handleChangeTrustedMethods = (value) => {

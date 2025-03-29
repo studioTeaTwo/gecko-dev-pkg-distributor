@@ -459,7 +459,9 @@ export default function KeyEditor(props: Props) {
                                   size="sm"
                                   value={
                                     site.permissions.excludedKinds.length > 0
-                                      ? site.permissions.excludedKinds.join(",")
+                                      ? site.permissions.excludedKinds
+                                          .filter(Boolean)
+                                          .join(",")
                                       : ""
                                   }
                                   onChange={e =>

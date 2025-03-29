@@ -308,7 +308,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           : DefaultExcludedKinds.join(","),
     });
     if (sort === "default") {
-      setNewExcludedKindsPreset(DefaultExcludedKinds.join(","));
+      setNewExcludedKindsPreset(DefaultExcludedKinds.filter(Boolean).join(","));
     }
   };
   const handleChangeTrustedMethods = (value: string) => {
