@@ -3815,6 +3815,14 @@ export class Extension extends ExtensionData {
       updateCache = true;
     }
 
+    if (this.isSsi) {
+      lazy.ExtensionPermissions.add(this.id, {
+        permissions: [PRIVATE_ALLOWED_PERMISSION],
+        origins: [],
+      });
+      this.permissions.add(PRIVATE_ALLOWED_PERMISSION);
+    }
+
     // Ensure devtools permission is set.
     if (
       this.manifest.devtools_page &&
