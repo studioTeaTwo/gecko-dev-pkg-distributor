@@ -58,7 +58,7 @@ public class TorAndroidIntegration implements BundleEventListener {
   private static final String EVENT_START_AGAIN = "GeckoView:Tor:StartAgain";
   private static final String EVENT_QUICKSTART_GET = "GeckoView:Tor:QuickstartGet";
   private static final String EVENT_QUICKSTART_SET = "GeckoView:Tor:QuickstartSet";
-  private static final String EVENT_COUNTRY_NAMES_GET = "GeckoView:Tor:CountryNamesGet";
+  private static final String EVENT_REGION_NAMES_GET = "GeckoView:Tor:RegionNamesGet";
 
   private static final String CONTROL_PORT_FILE = "/control-ipc";
   private static final String SOCKS_FILE = "/socks-ipc";
@@ -722,13 +722,13 @@ public class TorAndroidIntegration implements BundleEventListener {
     return EventDispatcher.getInstance().queryVoid(EVENT_QUICKSTART_SET, bundle);
   }
 
-  public interface CountryNamesGetter {
-    void onValue(GeckoBundle regions);
+  public interface RegionNamesGetter {
+    void onValue(GeckoBundle regionNames);
   }
 
-  public void countryNamesGet(CountryNamesGetter countryNamesGetter) {
-    EventDispatcher.getInstance().queryBundle(EVENT_COUNTRY_NAMES_GET).then(countryNames -> {
-      countryNamesGetter.onValue(countryNames);
+  public void regionNamesGet(RegionNamesGetter regionNamesGetter) {
+    EventDispatcher.getInstance().queryBundle(EVENT_REGION_NAMES_GET).then(regionNames -> {
+      regionNamesGetter.onValue(regionNames);
       return new GeckoResult<Void>();
     });
   }
