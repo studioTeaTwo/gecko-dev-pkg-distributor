@@ -71,7 +71,6 @@ internal fun mozilla.appservices.places.uniffi.VisitType.into() = when (this) {
     mozilla.appservices.places.uniffi.VisitType.REDIRECT_TEMPORARY -> VisitType.REDIRECT_TEMPORARY
     mozilla.appservices.places.uniffi.VisitType.DOWNLOAD -> VisitType.DOWNLOAD
     mozilla.appservices.places.uniffi.VisitType.FRAMED_LINK -> VisitType.FRAMED_LINK
-    mozilla.appservices.places.uniffi.VisitType.__NOOP -> VisitType.LINK
 }
 
 internal fun mozilla.appservices.places.uniffi.HistoryVisitInfo.into(): VisitInfo {
@@ -130,18 +129,6 @@ internal fun BookmarkItem.asBookmarkNode(): BookmarkNode {
                 null,
             )
         }
-        is BookmarkItem.__NOOP -> {
-            BookmarkNode(
-                BookmarkNodeType.ITEM,
-                "",
-                "",
-                null,
-                null,
-                null,
-                0L,
-                null,
-            )
-        }
     }
 }
 
@@ -165,7 +152,6 @@ internal fun mozilla.appservices.places.uniffi.DocumentType.into(): DocumentType
     return when (this) {
         mozilla.appservices.places.uniffi.DocumentType.REGULAR -> DocumentType.Regular
         mozilla.appservices.places.uniffi.DocumentType.MEDIA -> DocumentType.Media
-        mozilla.appservices.places.uniffi.DocumentType.__NOOP -> DocumentType.Regular
     }
 }
 
