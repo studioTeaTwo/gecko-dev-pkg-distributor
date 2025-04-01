@@ -543,11 +543,12 @@ class TorDomainIsolatorImpl {
       return;
     }
 
-    logger.debug(
-      `Found new credentials ${username} ${password} for browser`,
-      browser
-    );
     const circuit = this.#knownCircuits.get(id);
+    logger.debug(
+      `Found new credentials ${username} ${password} for browser ${browser.browserId}.`,
+      browser,
+      circuit
+    );
     if (circuit?.length) {
       circuitIds.current = id;
       if (circuitIds.pending === id) {
@@ -634,15 +635,23 @@ class TorDomainIsolatorImpl {
    */
   #clearKnownCircuits() {
     logger.info("Running the circuit cleanup");
-    const windows = [];
-    const enumerator = Services.wm.getEnumerator("navigator:browser");
-    while (enumerator.hasMoreElements()) {
-      windows.push(enumerator.getNext());
-    }
-    const browsers = windows
-      .flatMap(win => win.gBrowser.browsers.map(b => b.browserId))
-      .filter(id => this.#browsers.has(id));
-    this.#browsers = new Map(browsers.map(id => [id, this.#browsers.get(id)]));
+    const getWindows = type => {
+      const windows = [];
+      const enumerator = Services.wm.getEnumerator(type);
+      while (enumerator.hasMoreElements()) {
+        windows.push(enumerator.getNext());
+      }
+      return windows;
+    };
+    const browserIds = [
+      ...getWindows("navigator:browser").flatMap(win =>
+        win.gBrowser.browsers.map(b => b.browserId)
+      ),
+      ...getWindows("navigator:geckoview").map(gv => gv.browser.browserId),
+    ].filter(id => this.#browsers.has(id));
+    this.#browsers = new Map(
+      browserIds.map(id => [id, this.#browsers.get(id)])
+    );
     this.#knownCircuits = new Map(
       Array.from(this.#browsers.values(), circuits =>
         Array.from(circuits.values(), ids => {
