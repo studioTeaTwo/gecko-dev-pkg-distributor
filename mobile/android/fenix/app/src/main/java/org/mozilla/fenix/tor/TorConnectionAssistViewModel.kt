@@ -47,15 +47,15 @@ class TorConnectionAssistViewModel(
         components.useCases.tabsUseCases.removeTab.invoke(components.core.store.state.tabs.find {it.getUrl() == "about:"}?.id ?: "")
     }
 
-    fun fetchCountryNamesGet() {
-        torAndroidIntegration.countryNamesGet { countryNames : GeckoBundle? ->
-            if (countryNames != null) {
-                val codes: Array<String> = countryNames.keys()
+    fun fetchRegionNames() {
+        torAndroidIntegration.regionNamesGet { regionNames : GeckoBundle? ->
+            if (regionNames != null) {
+                val codes: Array<String> = regionNames.keys()
                 val regions = mutableMapOf<String, String>()
                 for (code in codes) {
-                    regions[code] = countryNames.getString(code)
+                    regions[code] = regionNames.getString(code)
                 }
-                countryCodeNameMap.value = regions
+                regionCodeNameMap.value = regions
             }
         }
     }
@@ -73,7 +73,7 @@ class TorConnectionAssistViewModel(
     private val _torConnectScreen = MutableStateFlow(ConnectAssistUiState.Loading)
     internal val torConnectScreen: StateFlow<ConnectAssistUiState> = _torConnectScreen
 
-    val countryCodeNameMap: MutableStateFlow<Map<String, String>?> by lazy {
+    val regionCodeNameMap: MutableStateFlow<Map<String, String>?> by lazy {
         MutableStateFlow(null)
     }
 
@@ -87,7 +87,7 @@ class TorConnectionAssistViewModel(
 
     fun setCountryCodeToSelectedItem(position: Int) {
         selectedCountryCode.value =
-            countryCodeNameMap.value?.keys?.toList()
+            regionCodeNameMap.value?.keys?.toList()
                 ?.getOrNull(position - 1) ?: "automatic"
         // position - 1 since we have the default/first value of automatic
         Log.d(TAG, "selectedCountryCode = ${selectedCountryCode.value}")
@@ -171,6 +171,6 @@ class TorConnectionAssistViewModel(
     ) {}
 
     fun button1ShouldBeDisabled(screen: ConnectAssistUiState): Boolean {
-        return selectedCountryCode.value == "automatic" && screen.countryDropDownDefaultItem == R.string.connection_assist_select_country_or_region
+        return selectedCountryCode.value == "automatic" && screen.regionDropDownDefaultItem == R.string.connection_assist_select_country_or_region
     }
 }

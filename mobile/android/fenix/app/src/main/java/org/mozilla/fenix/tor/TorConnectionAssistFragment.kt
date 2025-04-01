@@ -60,7 +60,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             override fun onReceive(context: Context, intent: Intent) {
                 if (intent.action === Intent.ACTION_LOCALE_CHANGED) {
                     Log.v("LocaleReceiver", "received ACTION_LOCALE_CHANGED")
-                    torConnectionAssistViewModel.fetchCountryNamesGet()
+                    torConnectionAssistViewModel.fetchRegionNames()
                 }
             }
         }
@@ -204,14 +204,14 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     }
 
     private fun setCountryDropDown(screen: ConnectAssistUiState) {
-        if (screen.countryDropDownVisible) {
+        if (screen.regionDropDownVisible) {
             val spinnerAdapter: ArrayAdapter<String> = initializeSpinner()
             if (binding.countryDropDown.isEmpty()) {
-                populateCountryDropDown(spinnerAdapter)
+                populateRegionDropDown(spinnerAdapter)
                 setOnItemSelectedListener()
             }
 
-            setFirstItemInCountryDropDown(spinnerAdapter, getString(screen.countryDropDownDefaultItem))
+            setFirstItemInCountryDropDown(spinnerAdapter, getString(screen.regionDropDownDefaultItem))
 
             if (screen == ConnectAssistUiState.ChooseRegion || screen == ConnectAssistUiState.ConfirmRegion || screen == ConnectAssistUiState.RegionNotFound) {
                 torConnectionAssistViewModel.selectDefaultRegion()
@@ -248,15 +248,15 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         return spinnerAdapter
     }
 
-    private fun populateCountryDropDown(spinnerAdapter: ArrayAdapter<String>) {
-        torConnectionAssistViewModel.fetchCountryNamesGet()
+    private fun populateRegionDropDown(spinnerAdapter: ArrayAdapter<String>) {
+        torConnectionAssistViewModel.fetchRegionNames()
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                torConnectionAssistViewModel.countryCodeNameMap.collect {
-                    Log.d(TAG, "countryCodeNameMap: $it")
+                torConnectionAssistViewModel.regionCodeNameMap.collect {
+                    Log.d(TAG, "regionCodeNameMap: $it")
                     if (it != null) {
                         spinnerAdapter.clear()
-                        spinnerAdapter.add(getString(torConnectionAssistViewModel.torConnectScreen.value.countryDropDownDefaultItem))
+                        spinnerAdapter.add(getString(torConnectionAssistViewModel.torConnectScreen.value.regionDropDownDefaultItem))
                         spinnerAdapter.addAll(it.values)
                     }
                 }
