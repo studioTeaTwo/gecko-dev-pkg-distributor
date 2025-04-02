@@ -22,7 +22,7 @@ export default function TabPin(
         onPrefChanged({ protocolName: prtocolName, [pref.key]: tabId });
       }}
     >
-      {tabId === pref.value ? <LuPinOff /> : <LuPin />}
+      {tabId === pref.value ? <LuPin /> : <LuPinOff />}
     </IconButton>
   );
 }

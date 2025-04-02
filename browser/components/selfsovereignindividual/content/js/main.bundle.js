@@ -651,7 +651,7 @@ function TabPin(tabId, pref, prtocolName) {
         e.preventDefault();
         onPrefChanged2({ protocolName: prtocolName, [pref.key]: tabId });
       },
-      children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {})
+      children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {})
     }
   );
 }
