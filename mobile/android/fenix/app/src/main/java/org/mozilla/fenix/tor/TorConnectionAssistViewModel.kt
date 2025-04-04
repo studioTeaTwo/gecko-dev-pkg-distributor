@@ -49,13 +49,14 @@ class TorConnectionAssistViewModel(
 
     fun fetchRegionNames() {
         torAndroidIntegration.regionNamesGet { regionNames : GeckoBundle? ->
+            Log.d(TAG, "fetchRegionNames() returned $regionNames")
             if (regionNames != null) {
                 val codes: Array<String> = regionNames.keys()
                 val regions = mutableMapOf<String, String>()
                 for (code in codes) {
                     regions[code] = regionNames.getString(code)
                 }
-                regionCodeNameMap.value = regions
+                regionCodeNameMap.value = regions.toSortedMap(compareBy<String> { regions[it] }.thenBy { it })
             }
         }
     }

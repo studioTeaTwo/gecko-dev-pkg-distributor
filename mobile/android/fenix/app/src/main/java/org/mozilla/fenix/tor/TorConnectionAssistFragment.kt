@@ -47,6 +47,8 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
     private var _binding: FragmentTorConnectionAssistBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var regionDropDownSpinnerAdapter: ArrayAdapter<String>
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -127,7 +129,7 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         setTorConnectImage(screen)
         setTitle(screen)
         setQuickStart(screen)
-        setCountryDropDown(screen)
+        updateRegionDropdown(screen)
         setButton1(screen)
         setButton2(screen)
         setSplashLogo(screen)
@@ -203,19 +205,18 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         }
     }
 
-    private fun setCountryDropDown(screen: ConnectAssistUiState) {
+    private fun updateRegionDropdown(screen: ConnectAssistUiState) {
         if (screen.regionDropDownVisible) {
-            val spinnerAdapter: ArrayAdapter<String> = initializeSpinner()
             if (binding.countryDropDown.isEmpty()) {
-                populateRegionDropDown(spinnerAdapter)
-                setOnItemSelectedListener()
+                regionDropDownSpinnerAdapter = initializeSpinner()
+                torConnectionAssistViewModel.fetchRegionNames()
             }
 
-            setFirstItemInCountryDropDown(spinnerAdapter, getString(screen.regionDropDownDefaultItem))
+            setFirstItemInCountryDropDown(getString(screen.regionDropDownDefaultItem))
 
             if (screen == ConnectAssistUiState.ChooseRegion || screen == ConnectAssistUiState.ConfirmRegion || screen == ConnectAssistUiState.RegionNotFound) {
                 torConnectionAssistViewModel.selectDefaultRegion()
-                binding.countryDropDown.setSelection(spinnerAdapter.getPosition(torConnectionAssistViewModel.selectedCountryCode.value))
+                setDropDownSelectionToSelectedCountryCode()
             }
 
             binding.unblockTheInternetInCountryDescription.visibility = View.VISIBLE
@@ -226,14 +227,23 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         }
     }
 
-    private fun setFirstItemInCountryDropDown(
-        spinnerAdapter: ArrayAdapter<String>,
-        item: String,
-    ) {
-        if (!spinnerAdapter.isEmpty) {
-            spinnerAdapter.remove(spinnerAdapter.getItem(0))
+    private fun setDropDownSelectionToSelectedCountryCode() {
+        binding.countryDropDown.setSelection(
+            indexOfSelectedCountryCode(),
+        )
+    }
+
+    private fun indexOfSelectedCountryCode() : Int {
+        return torConnectionAssistViewModel.regionCodeNameMap.value?.keys?.indexOf(
+            torConnectionAssistViewModel.selectedCountryCode.value,
+        )?.plus(1) ?: 0
+    }
+
+    private fun setFirstItemInCountryDropDown(item: String) {
+        if (!regionDropDownSpinnerAdapter.isEmpty) {
+            regionDropDownSpinnerAdapter.remove(regionDropDownSpinnerAdapter.getItem(0))
         }
-        spinnerAdapter.insert(item, 0)
+        regionDropDownSpinnerAdapter.insert(item, 0)
     }
 
     private fun initializeSpinner(): ArrayAdapter<String> {
@@ -245,26 +255,6 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
             )
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.countryDropDown.adapter = spinnerAdapter
-        return spinnerAdapter
-    }
-
-    private fun populateRegionDropDown(spinnerAdapter: ArrayAdapter<String>) {
-        torConnectionAssistViewModel.fetchRegionNames()
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                torConnectionAssistViewModel.regionCodeNameMap.collect {
-                    Log.d(TAG, "regionCodeNameMap: $it")
-                    if (it != null) {
-                        spinnerAdapter.clear()
-                        spinnerAdapter.add(getString(torConnectionAssistViewModel.torConnectScreen.value.regionDropDownDefaultItem))
-                        spinnerAdapter.addAll(it.values)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setOnItemSelectedListener() {
         binding.countryDropDown.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -279,6 +269,20 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                torConnectionAssistViewModel.regionCodeNameMap.collect {
+                    if (it != null) {
+                        spinnerAdapter.clear()
+                        spinnerAdapter.add(getString(torConnectionAssistViewModel.torConnectScreen.value.regionDropDownDefaultItem))
+                        spinnerAdapter.addAll(it.values)
+                    }
+                }
+            }
+        }
+
+        return spinnerAdapter
     }
 
     private fun setButton1(screen: ConnectAssistUiState) {
