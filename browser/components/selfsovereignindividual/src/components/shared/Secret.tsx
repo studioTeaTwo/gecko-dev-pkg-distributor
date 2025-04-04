@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { HStack, IconButton, Text } from "@chakra-ui/react";
-import { LuEye, LuEyeOff } from "./react-icons/Icons";
+import { LuEye, LuEyeOff, MdOutlineContentCopy } from "./react-icons/Icons";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "./AlertPrimaryPassword";
 
@@ -35,6 +35,27 @@ export default function Secret(props: {
     setVisible(prev => !prev);
     onChangeVisibility();
   };
+  const handleCopy = async () => {
+    if (visible === false && usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        alert("Copied!");
+      })
+      .catch(error => {
+        console.error(error);
+        alert(`Failed to copy: ${error}`);
+      });
+  };
 
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -52,8 +73,14 @@ export default function Secret(props: {
         <IconButton
           icon={visible ? <LuEyeOff /> : <LuEye />}
           variant="transparent"
-          aria-label="Toggle password visibility"
+          aria-label="Toggle secret visibility"
           onClick={handleToggole}
+        />
+        <IconButton
+          icon={<MdOutlineContentCopy />}
+          variant="transparent"
+          aria-label="Copy secret"
+          onClick={handleCopy}
         />
       </HStack>
       <AlertPrimaryPassword

@@ -356,6 +356,22 @@ function MdOutlineTimerOff(props) {
     ]
   })(props);
 }
+function MdOutlineContentCopy(props) {
+  return GenIcon({
+    tag: "svg",
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0V0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+        },
+        child: []
+      }
+    ]
+  })(props);
+}
 const SafeProtocols = ["http", "https", "moz-extension"];
 const SpecialCards = ["*", "<all_urls>"];
 const DefaultTrustedSites = [
@@ -784,6 +800,23 @@ function Secret(props) {
     setVisible((prev) => !prev);
     onChangeVisibility();
   };
+  const handleCopy = async () => {
+    if (visible === false && usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      alert("Copied!");
+    }).catch((error) => {
+      console.error(error);
+      alert(`Failed to copy: ${error}`);
+    });
+  };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -796,8 +829,17 @@ function Secret(props) {
         {
           icon: visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuEyeOff, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuEye, {}),
           variant: "transparent",
-          "aria-label": "Toggle password visibility",
+          "aria-label": "Toggle secret visibility",
           onClick: handleToggole
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        IconButton,
+        {
+          icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdOutlineContentCopy, {}),
+          variant: "transparent",
+          "aria-label": "Copy secret",
+          onClick: handleCopy
         }
       )
     ] }),
