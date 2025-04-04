@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, S as StackDivider, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, U as Menu$1, W as MenuButton, X as MenuList, Y as MenuItem, Z as Checkbox, _ as Switch, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as createRoot, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, b as bytesToHex, s as schnorr, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, S as Menu$1, U as MenuButton, W as MenuList, X as MenuItem, Y as Checkbox, Z as Switch, _ as StackDivider, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -115,7 +115,6 @@ function IconBase(props) {
 }
 function LuEyeOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -150,7 +149,6 @@ function LuEyeOff(props) {
 }
 function LuEye(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -171,7 +169,6 @@ function LuEye(props) {
 }
 function LuPinOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -208,7 +205,6 @@ function LuPinOff(props) {
 }
 function LuPin(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -235,7 +231,6 @@ function LuPin(props) {
 }
 function GiBirdTwitter(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 512 512" },
     child: [
       {
@@ -250,7 +245,6 @@ function GiBirdTwitter(props) {
 }
 function MdEdit(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -266,7 +260,6 @@ function MdEdit(props) {
 }
 function MdDeleteForever(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -283,7 +276,6 @@ function MdDeleteForever(props) {
 }
 function MdSaveAlt(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -299,7 +291,6 @@ function MdSaveAlt(props) {
 }
 function MdOutlineCancel(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       {
@@ -319,7 +310,6 @@ function MdOutlineCancel(props) {
 }
 function MdHelp(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -335,7 +325,6 @@ function MdHelp(props) {
 }
 function MdOutlineTimerOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -358,7 +347,6 @@ function MdOutlineTimerOff(props) {
 }
 function MdOutlineContentCopy(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0V0z" }, child: [] },
@@ -423,13 +411,6 @@ function initStore() {
     })
   );
 }
-function getAllCredentialsToStore() {
-  window.dispatchEvent(
-    new CustomEvent("AboutSelfSovereignIndividualGetAllCredentials", {
-      bubbles: true
-    })
-  );
-}
 function addCredentialToStore(credential) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
@@ -488,7 +469,6 @@ function onPrefChanged(changeSet) {
 }
 const dispatchEvents = {
   initStore,
-  getAllCredentialsToStore,
   addCredentialToStore,
   modifyCredentialToStore: modifyCredentialToStore$1,
   deleteCredentialToStore,
@@ -2595,7 +2575,7 @@ HomeOverlay.prototype = {
     }
     this.active = true;
     const container = document.querySelector(`body`);
-    const root = createRoot(container);
+    const root = clientExports.createRoot(container);
     root.render(
       /* @__PURE__ */ jsxRuntimeExports.jsx(ChakraProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(StateProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelfSovereignIndividual, {}) }) })
     );
