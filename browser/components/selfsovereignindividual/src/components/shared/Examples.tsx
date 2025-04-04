@@ -72,7 +72,7 @@ export function ExampleUrlMatch(props: {
   );
 }
 
-export function ExplainMethod(props: {
+export function ExplainNallowedMethod(props: {
   width?: string;
   protocolName: ProtocolName;
 }) {
@@ -87,17 +87,69 @@ export function ExplainMethod(props: {
           <AccordionIcon />
         </AccordionButton>
         <AccordionPanel pb={4}>
-          <Text>
-            Checking &ldquo;[method]&ldquo; is skipping both of confirm dialog
-            and password dialog.
+          <Text size="sm">
+            Narrow the trust scope of Trusted Site to a specific method.
+          </Text>
+          <Text size="sm">
+            If &ldquo;read&ldquo; is checked, trusted sites will only work for
+            read permission.
             <br />
-            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
-            dialog and prompting password dialog alone.
+            If all is checked, it is the same as none being checked.
+          </Text>
+          <Text size="sm">
+            Default preset is set the first time you register trusted site URL.
+            And You can edit the settings for the corresponding URL for each
+            key.
           </Text>
           {props.protocolName === "nostr" && (
             <Text>
-              This has lower priority than the excluded kinds above., so if both
-              are present, authorization will proceed.
+              This has lower priority than the excluded kinds, so if both are
+              present, authorization will proceed.
+            </Text>
+          )}
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+export function ExplainDialogDisplayOption(props: {
+  width?: string;
+  protocolName: ProtocolName;
+}) {
+  return (
+    <Accordion allowToggle width={props.width || "100%"}>
+      <AccordionItem css={{ border: "none" }}>
+        <AccordionButton>
+          <HStack as="span" flex="1" textAlign="left">
+            <Icon as={MdHelp} />
+            <Text>Explanation</Text>
+          </HStack>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <Text size="sm">Sets the display of the dialog box.</Text>
+          <Text size="sm">
+            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping password
+            dialog and prompting confirm dialog alone. <br />
+            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
+            dialog and prompting password dialog alone.
+            <br />
+            If you check both, two dialogs will disappear. Similar to trusted
+            site, but password authorization is subject to expiration
+            constraints.
+            <br />
+            If you uncheck both, two dialogs will appear.
+          </Text>
+          <Text size="sm">
+            Default preset is set the first time you authorize with a password.
+            And You can edit the settings for the corresponding URL for each
+            key.
+          </Text>
+          {props.protocolName === "nostr" && (
+            <Text>
+              This has lower priority than the excluded kinds, so if both are
+              present, authorization will proceed.
             </Text>
           )}
         </AccordionPanel>
@@ -118,6 +170,15 @@ export function ExampleNostrKind(props: { width?: string }) {
           <AccordionIcon />
         </AccordionButton>
         <AccordionPanel pb={4}>
+          <Text size="sm">
+            Specifies the Nostr Kind you want to display a dialog even if a
+            trusted site is set or the password is valid for that URL.{" "}
+          </Text>
+          <Text size="sm">
+            Default preset is set the first time you authorize with a password.
+            And You can edit the settings for the corresponding URL for each
+            key.
+          </Text>
           <Text size="sm">Default Set</Text>
           <TableContainer>
             <Table size="sm">

@@ -42,15 +42,18 @@ import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import {
   DefaultExcludedKinds,
-  DefaultTrustedMethods,
+  DefaultNallowedMethod,
   SafeProtocols,
   SpecialCards,
-  TrustedMethodOptions,
+  DialogDisplayOptions,
+  DefaultDialogDisplayOption,
+  NallowedMethods,
 } from "./contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
-  ExplainMethod,
+  ExplainDialogDisplayOption,
+  ExplainNallowedMethod,
 } from "../shared/Examples";
 import { changePrimary } from "../shared/functions";
 
@@ -68,7 +71,7 @@ export default function KeyEditor(props: Props) {
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
   const [newSite, setNewSite] = useState("");
   const [newExtensions, setNewExtensions] = useState([]);
-  // const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
+  const [editingNumForTrusted, setEditingNumForTrusted] = useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
 
@@ -143,7 +146,7 @@ export default function KeyEditor(props: Props) {
             url: url,
             name: url !== "*" ? "" : "<all_urls>",
             enabled: true,
-            permissions: {},
+            permissions: { nallowedMethod: DefaultNallowedMethod },
           },
         ]);
     HandleChangeValue({ trustedSites: value });
@@ -203,28 +206,45 @@ export default function KeyEditor(props: Props) {
     HandleChangeValue({ passwordAuthorizedSites });
   };
 
-  const handleSaveTrustedMethods = (siteNo: number, value: string) => {
+  const handleSaveNallowedMethod = (siteNo: number, value: string) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    if (trustedSites[siteNo].permissions.nallowedMethod.includes(value)) {
+      trustedSites[siteNo].permissions.nallowedMethod = trustedSites[
+        siteNo
+      ].permissions.nallowedMethod.filter(method => method !== value);
+    } else {
+      trustedSites[siteNo].permissions.nallowedMethod.push(value);
+    }
+    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+  };
+  const handleResetNallowedMethod = (siteNo: number) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
+    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+  };
+
+  const handleSaveSkippedDialog = (siteNo: number, value: string) => {
     const passwordAuthorizedSites = JSON.parse(
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     if (
-      passwordAuthorizedSites[siteNo].permissions.trustedMethods.includes(value)
+      passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)
     ) {
-      passwordAuthorizedSites[siteNo].permissions.trustedMethods =
-        passwordAuthorizedSites[siteNo].permissions.trustedMethods.filter(
+      passwordAuthorizedSites[siteNo].permissions.skippedDialog =
+        passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
           method => method !== value
         );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.trustedMethods.push(value);
+      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
     HandleChangeValue({ passwordAuthorizedSites });
   };
-  const handleResetTrustedMethods = (siteNo: number) => {
+  const handleResetSkippedDialog = (siteNo: number) => {
     const passwordAuthorizedSites = JSON.parse(
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.trustedMethods =
-      DefaultTrustedMethods;
+    passwordAuthorizedSites[siteNo].permissions.skippedDialog =
+      DefaultDialogDisplayOption;
     HandleChangeValue({ passwordAuthorizedSites });
   };
 
@@ -302,11 +322,7 @@ export default function KeyEditor(props: Props) {
                 <Heading size="xs" textTransform="uppercase" my={4}>
                   Trusted Sites
                 </Heading>
-                <Grid
-                  gridTemplateColumns={"400px 1fr"}
-                  gap={2}
-                  alignItems={"center"}
-                >
+                <Grid gridTemplateColumns={"400px 1fr"} gap={2}>
                   <GridItem colSpan={2}>
                     <InputGroup>
                       <Input
@@ -334,7 +350,7 @@ export default function KeyEditor(props: Props) {
                   {!editingKey.trustedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {editingKey.trustedSites.map(site => {
+                  {editingKey.trustedSites.map((site, i) => {
                     return (
                       <>
                         <GridItem>
@@ -353,14 +369,18 @@ export default function KeyEditor(props: Props) {
                           </HStack>
                         </GridItem>
                         <GridItem>
-                          {/* <Button
-                              variant="outline"
-                              colorScheme="blue"
-                              onClick={() => setEditingNumForTrusted(i)}
-                              mr="2"
-                            >
-                              Permission
-                            </Button> */}
+                          <Button
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={() => {
+                              setEditingNumForTrusted(
+                                i !== editingNumForTrusted ? i : -1
+                              );
+                            }}
+                            mr="2"
+                          >
+                            Permission
+                          </Button>
                           {site.enabled ? (
                             <Button
                               variant="outline"
@@ -379,13 +399,61 @@ export default function KeyEditor(props: Props) {
                             </Button>
                           )}
                         </GridItem>
-                        {/* {editingNumForTrusted === i && (
-                            <GridItem colSpan={2}>
-                              <VStack backgroundColor="white">
-                                <Box>N/A</Box>
-                              </VStack>
-                            </GridItem>
-                          )} */}
+                        {editingNumForTrusted === i && (
+                          <GridItem colSpan={2}>
+                            <VStack
+                              backgroundColor="white"
+                              p="2"
+                              alignItems="flex-start"
+                            >
+                              <Heading size="sm">
+                                Narrow the trust scope
+                              </Heading>
+                              <HStack>
+                                <Menu>
+                                  <MenuButton
+                                    as={Button}
+                                    variant="outline"
+                                    colorScheme="blue"
+                                  >
+                                    Select Options
+                                  </MenuButton>
+                                  <MenuList>
+                                    {NallowedMethods.map(option => (
+                                      <MenuItem
+                                        key={option}
+                                        closeOnSelect={false}
+                                      >
+                                        <Checkbox
+                                          isChecked={site.permissions.nallowedMethod.includes(
+                                            option
+                                          )}
+                                          onChange={() =>
+                                            handleSaveNallowedMethod(i, option)
+                                          }
+                                        >
+                                          {option}
+                                        </Checkbox>
+                                      </MenuItem>
+                                    ))}
+                                  </MenuList>
+                                </Menu>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() => handleResetNallowedMethod(i)}
+                                  width="150px"
+                                >
+                                  Revert to preset
+                                </Button>
+                              </HStack>
+                              <ExplainNallowedMethod
+                                width="100%"
+                                protocolName="nostr"
+                              />
+                            </VStack>
+                          </GridItem>
+                        )}
                       </>
                     );
                   })}
@@ -415,9 +483,13 @@ export default function KeyEditor(props: Props) {
                             <Text fontSize="md">
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
-                              &nbsp;-&nbsp;until&nbsp;
-                              {expiryTime.toLocaleDateString()}
-                              &nbsp;{expiryTime.toLocaleTimeString()}
+                              {site.expiryTime > Date.now() && (
+                                <>
+                                  &nbsp;-&nbsp;until&nbsp;
+                                  {expiryTime.toLocaleDateString()}
+                                  &nbsp;{expiryTime.toLocaleTimeString()}
+                                </>
+                              )}
                             </Text>
                           </HStack>
                         </GridItem>
@@ -486,8 +558,7 @@ export default function KeyEditor(props: Props) {
                               </HStack>
                               <ExampleNostrKind width="100%" />
                               <Heading size="sm">
-                                Exclude specific methods related to the key from
-                                authorization
+                                Dialog dispaly settings
                               </Heading>
                               <HStack>
                                 <Menu>
@@ -499,17 +570,17 @@ export default function KeyEditor(props: Props) {
                                     Select Options
                                   </MenuButton>
                                   <MenuList>
-                                    {TrustedMethodOptions.map(option => (
+                                    {DialogDisplayOptions.map(option => (
                                       <MenuItem
                                         key={option}
                                         closeOnSelect={false}
                                       >
                                         <Checkbox
-                                          isChecked={site.permissions.trustedMethods.includes(
+                                          isChecked={site.permissions.skippedDialog.includes(
                                             option
                                           )}
                                           onChange={() =>
-                                            handleSaveTrustedMethods(i, option)
+                                            handleSaveSkippedDialog(i, option)
                                           }
                                         >
                                           {option}
@@ -521,13 +592,13 @@ export default function KeyEditor(props: Props) {
                                 <Button
                                   variant="outline"
                                   colorScheme="blue"
-                                  onClick={() => handleResetTrustedMethods(i)}
+                                  onClick={() => handleResetSkippedDialog(i)}
                                   width="150px"
                                 >
                                   Revert to preset
                                 </Button>
                               </HStack>
-                              <ExplainMethod
+                              <ExplainDialogDisplayOption
                                 width="100%"
                                 protocolName="nostr"
                               />

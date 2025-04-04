@@ -2,33 +2,38 @@ import { NostrCredential } from "../../custom.type";
 
 export const SafeProtocols = ["http", "https", "moz-extension"];
 export const SpecialCards = ["*", "<all_urls>"];
-export const DefaultTrustedSites = [
-  {
-    url: "http://localhost",
-    name: "",
-    enabled: true,
-    permissions: {},
-  },
-];
 
 export const DefaultExcludedKindList = {
   13194: { nip: 47, name: "NWC Wallet Info" },
   23194: { nip: 47, name: "NWC Wallet Request" },
 };
 export const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
-export const TrustedMethodOptions = [
-  "read",
+
+export const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
+export const DefaultNallowedMethod = [];
+
+export const DialogDisplayOptions = [
+  "read-confirmOnly",
   "read-passwordOnly",
-  "sign",
+  "sign-confirmOnly",
   "sign-passwordOnly",
-  "encrypt",
+  "encrypt-confirmOnly",
   "encrypt-passwordOnly",
-  "decrypt",
+  "decrypt-confirmOnly",
   "decrypt-passwordOnly",
-  "custom",
+  "custom-confirmOnly",
   "custom-passwordOnly",
 ];
-export const DefaultTrustedMethods = [];
+export const DefaultDialogDisplayOption = [];
+
+export const DefaultTrustedSites = [
+  {
+    url: "http://localhost",
+    name: "",
+    enabled: true,
+    permissions: { nallowedMethod: DefaultNallowedMethod },
+  },
+];
 
 // "guid", "timeCreated" are generated on services.ssi.
 export const NostrTemplate: Omit<NostrCredential, "guid" | "timeCreated"> = {

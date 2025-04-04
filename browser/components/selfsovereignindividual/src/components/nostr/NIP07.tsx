@@ -53,15 +53,18 @@ import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import {
   DefaultExcludedKinds,
-  DefaultTrustedMethods,
+  DefaultNallowedMethod,
   SafeProtocols,
   SpecialCards,
-  TrustedMethodOptions,
+  DialogDisplayOptions,
+  NallowedMethods,
+  DefaultDialogDisplayOption,
 } from "./contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
-  ExplainMethod,
+  ExplainNallowedMethod,
+  ExplainDialogDisplayOption,
 } from "../shared/Examples";
 import { StateContext } from "../../contexts/StatesProvider";
 
@@ -74,7 +77,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
   const [newSite, setNewSite] = useState("");
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
-  const [newTrustedMethodsPreset, setNewTrustedMethodsPreset] = useState([]);
+  const [newNallowedMethodPreset, setNewNallowedMethodPreset] = useState([]);
+  const [newDialogDisplayOptionPreset, setNewDialogDisplayOptionPreset] =
+    useState([]);
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
@@ -83,8 +88,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
   useEffect(() => {
-    setNewTrustedMethodsPreset(prefs.nostr.trustedMethodsPreset.split(","));
-  }, [prefs.nostr.trustedMethodsPreset]);
+    setNewNallowedMethodPreset(prefs.nostr.nallowedMethodPreset.split(","));
+  }, [prefs.nostr.nallowedMethodPreset]);
+  useEffect(() => {
+    setNewDialogDisplayOptionPreset(
+      prefs.nostr.dialogDisplayOptionPreset.split(",")
+    );
+  }, [prefs.nostr.dialogDisplayOptionPreset]);
 
   const tabPin = (tabId: number) =>
     TabPin(
@@ -289,7 +299,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
     setNewExcludedKindsPreset(value);
   };
-  const handleEditExcludedKinds = async (sort: "edit" | "default") => {
+  const handleResetExcludedKinds = async (sort: "edit" | "default") => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
@@ -311,21 +321,22 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       setNewExcludedKindsPreset(DefaultExcludedKinds.filter(Boolean).join(","));
     }
   };
-  const handleChangeTrustedMethods = (value: string) => {
+
+  const handleChangeNallowedMethod = (value: string) => {
     let newVal = [];
-    if (newTrustedMethodsPreset.includes(value)) {
-      newVal = newTrustedMethodsPreset.filter(method => method !== value);
+    if (newNallowedMethodPreset.includes(value)) {
+      newVal = newNallowedMethodPreset.filter(method => method !== value);
     } else {
-      newVal = newTrustedMethodsPreset.concat([value]);
+      newVal = newNallowedMethodPreset.concat([value]);
     }
 
     onPrefChanged({
       protocolName: "nostr",
-      trustedMethodsPreset: newVal.filter(Boolean).join(","),
+      nallowedMethodPreset: newVal.filter(Boolean).join(","),
     });
-    setNewTrustedMethodsPreset(newVal);
+    setNewNallowedMethodPreset(newVal);
   };
-  const handleEditTrustedMethods = async () => {
+  const handleResetNallowedMethod = async () => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
@@ -338,9 +349,42 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
     onPrefChanged({
       protocolName: "nostr",
-      trustedMethodsPreset: DefaultTrustedMethods.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
     });
-    setNewTrustedMethodsPreset(DefaultTrustedMethods);
+    setNewNallowedMethodPreset(DefaultNallowedMethod);
+  };
+
+  const handleChangeDialogDisplayOption = (value: string) => {
+    let newVal = [];
+    if (newDialogDisplayOptionPreset.includes(value)) {
+      newVal = newDialogDisplayOptionPreset.filter(method => method !== value);
+    } else {
+      newVal = newDialogDisplayOptionPreset.concat([value]);
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset: newVal.filter(Boolean).join(","),
+    });
+    setNewDialogDisplayOptionPreset(newVal);
+  };
+  const handleResetDialogDisplayOption = async () => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOption.filter(Boolean).join(","),
+    });
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
   };
 
   const getTrustedSites = useCallback(() => {
@@ -651,6 +695,49 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                     <ExampleUrlMatch width="100%" />
                   </GridItem>
                   <GridItem>
+                    <label>Presets to narrow down to specific methods</label>
+                  </GridItem>
+                  <GridItem>
+                    <HStack>
+                      <Menu>
+                        <MenuButton
+                          as={Button}
+                          variant="outline"
+                          colorScheme="blue"
+                        >
+                          Select Options
+                        </MenuButton>
+                        <MenuList>
+                          {NallowedMethods.map(option => (
+                            <MenuItem key={option}>
+                              <Checkbox
+                                isChecked={newNallowedMethodPreset.includes(
+                                  option
+                                )}
+                                onChange={() =>
+                                  handleChangeNallowedMethod(option)
+                                }
+                              >
+                                {option}
+                              </Checkbox>
+                            </MenuItem>
+                          ))}
+                        </MenuList>
+                      </Menu>
+                      <Button
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={e => {
+                          e.preventDefault();
+                          handleResetNallowedMethod();
+                        }}
+                      >
+                        Reset to default
+                      </Button>
+                    </HStack>
+                    <ExplainNallowedMethod width="100%" protocolName="nostr" />
+                  </GridItem>
+                  <GridItem>
                     <Divider />
                   </GridItem>
                   <GridItem></GridItem>
@@ -735,7 +822,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               colorScheme="blue"
                               onClick={e => {
                                 e.preventDefault();
-                                handleEditExcludedKinds("edit");
+                                handleResetExcludedKinds("edit");
                               }}
                             >
                               Edit
@@ -745,7 +832,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               colorScheme="blue"
                               onClick={e => {
                                 e.preventDefault();
-                                handleEditExcludedKinds("default");
+                                handleResetExcludedKinds("default");
                               }}
                             >
                               Reset to default
@@ -755,10 +842,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                         </VStack>
                       </GridItem>
                       <GridItem>
-                        <label>
-                          Preset for the excluded specific methods related to
-                          the key from authorization
-                        </label>
+                        <label>Preset for dialog dispaly settings</label>
                       </GridItem>
                       <GridItem>
                         <HStack>
@@ -771,14 +855,14 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               Select Options
                             </MenuButton>
                             <MenuList>
-                              {TrustedMethodOptions.map(option => (
+                              {DialogDisplayOptions.map(option => (
                                 <MenuItem key={option}>
                                   <Checkbox
-                                    isChecked={newTrustedMethodsPreset.includes(
+                                    isChecked={newDialogDisplayOptionPreset.includes(
                                       option
                                     )}
                                     onChange={() =>
-                                      handleChangeTrustedMethods(option)
+                                      handleChangeDialogDisplayOption(option)
                                     }
                                   >
                                     {option}
@@ -792,13 +876,16 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             colorScheme="blue"
                             onClick={e => {
                               e.preventDefault();
-                              handleEditTrustedMethods();
+                              handleResetDialogDisplayOption();
                             }}
                           >
                             Reset to default
                           </Button>
                         </HStack>
-                        <ExplainMethod width="100%" protocolName="nostr" />
+                        <ExplainDialogDisplayOption
+                          width="100%"
+                          protocolName="nostr"
+                        />
                       </GridItem>
                     </>
                   )}

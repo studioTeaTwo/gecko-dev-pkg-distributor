@@ -36,7 +36,11 @@ import {
   NostrTypeGuard,
 } from "../../shared/keys";
 import Secret from "../shared/Secret";
-import { DefaultTrustedSites, NostrTemplate } from "./contants";
+import {
+  DefaultNallowedMethod,
+  DefaultTrustedSites,
+  NostrTemplate,
+} from "./contants";
 import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
@@ -81,7 +85,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: {},
+        permissions: { nallowedMethod: DefaultNallowedMethod },
       })),
     ],
     [prefs.base.addons]

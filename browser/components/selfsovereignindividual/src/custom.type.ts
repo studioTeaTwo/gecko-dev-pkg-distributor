@@ -5,12 +5,13 @@
 export type MenuItem = ProtocolName | "";
 export interface ProtocolDefaultPrefs {
   enabled: boolean; // selfsovereignindividual.[protocolName].enabled
+  usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled
+  nallowedMethodPreset: string; // selfsovereignindividual.[protocolName].trustedSites.nallowedMethodPreset
   usedPrimarypasswordToSettings: boolean; // selfsovereignindividual.[protocolName].primarypassword.toSettings.enabled
   expiryTimeForPrimarypasswordToSettings: number; // selfsovereignindividual.[protocolName].primarypassword.toSettings.expiryTime
   usedPrimarypasswordToApps: boolean; // selfsovereignindividual.[protocolName].primarypassword.toApps.enabled
   expiryTimeForPrimarypasswordToApps: number; // selfsovereignindividual.[protocolName].primarypassword.ToApps.expiryTime
-  trustedMethodsPreset: string; // selfsovereignindividual.[protocolName].primarypassword.toApps.excludedKindsPreset
-  usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled
+  dialogDisplayOptionPreset: string; // selfsovereignindividual.[protocolName].primarypassword.toApps.dialogDisplayOptionPreset
   usedAccountChanged: boolean; // selfsovereignindividual.[protocolName].event.accountChanged.enabled
 }
 export interface SelfSovereignIndividualPrefs {
@@ -63,7 +64,7 @@ interface TrustedSites {
   url: string;
   name: string;
   enabled: boolean;
-  permissions: Record<string, unknown>;
+  permissions: { nallowedMethod: string[] };
 }
 interface PasswordAuthorizedSites {
   url: string;
@@ -94,7 +95,7 @@ export interface Credential
 export interface PasswordAuthorizedSitesForNostr
   extends PasswordAuthorizedSites {
   permissions: {
-    trustedMethods: string[];
+    skippedDialog: string[];
     excludedKinds: string[];
   };
 }
