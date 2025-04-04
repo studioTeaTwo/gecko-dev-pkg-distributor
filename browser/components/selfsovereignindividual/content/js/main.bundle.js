@@ -371,8 +371,6 @@ const DefaultTrustedSites = [
   }
 ];
 const DefaultExcludedKindList = {
-  9321: { nip: 61, name: "Nutzap" },
-  9734: { nip: 57, name: "Zap Request" },
   13194: { nip: 47, name: "NWC Wallet Info" },
   23194: { nip: 47, name: "NWC Wallet Request" }
 };
