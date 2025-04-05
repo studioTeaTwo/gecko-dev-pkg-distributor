@@ -17,6 +17,8 @@ ssb-merge-5.patch
 ssb-merge-6.patch
 ssb-merge-7.patch
 ssb-merge-8.patch
+ssb-merge-9.patch
+ssb-merge-10.patch
 
 ### ssb-merge-1.patch
 - git merge v0.2.0mvp-128.6.0esr
@@ -39,3 +41,9 @@ ssb-merge-8.patch
 - fee4aaa8
 ### ssb-merge-8.patch
 - b4498634
+### ssb-merge-9.patch
+- git merge tor-browser-128.8.0esr-14.0-1-build3
+### ssb-merge-10.patch
+- 039a235c
+- 7516ca44
+- f712776b

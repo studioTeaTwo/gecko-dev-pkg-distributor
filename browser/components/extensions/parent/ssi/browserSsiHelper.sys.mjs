@@ -111,15 +111,18 @@ export const browserSsiHelper = {
         "trustedSites.enabled": Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.trustedSites.enabled`
         ),
+        "trustedSites.nallowedMethodPreset": Services.prefs.getStringPref(
+          `selfsovereignindividual.${protocolName}.trustedSites.nallowedMethodPreset`
+        ),
         "primarypassword.toApps.enabled": Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.enabled`
         ),
         "primarypassword.toApps.expiryTime": Services.prefs.getIntPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
-        "primarypassword.toApps.trustedMethodsPreset":
+        "primarypassword.toApps.dialogDisplayOptionPreset":
           Services.prefs.getStringPref(
-            `selfsovereignindividual.${protocolName}.primarypassword.toApps.trustedMethodsPreset`
+            `selfsovereignindividual.${protocolName}.primarypassword.toApps.dialogDisplayOptionPreset`
           ),
       };
       if (protocolName === "nostr") {
@@ -221,14 +224,14 @@ export const browserSsiHelper = {
     // Build parameters
     const prefs = {
       enabledTrustedSites: internalPrefs["trustedSites.enabled"],
-      enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
-      trustedMethodsPreset: internalPrefs[
-        "primarypassword.toApps.trustedMethodsPreset"
-      ]
-        ? internalPrefs["primarypassword.toApps.trustedMethodsPreset"].split(
-            ","
-          )
+      nallowedMethodPreset: internalPrefs["trustedSites.nallowedMethodPreset"]
+        ? internalPrefs["trustedSites.nallowedMethodPreset"].split(",")
         : [],
+      enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
+      dialogDisplayOptionPreset:
+        internalPrefs["primarypassword.toApps.dialogDisplayOptionPreset"].split(
+          ","
+        ),
     };
     if (protocolName === "nostr") {
       prefs.excludedKindsPreset = internalPrefs[
@@ -285,7 +288,8 @@ export const browserSsiHelper = {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
- * @param {string[]} prefs.trustedMethodsPreset
+ * @param {string[]} prefs.nallowedMethodPreset
+ * @param {string[]} prefs.dialogDisplayOptionPreset
  * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
@@ -306,7 +310,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   const { url } = target;
   const { enabledTrustedSites, enabledPrimarypassword } = prefs;
   const { cacheKey, trustedSites, passwordAuthorizedSites } = authCache;
-  const { evidence, enforce } = dialogInfo;
+  const { evidence, enforce, type } = dialogInfo;
 
   const protocolName = cacheKey.split(":")[0];
   const _isAuthMandatory = isAuthMandatory(
@@ -318,7 +322,8 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   );
 
   if (enabledTrustedSites && !_isAuthMandatory) {
-    const trusted = isTrusted(url, trustedSites);
+    const trusted = isTrusted(url, type, trustedSites);
+    console.log("trustedSites", trusted, url, trustedSites);
     if (trusted) {
       return true;
     }
@@ -369,11 +374,12 @@ function getOrigin(context, tabId) {
 /**
  *
  * @param {string} url
+ * @param {string} type "read" | "sign" | "encrypt" | "decrypt" | "custom"
  * @param {object[]} trustedSites
  * @returns {boolean}
  */
-function isTrusted(url, trustedSites) {
-  const trusted = trustedSites.some(site => {
+function isTrusted(url, type, trustedSites) {
+  const found = trustedSites.find(site => {
     if (!site.enabled) {
       return false;
     }
@@ -388,8 +394,22 @@ function isTrusted(url, trustedSites) {
     const regex = new RegExp("^" + regexString);
     return regex.test(url);
   });
-  console.log("trustedSites", trusted, url, trustedSites);
-  return trusted;
+  if (!found) {
+    return false;
+  }
+
+  // It's full trust, so return true.
+  if (found.permissions.nallowedMethod.length === 0) {
+    return true;
+  }
+
+  // Is this method-limit trusted?
+  const trusted = found.permissions.nallowedMethod.includes(type);
+  if (trusted) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -430,7 +450,8 @@ function isPasswordAuthorized(target, authCache) {
  * @param {object} prefs
  * @param {boolean} prefs.enabledTrustedSites
  * @param {boolean} prefs.enabledPrimarypassword
- * @param {string[]} prefs.trustedMethodsPreset
+ * @param {string[]} prefs.nallowedMethodPreset
+ * @param {string[]} prefs.dialogDisplayOptionPreset
  * @param {string[]=} prefs.excludedKindsPreset
  * @param {object} authCache
  * @param {string} authCache.cacheKey
@@ -468,13 +489,11 @@ async function authWithPassword(
       url: origin,
       name: extensionName,
       expiryTime: 0,
-      permissions: {},
+      permissions: { skippedDialog: prefs.dialogDisplayOptionPreset },
     };
     if (protocolName === "nostr") {
       passwordAuthorizedSite.permissions.excludedKinds =
         prefs.excludedKindsPreset;
-      passwordAuthorizedSite.permissions.trustedMethods =
-        prefs.trustedMethodsPreset;
     }
     Services.ssi.authCache.update(cacheKey, {
       passwordAuthorizedSites: [passwordAuthorizedSite],
@@ -499,13 +518,6 @@ async function authWithPassword(
   if (Date.now() < _authExpirationTime) {
     return true;
   }
-  // Is this method trusted?
-  // The excludedKind takes precedence over trustedMethod, so if both are present, authorization will proceed.
-  const trustedMethod =
-    passwordAuthorizedSite.permissions.trustedMethods.includes(type);
-  if (!_isAuthMandatory && trustedMethod) {
-    return true;
-  }
 
   // Execute two-step auth dialogs
   // 1. confirmation dialog
@@ -517,7 +529,7 @@ async function authWithPassword(
   const baseCaption = `${systemMessage}${eol}to ${origin}`;
 
   // 1. Dispaly confirmation dialog
-  const skippedConfirm = passwordAuthorizedSite.permissions.trustedMethods.some(
+  const skippedConfirm = passwordAuthorizedSite.permissions.skippedDialog.some(
     method => method === `${type}-passwordOnly`
   );
   if (_isAuthMandatory || !skippedConfirm) {
@@ -536,17 +548,20 @@ async function authWithPassword(
     // The user has trusted this time, so return true.
     if (
       result.confirmed &&
-      ["fullTrust", "methodTrust", "skipConfirm"].includes(result.settingValue)
+      ["fullTrust", "methodTrust", "skipConfirm", "skipPassword"].includes(
+        result.settingValue
+      )
     ) {
       // Save new setting value
-      if (["methodTrust", "skipConfirm"].includes(result.settingValue)) {
-        const registration =
-          result.settingValue === "methodTrust" ? type : `${type}-passwordOnly`;
-        passwordAuthorizedSite.permissions.trustedMethods.push(registration);
+      if (["skipConfirm", "skipPassword"].includes(result.settingValue)) {
+        passwordAuthorizedSite.permissions.skippedDialog.push(
+          result.settingValue
+        );
         Services.ssi.authCache.update(cacheKey, {
           passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
         });
-      } else if (result.settingValue === "fullTrust") {
+        // go to primarypassword dialog
+      } else {
         // Save new trusted site
         const auth = Services.ssi.authCache.get(cacheKey);
         const idx = auth.trustedSites.findIndex(site => site.url === origin);
@@ -559,14 +574,18 @@ async function authWithPassword(
             url: origin,
             name: extensionName,
             enabled: true,
-            permissions: {},
+            permissions: { nallowedMethod: [] },
           };
+        }
+        if (result.settingValue === "methodTrust") {
+          newVal.permissions.nallowedMethod.push(type);
         }
         Services.ssi.authCache.update(cacheKey, {
           trustedSites: [newVal],
         });
+        // Since it was trusted, we will round it up.
+        return true;
       }
-      return true;
     } else if (!result.confirmed) {
       // The user has canceled, so return false.
       return false;
@@ -574,48 +593,55 @@ async function authWithPassword(
   }
 
   // 2. Suggest password prompt
-  const messageText = {
-    value: `${
-      AppConstants.platform === "win" ? "Nightly is trying to " : ""
-    }${baseCaption}`,
-  };
-  const captionText = {
-    value: AppConstants.platform === "win" ? "Nightly" : "",
-  }; // caption only works on windows.
-  const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-    lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+  const skippedPassword = passwordAuthorizedSite.permissions.skippedDialog.some(
+    method => method === `${type}-confirmOnly`
   );
-  if (isOSAuthEnabled) {
-    const messageId = MESSAGE_ID + "-" + AppConstants.platform;
-  }
-  const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
-    embedderElement,
-    isOSAuthEnabled,
-    _authExpirationTime,
-    messageText.value,
-    captionText.value
-  );
+  if (!skippedPassword) {
+    const messageText = {
+      value: `${
+        AppConstants.platform === "win" ? "Nightly is trying to " : ""
+      }${baseCaption}`,
+    };
+    const captionText = {
+      value: AppConstants.platform === "win" ? "Nightly" : "",
+    }; // caption only works on windows.
+    const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+      lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    );
+    if (isOSAuthEnabled) {
+      const messageId = MESSAGE_ID + "-" + AppConstants.platform;
+    }
+    const { isAuthorized, telemetryEvent } = await lazy.SsiHelper.requestReauth(
+      embedderElement,
+      isOSAuthEnabled,
+      _authExpirationTime,
+      messageText.value,
+      captionText.value
+    );
 
-  // Update expiry time if password is newly entered.
-  const enteredPassword = ["success", "success_unsupported_platform"].includes(
-    telemetryEvent.value
-  );
-  if (isAuthorized && enteredPassword) {
-    const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
-    passwordAuthorizedSite.expiryTime = expiryTime;
-    Services.ssi.authCache.update(cacheKey, {
-      passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
-    });
+    // Update expiry time if password is newly entered.
+    const enteredPassword = [
+      "success",
+      "success_unsupported_platform",
+    ].includes(telemetryEvent.value);
+    if (isAuthorized && enteredPassword) {
+      const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
+      passwordAuthorizedSite.expiryTime = expiryTime;
+      Services.ssi.authCache.update(cacheKey, {
+        passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
+      });
+    }
+    console.log(
+      "primarypassword-dialog",
+      isAuthorized,
+      telemetryEvent,
+      origin,
+      type,
+      Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
+    );
+    return isAuthorized;
   }
-  console.log(
-    "primarypassword-dialog",
-    isAuthorized,
-    telemetryEvent,
-    origin,
-    type,
-    Services.ssi.authCache.get(cacheKey).passwordAuthorizedSites
-  );
-  return isAuthorized;
+  return true;
 }
 /**
  *

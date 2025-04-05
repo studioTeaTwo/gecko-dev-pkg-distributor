@@ -15393,6 +15393,18 @@
   value: true
   mirror: always
 
+# Trusting only registered sites
+- name: selfsovereignindividual.nostr.trustedSites.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Preset for the nallowed Method for Trusted Site.
+- name: selfsovereignindividual.nostr.trustedSites.nallowedMethodPreset
+  type: String
+  value: ""
+  mirror: never
+
 # Whether to use primary password when managing secrets in setting page.
 - name: selfsovereignindividual.nostr.primarypassword.toSettings.enabled
   type: bool
@@ -15417,8 +15429,8 @@
   value: 86400000 # 1 day
   mirror: always
 
-# Preset for the trusted methods to calls from webapps.
-- name: selfsovereignindividual.nostr.primarypassword.toApps.trustedMethodsPreset
+# Preset for the dialog Display Option to calls from webapps.
+- name: selfsovereignindividual.nostr.primarypassword.toApps.dialogDisplayOptionPreset
   type: String
   value: ""
   mirror: never
@@ -15426,14 +15438,8 @@
 # Preset for the Event Kind authorized every time to calls from webapps.
 - name: selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset
   type: String
-  value: "9321,9734,13194,23194"
+  value: "13194,23194"
   mirror: never
-
-# Trusting only registered sites
-- name: selfsovereignindividual.nostr.trustedSites.enabled
-  type: bool
-  value: true
-  mirror: always
 
 # Permitting to emit `accountChanged` event
 - name: selfsovereignindividual.nostr.event.accountChanged.enabled

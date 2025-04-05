@@ -244,7 +244,7 @@ jobs:
         echo 'Distributer: GitHub Releases'
         echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${{ needs.get-display-version.outputs.display-version }}"
         echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        echo "Workflow Log Archive: ${{ github.server_url }}/log-archive/tree/main/releases/${{ github.run_id }}"
+        echo "Workflow Log Archive: ${{ github.server_url }}/Browser-for-SSI/log-archive/tree/main/releases/${{ github.run_id }}"
 
         echo
 

@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, s as schnorr, b as bytesToHex, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, S as StackDivider, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, U as Menu$1, W as MenuButton, X as MenuList, Y as MenuItem, Z as Checkbox, _ as Switch, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as createRoot, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, b as bytesToHex, s as schnorr, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, S as Menu$1, U as MenuButton, W as MenuList, X as MenuItem, Y as Checkbox, Z as Switch, _ as StackDivider, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -115,7 +115,6 @@ function IconBase(props) {
 }
 function LuEyeOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -150,7 +149,6 @@ function LuEyeOff(props) {
 }
 function LuEye(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -171,7 +169,6 @@ function LuEye(props) {
 }
 function LuPinOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -208,7 +205,6 @@ function LuPinOff(props) {
 }
 function LuPin(props) {
   return GenIcon({
-    tag: "svg",
     attr: {
       viewBox: "0 0 24 24",
       fill: "none",
@@ -235,7 +231,6 @@ function LuPin(props) {
 }
 function GiBirdTwitter(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 512 512" },
     child: [
       {
@@ -250,7 +245,6 @@ function GiBirdTwitter(props) {
 }
 function MdEdit(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -266,7 +260,6 @@ function MdEdit(props) {
 }
 function MdDeleteForever(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -283,7 +276,6 @@ function MdDeleteForever(props) {
 }
 function MdSaveAlt(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -299,7 +291,6 @@ function MdSaveAlt(props) {
 }
 function MdOutlineCancel(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       {
@@ -319,7 +310,6 @@ function MdOutlineCancel(props) {
 }
 function MdHelp(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -335,7 +325,6 @@ function MdHelp(props) {
 }
 function MdOutlineTimerOff(props) {
   return GenIcon({
-    tag: "svg",
     attr: { viewBox: "0 0 24 24" },
     child: [
       { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0z" }, child: [] },
@@ -356,36 +345,51 @@ function MdOutlineTimerOff(props) {
     ]
   })(props);
 }
+function MdOutlineContentCopy(props) {
+  return GenIcon({
+    attr: { viewBox: "0 0 24 24" },
+    child: [
+      { tag: "path", attr: { fill: "none", d: "M0 0h24v24H0V0z" }, child: [] },
+      {
+        tag: "path",
+        attr: {
+          d: "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+        },
+        child: []
+      }
+    ]
+  })(props);
+}
 const SafeProtocols = ["http", "https", "moz-extension"];
 const SpecialCards = ["*", "<all_urls>"];
+const DefaultExcludedKindList = {
+  13194: { nip: 47, name: "NWC Wallet Info" },
+  23194: { nip: 47, name: "NWC Wallet Request" }
+};
+const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
+const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
+const DefaultNallowedMethod = [];
+const DialogDisplayOptions = [
+  "read-confirmOnly",
+  "read-passwordOnly",
+  "sign-confirmOnly",
+  "sign-passwordOnly",
+  "encrypt-confirmOnly",
+  "encrypt-passwordOnly",
+  "decrypt-confirmOnly",
+  "decrypt-passwordOnly",
+  "custom-confirmOnly",
+  "custom-passwordOnly"
+];
+const DefaultDialogDisplayOption = [];
 const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
     enabled: true,
-    permissions: {}
+    permissions: { nallowedMethod: DefaultNallowedMethod }
   }
 ];
-const DefaultExcludedKindList = {
-  9321: { nip: 61, name: "Nutzap" },
-  9734: { nip: 57, name: "Zap Request" },
-  13194: { nip: 47, name: "NWC Wallet Info" },
-  23194: { nip: 47, name: "NWC Wallet Request" }
-};
-const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
-const TrustedMethodOptions = [
-  "read",
-  "read-passwordOnly",
-  "sign",
-  "sign-passwordOnly",
-  "encrypt",
-  "encrypt-passwordOnly",
-  "decrypt",
-  "decrypt-passwordOnly",
-  "custom",
-  "custom-passwordOnly"
-];
-const DefaultTrustedMethods = [];
 const NostrTemplate = {
   protocolName: "nostr",
   credentialName: "nsec",
@@ -403,13 +407,6 @@ const NostrTemplate = {
 function initStore() {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
-      bubbles: true
-    })
-  );
-}
-function getAllCredentialsToStore() {
-  window.dispatchEvent(
-    new CustomEvent("AboutSelfSovereignIndividualGetAllCredentials", {
       bubbles: true
     })
   );
@@ -472,7 +469,6 @@ function onPrefChanged(changeSet) {
 }
 const dispatchEvents = {
   initStore,
-  getAllCredentialsToStore,
   addCredentialToStore,
   modifyCredentialToStore: modifyCredentialToStore$1,
   deleteCredentialToStore,
@@ -526,13 +522,14 @@ function useChildActorEvent() {
       enabled: true,
       tabPin: "",
       tabPinInNip07: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
       expiryTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
       expiryTimeForPrimarypasswordToApps: 864e5,
-      trustedMethodsPreset: DefaultTrustedMethods.filter(Boolean).join(","),
+      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
-      usedTrustedSites: false,
       usedBuiltinNip07: true,
       usedAccountChanged: true
     }
@@ -651,7 +648,7 @@ function TabPin(tabId, pref, prtocolName) {
         e.preventDefault();
         onPrefChanged2({ protocolName: prtocolName, [pref.key]: tabId });
       },
-      children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {})
+      children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {})
     }
   );
 }
@@ -784,6 +781,23 @@ function Secret(props) {
     setVisible((prev) => !prev);
     onChangeVisibility();
   };
+  const handleCopy = async () => {
+    if (visible === false && usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    navigator.clipboard.writeText(value).then(() => {
+      alert("Copied!");
+    }).catch((error) => {
+      console.error(error);
+      alert(`Failed to copy: ${error}`);
+    });
+  };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -796,8 +810,17 @@ function Secret(props) {
         {
           icon: visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuEyeOff, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuEye, {}),
           variant: "transparent",
-          "aria-label": "Toggle password visibility",
+          "aria-label": "Toggle secret visibility",
           onClick: handleToggole
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        IconButton,
+        {
+          icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdOutlineContentCopy, {}),
+          variant: "transparent",
+          "aria-label": "Copy secret",
+          onClick: handleCopy
         }
       )
     ] }),
@@ -850,7 +873,7 @@ function ExampleUrlMatch(props) {
     }
   );
 }
-function ExplainMethod(props) {
+function ExplainNallowedMethod(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
@@ -860,12 +883,39 @@ function ExplainMethod(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { children: [
-        "Checking “[method]“ is skipping both of confirm dialog and password dialog.",
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Narrow the trust scope of Trusted Site to a specific method." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
+        "If “read“ is checked, trusted sites will only work for read permission.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "Checking “[method]-passwordOnly“ is skipping confirm dialog and prompting password dialog alone."
+        "If all is checked, it is the same as none being checked."
       ] }),
-      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds above., so if both are present, authorization will proceed." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you register trusted site URL. And You can edit the settings for the corresponding URL for each key." }),
+      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, authorization will proceed." })
+    ] })
+  ] }) });
+}
+function ExplainDialogDisplayOption(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Explanation" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the display of the dialog box." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
+        "Checking “[method]-confirmOnly“ is skipping password dialog and prompting confirm dialog alone. ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "Checking “[method]-passwordOnly“ is skipping confirm dialog and prompting password dialog alone.",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "If you check both, two dialogs will disappear. Similar to trusted site, but password authorization is subject to expiration constraints.",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "If you uncheck both, two dialogs will appear."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
+      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, authorization will proceed." })
     ] })
   ] }) });
 }
@@ -879,6 +929,11 @@ function ExampleNostrKind(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
+        "Specifies the Nostr Kind you want to display a dialog even if a trusted site is set or the password is valid for that URL.",
+        " "
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default Set" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
@@ -937,6 +992,7 @@ function KeyEditor(props) {
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
   const [newExtensions, setNewExtensions] = reactExports.useState([]);
+  const [editingNumForTrusted, setEditingNumForTrusted] = reactExports.useState(-1);
   const [editingNumForPassword, setEditingNumForPassword] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -958,6 +1014,18 @@ function KeyEditor(props) {
     if (credential.primary !== editingKey.primary) {
       changePrimary(editingKey.guid, editingKey.primary, nostrKeys);
     }
+    props.goBack();
+  };
+  const handleGoBack = async () => {
+    if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
+      const result = window.confirm(
+        "Not yet saved. Do you really want to leave?"
+      );
+      if (!result) {
+        return;
+      }
+    }
+    setEditingKey(credential);
     props.goBack();
   };
   const HandleChangeValue = (newKV) => {
@@ -990,7 +1058,7 @@ function KeyEditor(props) {
         url,
         name: url !== "*" ? "" : "<all_urls>",
         enabled: true,
-        permissions: {}
+        permissions: { nallowedMethod: DefaultNallowedMethod }
       }
     ]);
     HandleChangeValue({ trustedSites: value });
@@ -1038,24 +1106,38 @@ function KeyEditor(props) {
     passwordAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
     HandleChangeValue({ passwordAuthorizedSites });
   };
-  const handleSaveTrustedMethods = (siteNo, value) => {
+  const handleSaveNallowedMethod = (siteNo, value) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    if (trustedSites[siteNo].permissions.nallowedMethod.includes(value)) {
+      trustedSites[siteNo].permissions.nallowedMethod = trustedSites[siteNo].permissions.nallowedMethod.filter((method) => method !== value);
+    } else {
+      trustedSites[siteNo].permissions.nallowedMethod.push(value);
+    }
+    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+  };
+  const handleResetNallowedMethod = (siteNo) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
+    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+  };
+  const handleSaveSkippedDialog = (siteNo, value) => {
     const passwordAuthorizedSites = JSON.parse(
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
-    if (passwordAuthorizedSites[siteNo].permissions.trustedMethods.includes(value)) {
-      passwordAuthorizedSites[siteNo].permissions.trustedMethods = passwordAuthorizedSites[siteNo].permissions.trustedMethods.filter(
+    if (passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
+      passwordAuthorizedSites[siteNo].permissions.skippedDialog = passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
         (method) => method !== value
       );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.trustedMethods.push(value);
+      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
     HandleChangeValue({ passwordAuthorizedSites });
   };
-  const handleResetTrustedMethods = (siteNo) => {
+  const handleResetSkippedDialog = (siteNo) => {
     const passwordAuthorizedSites = JSON.parse(
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.trustedMethods = DefaultTrustedMethods;
+    passwordAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOption;
     HandleChangeValue({ passwordAuthorizedSites });
   };
   function EditableControls() {
@@ -1126,78 +1208,153 @@ function KeyEditor(props) {
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Trusted Sites" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                Grid,
-                {
-                  gridTemplateColumns: "400px 1fr",
-                  gap: 2,
-                  alignItems: "center",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          Input,
-                          {
-                            placeholder: "https://example",
-                            value: newSite,
-                            onChange: handleNewSiteChange,
-                            onKeyPress: (e) => {
-                              if (e.key === "Enter") {
-                                handleRegisterSite(e);
-                              }
-                            },
-                            maxW: "400px",
-                            backgroundColor: "white"
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        placeholder: "https://example",
+                        value: newSite,
+                        onChange: handleNewSiteChange,
+                        onKeyPress: (e) => {
+                          if (e.key === "Enter") {
+                            handleRegisterSite(e);
                           }
-                        ),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          Button,
-                          {
-                            variant: "outline",
-                            colorScheme: "blue",
-                            onClick: handleRegisterSite,
-                            children: "Register"
-                          }
-                        )
-                      ] }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
-                    ] }),
-                    !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                    editingKey.trustedSites.map((site) => {
-                      return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                          !site.enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
+                        },
+                        maxW: "400px",
+                        backgroundColor: "white"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Button,
+                      {
+                        variant: "outline",
+                        colorScheme: "blue",
+                        onClick: handleRegisterSite,
+                        children: "Register"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
+                ] }),
+                !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.trustedSites.map((site, i) => {
+                  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                      !site.enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
                             site.url,
                             site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                               " (",
                               site.name,
                               ")"
                             ] })
-                          ] })
-                        ] }) }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: site.enabled ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          Button,
-                          {
-                            variant: "outline",
-                            colorScheme: "blue",
-                            onClick: () => handleRemoveSite(site),
-                            children: "Remove"
-                          }
-                        ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          Button,
-                          {
-                            variant: "outline",
-                            colorScheme: "blue",
-                            onClick: () => handleReRegister(site.url),
-                            children: "Re-register"
-                          }
-                        ) })
-                      ] });
-                    })
-                  ]
-                }
-              )
+                          ]
+                        }
+                      )
+                    ] }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => {
+                            setEditingNumForTrusted(
+                              i !== editingNumForTrusted ? i : -1
+                            );
+                          },
+                          mr: "2",
+                          children: "Permission"
+                        }
+                      ),
+                      site.enabled ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => handleRemoveSite(site),
+                          children: "Remove"
+                        }
+                      ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => handleReRegister(site.url),
+                          children: "Re-register"
+                        }
+                      )
+                    ] }),
+                    editingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      VStack,
+                      {
+                        backgroundColor: "white",
+                        p: "2",
+                        alignItems: "flex-start",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Narrow the trust scope" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuButton,
+                                {
+                                  as: Button,
+                                  variant: "outline",
+                                  colorScheme: "blue",
+                                  children: "Select Options"
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuItem,
+                                {
+                                  closeOnSelect: false,
+                                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                    Checkbox,
+                                    {
+                                      isChecked: site.permissions.nallowedMethod.includes(
+                                        option
+                                      ),
+                                      onChange: () => handleSaveNallowedMethod(i, option),
+                                      children: option
+                                    }
+                                  )
+                                },
+                                option
+                              )) })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Button,
+                              {
+                                variant: "outline",
+                                colorScheme: "blue",
+                                onClick: () => handleResetNallowedMethod(i),
+                                width: "150px",
+                                children: "Revert to preset"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainNallowedMethod,
+                            {
+                              width: "100%",
+                              protocolName: "nostr"
+                            }
+                          )
+                        ]
+                      }
+                    ) })
+                  ] });
+                })
+              ] })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
@@ -1208,18 +1365,29 @@ function KeyEditor(props) {
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                       site.expiryTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
-                        site.url,
-                        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          " (",
-                          site.name,
-                          ")"
-                        ] }),
-                        " - until ",
-                        expiryTime.toLocaleDateString(),
-                        " ",
-                        expiryTime.toLocaleTimeString()
-                      ] })
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] }),
+                            site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " - until ",
+                              expiryTime.toLocaleDateString(),
+                              " ",
+                              expiryTime.toLocaleTimeString()
+                            ] })
+                          ]
+                        }
+                      )
                     ] }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1278,7 +1446,7 @@ function KeyEditor(props) {
                             )
                           ] }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Exclude specific methods related to the key from authorization" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Dialog dispaly settings" }),
                           /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                             /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
                               /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1290,17 +1458,17 @@ function KeyEditor(props) {
                                   children: "Select Options"
                                 }
                               ),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: TrustedMethodOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
                                 MenuItem,
                                 {
                                   closeOnSelect: false,
                                   children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     Checkbox,
                                     {
-                                      isChecked: site.permissions.trustedMethods.includes(
+                                      isChecked: site.permissions.skippedDialog.includes(
                                         option
                                       ),
-                                      onChange: () => handleSaveTrustedMethods(i, option),
+                                      onChange: () => handleSaveSkippedDialog(i, option),
                                       children: option
                                     }
                                   )
@@ -1313,14 +1481,14 @@ function KeyEditor(props) {
                               {
                                 variant: "outline",
                                 colorScheme: "blue",
-                                onClick: () => handleResetTrustedMethods(i),
+                                onClick: () => handleResetSkippedDialog(i),
                                 width: "150px",
                                 children: "Revert to preset"
                               }
                             )
                           ] }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(
-                            ExplainMethod,
+                            ExplainDialogDisplayOption,
                             {
                               width: "100%",
                               protocolName: "nostr"
@@ -1355,10 +1523,7 @@ function KeyEditor(props) {
             variant: "transparent",
             fontSize: "20px",
             "aria-label": "Cancel",
-            onClick: () => {
-              setEditingKey(credential);
-              props.goBack();
-            }
+            onClick: handleGoBack
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1431,7 +1596,7 @@ function Nostr$2(props) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: {}
+        permissions: { nallowedMethod: DefaultNallowedMethod }
       }))
     ],
     [prefs.base.addons]
@@ -1764,15 +1929,21 @@ function NIP07(props) {
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = reactExports.useState("");
-  const [newTrustedMethodsPreset, setNewTrustedMethodsPreset] = reactExports.useState([]);
+  const [newNallowedMethodPreset, setNewNallowedMethodPreset] = reactExports.useState([]);
+  const [newDialogDisplayOptionPreset, setNewDialogDisplayOptionPreset] = reactExports.useState([]);
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
   reactExports.useEffect(() => {
-    setNewTrustedMethodsPreset(prefs.nostr.trustedMethodsPreset.split(","));
-  }, [prefs.nostr.trustedMethodsPreset]);
+    setNewNallowedMethodPreset(prefs.nostr.nallowedMethodPreset.split(","));
+  }, [prefs.nostr.nallowedMethodPreset]);
+  reactExports.useEffect(() => {
+    setNewDialogDisplayOptionPreset(
+      prefs.nostr.dialogDisplayOptionPreset.split(",")
+    );
+  }, [prefs.nostr.dialogDisplayOptionPreset]);
   const tabPin = (tabId) => TabPin(
     tabId.toString(),
     { key: "tabPinInNip07", value: prefs.nostr.tabPinInNip07 },
@@ -1933,7 +2104,7 @@ function NIP07(props) {
     }
     setNewExcludedKindsPreset(value);
   };
-  const handleEditExcludedKinds = async (sort) => {
+  const handleResetExcludedKinds = async (sort) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
@@ -1951,20 +2122,20 @@ function NIP07(props) {
       setNewExcludedKindsPreset(DefaultExcludedKinds.filter(Boolean).join(","));
     }
   };
-  const handleChangeTrustedMethods = (value) => {
+  const handleChangeNallowedMethod = (value) => {
     let newVal = [];
-    if (newTrustedMethodsPreset.includes(value)) {
-      newVal = newTrustedMethodsPreset.filter((method) => method !== value);
+    if (newNallowedMethodPreset.includes(value)) {
+      newVal = newNallowedMethodPreset.filter((method) => method !== value);
     } else {
-      newVal = newTrustedMethodsPreset.concat([value]);
+      newVal = newNallowedMethodPreset.concat([value]);
     }
     onPrefChanged2({
       protocolName: "nostr",
-      trustedMethodsPreset: newVal.filter(Boolean).join(",")
+      nallowedMethodPreset: newVal.filter(Boolean).join(",")
     });
-    setNewTrustedMethodsPreset(newVal);
+    setNewNallowedMethodPreset(newVal);
   };
-  const handleEditTrustedMethods = async () => {
+  const handleResetNallowedMethod = async () => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
@@ -1976,14 +2147,48 @@ function NIP07(props) {
     }
     onPrefChanged2({
       protocolName: "nostr",
-      trustedMethodsPreset: DefaultTrustedMethods.filter(Boolean).join(",")
+      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(",")
     });
-    setNewTrustedMethodsPreset(DefaultTrustedMethods);
+    setNewNallowedMethodPreset(DefaultNallowedMethod);
+  };
+  const handleChangeDialogDisplayOption = (value) => {
+    let newVal = [];
+    if (newDialogDisplayOptionPreset.includes(value)) {
+      newVal = newDialogDisplayOptionPreset.filter((method) => method !== value);
+    } else {
+      newVal = newDialogDisplayOptionPreset.concat([value]);
+    }
+    onPrefChanged2({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset: newVal.filter(Boolean).join(",")
+    });
+    setNewDialogDisplayOptionPreset(newVal);
+  };
+  const handleResetDialogDisplayOption = async () => {
+    if (prefs.nostr.usedPrimarypasswordToSettings) {
+      const primaryPasswordAuth = await promptForPrimaryPassword(
+        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      );
+      if (!primaryPasswordAuth) {
+        setIsOpenDialog(true);
+        return;
+      }
+    }
+    onPrefChanged2({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(",")
+    });
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys.map((key) => key.trustedSites.filter((site) => site.enabled)).flat().map((site) => JSON.stringify(site))
+        nostrkeys.map(
+          (key) => key.trustedSites.filter((site) => site.enabled).map((site) => {
+            const { permissions, ...rest } = site;
+            return rest;
+          })
+        ).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -2234,6 +2439,45 @@ function NIP07(props) {
                             ] }),
                             /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
                           ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  MenuButton,
+                                  {
+                                    as: Button,
+                                    variant: "outline",
+                                    colorScheme: "blue",
+                                    children: "Select Options"
+                                  }
+                                ),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Checkbox,
+                                  {
+                                    isChecked: newNallowedMethodPreset.includes(
+                                      option
+                                    ),
+                                    onChange: () => handleChangeNallowedMethod(option),
+                                    children: option
+                                  }
+                                ) }, option)) })
+                              ] }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                Button,
+                                {
+                                  variant: "outline",
+                                  colorScheme: "blue",
+                                  onClick: (e) => {
+                                    e.preventDefault();
+                                    handleResetNallowedMethod();
+                                  },
+                                  children: "Reset to default"
+                                }
+                              )
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
+                          ] }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
                         ]
@@ -2311,7 +2555,7 @@ function NIP07(props) {
                                         colorScheme: "blue",
                                         onClick: (e) => {
                                           e.preventDefault();
-                                          handleEditExcludedKinds("edit");
+                                          handleResetExcludedKinds("edit");
                                         },
                                         children: "Edit"
                                       }
@@ -2323,7 +2567,7 @@ function NIP07(props) {
                                         colorScheme: "blue",
                                         onClick: (e) => {
                                           e.preventDefault();
-                                          handleEditExcludedKinds("default");
+                                          handleResetExcludedKinds("default");
                                         },
                                         children: "Reset to default"
                                       }
@@ -2333,7 +2577,7 @@ function NIP07(props) {
                                 ]
                               }
                             ) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the excluded specific methods related to the key from authorization" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for dialog dispaly settings" }) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                               /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
@@ -2346,13 +2590,13 @@ function NIP07(props) {
                                       children: "Select Options"
                                     }
                                   ),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: TrustedMethodOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     Checkbox,
                                     {
-                                      isChecked: newTrustedMethodsPreset.includes(
+                                      isChecked: newDialogDisplayOptionPreset.includes(
                                         option
                                       ),
-                                      onChange: () => handleChangeTrustedMethods(option),
+                                      onChange: () => handleChangeDialogDisplayOption(option),
                                       children: option
                                     }
                                   ) }, option)) })
@@ -2364,13 +2608,19 @@ function NIP07(props) {
                                     colorScheme: "blue",
                                     onClick: (e) => {
                                       e.preventDefault();
-                                      handleEditTrustedMethods();
+                                      handleResetDialogDisplayOption();
                                     },
                                     children: "Reset to default"
                                   }
                                 )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainMethod, { width: "100%", protocolName: "nostr" })
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                ExplainDialogDisplayOption,
+                                {
+                                  width: "100%",
+                                  protocolName: "nostr"
+                                }
+                              )
                             ] })
                           ] }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
@@ -2553,7 +2803,7 @@ HomeOverlay.prototype = {
     }
     this.active = true;
     const container = document.querySelector(`body`);
-    const root = createRoot(container);
+    const root = clientExports.createRoot(container);
     root.render(
       /* @__PURE__ */ jsxRuntimeExports.jsx(ChakraProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(StateProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelfSovereignIndividual, {}) }) })
     );

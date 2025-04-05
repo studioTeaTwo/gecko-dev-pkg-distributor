@@ -321,6 +321,18 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.enabled
       );
     }
+    if (changeSet.hasOwnProperty("usedTrustedSites")) {
+      Services.prefs.setBoolPref(
+        `selfsovereignindividual.${changeSet.protocolName}.trustedSites.enabled`,
+        changeSet.usedTrustedSites
+      );
+    }
+    if (changeSet.hasOwnProperty("nallowedMethodPreset")) {
+      Services.prefs.setStringPref(
+        `selfsovereignindividual.${changeSet.protocolName}.trustedSites.nallowedMethodPreset`,
+        changeSet.nallowedMethodPreset
+      );
+    }
     if (changeSet.hasOwnProperty("usedPrimarypasswordToSettings")) {
       Services.prefs.setBoolPref(
         `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toSettings.enabled`,
@@ -345,22 +357,16 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.expiryTimeForPrimarypasswordToApps
       );
     }
-    if (changeSet.hasOwnProperty("trustedMethodsPreset")) {
+    if (changeSet.hasOwnProperty("dialogDisplayOptionPreset")) {
       Services.prefs.setStringPref(
-        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toApps.trustedMethodsPreset`,
-        changeSet.trustedMethodsPreset
+        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toApps.dialogDisplayOptionPreset`,
+        changeSet.dialogDisplayOptionPreset
       );
     }
     if (changeSet.hasOwnProperty("excludedKindsPreset")) {
       Services.prefs.setStringPref(
         `selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset`,
         changeSet.excludedKindsPreset
-      );
-    }
-    if (changeSet.hasOwnProperty("usedTrustedSites")) {
-      Services.prefs.setBoolPref(
-        `selfsovereignindividual.${changeSet.protocolName}.trustedSites.enabled`,
-        changeSet.usedTrustedSites
       );
     }
     if (changeSet.hasOwnProperty("usedAccountChanged")) {

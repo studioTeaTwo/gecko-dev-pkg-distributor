@@ -129,6 +129,12 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         enabled: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.enabled`
         ),
+        usedTrustedSites: Services.prefs.getBoolPref(
+          `selfsovereignindividual.${protocolName}.trustedSites.enabled`
+        ),
+        nallowedMethodPreset: Services.prefs.getStringPref(
+          `selfsovereignindividual.${protocolName}.trustedSites.nallowedMethodPreset`
+        ),
         usedPrimarypasswordToSettings: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toSettings.enabled`
         ),
@@ -141,11 +147,8 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         expiryTimeForPrimarypasswordToApps: Services.prefs.getIntPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
         ),
-        trustedMethodsPreset: Services.prefs.getStringPref(
-          `selfsovereignindividual.${protocolName}.primarypassword.toApps.trustedMethodsPreset`
-        ),
-        usedTrustedSites: Services.prefs.getBoolPref(
-          `selfsovereignindividual.${protocolName}.trustedSites.enabled`
+        dialogDisplayOptionPreset: Services.prefs.getStringPref(
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.dialogDisplayOptionPreset`
         ),
         usedAccountChanged: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.event.accountChanged.enabled`
