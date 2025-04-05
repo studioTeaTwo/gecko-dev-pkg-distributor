@@ -2183,7 +2183,12 @@ function NIP07(props) {
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys.map((key) => key.trustedSites.filter((site) => site.enabled)).flat().map((site) => JSON.stringify(site))
+        nostrkeys.map(
+          (key) => key.trustedSites.filter((site) => site.enabled).map((site) => {
+            const { permissions, ...rest } = site;
+            return rest;
+          })
+        ).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [

@@ -391,7 +391,16 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     const trustedSites = Array.from(
       new Set(
         nostrkeys
-          .map(key => key.trustedSites.filter(site => site.enabled))
+          .map(key =>
+            key.trustedSites
+              .filter(site => site.enabled)
+              .map(site => {
+                // Remove permissions, because it's distinct per key to group by site.url.
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { permissions, ...rest } = site;
+                return rest;
+              })
+          )
           .flat()
           .map(site => JSON.stringify(site))
       )
