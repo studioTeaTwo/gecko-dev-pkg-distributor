@@ -1618,7 +1618,8 @@ function Nostr$2(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
-        displayName: npubkey
+        displayName: npubkey,
+        generationMethod: "bip340"
       }
     });
     setNewKey(npubkey);
@@ -1655,7 +1656,8 @@ function Nostr$2(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
-        displayName: npubkey
+        displayName: npubkey,
+        generationMethod: "import"
       }
     });
     setImportedKey("");
@@ -1857,8 +1859,9 @@ function Nostr$2(props) {
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
-                    "Generated at",
+                    item.properties.generationMethod && item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
+                    "at ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
                     new Date(item.timeCreated).toLocaleTimeString()

@@ -60,6 +60,7 @@ export type ProtocolName =
   | "nostr"
   | "did:dht";
 export type CredentialName = "bip39" | "lnc" | "nsec";
+export type GenerationMethod = "bip340" | "import";
 interface TrustedSites {
   url: string;
   name: string;
@@ -87,6 +88,7 @@ export interface Credential
   passwordAuthorizedSites: PasswordAuthorizedSites[];
   properties: {
     displayName: string;
+    generationMethod: GenerationMethod;
     memo?: string;
   };
   guid?: string;
