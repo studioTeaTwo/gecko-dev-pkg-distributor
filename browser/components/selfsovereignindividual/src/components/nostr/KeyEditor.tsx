@@ -99,6 +99,19 @@ export default function KeyEditor(props: Props) {
 
     props.goBack();
   };
+  const handleGoBack = async () => {
+    if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
+      const result = window.confirm(
+        "Not yet saved. Do you really want to leave?"
+      );
+      if (!result) {
+        return;
+      }
+    }
+
+    setEditingKey(credential);
+    props.goBack();
+  };
 
   const HandleChangeValue = (
     newKV: Partial<{ [key in keyof NostrCredential]: NostrCredential[key] }>
@@ -362,7 +375,12 @@ export default function KeyEditor(props: Props) {
                                 </Box>
                               </Tooltip>
                             )}
-                            <Text fontSize="md">
+                            <Text
+                              fontSize="md"
+                              whiteSpace="normal"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                            >
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
                             </Text>
@@ -480,7 +498,12 @@ export default function KeyEditor(props: Props) {
                                 </Box>
                               </Tooltip>
                             )}
-                            <Text fontSize="md">
+                            <Text
+                              fontSize="md"
+                              whiteSpace="normal"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                            >
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
                               {site.expiryTime > Date.now() && (
@@ -630,10 +653,7 @@ export default function KeyEditor(props: Props) {
               variant="transparent"
               fontSize="20px"
               aria-label="Cancel"
-              onClick={() => {
-                setEditingKey(credential);
-                props.goBack();
-              }}
+              onClick={handleGoBack}
             />
             <IconButton
               icon={<MdSaveAlt />}

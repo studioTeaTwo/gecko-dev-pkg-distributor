@@ -1016,6 +1016,18 @@ function KeyEditor(props) {
     }
     props.goBack();
   };
+  const handleGoBack = async () => {
+    if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
+      const result = window.confirm(
+        "Not yet saved. Do you really want to leave?"
+      );
+      if (!result) {
+        return;
+      }
+    }
+    setEditingKey(credential);
+    props.goBack();
+  };
   const HandleChangeValue = (newKV) => {
     setEditingKey((prev) => ({ ...prev, ...newKV }));
   };
@@ -1231,14 +1243,23 @@ function KeyEditor(props) {
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                       !site.enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
-                        site.url,
-                        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          " (",
-                          site.name,
-                          ")"
-                        ] })
-                      ] })
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] })
+                          ]
+                        }
+                      )
                     ] }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1344,20 +1365,29 @@ function KeyEditor(props) {
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                       site.expiryTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
-                        site.url,
-                        site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          " (",
-                          site.name,
-                          ")"
-                        ] }),
-                        site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          " - until ",
-                          expiryTime.toLocaleDateString(),
-                          " ",
-                          expiryTime.toLocaleTimeString()
-                        ] })
-                      ] })
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] }),
+                            site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " - until ",
+                              expiryTime.toLocaleDateString(),
+                              " ",
+                              expiryTime.toLocaleTimeString()
+                            ] })
+                          ]
+                        }
+                      )
                     ] }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1493,10 +1523,7 @@ function KeyEditor(props) {
             variant: "transparent",
             fontSize: "20px",
             "aria-label": "Cancel",
-            onClick: () => {
-              setEditingKey(credential);
-              props.goBack();
-            }
+            onClick: handleGoBack
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
