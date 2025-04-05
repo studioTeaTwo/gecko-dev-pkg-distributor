@@ -84,7 +84,7 @@ this.ssi = class extends ExtensionAPI {
                 false
               );
               if (!isAuthorized) {
-                return false;
+                return errorValue;
               }
             }
 
