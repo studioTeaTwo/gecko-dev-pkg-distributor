@@ -1,10 +1,13 @@
 Started over from v0.2.0mvp. Be careful about using older tags.
 
 ## merge manual
-- Cherry-pick merge requests on ssi repository.
-- Firefox upgrades should be done via the tor tag (e.g. `tor-browser-128.7.0esr-14.0-1-build3`). Not use the update merge request of ssi repository.
-  - Make it a separate patch, not mixed with others
+- Cherry-pick the merge commits on ssi repository.
 - Create a diff patch compared to previous release.
+- IMPORTANT: Firefox upgrades should be done via the tor tag (e.g. `tor-browser-128.7.0esr-14.0-1-build3`).
+  - Not use the firefox-upgrade merge request of ssi repository.
+  - Make it a separate independent patch, not mixed with others.
+
+
 
 ## merge history
 git checkout -b mvp-tor tor-browser-128.6.0esr-14.0-1-build1
@@ -19,6 +22,9 @@ ssb-merge-7.patch
 ssb-merge-8.patch
 ssb-merge-9.patch
 ssb-merge-10.patch
+ssb-merge-11.patch
+ssb-merge-12.patch
+ssb-merge-13.patch
 
 ### ssb-merge-1.patch
 - git merge v0.2.0mvp-128.6.0esr
@@ -51,3 +57,5 @@ ssb-merge-10.patch
 - git merge tor-browser-128.9.0esr-14.0-2-build2
 ### ssb-merge-12.patch
 - d38ecce6
+### ssb-merge-13.patch
+- c54a5724
