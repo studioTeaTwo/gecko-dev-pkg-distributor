@@ -117,8 +117,8 @@ export const browserSsiHelper = {
         "primarypassword.toApps.enabled": Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.enabled`
         ),
-        "primarypassword.toApps.expiryTime": Services.prefs.getIntPref(
-          `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
+        "primarypassword.toApps.expirationTime": Services.prefs.getIntPref(
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.expirationTime`
         ),
         "primarypassword.toApps.dialogDisplayOptionPreset":
           Services.prefs.getStringPref(
@@ -246,7 +246,8 @@ export const browserSsiHelper = {
       cacheKey,
       trustedSites: auth ? auth.trustedSites : [],
       passwordAuthorizedSites: auth ? auth.passwordAuthorizedSites : [],
-      expiryTimePref: internalPrefs["primarypassword.toApps.expiryTime"],
+      expirationTimePref:
+        internalPrefs["primarypassword.toApps.expirationTime"],
     };
     const dialog = {
       type,
@@ -295,7 +296,7 @@ export const browserSsiHelper = {
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expiryTimePref
+ * @param {number} authCache.expirationTimePref
  * @param {object} dialogInfo
  * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
  * @param {object} dialogInfo.evidence
@@ -421,7 +422,7 @@ function isTrusted(url, type, trustedSites) {
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expiryTimePref
+ * @param {number} authCache.expirationTimePref
  * @returns {boolean}
  */
 function isPasswordAuthorized(target, authCache) {
@@ -436,7 +437,7 @@ function isPasswordAuthorized(target, authCache) {
     return false;
   }
 
-  const validSite = passwordAuthorizedSite.expiryTime > Date.now();
+  const validSite = passwordAuthorizedSite.expirationTime > Date.now();
   console.log("primarypassword-cache", validSite, url, passwordAuthorizedSites);
   return validSite;
 }
@@ -457,7 +458,7 @@ function isPasswordAuthorized(target, authCache) {
  * @param {string} authCache.cacheKey
  * @param {object[]} authCache.trustedSites credential.trustedSites
  * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expiryTimePref
+ * @param {number} authCache.expirationTimePref
  * @param {object} dialogInfo
  * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
  * @param {object} dialogInfo.evidence
@@ -476,7 +477,7 @@ async function authWithPassword(
   dialogInfo
 ) {
   const { url, origin } = target;
-  const { cacheKey, passwordAuthorizedSites, expiryTimePref } = authCache;
+  const { cacheKey, passwordAuthorizedSites, expirationTimePref } = authCache;
   const { type, evidence, enforce, embedderElement } = dialogInfo;
 
   // Prepare expiration time.
@@ -488,7 +489,7 @@ async function authWithPassword(
     passwordAuthorizedSite = {
       url: origin,
       name: extensionName,
-      expiryTime: 0,
+      expirationTime: 0,
       permissions: { skippedDialog: prefs.dialogDisplayOptionPreset },
     };
     if (protocolName === "nostr") {
@@ -499,7 +500,7 @@ async function authWithPassword(
       passwordAuthorizedSites: [passwordAuthorizedSite],
     });
   }
-  let _authExpirationTime = passwordAuthorizedSite.expiryTime;
+  let _authExpirationTime = passwordAuthorizedSite.expirationTime;
 
   // Special cases of mandatory authorization.
   // Don't need to update cache, do as it is.
@@ -548,14 +549,25 @@ async function authWithPassword(
     // The user has trusted this time, so return true.
     if (
       result.confirmed &&
-      ["fullTrust", "methodTrust", "skipConfirm", "skipPassword"].includes(
+      ["fullTrust", "methodTrust", "confirmOnly", "passwordOnly"].includes(
         result.settingValue
       )
     ) {
       // Save new setting value
-      if (["skipConfirm", "skipPassword"].includes(result.settingValue)) {
+      if (result.settingValue === "confirmOnly") {
         passwordAuthorizedSite.permissions.skippedDialog.push(
-          result.settingValue
+          `${type}-${result.settingValue}`
+        );
+        passwordAuthorizedSite.expirationTime =
+          expirationTimePref > 0 ? Date.now() + expirationTimePref : 0;
+        Services.ssi.authCache.update(cacheKey, {
+          passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
+        });
+        // Since it's considered as approval only with the confirmation dialog, we will round it up.
+        return true;
+      } else if (result.settingValue === "passwordOnly") {
+        passwordAuthorizedSite.permissions.skippedDialog.push(
+          `${type}-${result.settingValue}`
         );
         Services.ssi.authCache.update(cacheKey, {
           passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
@@ -619,14 +631,14 @@ async function authWithPassword(
       captionText.value
     );
 
-    // Update expiry time if password is newly entered.
+    // Update expiration time if password is newly entered.
     const enteredPassword = [
       "success",
       "success_unsupported_platform",
     ].includes(telemetryEvent.value);
     if (isAuthorized && enteredPassword) {
-      const expiryTime = expiryTimePref > 0 ? Date.now() + expiryTimePref : 0;
-      passwordAuthorizedSite.expiryTime = expiryTime;
+      passwordAuthorizedSite.expirationTime =
+        expirationTimePref > 0 ? Date.now() + expirationTimePref : 0;
       Services.ssi.authCache.update(cacheKey, {
         passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
       });

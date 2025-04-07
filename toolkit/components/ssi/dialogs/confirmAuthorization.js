@@ -32,13 +32,13 @@ function onLoad() {
 
   document.getElementById(
     "methodTrust"
-  ).label = `Don't ask again for this method - "${permission.method}"`;
-  document.getElementById(
-    "skipConfirm"
-  ).label = `Skip confirmation, only password dialog - "${permission.method}"`;
-  document.getElementById(
-    "skipPassword"
-  ).label = `Skip password, only confirmation dialog - "${permission.method}"`;
+  ).label = `Trust just this method - "${permission.method}"`;
+  // document.getElementById(
+  //   "confirmOnly"
+  // ).label = `Skip password, only confirmation dialog - "${permission.method}"`;
+  // document.getElementById(
+  //   "passwordOnly"
+  // ).label = `Skip confirmation, only password dialog - "${permission.method}"`;
 
   document.addEventListener("dialogaccept", onDialogAccept);
   document.addEventListener("dialogcancel", onDialogCancel);

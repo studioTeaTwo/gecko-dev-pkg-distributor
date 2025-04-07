@@ -188,7 +188,7 @@ export default function KeyEditor(props: Props) {
     const value = {
       passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
-          site.expiryTime = 0;
+          site.expirationTime = 0;
         }
         return site;
       }),
@@ -486,12 +486,12 @@ export default function KeyEditor(props: Props) {
                     <Text fontSize="sm">No registered</Text>
                   )}
                   {editingKey.passwordAuthorizedSites.map((site, i) => {
-                    const expiryTime = new Date(site.expiryTime);
+                    const expirationTime = new Date(site.expirationTime);
                     return (
                       <>
                         <GridItem>
                           <HStack>
-                            {site.expiryTime <= Date.now() && (
+                            {site.expirationTime <= Date.now() && (
                               <Tooltip label="Expired">
                                 <Box display="flex" alignItems="baseline">
                                   <Icon as={MdOutlineTimerOff} />
@@ -506,11 +506,11 @@ export default function KeyEditor(props: Props) {
                             >
                               {site.url}
                               {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
-                              {site.expiryTime > Date.now() && (
+                              {site.expirationTime > Date.now() && (
                                 <>
                                   &nbsp;-&nbsp;until&nbsp;
-                                  {expiryTime.toLocaleDateString()}
-                                  &nbsp;{expiryTime.toLocaleTimeString()}
+                                  {expirationTime.toLocaleDateString()}
+                                  &nbsp;{expirationTime.toLocaleTimeString()}
                                 </>
                               )}
                             </Text>
@@ -529,7 +529,7 @@ export default function KeyEditor(props: Props) {
                           >
                             Permission
                           </Button>
-                          {site.expiryTime > Date.now() && (
+                          {site.expirationTime > Date.now() && (
                             <Button
                               variant="outline"
                               colorScheme="blue"

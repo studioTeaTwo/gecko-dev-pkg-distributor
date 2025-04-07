@@ -115,6 +115,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
+        generationMethod: "bip340",
       },
     });
 
@@ -161,6 +162,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
+        generationMethod: "import",
       },
     });
 
@@ -406,8 +408,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                         </Box>
                         <Box>
                           <Text fontSize="sm" isTruncated>
-                            Generated at{" "}
-                            {new Date(item.timeCreated).toLocaleDateString()}
+                            {item.properties.generationMethod === "import"
+                              ? "Imported"
+                              : "Generated"}{" "}
+                            at {new Date(item.timeCreated).toLocaleDateString()}
                             &nbsp;
                             {new Date(item.timeCreated).toLocaleTimeString()}
                           </Text>

@@ -138,14 +138,14 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         usedPrimarypasswordToSettings: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toSettings.enabled`
         ),
-        expiryTimeForPrimarypasswordToSettings: Services.prefs.getIntPref(
-          `selfsovereignindividual.${protocolName}.primarypassword.toSettings.expiryTime`
+        expirationTimeForPrimarypasswordToSettings: Services.prefs.getIntPref(
+          `selfsovereignindividual.${protocolName}.primarypassword.toSettings.expirationTime`
         ),
         usedPrimarypasswordToApps: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.enabled`
         ),
-        expiryTimeForPrimarypasswordToApps: Services.prefs.getIntPref(
-          `selfsovereignindividual.${protocolName}.primarypassword.toApps.expiryTime`
+        expirationTimeForPrimarypasswordToApps: Services.prefs.getIntPref(
+          `selfsovereignindividual.${protocolName}.primarypassword.toApps.expirationTime`
         ),
         dialogDisplayOptionPreset: Services.prefs.getStringPref(
           `selfsovereignindividual.${protocolName}.primarypassword.toApps.dialogDisplayOptionPreset`

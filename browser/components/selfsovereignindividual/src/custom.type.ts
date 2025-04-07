@@ -8,9 +8,9 @@ export interface ProtocolDefaultPrefs {
   usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled
   nallowedMethodPreset: string; // selfsovereignindividual.[protocolName].trustedSites.nallowedMethodPreset
   usedPrimarypasswordToSettings: boolean; // selfsovereignindividual.[protocolName].primarypassword.toSettings.enabled
-  expiryTimeForPrimarypasswordToSettings: number; // selfsovereignindividual.[protocolName].primarypassword.toSettings.expiryTime
+  expirationTimeForPrimarypasswordToSettings: number; // selfsovereignindividual.[protocolName].primarypassword.toSettings.expirationTime
   usedPrimarypasswordToApps: boolean; // selfsovereignindividual.[protocolName].primarypassword.toApps.enabled
-  expiryTimeForPrimarypasswordToApps: number; // selfsovereignindividual.[protocolName].primarypassword.ToApps.expiryTime
+  expirationTimeForPrimarypasswordToApps: number; // selfsovereignindividual.[protocolName].primarypassword.ToApps.expirationTime
   dialogDisplayOptionPreset: string; // selfsovereignindividual.[protocolName].primarypassword.toApps.dialogDisplayOptionPreset
   usedAccountChanged: boolean; // selfsovereignindividual.[protocolName].event.accountChanged.enabled
 }
@@ -60,6 +60,7 @@ export type ProtocolName =
   | "nostr"
   | "did:dht";
 export type CredentialName = "bip39" | "lnc" | "nsec";
+export type GenerationMethod = "bip340" | "import";
 interface TrustedSites {
   url: string;
   name: string;
@@ -69,7 +70,7 @@ interface TrustedSites {
 interface PasswordAuthorizedSites {
   url: string;
   name: string;
-  expiryTime: number;
+  expirationTime: number;
   permissions: Record<string, unknown>;
 }
 export interface Credential
@@ -87,6 +88,7 @@ export interface Credential
   passwordAuthorizedSites: PasswordAuthorizedSites[];
   properties: {
     displayName: string;
+    generationMethod: GenerationMethod;
     memo?: string;
   };
   guid?: string;
