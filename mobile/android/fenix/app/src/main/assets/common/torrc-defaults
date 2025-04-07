@@ -4,5 +4,6 @@ AvoidDiskWrites 1
 Log notice stdout
 CookieAuthentication 1
 DormantCanceledByStartup 1
-ClientTransportPlugin meek_lite,obfs2,obfs3,obfs4,scramblesuit,snowflake,webtunnel exec ./libLyrebird.so
+ClientTransportPlugin meek_lite,obfs2,obfs3,obfs4,scramblesuit,webtunnel exec ./libLyrebird.so
+ClientTransportPlugin snowflake exec ./libLyrebird.so
 ClientTransportPlugin conjure exec ./libConjure.so -registerURL https://registration.refraction.network/api
