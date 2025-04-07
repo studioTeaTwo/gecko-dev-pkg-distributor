@@ -15411,8 +15411,8 @@
   value: true
   mirror: always
 
-# Expiry time for primary password when managing secrets in setting page.
-- name: selfsovereignindividual.nostr.primarypassword.toSettings.expiryTime
+# Expiration time for primary password when managing secrets in setting page.
+- name: selfsovereignindividual.nostr.primarypassword.toSettings.expirationTime
   type: uint32_t
   value: 300000 # 5 minutes
   mirror: always
@@ -15423,8 +15423,8 @@
   value: true
   mirror: always
 
-# Expiry time for primary password to calls from webapps.
-- name: selfsovereignindividual.nostr.primarypassword.toApps.expiryTime
+# Expiration time for primary password to calls from webapps.
+- name: selfsovereignindividual.nostr.primarypassword.toApps.expirationTime
   type: uint32_t
   value: 86400000 # 1 day
   mirror: always

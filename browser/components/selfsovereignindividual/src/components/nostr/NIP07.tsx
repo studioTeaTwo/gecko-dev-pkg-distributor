@@ -234,7 +234,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     });
   };
 
-  const handleExpiryTimeForPrimarypasswordToApps = async (
+  const handleExpirationTimeForPrimarypasswordToApps = async (
     valueAsString: string,
     valueAsNumber: number
   ) => {
@@ -250,7 +250,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
     onPrefChanged({
       protocolName: "nostr",
-      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour,
+      expirationTimeForPrimarypasswordToApps: valueAsNumber * OneHour,
     });
   };
 
@@ -273,7 +273,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       guid: item.guid,
       passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
-          site.expiryTime = 0;
+          site.expirationTime = 0;
         }
         return site;
       }),
@@ -489,7 +489,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       }[];
     }>((acc, key, i) => {
       key.passwordAuthorizedSites
-        .filter(site => site.expiryTime > Date.now())
+        .filter(site => site.expirationTime > Date.now())
         .forEach(site => {
           const found = Object.keys(acc).find(url => site.url === url);
           if (found) {
@@ -521,7 +521,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   </AccordionButton>
                   <AccordionPanel pb={4}>
                     {keys.map(item => {
-                      const expiryTime = new Date(item.site.expiryTime);
+                      const expirationTime = new Date(item.site.expirationTime);
                       return (
                         <>
                           {!(
@@ -536,8 +536,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               <GridItem>
                                 <label>{item.key.properties.displayName}</label>{" "}
                                 &nbsp;-&nbsp;until&nbsp;
-                                {expiryTime.toLocaleDateString()}
-                                &nbsp;{expiryTime.toLocaleTimeString()}
+                                {expirationTime.toLocaleDateString()}
+                                &nbsp;{expirationTime.toLocaleTimeString()}
                                 <IconButton
                                   icon={<MdEdit />}
                                   variant="transparent"
@@ -782,18 +782,20 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   {prefs.nostr.usedPrimarypasswordToApps && (
                     <>
                       <GridItem>
-                        <label htmlFor="nostr-pref-expiryTimeForPrimarypasswordToApps">
-                          Expiry Hour
+                        <label htmlFor="nostr-pref-expirationTimeForPrimarypasswordToApps">
+                          Expiration Hour
                         </label>
                       </GridItem>
                       <GridItem>
                         <NumberInput
-                          id="nostr-pref-expiryTimeForPrimarypasswordToApps"
+                          id="nostr-pref-expirationTimeForPrimarypasswordToApps"
                           value={
-                            prefs.nostr.expiryTimeForPrimarypasswordToApps /
+                            prefs.nostr.expirationTimeForPrimarypasswordToApps /
                             OneHour
                           }
-                          onChange={handleExpiryTimeForPrimarypasswordToApps}
+                          onChange={
+                            handleExpirationTimeForPrimarypasswordToApps
+                          }
                           min={0}
                           size="sm"
                           maxW={20}

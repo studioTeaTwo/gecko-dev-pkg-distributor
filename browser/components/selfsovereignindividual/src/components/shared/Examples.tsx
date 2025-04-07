@@ -128,10 +128,16 @@ export function ExplainDialogDisplayOption(props: {
           <AccordionIcon />
         </AccordionButton>
         <AccordionPanel pb={4}>
-          <Text size="sm">Sets the display of the dialog box.</Text>
+          <Text size="sm">
+            Sets the display condition of the dialog box, when it has expired or
+            every-time-authorize setting exists.
+          </Text>
           <Text size="sm">
             Checking &ldquo;[method]-confirmOnly&ldquo; is skipping password
-            dialog and prompting confirm dialog alone. <br />
+            dialog and prompting confirm dialog alone. The expiration is
+            counting up in the background and dialog will reappear once it has
+            expired.
+            <br />
             Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
             dialog and prompting password dialog alone.
             <br />

@@ -525,9 +525,9 @@ function useChildActorEvent() {
       usedTrustedSites: false,
       nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
-      expiryTimeForPrimarypasswordToSettings: 3e5,
+      expirationTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
-      expiryTimeForPrimarypasswordToApps: 864e5,
+      expirationTimeForPrimarypasswordToApps: 864e5,
       dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedBuiltinNip07: true,
@@ -904,9 +904,9 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the display of the dialog box." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the display condition of the dialog box, when it has expired or every-time-authorize setting exists." }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Checking “[method]-confirmOnly“ is skipping password dialog and prompting confirm dialog alone. ",
+        "Checking “[method]-confirmOnly“ is skipping password dialog and prompting confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "Checking “[method]-passwordOnly“ is skipping confirm dialog and prompting password dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
@@ -1081,7 +1081,7 @@ function KeyEditor(props) {
     const value = {
       passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
-          site.expiryTime = 0;
+          site.expirationTime = 0;
         }
         return site;
       })
@@ -1361,10 +1361,10 @@ function KeyEditor(props) {
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
                 !editingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
                 editingKey.passwordAuthorizedSites.map((site, i) => {
-                  const expiryTime = new Date(site.expiryTime);
+                  const expirationTime = new Date(site.expirationTime);
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                      site.expiryTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                      site.expirationTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
                       /* @__PURE__ */ jsxRuntimeExports.jsxs(
                         Text,
                         {
@@ -1379,11 +1379,11 @@ function KeyEditor(props) {
                               site.name,
                               ")"
                             ] }),
-                            site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                            site.expirationTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                               " - until ",
-                              expiryTime.toLocaleDateString(),
+                              expirationTime.toLocaleDateString(),
                               " ",
-                              expiryTime.toLocaleTimeString()
+                              expirationTime.toLocaleTimeString()
                             ] })
                           ]
                         }
@@ -1404,7 +1404,7 @@ function KeyEditor(props) {
                           children: "Permission"
                         }
                       ),
-                      site.expiryTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      site.expirationTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(
                         Button,
                         {
                           variant: "outline",
@@ -1859,7 +1859,7 @@ function Nostr$2(props) {
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
-                    item.properties.generationMethod && item.properties.generationMethod === "import" ? "Imported" : "Generated",
+                    item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
                     "at ",
                     new Date(item.timeCreated).toLocaleDateString(),
@@ -2057,7 +2057,7 @@ function NIP07(props) {
       usedPrimarypasswordToApps: checked
     });
   };
-  const handleExpiryTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
+  const handleExpirationTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
@@ -2069,7 +2069,7 @@ function NIP07(props) {
     }
     onPrefChanged2({
       protocolName: "nostr",
-      expiryTimeForPrimarypasswordToApps: valueAsNumber * OneHour
+      expirationTimeForPrimarypasswordToApps: valueAsNumber * OneHour
     });
   };
   const handleRevokeSite = async (identifier, revokedSite) => {
@@ -2087,7 +2087,7 @@ function NIP07(props) {
       guid: item.guid,
       passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
-          site.expiryTime = 0;
+          site.expirationTime = 0;
         }
         return site;
       })
@@ -2256,7 +2256,7 @@ function NIP07(props) {
   }, [nostrkeys, states.nostr]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
     const passwordAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
-      key.passwordAuthorizedSites.filter((site) => site.expiryTime > Date.now()).forEach((site) => {
+      key.passwordAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
         if (found) {
           acc[found].push({ key, site, keyNo: i });
@@ -2287,7 +2287,7 @@ function NIP07(props) {
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: keys.map((item) => {
-          const expiryTime = new Date(item.site.expiryTime);
+          const expirationTime = new Date(item.site.expirationTime);
           return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === item.keyNo && states.nostr.editingUrl === url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
             Grid,
             {
@@ -2299,9 +2299,9 @@ function NIP07(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: item.key.properties.displayName }),
                   " ",
                   " - until ",
-                  expiryTime.toLocaleDateString(),
+                  expirationTime.toLocaleDateString(),
                   " ",
-                  expiryTime.toLocaleTimeString(),
+                  expirationTime.toLocaleTimeString(),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     IconButton,
                     {
@@ -2514,13 +2514,13 @@ function NIP07(props) {
                             }
                           ) }),
                           prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expiryTimeForPrimarypasswordToApps", children: "Expiry Hour" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expirationTimeForPrimarypasswordToApps", children: "Expiration Hour" }) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                               NumberInput,
                               {
-                                id: "nostr-pref-expiryTimeForPrimarypasswordToApps",
-                                value: prefs.nostr.expiryTimeForPrimarypasswordToApps / OneHour,
-                                onChange: handleExpiryTimeForPrimarypasswordToApps,
+                                id: "nostr-pref-expirationTimeForPrimarypasswordToApps",
+                                value: prefs.nostr.expirationTimeForPrimarypasswordToApps / OneHour,
+                                onChange: handleExpirationTimeForPrimarypasswordToApps,
                                 min: 0,
                                 size: "sm",
                                 maxW: 20,

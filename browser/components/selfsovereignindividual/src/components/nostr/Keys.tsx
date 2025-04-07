@@ -408,8 +408,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                         </Box>
                         <Box>
                           <Text fontSize="sm" isTruncated>
-                            {item.properties.generationMethod &&
-                            item.properties.generationMethod === "import"
+                            {item.properties.generationMethod === "import"
                               ? "Imported"
                               : "Generated"}{" "}
                             at {new Date(item.timeCreated).toLocaleDateString()}

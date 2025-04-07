@@ -339,10 +339,12 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.usedPrimarypasswordToSettings
       );
     }
-    if (changeSet.hasOwnProperty("expiryTimeForPrimarypasswordToSettings")) {
+    if (
+      changeSet.hasOwnProperty("expirationTimeForPrimarypasswordToSettings")
+    ) {
       Services.prefs.setIntPref(
-        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toSettings.expiryTime`,
-        changeSet.expiryTimeForPrimarypasswordToSettings
+        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toSettings.expirationTime`,
+        changeSet.expirationTimeForPrimarypasswordToSettings
       );
     }
     if (changeSet.hasOwnProperty("usedPrimarypasswordToApps")) {
@@ -351,10 +353,10 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.usedPrimarypasswordToApps
       );
     }
-    if (changeSet.hasOwnProperty("expiryTimeForPrimarypasswordToApps")) {
+    if (changeSet.hasOwnProperty("expirationTimeForPrimarypasswordToApps")) {
       Services.prefs.setIntPref(
-        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toApps.expiryTime`,
-        changeSet.expiryTimeForPrimarypasswordToApps
+        `selfsovereignindividual.${changeSet.protocolName}.primarypassword.toApps.expirationTime`,
+        changeSet.expirationTimeForPrimarypasswordToApps
       );
     }
     if (changeSet.hasOwnProperty("dialogDisplayOptionPreset")) {

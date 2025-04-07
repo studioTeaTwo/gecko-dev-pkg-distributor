@@ -176,9 +176,9 @@ export default function useChildActorEvent() {
       usedTrustedSites: false,
       nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
-      expiryTimeForPrimarypasswordToSettings: 300000,
+      expirationTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
-      expiryTimeForPrimarypasswordToApps: 86400000,
+      expirationTimeForPrimarypasswordToApps: 86400000,
       dialogDisplayOptionPreset:
         DefaultDialogDisplayOption.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),

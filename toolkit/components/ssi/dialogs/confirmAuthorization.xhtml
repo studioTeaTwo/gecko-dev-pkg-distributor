@@ -34,11 +34,13 @@
 
     <description id="permission" />
     <radiogroup id="settingValue">
-      <radio id="noop" label="Ask everytime" />
+      <radio id="noop" label="Ask everytime after expiration" />
       <radio id="fullTrust" label="Trust this app for ALL requests" />
       <radio id="methodTrust" label="" />
-      <radio id="skipPassword" label="" />
-      <radio id="skipConfirm" label="" />
+      <!--
+      <radio id="confirmOnly" label="" />
+      <radio id="passwordOnly" label="" />
+      -->
     </radiogroup>
 
     <richlistbox id="evidence" class="box-padded" />
