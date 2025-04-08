@@ -16,7 +16,9 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 ChromeUtils.defineLazyGetter(lazy, "NetworkLinkService", () => {
-  return Cc["@mozilla.org/network/network-link-service;1"].getService(
+  // NetworkLinkService is unavailable on some platforms like openBSD.
+  // See tor-browser#43628.
+  return Cc["@mozilla.org/network/network-link-service;1"]?.getService(
     Ci.nsINetworkLinkService
   );
 });
@@ -888,7 +890,7 @@ export const TorConnect = {
    */
   _updateInternetStatus() {
     let newStatus;
-    if (lazy.NetworkLinkService.linkStatusKnown) {
+    if (lazy.NetworkLinkService?.linkStatusKnown) {
       newStatus = lazy.NetworkLinkService.isLinkUp
         ? InternetStatus.Online
         : InternetStatus.Offline;
