@@ -738,7 +738,7 @@ function AlertPrimaryPassword(props) {
             Link,
             {
               color: "teal.500",
-              href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US",
+              href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins",
               children: "primary password"
             }
           ),
@@ -904,11 +904,11 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the display condition of the dialog box, when it has expired or every-time-authorize setting exists." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the condition of the authorization dialog displaying when it has expired or every-time-authorize setting exists." }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Checking “[method]-confirmOnly“ is skipping password dialog and prompting confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
+        "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "Checking “[method]-passwordOnly“ is skipping confirm dialog and prompting password dialog alone.",
+        "Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "If you check both, two dialogs will disappear. Similar to trusted site, but password authorization is subject to expiration constraints.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
@@ -930,7 +930,7 @@ function ExampleNostrKind(props) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Specifies the Nostr Kind you want to display a dialog even if a trusted site is set or the password is valid for that URL.",
+        "Specifies the Nostr Kind you want to display a authorization dialog even if a trusted site is set or the password expiration is still valid for that URL.",
         " "
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),

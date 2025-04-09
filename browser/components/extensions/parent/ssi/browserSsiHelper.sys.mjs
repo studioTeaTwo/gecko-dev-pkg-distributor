@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/**
+ * Internal Helper for browser.ssi.
+ * Validation for user input params should be already done by the calling browser.ssi, except for eventListener.
+ */
+
 /* globals Services */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
@@ -28,10 +33,6 @@ const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 // below is from browser/components/selfsovereignindividual/src/components/nostr/contants.ts
 const SpecialCards = ["*", "<all_urls>"];
 
-/**
- * Internal Helper for browser.ssi.
- * Validation of user input params should be already done by the calling browser.ssi, except for eventListener.
- */
 export const browserSsiHelper = {
   // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   onPrimaryChangedRegister: protocolName => fire => {
@@ -281,6 +282,11 @@ export const browserSsiHelper = {
 };
 
 /**
+ * Executes authorization toward individual URL.
+ * Three steps to proceed:
+ * 1. Registered in Trusted Site? - on background
+ * 2. Is the password authentication valid for the period? - on background
+ * 3. Is correct password entered? - on dialog
  *
  * @param {object} target
  * @param {string} target.origin contentPrincipal.originNoSuffix
@@ -322,6 +328,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     evidence
   );
 
+  // 1. Registered in Trusted Site? - on background
   if (enabledTrustedSites && !_isAuthMandatory) {
     const trusted = isTrusted(url, type, trustedSites);
     console.log("trustedSites", trusted, url, trustedSites);
@@ -331,6 +338,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     // go to primarypassword cache
   }
 
+  // 2. Is the password authentication valid for the period? - on background
   if (enabledPrimarypassword && !_isAuthMandatory) {
     const validCache = isPasswordAuthorized(target, authCache);
     if (validCache) {
@@ -339,6 +347,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
     // go to primarypassword dialog
   }
 
+  // 3. Is correct password entered? - on dialog
   if (enabledPrimarypassword) {
     const isAuthorized = await authWithPassword(
       target,
@@ -355,6 +364,12 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   return false;
 }
 
+/**
+ *
+ * @param {object} context
+ * @param {number} tabId
+ * @returns
+ */
 function getOrigin(context, tabId) {
   const { browser, window } = context.extension.tabManager.get(tabId);
 
@@ -443,6 +458,9 @@ function isPasswordAuthorized(target, authCache) {
 }
 
 /**
+ * Execute two-step auth dialogs
+ * 1. confirmation dialog
+ * 2. password prompt
  *
  * @param {object} target
  * @param {string} target.origin contentPrincipal.originNoSuffix
@@ -520,9 +538,7 @@ async function authWithPassword(
     return true;
   }
 
-  // Execute two-step auth dialogs
-  // 1. confirmation dialog
-  // 2. password prompt
+  // Proceed Dialogs
 
   // Common text among two dialogs
   const systemMessage = DIALOG_SYSTEM_MESSAGE(protocolName)[type];
@@ -609,6 +625,16 @@ async function authWithPassword(
     method => method === `${type}-confirmOnly`
   );
   if (!skippedPassword) {
+    const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
+      lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    );
+    const isPrimaryPasswordSet = lazy.SsiHelper.isPrimaryPasswordSet;
+    // Linux currently only supports Primary Password.
+    if (!isOSAuthEnabled && !isPrimaryPasswordSet) {
+      lazy.SsiHelper.showAlertPrimaryPasswordDialog(dialogInfo.window);
+      return false;
+    }
+
     const messageText = {
       value: `${
         AppConstants.platform === "win" ? "Nightly is trying to " : ""
@@ -617,9 +643,6 @@ async function authWithPassword(
     const captionText = {
       value: AppConstants.platform === "win" ? "Nightly" : "",
     }; // caption only works on windows.
-    const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
-      lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
-    );
     if (isOSAuthEnabled) {
       const messageId = MESSAGE_ID + "-" + AppConstants.platform;
     }

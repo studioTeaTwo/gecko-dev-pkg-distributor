@@ -780,6 +780,17 @@ export const SsiHelper = {
 
     return returnVals;
   },
+
+  async showAlertPrimaryPasswordDialog(window) {
+    const screenX = window.screen.width / 2 - 300;
+    const screenY = window.screen.height / 2 - 300;
+    let features = `chrome,resizable,screenX=${screenX},screenY=${screenY}`;
+    const win = window.openDialog(
+      "chrome://ssi/content/dialogs/alertSetPrimaryPassword.xhtml",
+      "",
+      features
+    );
+  },
 };
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {

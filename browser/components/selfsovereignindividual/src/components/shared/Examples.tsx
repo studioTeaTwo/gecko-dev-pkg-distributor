@@ -129,17 +129,17 @@ export function ExplainDialogDisplayOption(props: {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Sets the display condition of the dialog box, when it has expired or
-            every-time-authorize setting exists.
+            Sets the condition of the authorization dialog displaying when it
+            has expired or every-time-authorize setting exists.
           </Text>
           <Text size="sm">
-            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping password
-            dialog and prompting confirm dialog alone. The expiration is
+            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the password
+            dialog and prompting the confirm dialog alone. The expiration is
             counting up in the background and dialog will reappear once it has
             expired.
             <br />
-            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
-            dialog and prompting password dialog alone.
+            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the confirm
+            dialog and prompting the password dialog alone.
             <br />
             If you check both, two dialogs will disappear. Similar to trusted
             site, but password authorization is subject to expiration
@@ -177,8 +177,9 @@ export function ExampleNostrKind(props: { width?: string }) {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Specifies the Nostr Kind you want to display a dialog even if a
-            trusted site is set or the password is valid for that URL.{" "}
+            Specifies the Nostr Kind you want to display a authorization dialog
+            even if a trusted site is set or the password expiration is still
+            valid for that URL.{" "}
           </Text>
           <Text size="sm">
             Default preset is set the first time you authorize with a password.
