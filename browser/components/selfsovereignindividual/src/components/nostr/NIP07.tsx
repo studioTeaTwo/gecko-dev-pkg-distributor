@@ -53,12 +53,12 @@ import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import {
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
   DialogDisplayOptions,
   NallowedMethods,
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
 } from "./contants";
 import {
   ExampleNostrKind,
@@ -169,7 +169,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
           enabled: true,
-          permissions: {},
+          permissions: { nallowedMethod: DefaultNallowedMethods },
         });
       }
       modifyCredentialToStore(
@@ -349,9 +349,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
     onPrefChanged({
       protocolName: "nostr",
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
     });
-    setNewNallowedMethodPreset(DefaultNallowedMethod);
+    setNewNallowedMethodPreset(DefaultNallowedMethods);
   };
 
   const handleChangeDialogDisplayOption = (value: string) => {
@@ -382,9 +382,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     onPrefChanged({
       protocolName: "nostr",
       dialogDisplayOptionPreset:
-        DefaultDialogDisplayOption.filter(Boolean).join(","),
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
 
   const getTrustedSites = useCallback(() => {
@@ -667,6 +667,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Any URL registered here will be allowed for your key
+                      indefinitely and unconditionally.
+                    </Text>
+                  </GridItem>
                   <GridItem>
                     <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
                   </GridItem>
@@ -765,6 +771,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Your consent by the OS account password or the Firefox
+                      primary password, having expiration.
+                    </Text>
+                  </GridItem>
                   <GridItem>
                     <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
                       Enable

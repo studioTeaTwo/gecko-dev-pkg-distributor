@@ -761,7 +761,8 @@ export const SsiHelper = {
   },
 
   async showConfirmAuthorizationDialog(dialogInfo) {
-    const { window, permission, caption, evidence, submission } = dialogInfo;
+    const { window, permission, description, previousSelectionOnConfirm } =
+      dialogInfo;
 
     // TODO(ssb): adjust the postion aligning with password dialog per OS
     const screenX = window.screen.width / 2 - 300;
@@ -774,7 +775,7 @@ export const SsiHelper = {
       "chrome://ssi/content/dialogs/confirmAuthorization.xhtml",
       "",
       features,
-      { permission, caption, evidence, submission },
+      { permission, description, previousSelectionOnConfirm },
       returnVals
     );
 

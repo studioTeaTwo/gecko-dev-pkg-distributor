@@ -42,17 +42,19 @@ import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import {
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
   DialogDisplayOptions,
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
   NallowedMethods,
+  EveryTimeAuthorizedMethods,
 } from "./contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
   ExplainDialogDisplayOption,
+  ExplainEveryTimeAuthorizedMethod,
   ExplainNallowedMethod,
 } from "../shared/Examples";
 import { changePrimary } from "../shared/functions";
@@ -159,7 +161,7 @@ export default function KeyEditor(props: Props) {
             url: url,
             name: url !== "*" ? "" : "<all_urls>",
             enabled: true,
-            permissions: { nallowedMethod: DefaultNallowedMethod },
+            permissions: { nallowedMethod: DefaultNallowedMethods },
           },
         ]);
     HandleChangeValue({ trustedSites: value });
@@ -219,6 +221,32 @@ export default function KeyEditor(props: Props) {
     HandleChangeValue({ passwordAuthorizedSites });
   };
 
+  const handleSaveEveryTimeAuthorizedMethods = (
+    siteNo: number,
+    value: string
+  ) => {
+    const passwordAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.passwordAuthorizedSites)
+    );
+    if (
+      passwordAuthorizedSites[
+        siteNo
+      ].permissions.everyTimeAuthorizedMethods.includes(value)
+    ) {
+      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods =
+        passwordAuthorizedSites[
+          siteNo
+        ].permissions.everyTimeAuthorizedMethods.filter(
+          method => method !== value
+        );
+    } else {
+      passwordAuthorizedSites[
+        siteNo
+      ].permissions.everyTimeAuthorizedMethods.push(value);
+    }
+    HandleChangeValue({ passwordAuthorizedSites });
+  };
+
   const handleSaveNallowedMethod = (siteNo: number, value: string) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
     if (trustedSites[siteNo].permissions.nallowedMethod.includes(value)) {
@@ -228,12 +256,12 @@ export default function KeyEditor(props: Props) {
     } else {
       trustedSites[siteNo].permissions.nallowedMethod.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    HandleChangeValue({ trustedSites });
   };
   const handleResetNallowedMethod = (siteNo: number) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
-    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethods;
+    HandleChangeValue({ trustedSites });
   };
 
   const handleSaveSkippedDialog = (siteNo: number, value: string) => {
@@ -257,7 +285,7 @@ export default function KeyEditor(props: Props) {
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
     passwordAuthorizedSites[siteNo].permissions.skippedDialog =
-      DefaultDialogDisplayOption;
+      DefaultDialogDisplayOptions;
     HandleChangeValue({ passwordAuthorizedSites });
   };
 
@@ -290,7 +318,12 @@ export default function KeyEditor(props: Props) {
               <Editable
                 defaultValue={editingKey.properties.displayName}
                 onSubmit={value =>
-                  HandleChangeValue({ properties: { displayName: value } })
+                  HandleChangeValue({
+                    properties: {
+                      ...editingKey.properties,
+                      displayName: value,
+                    },
+                  })
                 }
                 fontSize="xl"
                 isPreviewFocusable
@@ -546,6 +579,46 @@ export default function KeyEditor(props: Props) {
                               p="2"
                               alignItems="flex-start"
                             >
+                              <Heading size="sm">
+                                The Method authorized every time
+                              </Heading>
+                              <HStack>
+                                <Menu>
+                                  <MenuButton
+                                    as={Button}
+                                    variant="outline"
+                                    colorScheme="blue"
+                                  >
+                                    Select Options
+                                  </MenuButton>
+                                  <MenuList>
+                                    {EveryTimeAuthorizedMethods.map(option => (
+                                      <MenuItem
+                                        key={option}
+                                        closeOnSelect={false}
+                                      >
+                                        <Checkbox
+                                          isChecked={site.permissions.everyTimeAuthorizedMethods.includes(
+                                            option
+                                          )}
+                                          onChange={() =>
+                                            handleSaveEveryTimeAuthorizedMethods(
+                                              i,
+                                              option
+                                            )
+                                          }
+                                        >
+                                          {option}
+                                        </Checkbox>
+                                      </MenuItem>
+                                    ))}
+                                  </MenuList>
+                                </Menu>
+                              </HStack>
+                              <ExplainEveryTimeAuthorizedMethod
+                                width="100%"
+                                protocolName="nostr"
+                              />
                               <Heading size="sm">
                                 Event Kinds authorized every time
                               </Heading>

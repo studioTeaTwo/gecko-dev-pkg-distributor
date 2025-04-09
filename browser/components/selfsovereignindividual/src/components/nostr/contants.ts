@@ -10,7 +10,16 @@ export const DefaultExcludedKindList = {
 export const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
 
 export const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
-export const DefaultNallowedMethod = [];
+export const DefaultNallowedMethods = [];
+
+export const EveryTimeAuthorizedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "custom",
+];
+export const DefaultEveryTimeAuthorizedMethods = [];
 
 export const DialogDisplayOptions = [
   "read-confirmOnly",
@@ -24,14 +33,14 @@ export const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly",
 ];
-export const DefaultDialogDisplayOption = [];
+export const DefaultDialogDisplayOptions = [];
 
 export const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
     enabled: true,
-    permissions: { nallowedMethod: DefaultNallowedMethod },
+    permissions: { nallowedMethod: DefaultNallowedMethods },
   },
 ];
 
@@ -46,5 +55,7 @@ export const NostrTemplate: Omit<NostrCredential, "guid" | "timeCreated"> = {
   passwordAuthorizedSites: [],
   properties: {
     displayName: "",
+    generationMethod: "import",
+    memo: "",
   },
 };

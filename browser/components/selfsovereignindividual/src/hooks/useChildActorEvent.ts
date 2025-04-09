@@ -6,9 +6,9 @@ import {
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
 import {
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
 } from "../components/nostr/contants";
 
 /**
@@ -174,13 +174,13 @@ export default function useChildActorEvent() {
       tabPin: "",
       tabPinInNip07: "",
       usedTrustedSites: false,
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
       expirationTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
       expirationTimeForPrimarypasswordToApps: 86400000,
       dialogDisplayOptionPreset:
-        DefaultDialogDisplayOption.filter(Boolean).join(","),
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedBuiltinNip07: true,
       usedAccountChanged: true,

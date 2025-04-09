@@ -7,6 +7,50 @@
  * Validation for user input params should be already done by the calling browser.ssi, except for eventListener.
  */
 
+/**
+ * @typedef {Object} Target
+ * @property {string} origin contentPrincipal.originNoSuffix
+ * @property {string} url contentPrincipal.spec
+ */
+
+/**
+ * @typedef {string} MethodType "read" | "sign" | "encrypt" | "decrypt" | "custom"
+ */
+
+/**
+ * @typedef {Object} Prefs
+ * @property {boolean} enabledTrustedSites
+ * @property {boolean} enabledPrimarypassword
+ * @property {string[]} nallowedMethodPreset
+ * @property {string[]} dialogDisplayOptionPreset
+ * @property {number} expirationTime
+ * @property {string[]=} excludedKindsPreset nostr only
+ */
+
+/**
+ * @typedef {Object} Credential
+ * @property {string} protocolName
+ * @property {string} credentialName
+ */
+
+/**
+ * @typedef {Object} AuthCache
+ * @property {string} cacheKey
+ * @property {object[]} trustedSites credential.trustedSites
+ * @property {object[]} passwordAuthorizedSites credential.passwordAuthorizedSites
+ */
+
+/**
+ * @typedef {Object} DialogInfo
+ * @property {MethodType} type
+ * @property {object} evidence NostrEvent etc.
+ * @property {string} caption
+ * @property {string} submission
+ * @property {boolean} enforce
+ * @property {object=} embedderElement tab.browser.browsingContext.embedderElement
+ * @property {object=} window nativeTab.ownerGlobal
+ */
+
 /* globals Services */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
@@ -168,15 +212,8 @@ export const browserSsiHelper = {
    *
    * @param {Context} context
    * @param {number} tabId
-   * @param {object} credential
-   * @param {string} credential.protocolName
-   * @param {string} credential.credentialName
-   * @param {object} dialogInfo
-   * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
-   * @param {object} dialogInfo.evidence NostrEvent etc.
-   * @param {string} dialogInfo.caption
-   * @param {string} dialogInfo.submission
-   * @param {boolean} dialogInfo.enforce
+   * @param {Credential} credential
+   * @param {DialogInfo} dialogInfo
    * @param {boolean} onlyExtension
    * @returns {Promise<bool>}
    */
@@ -229,10 +266,14 @@ export const browserSsiHelper = {
         ? internalPrefs["trustedSites.nallowedMethodPreset"].split(",")
         : [],
       enabledPrimarypassword: internalPrefs["primarypassword.toApps.enabled"],
-      dialogDisplayOptionPreset:
-        internalPrefs["primarypassword.toApps.dialogDisplayOptionPreset"].split(
-          ","
-        ),
+      dialogDisplayOptionPreset: internalPrefs[
+        "trustedSites.nallowedMethodPreset"
+      ]
+        ? internalPrefs[
+            "primarypassword.toApps.dialogDisplayOptionPreset"
+          ].split(",")
+        : [],
+      expirationTime: internalPrefs["primarypassword.toApps.expirationTime"],
     };
     if (protocolName === "nostr") {
       prefs.excludedKindsPreset = internalPrefs[
@@ -247,8 +288,6 @@ export const browserSsiHelper = {
       cacheKey,
       trustedSites: auth ? auth.trustedSites : [],
       passwordAuthorizedSites: auth ? auth.passwordAuthorizedSites : [],
-      expirationTimePref:
-        internalPrefs["primarypassword.toApps.expirationTime"],
     };
     const dialog = {
       type,
@@ -288,44 +327,25 @@ export const browserSsiHelper = {
  * 2. Is the password authentication valid for the period? - on background
  * 3. Is correct password entered? - on dialog
  *
- * @param {object} target
- * @param {string} target.origin contentPrincipal.originNoSuffix
- * @param {string} target.url contentPrincipal.spec
+ * @param {Target} target
  * @param {string} extensionName
- * @param {object} prefs
- * @param {boolean} prefs.enabledTrustedSites
- * @param {boolean} prefs.enabledPrimarypassword
- * @param {string[]} prefs.nallowedMethodPreset
- * @param {string[]} prefs.dialogDisplayOptionPreset
- * @param {string[]=} prefs.excludedKindsPreset
- * @param {object} authCache
- * @param {string} authCache.cacheKey
- * @param {object[]} authCache.trustedSites credential.trustedSites
- * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expirationTimePref
- * @param {object} dialogInfo
- * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
- * @param {object} dialogInfo.evidence
- * @param {string} dialogInfo.caption
- * @param {string} dialogInfo.submission
- * @param {boolean} dialogInfo.enforce
- * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
- * @param {boolean} dialogInfo.window nativeTab.ownerGlobal
+ * @param {Prefs} prefs
+ * @param {AuthCache} authCache
+ * @param {DialogInfo} dialogInfo
  * @returns {Promise<boolean>}
  */
 async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
   const { url } = target;
   const { enabledTrustedSites, enabledPrimarypassword } = prefs;
   const { cacheKey, trustedSites, passwordAuthorizedSites } = authCache;
-  const { evidence, enforce, type } = dialogInfo;
+  const { type } = dialogInfo;
 
   const protocolName = cacheKey.split(":")[0];
   const _isAuthMandatory = isAuthMandatory(
     url,
     protocolName,
     passwordAuthorizedSites,
-    enforce,
-    evidence
+    dialogInfo
   );
 
   // 1. Registered in Trusted Site? - on background
@@ -340,7 +360,7 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
 
   // 2. Is the password authentication valid for the period? - on background
   if (enabledPrimarypassword && !_isAuthMandatory) {
-    const validCache = isPasswordAuthorized(target, authCache);
+    const validCache = isPasswordAuthorized(target, type, authCache);
     if (validCache) {
       return true;
     }
@@ -390,7 +410,7 @@ function getOrigin(context, tabId) {
 /**
  *
  * @param {string} url
- * @param {string} type "read" | "sign" | "encrypt" | "decrypt" | "custom"
+ * @param {MethodType} type
  * @param {object[]} trustedSites
  * @returns {boolean}
  */
@@ -399,6 +419,7 @@ function isTrusted(url, type, trustedSites) {
     if (!site.enabled) {
       return false;
     }
+
     if (SpecialCards.includes(site.url)) {
       return true;
     }
@@ -430,17 +451,12 @@ function isTrusted(url, type, trustedSites) {
 
 /**
  *
- * @param {object} target
- * @param {string} target.origin contentPrincipal.originNoSuffix
- * @param {string} target.url contentPrincipal.spec
- * @param {object} authCache
- * @param {string} authCache.cacheKey
- * @param {object[]} authCache.trustedSites credential.trustedSites
- * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expirationTimePref
+ * @param {Target} target
+ * @param {MethodType} type
+ * @param {AuthCache} authCache
  * @returns {boolean}
  */
-function isPasswordAuthorized(target, authCache) {
+function isPasswordAuthorized(target, type, authCache) {
   const { url } = target;
   const { passwordAuthorizedSites } = authCache;
 
@@ -452,9 +468,23 @@ function isPasswordAuthorized(target, authCache) {
     return false;
   }
 
-  const validSite = passwordAuthorizedSite.expirationTime > Date.now();
-  console.log("primarypassword-cache", validSite, url, passwordAuthorizedSites);
-  return validSite;
+  // This is lower priority than `skippedDialog`, so it differenciate _isAuthMandatory.
+  const authorizedEveryTime =
+    passwordAuthorizedSite.permissions.everyTimeAuthorizedMethods.includes(
+      type
+    );
+  if (authorizedEveryTime) {
+    return false;
+  }
+
+  const notExpired = passwordAuthorizedSite.expirationTime > Date.now();
+  console.log(
+    "primarypassword-cache",
+    notExpired,
+    url,
+    passwordAuthorizedSites
+  );
+  return notExpired;
 }
 
 /**
@@ -462,29 +492,11 @@ function isPasswordAuthorized(target, authCache) {
  * 1. confirmation dialog
  * 2. password prompt
  *
- * @param {object} target
- * @param {string} target.origin contentPrincipal.originNoSuffix
- * @param {string} target.url contentPrincipal.spec
+ * @param {Target} target
  * @param {string} extensionName
- * @param {object} prefs
- * @param {boolean} prefs.enabledTrustedSites
- * @param {boolean} prefs.enabledPrimarypassword
- * @param {string[]} prefs.nallowedMethodPreset
- * @param {string[]} prefs.dialogDisplayOptionPreset
- * @param {string[]=} prefs.excludedKindsPreset
- * @param {object} authCache
- * @param {string} authCache.cacheKey
- * @param {object[]} authCache.trustedSites credential.trustedSites
- * @param {object[]} authCache.passwordAuthorizedSites credential.passwordAuthorizedSites
- * @param {number} authCache.expirationTimePref
- * @param {object} dialogInfo
- * @param {string} dialogInfo.type "read" | "sign" | "encrypt" | "decrypt" | "custom"
- * @param {object} dialogInfo.evidence
- * @param {string} dialogInfo.caption
- * @param {string} dialogInfo.submission
- * @param {boolean} dialogInfo.enforce
- * @param {object} dialogInfo.embedderElement tab.browser.browsingContext.embedderElement
- * @param {object} dialogInfo.window nativeTab.ownerGlobal
+ * @param {Prefs} prefs
+ * @param {AuthCache} authCache
+ * @param {DialogInfo} dialogInfo
  * @returns {boolean}
  */
 async function authWithPassword(
@@ -495,7 +507,7 @@ async function authWithPassword(
   dialogInfo
 ) {
   const { url, origin } = target;
-  const { cacheKey, passwordAuthorizedSites, expirationTimePref } = authCache;
+  const { cacheKey, passwordAuthorizedSites } = authCache;
   const { type, evidence, enforce, embedderElement } = dialogInfo;
 
   // Prepare expiration time.
@@ -508,7 +520,10 @@ async function authWithPassword(
       url: origin,
       name: extensionName,
       expirationTime: 0,
-      permissions: { skippedDialog: prefs.dialogDisplayOptionPreset },
+      permissions: {
+        everyTimeAuthorizedMethods: [],
+        skippedDialog: prefs.dialogDisplayOptionPreset,
+      },
     };
     if (protocolName === "nostr") {
       passwordAuthorizedSite.permissions.excludedKinds =
@@ -529,7 +544,12 @@ async function authWithPassword(
     enforce,
     evidence
   );
-  if (_isAuthMandatory) {
+  // This is lower priority than `skippedDialog`, so it differenciate _isAuthMandatory.
+  const authorizedEveryTime =
+    passwordAuthorizedSite.permissions.everyTimeAuthorizedMethods.includes(
+      type
+    );
+  if (_isAuthMandatory || authorizedEveryTime) {
     _authExpirationTime = 0;
   }
 
@@ -546,9 +566,10 @@ async function authWithPassword(
   const baseCaption = `${systemMessage}${eol}to ${origin}`;
 
   // 1. Dispaly confirmation dialog
-  const skippedConfirm = passwordAuthorizedSite.permissions.skippedDialog.some(
-    method => method === `${type}-passwordOnly`
-  );
+  const skippedConfirm =
+    passwordAuthorizedSite.permissions.skippedDialog.includes(
+      `${type}-passwordOnly`
+    );
   if (_isAuthMandatory || !skippedConfirm) {
     const permissionText = `Permission: ${baseCaption}`;
     const result = await lazy.SsiHelper.showConfirmAuthorizationDialog({
@@ -556,40 +577,67 @@ async function authWithPassword(
       permission: {
         text: permissionText,
         method: type,
-        cacheKey,
+        expirationTime: prefs.expirationTime,
       },
-      caption: dialogInfo.caption,
-      evidence: dialogInfo.evidence,
-      submission: dialogInfo.submission,
+      description: {
+        caption: dialogInfo.caption,
+        evidence: dialogInfo.evidence,
+        submission: dialogInfo.submission,
+      },
+      previousSelectionOnConfirm:
+        passwordAuthorizedSite.permissions.previousSelectionOnConfirm,
     });
-    // The user has trusted this time, so return true.
-    if (
-      result.confirmed &&
-      ["fullTrust", "methodTrust", "confirmOnly", "passwordOnly"].includes(
-        result.settingValue
-      )
-    ) {
+    // Update settings except `result.settingValue = "noop"`. "noop" is correspond with !result.confirmed.
+    if (result.confirmed) {
       // Save new setting value
-      if (result.settingValue === "confirmOnly") {
+      passwordAuthorizedSite.permissions.previousSelectionOnConfirm =
+        result.settingValue;
+      Services.ssi.authCache.update(cacheKey, {
+        passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
+      });
+      // Update for each individual result
+      if (
+        ["password", "everytime", "passwordOnly"].includes(result.settingValue)
+      ) {
+        if (result.settingValue === "password") {
+          passwordAuthorizedSite.permissions.everyTimeAuthorizedMethods = [];
+        } else if (
+          result.settingValue === "everytime" &&
+          !passwordAuthorizedSite.permissions.everyTimeAuthorizedMethods.includes(
+            type
+          )
+        ) {
+          passwordAuthorizedSite.permissions.everyTimeAuthorizedMethods.push(
+            type
+          );
+        } else if (
+          result.settingValue === "passwordOnly" &&
+          !passwordAuthorizedSite.permissions.skippedDialog.includes(
+            `${type}-${result.settingValue}`
+          )
+        ) {
+          passwordAuthorizedSite.permissions.skippedDialog.push(
+            `${type}-${result.settingValue}`
+          );
+        }
+        Services.ssi.authCache.update(cacheKey, {
+          passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
+        });
+        // go to primarypassword dialog
+      } else if (result.settingValue === "confirmOnly") {
         passwordAuthorizedSite.permissions.skippedDialog.push(
           `${type}-${result.settingValue}`
         );
-        passwordAuthorizedSite.expirationTime =
-          expirationTimePref > 0 ? Date.now() + expirationTimePref : 0;
+        const shouldUpdate = prefs.expirationTime > 0;
+        passwordAuthorizedSite.expirationTime = shouldUpdate
+          ? Date.now() + prefs.expirationTime
+          : 0;
         Services.ssi.authCache.update(cacheKey, {
           passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
         });
         // Since it's considered as approval only with the confirmation dialog, we will round it up.
         return true;
-      } else if (result.settingValue === "passwordOnly") {
-        passwordAuthorizedSite.permissions.skippedDialog.push(
-          `${type}-${result.settingValue}`
-        );
-        Services.ssi.authCache.update(cacheKey, {
-          passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
-        });
-        // go to primarypassword dialog
-      } else {
+      } else if (["fullTrust", "methodTrust"].includes(result.settingValue)) {
         // Save new trusted site
         const auth = Services.ssi.authCache.get(cacheKey);
         const idx = auth.trustedSites.findIndex(site => site.url === origin);
@@ -605,7 +653,10 @@ async function authWithPassword(
             permissions: { nallowedMethod: [] },
           };
         }
-        if (result.settingValue === "methodTrust") {
+        if (
+          result.settingValue === "methodTrust" &&
+          !newVal.permissions.nallowedMethod.includes(type)
+        ) {
           newVal.permissions.nallowedMethod.push(type);
         }
         Services.ssi.authCache.update(cacheKey, {
@@ -614,16 +665,18 @@ async function authWithPassword(
         // Since it was trusted, we will round it up.
         return true;
       }
-    } else if (!result.confirmed) {
+    } else {
       // The user has canceled, so return false.
       return false;
     }
   }
 
   // 2. Suggest password prompt
-  const skippedPassword = passwordAuthorizedSite.permissions.skippedDialog.some(
-    method => method === `${type}-confirmOnly`
-  );
+  const skippedPassword =
+    !_isAuthMandatory &&
+    passwordAuthorizedSite.permissions.skippedDialog.includes(
+      `${type}-confirmOnly`
+    );
   if (!skippedPassword) {
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
       lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
@@ -660,8 +713,10 @@ async function authWithPassword(
       "success_unsupported_platform",
     ].includes(telemetryEvent.value);
     if (isAuthorized && enteredPassword) {
-      passwordAuthorizedSite.expirationTime =
-        expirationTimePref > 0 ? Date.now() + expirationTimePref : 0;
+      const shouldUpdate = prefs.expirationTime > 0;
+      passwordAuthorizedSite.expirationTime = shouldUpdate
+        ? Date.now() + prefs.expirationTime
+        : 0;
       Services.ssi.authCache.update(cacheKey, {
         passwordAuthorizedSites: [{ ...passwordAuthorizedSite }],
       });
@@ -683,31 +738,33 @@ async function authWithPassword(
  * @param {string} url
  * @param {string} protocolName
  * @param {object[]} passwordAuthorizedSites
- * @param {boolean} enforce
- * @param {object} evidence
+ * @param {DialogInfo} dialogInfo
  * @returns {boolean}
  */
 function isAuthMandatory(
   url,
   protocolName,
   passwordAuthorizedSites,
-  enforce,
-  evidence
+  dialogInfo
 ) {
+  const { evidence, enforce } = dialogInfo;
+
   // NOTE(ssb): exclude it for now to avoid duplication with tab apps. We need to reconsider here to cover the use case of extension only.
   if (url.startsWith("moz-extension:")) {
     return false;
   }
+
   const passwordAuthorizedSite = passwordAuthorizedSites.find(site =>
     url.startsWith(site.url)
   );
   if (!passwordAuthorizedSite) {
-    return false;
+    return true;
   }
 
   if (enforce) {
     return true;
   }
+
   if (protocolName === "nostr") {
     const hasKind =
       evidence && evidence.kind && typeof evidence.kind === "number";

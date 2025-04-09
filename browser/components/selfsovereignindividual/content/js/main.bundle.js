@@ -368,7 +368,14 @@ const DefaultExcludedKindList = {
 };
 const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
 const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
-const DefaultNallowedMethod = [];
+const DefaultNallowedMethods = [];
+const EveryTimeAuthorizedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "custom"
+];
 const DialogDisplayOptions = [
   "read-confirmOnly",
   "read-passwordOnly",
@@ -381,13 +388,13 @@ const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly"
 ];
-const DefaultDialogDisplayOption = [];
+const DefaultDialogDisplayOptions = [];
 const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
     enabled: true,
-    permissions: { nallowedMethod: DefaultNallowedMethod }
+    permissions: { nallowedMethod: DefaultNallowedMethods }
   }
 ];
 const NostrTemplate = {
@@ -401,7 +408,9 @@ const NostrTemplate = {
   trustedSites: [],
   passwordAuthorizedSites: [],
   properties: {
-    displayName: ""
+    displayName: "",
+    generationMethod: "import",
+    memo: ""
   }
 };
 function initStore() {
@@ -523,12 +532,12 @@ function useChildActorEvent() {
       tabPin: "",
       tabPinInNip07: "",
       usedTrustedSites: false,
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
       expirationTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
       expirationTimeForPrimarypasswordToApps: 864e5,
-      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(","),
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedBuiltinNip07: true,
       usedAccountChanged: true
@@ -894,6 +903,21 @@ function ExplainNallowedMethod(props) {
     ] })
   ] }) });
 }
+function ExplainEveryTimeAuthorizedMethod(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Explanation" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "The methods checked here will execute the authorization dialogs even if the previous password authorization has not yet expired." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the dialog dispaly settings, so if both are present, dialog will disappear." })
+    ] })
+  ] }) });
+}
 function ExplainDialogDisplayOption(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
@@ -904,7 +928,7 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the condition of the authorization dialog displaying when it has expired or every-time-authorize setting exists." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the conditions of the authorization dialogs displaying when it has expired or the every-time-authorize settings exists." }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
         "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
@@ -914,8 +938,8 @@ function ExplainDialogDisplayOption(props) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "If you uncheck both, two dialogs will appear."
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
-      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, authorization will proceed." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And you can edit the settings for the corresponding URL for each key." }),
+      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, dialog will appear." })
     ] })
   ] }) });
 }
@@ -930,7 +954,7 @@ function ExampleNostrKind(props) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Specifies the Nostr Kind you want to display a authorization dialog even if a trusted site is set or the password expiration is still valid for that URL.",
+        "Specifies the Nostr Kind you want to necessarily display a authorization dialog even if a trusted site is set or a password authorization has not yet expired for this URL.",
         " "
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
@@ -1058,7 +1082,7 @@ function KeyEditor(props) {
         url,
         name: url !== "*" ? "" : "<all_urls>",
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod }
+        permissions: { nallowedMethod: DefaultNallowedMethods }
       }
     ]);
     HandleChangeValue({ trustedSites: value });
@@ -1106,6 +1130,19 @@ function KeyEditor(props) {
     passwordAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
     HandleChangeValue({ passwordAuthorizedSites });
   };
+  const handleSaveEveryTimeAuthorizedMethods = (siteNo, value) => {
+    const passwordAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.passwordAuthorizedSites)
+    );
+    if (passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.includes(value)) {
+      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods = passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.filter(
+        (method) => method !== value
+      );
+    } else {
+      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.push(value);
+    }
+    HandleChangeValue({ passwordAuthorizedSites });
+  };
   const handleSaveNallowedMethod = (siteNo, value) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
     if (trustedSites[siteNo].permissions.nallowedMethod.includes(value)) {
@@ -1113,12 +1150,12 @@ function KeyEditor(props) {
     } else {
       trustedSites[siteNo].permissions.nallowedMethod.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    HandleChangeValue({ trustedSites });
   };
   const handleResetNallowedMethod = (siteNo) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
-    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethods;
+    HandleChangeValue({ trustedSites });
   };
   const handleSaveSkippedDialog = (siteNo, value) => {
     const passwordAuthorizedSites = JSON.parse(
@@ -1137,7 +1174,7 @@ function KeyEditor(props) {
     const passwordAuthorizedSites = JSON.parse(
       JSON.stringify(editingKey.passwordAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOption;
+    passwordAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOptions;
     HandleChangeValue({ passwordAuthorizedSites });
   };
   function EditableControls() {
@@ -1164,7 +1201,12 @@ function KeyEditor(props) {
           Editable,
           {
             defaultValue: editingKey.properties.displayName,
-            onSubmit: (value) => HandleChangeValue({ properties: { displayName: value } }),
+            onSubmit: (value) => HandleChangeValue({
+              properties: {
+                ...editingKey.properties,
+                displayName: value
+              }
+            }),
             fontSize: "xl",
             isPreviewFocusable: true,
             children: [
@@ -1421,6 +1463,45 @@ function KeyEditor(props) {
                         p: "2",
                         alignItems: "flex-start",
                         children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "The Method authorized every time" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuButton,
+                              {
+                                as: Button,
+                                variant: "outline",
+                                colorScheme: "blue",
+                                children: "Select Options"
+                              }
+                            ),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: EveryTimeAuthorizedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuItem,
+                              {
+                                closeOnSelect: false,
+                                children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Checkbox,
+                                  {
+                                    isChecked: site.permissions.everyTimeAuthorizedMethods.includes(
+                                      option
+                                    ),
+                                    onChange: () => handleSaveEveryTimeAuthorizedMethods(
+                                      i,
+                                      option
+                                    ),
+                                    children: option
+                                  }
+                                )
+                              },
+                              option
+                            )) })
+                          ] }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainEveryTimeAuthorizedMethod,
+                            {
+                              width: "100%",
+                              protocolName: "nostr"
+                            }
+                          ),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Event Kinds authorized every time" }),
                           /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                             /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1596,7 +1677,7 @@ function Nostr$2(props) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod }
+        permissions: { nallowedMethod: DefaultNallowedMethods }
       }))
     ],
     [prefs.base.addons]
@@ -2003,7 +2084,7 @@ function NIP07(props) {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
           enabled: true,
-          permissions: {}
+          permissions: { nallowedMethod: DefaultNallowedMethods }
         });
       }
       modifyCredentialToStore2(
@@ -2150,9 +2231,9 @@ function NIP07(props) {
     }
     onPrefChanged2({
       protocolName: "nostr",
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(",")
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(",")
     });
-    setNewNallowedMethodPreset(DefaultNallowedMethod);
+    setNewNallowedMethodPreset(DefaultNallowedMethods);
   };
   const handleChangeDialogDisplayOption = (value) => {
     let newVal = [];
@@ -2179,9 +2260,9 @@ function NIP07(props) {
     }
     onPrefChanged2({
       protocolName: "nostr",
-      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(",")
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(",")
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
@@ -2404,6 +2485,7 @@ function NIP07(props) {
                         gap: 6,
                         alignItems: "start",
                         children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely and unconditionally." }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                             Switch,
@@ -2504,6 +2586,7 @@ function NIP07(props) {
                         gap: 6,
                         alignItems: "start",
                         children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Your consent by the OS account password or the Firefox primary password, having expiration." }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                             Switch,

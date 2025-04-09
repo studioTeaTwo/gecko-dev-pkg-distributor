@@ -97,6 +97,7 @@ export interface Credential
 export interface PasswordAuthorizedSitesForNostr
   extends PasswordAuthorizedSites {
   permissions: {
+    everyTimeAuthorizedMethods: string[];
     skippedDialog: string[];
     excludedKinds: string[];
   };

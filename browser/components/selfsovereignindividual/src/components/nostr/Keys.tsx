@@ -37,7 +37,7 @@ import {
 } from "../../shared/keys";
 import Secret from "../shared/Secret";
 import {
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   DefaultTrustedSites,
   NostrTemplate,
 } from "./contants";
@@ -85,7 +85,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod },
+        permissions: { nallowedMethod: DefaultNallowedMethods },
       })),
     ],
     [prefs.base.addons]

@@ -113,6 +113,35 @@ export function ExplainNallowedMethod(props: {
   );
 }
 
+export function ExplainEveryTimeAuthorizedMethod(props: {
+  width?: string;
+  protocolName: ProtocolName;
+}) {
+  return (
+    <Accordion allowToggle width={props.width || "100%"}>
+      <AccordionItem css={{ border: "none" }}>
+        <AccordionButton>
+          <HStack as="span" flex="1" textAlign="left">
+            <Icon as={MdHelp} />
+            <Text>Explanation</Text>
+          </HStack>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <Text size="sm">
+            The methods checked here will execute the authorization dialogs even
+            if the previous password authorization has not yet expired.
+          </Text>
+          <Text>
+            This has lower priority than the dialog dispaly settings, so if both
+            are present, dialog will disappear.
+          </Text>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
 export function ExplainDialogDisplayOption(props: {
   width?: string;
   protocolName: ProtocolName;
@@ -129,8 +158,8 @@ export function ExplainDialogDisplayOption(props: {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Sets the condition of the authorization dialog displaying when it
-            has expired or every-time-authorize setting exists.
+            Sets the conditions of the authorization dialogs displaying when it
+            has expired or the every-time-authorize settings exists.
           </Text>
           <Text size="sm">
             Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the password
@@ -149,13 +178,13 @@ export function ExplainDialogDisplayOption(props: {
           </Text>
           <Text size="sm">
             Default preset is set the first time you authorize with a password.
-            And You can edit the settings for the corresponding URL for each
+            And you can edit the settings for the corresponding URL for each
             key.
           </Text>
           {props.protocolName === "nostr" && (
             <Text>
               This has lower priority than the excluded kinds, so if both are
-              present, authorization will proceed.
+              present, dialog will appear.
             </Text>
           )}
         </AccordionPanel>
@@ -177,9 +206,9 @@ export function ExampleNostrKind(props: { width?: string }) {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Specifies the Nostr Kind you want to display a authorization dialog
-            even if a trusted site is set or the password expiration is still
-            valid for that URL.{" "}
+            Specifies the Nostr Kind you want to necessarily display a
+            authorization dialog even if a trusted site is set or a password
+            authorization has not yet expired for this URL.{" "}
           </Text>
           <Text size="sm">
             Default preset is set the first time you authorize with a password.
