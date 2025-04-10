@@ -1,7 +1,11 @@
+# ✅ Release QA - Android
+
 Manual QA test check-list for major android releases. Please copy/paste form into your own comment, fill out relevant info and run through the checklist!
+
 <details>
     <summary>Tor Browser Android QA Checklist</summary>
-```markdown
+
+```
 # System Information
 
 - Version: Tor Browser XXX
@@ -19,6 +23,11 @@ Manual QA test check-list for major android releases. Please copy/paste form int
 - [ ] Fingerprinting resistance: https://arkenfox.github.io/TZP/tzp.html
 - [ ] Security level (Standard, Safer, Safest)
     - **TODO**: test pages verifying correct behaviour
+- [ ] Bookmarks: for now ensure adding/removing/etc work as expected and doesn't busy-spin
+
+### Localisation
+- [ ] New Locales
+  - [ ] Bulgarian, Belarusian, Portuguese (PT)
 
 ## Proxy safety
 - [ ] Tor exit test: https://check.torproject.org
@@ -30,6 +39,8 @@ Manual QA test check-list for major android releases. Please copy/paste form int
 - [ ] DNS leaks: https://dnsleaktest.com
 
 ## Connectivity + Anti-Censorship
+- [ ] Internet Test (try connect assist while actually offline)
+  - [ ] We expect this to fail but we should see what it actually does
 - [ ] Bridges:
     - Bootstrap
     - Browse: https://check.torproject.org
@@ -41,6 +52,11 @@ Manual QA test check-list for major android releases. Please copy/paste form int
         - [ ] obfs4 from https://bridges.torproject.org
         - [ ] webtunnel from https://bridges.torproject.org
         - [ ] conjure from [gitlab](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure/-/blob/main/client/torrc?ref_type=heads#L6)
+- [ ] Connect Assist
+    - Useful pref: `torbrowser.debug.censorship_level` (0-5; least to most censored)
+    - [ ] Connect Automatically checkbox triggers bootstrapping after one successful bootstrap attempt
+    - [ ] Auto-bootstrap updates Tor connection settings on success
+    - [ ] Auto-bootstrap restore previous Tor connection settings on failure
 
 ## Web Browsing
 - [ ] HTTPS-Only: http://http.badssl.com
@@ -54,10 +70,14 @@ Manual QA test check-list for major android releases. Please copy/paste form int
         - **TODO** client auth
 - [ ] **TODO**: .securedrop.tor.onion
 - [ ] **TODO**: onion-service alt-svc
-- [ ] HTML5 Video: https://tekeye.uk/html/html5-video-test-page
-    - [ ] MPEG4
-    - [ ] WebM
-    - [ ] Ogg
+- [ ] HTML5 Video: https://onion-tests.pierov.org/video.html
+    - [ ] H264
+    - [ ] VP9
+    - [ ] VP8
+    - [ ] AV1
+    - [ ] Theora
+    - [ ] MPEG4 + mp3: only audio should work
+    - [ ] HEVC + AAC: should not work
 - [ ] WebSocket Test: https://websocketking.com/
 
 ## External Components
@@ -69,3 +89,19 @@ Manual QA test check-list for major android releases. Please copy/paste form int
 ```
 
 </details>
+
+Please lay claim to an architecture in the comments:
+
+Architectures:
+- x86
+- x86_64
+- arm32
+- aarch64
+
+<!-- Do not edit beneath this line <3 -->
+
+---
+
+/label ~"Apps::Product::TorBrowser"
+/label ~"Apps::Type::Test"
+/label ~"Apps::Priority::Blocker"

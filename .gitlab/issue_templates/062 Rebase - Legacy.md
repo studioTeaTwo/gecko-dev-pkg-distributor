@@ -1,3 +1,5 @@
+# ⤵️ Rebase Legacy
+
 **NOTE:** All examples in this template reference the rebase from 115.17.0esr to 115.18.0esr
 
 <details>
@@ -110,4 +112,10 @@
     ```
   - [ ] Push tag to `upstream`
 
+<!-- Do not edit beneath this line <3 -->
+
+---
+
+/label ~"Apps::Product::TorBrowser"
 /label ~"Apps::Type::Rebase"
+/label ~"Apps::Priority::Blocker"

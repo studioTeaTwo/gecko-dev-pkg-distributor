@@ -1,9 +1,11 @@
+# ✅ Release QA - Desktop
+
 Manual QA test check-list for major desktop releases. Please copy/paste form into your own comment, fill out relevant info and run through the checklist!
 
 <details>
     <summary>Tor Browser Desktop QA Checklist</summary>
 
-```markdown
+```
 # System Information
 
 - Version: Tor Browser XXX
@@ -25,6 +27,8 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
   - [ ] Language notification/message bar
   - [ ] Spoof English
   - [ ] Check especially the recently added strings
+  - [ ] New Locales
+    - [ ] Bulgarian, Belarusian, Portuguese (PT)
 - [ ] UI Customisations:
     - [ ] New Identity
         - [ ] Toolbar icon
@@ -53,8 +57,9 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
 - [ ] Betterboxing
     - [ ] Reuse last window size
     - [ ] Content alignment
+    - [ ] Window size indicator on window resize
     - [ ] No letterboxing:
-        - [ ]empty tabs or privileged pages (eg: about:blank, about:about)
+        - [ ] empty tabs or privileged pages (eg: about:blank, about:about)
         - [ ] full-screen video
         - [ ] pdf viewer
         - [ ] reader-mode
@@ -96,8 +101,9 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
 ## Connectivity + Anti-Censorship
 - [ ] Tor daemon config by environment variables
     - https://gitlab.torproject.org/tpo/applications/team/-/wikis/Environment-variables-and-related-preferences
-- [ ] Internet Test ( about:preferences#connection )
-  - [ ] Fails when offline
+- [ ] Internet Test ( bootstrap, also visible in about:preferences#connection )
+  - [ ] Fails when offline (Goes to offline about:neterror)
+    - **NOTE**: platform dependent, expected that Linux will just try to bootstrap forever
   - [ ] Succeeds when online
 - [ ] Bridges:
     - Bootstrap
@@ -122,7 +128,8 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
         - [ ] Succeeds when not bootstrapped
     - **TODO**: Lox
 - [ ] Connect Assist
-    - Useful pref: `torbrowser.debug.censorship_level`
+    - Useful pref: `torbrowser.debug.censorship_level` (0-5; least to most censored)
+    - [ ] Connect Automatically checkbox triggers bootstrapping after one successful bootstrap attempt
     - [ ] Auto-bootstrap updates Tor connection settings on success
     - [ ] Auto-bootstrap restore previous Tor connection settings on failure
 
@@ -147,10 +154,14 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
         - **TODO** client auth
 - [ ] **TODO**: .securedrop.tor.onion
 - [ ] **TODO**: onion-service alt-svc
-- [ ] HTML5 Video: https://tekeye.uk/html/html5-video-test-page
-    - [ ] MPEG4
-    - [ ] WebM
-    - [ ] Ogg
+- [ ] HTML5 Video: https://onion-tests.pierov.org/video.html
+    - [ ] H264
+    - [ ] VP9
+    - [ ] VP8
+    - [ ] AV1
+    - [ ] Theora
+    - [ ] MPEG4 + mp3: only audio should work
+    - [ ] HEVC + AAC: should not work
 - [ ] WebSocket Test: https://websocketking.com/
 
 ## External Components
@@ -159,6 +170,43 @@ Manual QA test check-list for major desktop releases. Please copy/paste form int
   - [ ] Not removable from about:addons
   - [ ] Tests: https://test-data.tbb.torproject.org/test-data/noscript/
     - **TODO**: fix test pages
+
+## Tor Settings (about:preferences#connection)
+- [ ] Proxy
+  - [ ] Bad Proxy Address Reports Error; e.g. any bad bad proxy address/port/etc
+   - [ ] On initial failure gives error modal
+   - [ ] On browser restart, will also give an error if provided a bad setting
+  - [ ] Good Proxy Works
+    - [ ] SOCKS5
+- [ ] Bridge
+  - [ ] Bad Bridge Fails with error modal; eg: `0:0`
+  - [ ] Modifying Bridges *during* bootstrap should cancel bootstrap
+- [ ] Firewall
+  - [ ] UI shouldn't accept bad ports (e.g. invalid port numbers, non-numbers, etc)
+- [ ] Each individual setting type has it's own validation (i.e. not all or nothing anymore)
+
 ```
 
 </details>
+
+Please lay claim to a platform in the comments:
+
+- Windows
+  - Windows 10, Windows 11
+  - x86
+  - x86_64
+- macOS
+  - 10.15, 15.x
+  - x86_64
+  - aarch64
+- Linux
+  - x86
+  - x86_64
+
+<!-- Do not edit beneath this line <3 -->
+
+---
+
+/label ~"Apps::Product::TorBrowser"
+/label ~"Apps::Type::Test"
+/label ~"Apps::Priority::Blocker"
