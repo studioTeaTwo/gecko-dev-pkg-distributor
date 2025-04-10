@@ -4,8 +4,6 @@
 
 package org.mozilla.fenix.tor
 
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -57,15 +55,6 @@ class TorConnectionAssistFragment : Fragment(), UserInteractionHandler {
         _binding = FragmentTorConnectionAssistBinding.inflate(
             inflater, container, false,
         )
-
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action === Intent.ACTION_LOCALE_CHANGED) {
-                    Log.v("LocaleReceiver", "received ACTION_LOCALE_CHANGED")
-                    torConnectionAssistViewModel.fetchRegionNames()
-                }
-            }
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
