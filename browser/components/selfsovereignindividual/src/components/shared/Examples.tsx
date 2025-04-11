@@ -130,7 +130,7 @@ export function ExplainEveryTimeAuthorizedMethod(props: {
         <AccordionPanel pb={4}>
           <Text size="sm">
             The methods checked here will execute the authorization dialogs even
-            if the previous password authorization has not yet expired.
+            if the previous dialogic authorization has not yet expired.
           </Text>
           <Text>
             This has lower priority than the dialog dispaly settings, so if both
@@ -163,7 +163,8 @@ export function ExplainDialogDisplayOption(props: {
           </Text>
           <Text size="sm">
             Authorization dialogs consist of two dialogs. The confirmation
-            dialog is there to verify the app's request, and the password dialog
+            dialog is there to verify the app's request, and the password
+            dialog, by the OS account password or the Firefox primary password,
             is there to prevent someone other than you from authorizing.
             <br />
             The expiration is counting up in the background and dialog will
@@ -177,8 +178,8 @@ export function ExplainDialogDisplayOption(props: {
             dialog and prompting the password dialog alone.
             <br />
             If you check both, two dialogs will disappear. Similar to trusted
-            site, but password authorization is subject to expiration
-            constraints.
+            site, but dialogic authorization is subject to expiration
+            constraints. So, the app cannot access indefinitely.
             <br />
             If you uncheck both, two dialogs will appear.
           </Text>
@@ -212,11 +213,11 @@ export function ExampleNostrKind(props: { width?: string }) {
         <AccordionPanel pb={4}>
           <Text size="sm">
             Specifies the Nostr Kind you want to necessarily display a
-            authorization dialog even if a trusted site is set or a password
+            authorization dialog even if a trusted site is set or a dialogic
             authorization has not yet expired for this URL.{" "}
           </Text>
           <Text size="sm">
-            Default preset is set the first time you authorize with a password.
+            Default preset is set the first time you authorize with a dialog.
             And You can edit the settings for the corresponding URL for each
             key.
           </Text>

@@ -128,9 +128,9 @@ function transformToPayload(credential: Partial<Credential>) {
   if (credential.trustedSites) {
     newVal.trustedSites = JSON.stringify(credential.trustedSites);
   }
-  if (credential.passwordAuthorizedSites) {
-    newVal.passwordAuthorizedSites = JSON.stringify(
-      credential.passwordAuthorizedSites
+  if (credential.dialogicAuthorizedSites) {
+    newVal.dialogicAuthorizedSites = JSON.stringify(
+      credential.dialogicAuthorizedSites
     );
   }
   if (credential.properties) {
@@ -146,14 +146,14 @@ function transformCredentialsFromStore(
     const trustedSites = JSON.parse(
       credential.trustedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
-    const passwordAuthorizedSites = JSON.parse(
-      credential.passwordAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
+    const dialogicAuthorizedSites = JSON.parse(
+      credential.dialogicAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {
       ...credential,
       trustedSites,
-      passwordAuthorizedSites,
+      dialogicAuthorizedSites,
       properties,
     };
   });

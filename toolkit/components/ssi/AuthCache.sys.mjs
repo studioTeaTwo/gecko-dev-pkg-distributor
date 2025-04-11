@@ -10,7 +10,7 @@
  * key: `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`
  * value: {
  *   trustedSites: credential.trustedSites,
- *   passwordAuthorizedSites: credential.passwordAuthorizedSites
+ *   dialogicAuthorizedSites: credential.dialogicAuthorizedSites
  * }
  */
 class _AuthCache {
@@ -30,8 +30,8 @@ class _AuthCache {
           `${credential.protocolName}:${credential.credentialName}:${credential.identifier}`,
           {
             trustedSites: JSON.parse(credential.trustedSites),
-            passwordAuthorizedSites: JSON.parse(
-              credential.passwordAuthorizedSites
+            dialogicAuthorizedSites: JSON.parse(
+              credential.dialogicAuthorizedSites
             ),
           }
         );
@@ -62,7 +62,7 @@ class _AuthCache {
   /**
    * Update the kv cache together with the persistence (ssi store).
    * If previous value is the same, don't update the ssi store. This becomes important when expiration preference
-   * of passwordAuthorizedSites (selfsovereignindividual.[protocolName].primarypassword.toApps.expirationTime) is 0.
+   * of dialogicAuthorizedSites (selfsovereignindividual.[protocolName].primarypassword.toApps.expirationTime) is 0.
    *
    * @param {string} key
    * @param {Object} value - Only new values from the API
@@ -111,10 +111,10 @@ class _AuthCache {
       count += value.trustedSites.length;
       value.trustedSites.forEach(site => update(site, "trustedSites"));
     }
-    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
-      count += value.passwordAuthorizedSites.length;
-      value.passwordAuthorizedSites.forEach(site =>
-        update(site, "passwordAuthorizedSites")
+    if (Object.hasOwn(value, "dialogicAuthorizedSites")) {
+      count += value.dialogicAuthorizedSites.length;
+      value.dialogicAuthorizedSites.forEach(site =>
+        update(site, "dialogicAuthorizedSites")
       );
     }
 
@@ -136,9 +136,9 @@ class _AuthCache {
     if (Object.hasOwn(value, "trustedSites")) {
       modifiedCredential.trustedSites = JSON.stringify(newValue.trustedSites);
     }
-    if (Object.hasOwn(value, "passwordAuthorizedSites")) {
-      modifiedCredential.passwordAuthorizedSites = JSON.stringify(
-        newValue.passwordAuthorizedSites
+    if (Object.hasOwn(value, "dialogicAuthorizedSites")) {
+      modifiedCredential.dialogicAuthorizedSites = JSON.stringify(
+        newValue.dialogicAuthorizedSites
       );
     }
     Services.ssi.modifyCredential(old[0], modifiedCredential);

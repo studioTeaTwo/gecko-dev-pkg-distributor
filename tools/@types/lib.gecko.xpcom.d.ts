@@ -8460,10 +8460,10 @@ interface nsICredentialInfo extends nsISupports {
   secret: string;
   identifier: string;
   trustedSites: string;
-  passwordAuthorizedSites: string;
+  dialogicAuthorizedSites: string;
   properties: string;
   unknownFields: string;
-  init(aProtocolName: string, aCredentialName: string, aPrimary: boolean, aSecret: string, aIdentifier: string, aTrustedSites: string, aPasswordAuthorizedSites: string, aProperties?: string): void;
+  init(aProtocolName: string, aCredentialName: string, aPrimary: boolean, aSecret: string, aIdentifier: string, aTrustedSites: string, aDialogicAuthorizedSites: string, aProperties?: string): void;
   equals(aCredential: nsICredentialInfo): boolean;
   matches(aCredential: nsICredentialInfo): boolean;
   clone(): nsICredentialInfo;

@@ -275,9 +275,9 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
       }
       modifiedCredential.trustedSites = changeSet.credential.trustedSites;
     }
-    if (changeSet.credential.hasOwnProperty("passwordAuthorizedSites")) {
-      modifiedCredential.passwordAuthorizedSites =
-        changeSet.credential.passwordAuthorizedSites;
+    if (changeSet.credential.hasOwnProperty("dialogicAuthorizedSites")) {
+      modifiedCredential.dialogicAuthorizedSites =
+        changeSet.credential.dialogicAuthorizedSites;
     }
     if (changeSet.credential.hasOwnProperty("properties")) {
       modifiedCredential.properties = changeSet.credential.properties;

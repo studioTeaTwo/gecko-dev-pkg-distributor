@@ -147,9 +147,9 @@ Ssi.prototype = {
       throw new Error("Can't add a credential with a null trustedSites.");
     }
     // For credentials w/o a trustedSites, set to [], not null.
-    if (credential.passwordAuthorizedSites == null) {
+    if (credential.dialogicAuthorizedSites == null) {
       throw new Error(
-        "Can't add a credential with a null passwordAuthorizedSites."
+        "Can't add a credential with a null dialogicAuthorizedSites."
       );
     }
 
@@ -185,8 +185,8 @@ Ssi.prototype = {
       `${resultCredential.protocolName}:${resultCredential.credentialName}:${resultCredential.identifier}`,
       {
         trustedSites: JSON.parse(resultCredential.trustedSites),
-        passwordAuthorizedSites: JSON.parse(
-          resultCredential.passwordAuthorizedSites
+        dialogicAuthorizedSites: JSON.parse(
+          resultCredential.dialogicAuthorizedSites
         ),
       },
       true
@@ -221,8 +221,8 @@ Ssi.prototype = {
       `${newCredential.protocolName}:${newCredential.credentialName}:${newCredential.identifier}`,
       {
         trustedSites: JSON.parse(newCredential.trustedSites),
-        passwordAuthorizedSites: JSON.parse(
-          newCredential.passwordAuthorizedSites
+        dialogicAuthorizedSites: JSON.parse(
+          newCredential.dialogicAuthorizedSites
         ),
       },
       true

@@ -66,7 +66,7 @@ export const NostrTemplate: Omit<NostrCredential, "guid" | "timeCreated"> = {
   secret: "", // raw seckey
   primary: false,
   trustedSites: [],
-  passwordAuthorizedSites: [],
+  dialogicAuthorizedSites: [],
   properties: {
     displayName: "",
     generationMethod: "import",

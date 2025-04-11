@@ -388,7 +388,13 @@ const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly"
 ];
-const DefaultDialogDisplayOptions = [];
+const DefaultDialogDisplayOptions = [
+  "read-confirmOnly",
+  "sign-confirmOnly",
+  "encrypt-confirmOnly",
+  "decrypt-confirmOnly",
+  "custom-confirmOnly"
+];
 const DefaultTrustedSites = [
   {
     url: "http://localhost",
@@ -406,7 +412,7 @@ const NostrTemplate = {
   // raw seckey
   primary: false,
   trustedSites: [],
-  passwordAuthorizedSites: [],
+  dialogicAuthorizedSites: [],
   properties: {
     displayName: "",
     generationMethod: "import",
@@ -490,9 +496,9 @@ function transformToPayload(credential) {
   if (credential.trustedSites) {
     newVal.trustedSites = JSON.stringify(credential.trustedSites);
   }
-  if (credential.passwordAuthorizedSites) {
-    newVal.passwordAuthorizedSites = JSON.stringify(
-      credential.passwordAuthorizedSites
+  if (credential.dialogicAuthorizedSites) {
+    newVal.dialogicAuthorizedSites = JSON.stringify(
+      credential.dialogicAuthorizedSites
     );
   }
   if (credential.properties) {
@@ -506,15 +512,15 @@ function transformCredentialsFromStore(credentialForPayloads) {
       credential.trustedSites.replace(/^''$/g, '"')
       // TODO(ssb): investigate
     );
-    const passwordAuthorizedSites = JSON.parse(
-      credential.passwordAuthorizedSites.replace(/^''$/g, '"')
+    const dialogicAuthorizedSites = JSON.parse(
+      credential.dialogicAuthorizedSites.replace(/^''$/g, '"')
       // TODO(ssb): investigate
     );
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {
       ...credential,
       trustedSites,
-      passwordAuthorizedSites,
+      dialogicAuthorizedSites,
       properties
     };
   });
@@ -913,7 +919,7 @@ function ExplainEveryTimeAuthorizedMethod(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "The methods checked here will execute the authorization dialogs even if the previous password authorization has not yet expired." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "The methods checked here will execute the authorization dialogs even if the previous dialogic authorization has not yet expired." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the dialog dispaly settings, so if both are present, dialog will disappear." })
     ] })
   ] }) });
@@ -930,15 +936,20 @@ function ExplainDialogDisplayOption(props) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the conditions of the authorization dialogs displaying when it has expired or the every-time-authorize settings exists." }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
+        "Authorization dialogs consist of two dialogs. The confirmation dialog is there to verify the app's request, and the password dialog, by the OS account password or the Firefox primary password, is there to prevent someone other than you from authorizing.",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "The expiration is counting up in the background and dialog will reappear once it has expired."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
+        "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "If you check both, two dialogs will disappear. Similar to trusted site, but password authorization is subject to expiration constraints.",
+        "If you check both, two dialogs will disappear. Similar to trusted site, but dialogic authorization is subject to expiration constraints. So, the app cannot access indefinitely.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "If you uncheck both, two dialogs will appear."
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And you can edit the settings for the corresponding URL for each key." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize for the URL. And you can edit the settings for the corresponding URL for each key." }),
       props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, dialog will appear." })
     ] })
   ] }) });
@@ -954,10 +965,10 @@ function ExampleNostrKind(props) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Specifies the Nostr Kind you want to necessarily display a authorization dialog even if a trusted site is set or a password authorization has not yet expired for this URL.",
+        "Specifies the Nostr Kind you want to necessarily display a authorization dialog even if a trusted site is set or a dialogic authorization has not yet expired for this URL.",
         " "
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a dialog. And You can edit the settings for the corresponding URL for each key." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default Set" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
@@ -1103,7 +1114,7 @@ function KeyEditor(props) {
   };
   const handleRevokeSite = (revokedSite) => {
     const value = {
-      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map((site) => {
+      dialogicAuthorizedSites: editingKey.dialogicAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -1117,31 +1128,31 @@ function KeyEditor(props) {
       alert("Input must be Kind number or ','.");
       return;
     }
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = value ? value.split(",") : [];
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = value ? value.split(",") : [];
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetExcludedKinds = (siteNo) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleSaveEveryTimeAuthorizedMethods = (siteNo, value) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    if (passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.includes(value)) {
-      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods = passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.filter(
+    if (dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods = dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.filter(
         (method) => method !== value
       );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.push(value);
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleSaveNallowedMethod = (siteNo, value) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
@@ -1158,24 +1169,24 @@ function KeyEditor(props) {
     HandleChangeValue({ trustedSites });
   };
   const handleSaveSkippedDialog = (siteNo, value) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    if (passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog = passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
+    if (dialogicAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog = dialogicAuthorizedSites[siteNo].permissions.skippedDialog.filter(
         (method) => method !== value
       );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetSkippedDialog = (siteNo) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOptions;
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOptions;
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   function EditableControls() {
     const { isEditing, getEditButtonProps } = useEditableControls();
@@ -1401,8 +1412,8 @@ function KeyEditor(props) {
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
-                !editingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                editingKey.passwordAuthorizedSites.map((site, i) => {
+                !editingKey.dialogicAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.dialogicAuthorizedSites.map((site, i) => {
                   const expirationTime = new Date(site.expirationTime);
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
@@ -2166,7 +2177,7 @@ function NIP07(props) {
     const item = nostrkeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
-      passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
+      dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -2336,8 +2347,8 @@ function NIP07(props) {
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
   const getPasswordAuthorizedSites = reactExports.useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
-      key.passwordAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
+    const dialogicAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+      key.dialogicAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
         if (found) {
           acc[found].push({ key, site, keyNo: i });
@@ -2347,7 +2358,7 @@ function NIP07(props) {
       });
       return acc;
     }, {});
-    return Object.keys(passwordAuthorizedSites).length > 0 ? Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+    return Object.keys(dialogicAuthorizedSites).length > 0 ? Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           AccordionButton,
@@ -2472,7 +2483,7 @@ function NIP07(props) {
                     tabPin(0)
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Password Authorization" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Dialogic Authorization" }),
                     tabPin(1)
                   ] })
                 ] }),
@@ -2485,7 +2496,7 @@ function NIP07(props) {
                         gap: 6,
                         alignItems: "start",
                         children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely and unconditionally." }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely. It helps protect you from phishing." }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                             Switch,
@@ -2586,7 +2597,7 @@ function NIP07(props) {
                         gap: 6,
                         alignItems: "start",
                         children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Your consent by the OS account password or the Firefox primary password, having expiration." }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Authorize interactively when the app requests you, having an expiration. It helps protect you from hacking." }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                             Switch,

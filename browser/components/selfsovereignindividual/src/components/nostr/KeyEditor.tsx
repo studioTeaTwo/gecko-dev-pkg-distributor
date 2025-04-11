@@ -185,10 +185,10 @@ export default function KeyEditor(props: Props) {
   };
 
   const handleRevokeSite = (
-    revokedSite: NostrCredential["passwordAuthorizedSites"][number]
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
   ) => {
     const value = {
-      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map(site => {
+      dialogicAuthorizedSites: editingKey.dialogicAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -204,47 +204,47 @@ export default function KeyEditor(props: Props) {
       return;
     }
 
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = value
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = value
       ? value.split(",")
       : [];
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetExcludedKinds = (siteNo: number) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds =
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds =
       DefaultExcludedKinds;
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
 
   const handleSaveEveryTimeAuthorizedMethods = (
     siteNo: number,
     value: string
   ) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
     if (
-      passwordAuthorizedSites[
+      dialogicAuthorizedSites[
         siteNo
       ].permissions.everyTimeAuthorizedMethods.includes(value)
     ) {
-      passwordAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods =
-        passwordAuthorizedSites[
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods =
+        dialogicAuthorizedSites[
           siteNo
         ].permissions.everyTimeAuthorizedMethods.filter(
           method => method !== value
         );
     } else {
-      passwordAuthorizedSites[
+      dialogicAuthorizedSites[
         siteNo
       ].permissions.everyTimeAuthorizedMethods.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
 
   const handleSaveNallowedMethod = (siteNo: number, value: string) => {
@@ -265,28 +265,28 @@ export default function KeyEditor(props: Props) {
   };
 
   const handleSaveSkippedDialog = (siteNo: number, value: string) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
     if (
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)
     ) {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog =
-        passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog =
+        dialogicAuthorizedSites[siteNo].permissions.skippedDialog.filter(
           method => method !== value
         );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetSkippedDialog = (siteNo: number) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.skippedDialog =
+    dialogicAuthorizedSites[siteNo].permissions.skippedDialog =
       DefaultDialogDisplayOptions;
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
 
   function EditableControls() {
@@ -515,10 +515,10 @@ export default function KeyEditor(props: Props) {
                   Password Authorization
                 </Heading>
                 <Grid gridTemplateColumns={"400px 1fr"} gap={2}>
-                  {!editingKey.passwordAuthorizedSites.length && (
+                  {!editingKey.dialogicAuthorizedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {editingKey.passwordAuthorizedSites.map((site, i) => {
+                  {editingKey.dialogicAuthorizedSites.map((site, i) => {
                     const expirationTime = new Date(site.expirationTime);
                     return (
                       <>

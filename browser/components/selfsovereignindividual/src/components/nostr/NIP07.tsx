@@ -256,7 +256,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
   const handleRevokeSite = async (
     identifier: string,
-    revokedSite: NostrCredential["passwordAuthorizedSites"][number]
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
   ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
@@ -271,7 +271,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     const item = nostrkeys.find(key => key.identifier === identifier);
     modifyCredentialToStore({
       guid: item.guid,
-      passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
+      dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -480,15 +480,15 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     );
   }, [nostrkeys, states.nostr]);
 
-  const getPasswordAuthorizedSites = useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.reduce<{
+  const getDialogicAuthorizedSites = useCallback(() => {
+    const dialogicAuthorizedSites = nostrkeys.reduce<{
       [url: string]: {
         key: NostrCredential;
-        site: NostrCredential["passwordAuthorizedSites"][number];
+        site: NostrCredential["dialogicAuthorizedSites"][number];
         keyNo: number;
       }[];
     }>((acc, key, i) => {
-      key.passwordAuthorizedSites
+      key.dialogicAuthorizedSites
         .filter(site => site.expirationTime > Date.now())
         .forEach(site => {
           const found = Object.keys(acc).find(url => site.url === url);
@@ -500,8 +500,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         });
       return acc;
     }, {});
-    return Object.keys(passwordAuthorizedSites).length > 0 ? (
-      Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+    return Object.keys(dialogicAuthorizedSites).length > 0 ? (
+      Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
         return (
           <>
             <GridItem colSpan={2}>
@@ -655,7 +655,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
               </Tab>
               <Tab>
                 <Heading as="h4" size="md">
-                  Password Authorization
+                  Dialogic Authorization
                 </Heading>
                 {tabPin(1)}
               </Tab>
@@ -670,7 +670,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <GridItem colSpan={2}>
                     <Text fontSize="sm">
                       Any URL registered here will be allowed for your key
-                      indefinitely and unconditionally.
+                      indefinitely. It helps protect you from phishing.
                     </Text>
                   </GridItem>
                   <GridItem>
@@ -773,8 +773,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                 >
                   <GridItem colSpan={2}>
                     <Text fontSize="sm">
-                      Your consent by the OS account password or the Firefox
-                      primary password, having expiration.
+                      Authorize interactively when the app requests you, having
+                      an expiration. It helps protect you from hacking.
                     </Text>
                   </GridItem>
                   <GridItem>
@@ -922,7 +922,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
-                  {getPasswordAuthorizedSites()}
+                  {getDialogicAuthorizedSites()}
                 </Grid>
               </TabPanel>
             </TabPanels>
