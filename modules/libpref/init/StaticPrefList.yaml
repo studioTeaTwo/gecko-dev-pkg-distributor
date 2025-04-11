@@ -15432,7 +15432,7 @@
 # Preset for the dialog Display Option to calls from webapps.
 - name: selfsovereignindividual.nostr.primarypassword.toApps.dialogDisplayOptionPreset
   type: String
-  value: ""
+  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,custom-confirmOnly"
   mirror: never
 
 # Preset for the Event Kind authorized every time to calls from webapps.

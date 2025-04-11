@@ -162,10 +162,16 @@ export function ExplainDialogDisplayOption(props: {
             has expired or the every-time-authorize settings exists.
           </Text>
           <Text size="sm">
+            Authorization dialogs consist of two dialogs. The confirmation
+            dialog is there to verify the app's request, and the password dialog
+            is there to prevent someone other than you from authorizing.
+            <br />
+            The expiration is counting up in the background and dialog will
+            reappear once it has expired.
+          </Text>
+          <Text size="sm">
             Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the password
-            dialog and prompting the confirm dialog alone. The expiration is
-            counting up in the background and dialog will reappear once it has
-            expired.
+            dialog and prompting the confirm dialog alone.
             <br />
             Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the confirm
             dialog and prompting the password dialog alone.
@@ -177,9 +183,8 @@ export function ExplainDialogDisplayOption(props: {
             If you uncheck both, two dialogs will appear.
           </Text>
           <Text size="sm">
-            Default preset is set the first time you authorize with a password.
-            And you can edit the settings for the corresponding URL for each
-            key.
+            Default preset is set the first time you authorize for the URL. And
+            you can edit the settings for the corresponding URL for each key.
           </Text>
           {props.protocolName === "nostr" && (
             <Text>

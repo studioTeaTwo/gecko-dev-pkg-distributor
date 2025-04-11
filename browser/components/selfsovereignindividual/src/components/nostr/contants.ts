@@ -3,6 +3,10 @@ import { NostrCredential } from "../../custom.type";
 export const SafeProtocols = ["http", "https", "moz-extension"];
 export const SpecialCards = ["*", "<all_urls>"];
 
+/**
+ * Copyset of initial values in StaticPrefList.yaml for the setting UI.
+ * Note that master data remains StaticPrefList.yaml because those are shared with other components like browser.ssi as well.
+ */
 export const DefaultExcludedKindList = {
   13194: { nip: 47, name: "NWC Wallet Info" },
   23194: { nip: 47, name: "NWC Wallet Request" },
@@ -33,7 +37,17 @@ export const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly",
 ];
-export const DefaultDialogDisplayOptions = [];
+export const DefaultDialogDisplayOptions = [
+  "read-confirmOnly",
+  "sign-confirmOnly",
+  "encrypt-confirmOnly",
+  "decrypt-confirmOnly",
+  "custom-confirmOnly",
+];
+
+/**
+ * Initial values for key generation
+ */
 
 export const DefaultTrustedSites = [
   {
