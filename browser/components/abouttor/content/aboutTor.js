@@ -183,6 +183,21 @@ const SurveyArea = {
   _version: 1,
 
   /**
+   * The latest version of the survey the user has dismissed.
+   * If higher or equal than _version, the survey will not be displayed.
+   *
+   * @type {integer}
+   */
+  _dismissVersion: 0,
+
+  /**
+   * The surveys will be shown only in the stable channel of Tor Browser.
+   *
+   * @type {boolean}
+   */
+  _isStable: false,
+
+  /**
    * The date to start showing the survey.
    *
    * @type {integer}
@@ -294,6 +309,13 @@ const SurveyArea = {
   ],
 
   /**
+   * The observer to update the localized content whenever the language changes.
+   *
+   * @type {MutationObserver}
+   */
+  _langObserver: null,
+
+  /**
    * Initialize the survey area.
    */
   init() {
@@ -311,6 +333,17 @@ const SurveyArea = {
     document.getElementById("survey-dismiss").addEventListener("click", () => {
       this._hide();
     });
+    this._langObserver = new MutationObserver(mutationList => {
+      for (const mutation of mutationList) {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "lang"
+        ) {
+          this.potentiallyShow();
+        }
+      }
+    });
+    this._langObserver.observe(document.documentElement, { attributes: true });
   },
 
   /**
@@ -333,23 +366,33 @@ const SurveyArea = {
   },
 
   /**
-   * Decide whether to show the survey.
+   * Set the data for the survey.
    *
    * @param {integer} dismissVersion - The latest version of survey that the
    *   user has already dismissed.
    * @param {boolean} isStable - Whether this is the stable release of Tor
    *   Browser.
    */
-  potentiallyShow(dismissVersion, isStable) {
+  setData(dismissVersion, isStable) {
+    this._isStable = isStable;
+    this._dismissVersion = dismissVersion;
+    this.potentiallyShow();
+  },
+
+  /**
+   * Decide whether to show or update the survey.
+   */
+  potentiallyShow() {
     const now = Date.now();
     if (
       now < this._startDate ||
       now >= this._endDate ||
       // The user has already dismissed this version of the survey before:
-      dismissVersion >= this._version ||
-      !isStable
+      this._dismissVersion >= this._version ||
+      !this._isStable
     ) {
       // Don't show the survey.
+      document.body.classList.remove("show-survey");
       return;
     }
 
@@ -358,16 +401,13 @@ const SurveyArea = {
     // Instead we only translate the banner into a limited set of locales that
     // match the languages that the survey itself supports. This should match
     // the language of the survey when it is opened by the user.
+    this._localeData = this._localeDataSet[0];
     const pageLocale = document.documentElement.getAttribute("lang");
     for (const localeData of this._localeDataSet) {
       if (localeData.browserLocales.includes(pageLocale)) {
         this._localeData = localeData;
         break;
       }
-    }
-    if (!this._localeData) {
-      // Show the default en-US banner.
-      this._localeData = this._localeDataSet[0];
     }
 
     // Make sure the survey's lang and dir attributes match the chosen locale.
@@ -403,5 +443,5 @@ window.addEventListener("InitialData", event => {
   } = event.detail;
   SearchWidget.setOnionizeState(!!searchOnionize);
   MessageArea.setMessageData(messageData, !!isStable, !!torConnectEnabled);
-  SurveyArea.potentiallyShow(surveyDismissVersion, isStable);
+  SurveyArea.setData(surveyDismissVersion, isStable);
 });
