@@ -45,9 +45,6 @@ pref("network.http.connection-retry-timeout", 0);
 // be reduced to the strictly required time).
 pref("extensions.torbutton.use_nontor_proxy", false);
 
-// tor-browser#43170: Disable user-agent spoofing in HTTP header
-pref("privacy.resistFingerprinting.spoofOsInUserAgentHeader", false);
-
 // Browser home page:
 pref("browser.startup.homepage", "about:tor");
 
