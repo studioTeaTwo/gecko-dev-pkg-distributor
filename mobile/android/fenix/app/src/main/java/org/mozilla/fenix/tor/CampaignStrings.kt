@@ -49,8 +49,11 @@ object CampaignStrings {
     )
 
     fun getLocale(): String {
-        // TODO: do we care about spoofEnglish setting?
-        return Locale.getDefault().getLanguage();
+        val locale = Locale.getDefault().getLanguage()
+        if (translations.containsKey(locale)) {
+            return locale
+        }
+        return "en"
     }
 
 

@@ -557,9 +557,6 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     }
 
     private fun tryShowUX2025Survey() {
-        val allowedLocales = arrayListOf("en", "es", "ru", "fr", "pt")
-        val locale = CampaignStrings.getLocale()
-
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-hh-zzz")
         val startDate = dateFormat.parse("2025-04-14-12-UTC")
 
@@ -570,7 +567,7 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             return // comment out to test
         }
 
-        if (allowedLocales.contains(locale) && !requireContext().settings().hideCampaign) {
+        if (BuildConfig.BUILD_TYPE == "release" && !requireContext().settings().hideCampaign) {
             binding.onionPatternImage.visibility = View.GONE
             binding.campaignBox.apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
