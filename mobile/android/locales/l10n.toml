@@ -177,6 +177,10 @@ exclude-multi-locale = [
     reference = "toolkit/locales/en-US/toolkit/about/*Webrtc.ftl"
     l10n = "{l}toolkit/toolkit/about/*Webrtc.ftl"
 
+[[paths]]
+    reference = "toolkit/locales/en-US/toolkit/intl/regionNames.ftl"
+    l10n = "{l}toolkit/toolkit/intl/regionNames.ftl"
+
 [[filters]]
     path = [
         "{l}mobile/android/mobile-l10n.js",

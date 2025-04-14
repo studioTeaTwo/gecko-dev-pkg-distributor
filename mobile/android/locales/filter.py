@@ -21,6 +21,7 @@ def test(mod, path, entity=None):
             "chrome/global/commonDialogs.properties",
             "chrome/global/intl.properties",
             "chrome/global/intl.css",
+            "toolkit/intl/regionNames.ftl",
         ):
             return "error"
         if re.match(r"crashreporter/[^/]*.ftl", path):
