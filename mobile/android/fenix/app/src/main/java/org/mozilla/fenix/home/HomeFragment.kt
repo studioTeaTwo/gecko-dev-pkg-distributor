@@ -1484,7 +1484,7 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     ) {
         Column(
             modifier = modifier
-                .padding(horizontal = 22.dp)
+                .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
                 .fillMaxWidth(getVariableWidth(maxWidth)),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1501,16 +1501,18 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     ) {
         Box(
             modifier = Modifier.background(PhotonColors.Violet90, shape = RoundedCornerShape(8.dp))
-                .padding(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Emoji()
-                Spacer(Modifier.weight(1f))
-                ExitIcon()
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Emoji()
+                    Spacer(Modifier.weight(1f))
+                    ExitIcon()
+                }
+                DynamicCampaignContent(alternateLayout)
             }
-            DynamicCampaignContent(alternateLayout)
         }
     }
 
@@ -1521,12 +1523,12 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             painter = painterResource(id = R.drawable.campaign_hand),
             contentDescription = null,
             modifier = Modifier
-                .size(64.dp)
-                .padding(16.dp)
+                .size(48.dp)
+                .padding(top = (16+8).dp, start = (16+8).dp)
                 .drawBehind {
                     drawCircle(
                         color = alpha38Violet40,
-                        radius = this.size.maxDimension
+                        radius = this.size.height
                     )
                 }
         )
@@ -1535,6 +1537,7 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     @Composable
     private fun ExitIcon() {
         IconButton(
+            modifier = Modifier.padding(8.dp),
             onClick = {
                 binding.campaignBox.visibility = View.GONE
                 binding.onionPatternImage.visibility = View.VISIBLE
@@ -1551,8 +1554,7 @@ class HomeFragment : Fragment(), UserInteractionHandler {
                 ),
                 contentDescription = CampaignStrings.get(CampaignStrings.CloseKey),
                 modifier = Modifier
-                    .size(48.dp)
-                    .padding(8.dp)
+                    .padding(0.dp)
             )
         }
     }
@@ -1562,10 +1564,12 @@ class HomeFragment : Fragment(), UserInteractionHandler {
     private fun DynamicCampaignContent(
         alternateLayout: Boolean
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
-                    .padding( top = 88.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start,
             ) {
                 TitleText()
@@ -1592,8 +1596,8 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             color = PhotonColors.LightGrey05,
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            lineHeight = 34.sp,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
             modifier =  Modifier.padding(bottom = 16.dp)
         )
     }
@@ -1610,14 +1614,14 @@ class HomeFragment : Fragment(), UserInteractionHandler {
                     bottom = 18.dp,
                 ),
             color = PhotonColors.LightGrey05,
-            fontSize = 18.sp,
+            fontSize = 14.sp,
             textAlign = TextAlign.Left,
             )
     }
 
     @Composable
     private fun Button1(alternateLayout: Boolean) {
-        Button(
+        TextButton(
             onClick = {
                 var locale = CampaignStrings.getLocale()
                 if (locale == "pt") {
@@ -1639,21 +1643,21 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             Text(text = CampaignStrings.get(CampaignStrings.CTAKey),
                 color = PhotonColors.LightGrey05,
                 textAlign = TextAlign.Center,
-                fontSize = 18.sp,
+                fontSize = 14.sp,
                 modifier = Modifier.padding(8.dp))
         }
     }
 
     @Composable
     private fun Button2() {
-        Button(
+        TextButton(
             onClick = {
                 binding.campaignBox.visibility = View.GONE
                 binding.onionPatternImage.visibility = View.VISIBLE
                 context?.components?.settings?.hideCampaign = true
             },
             colors = ButtonDefaults.buttonColors(
-            backgroundColor = PhotonColors.Violet90),
+                backgroundColor = PhotonColors.Violet90),
             shape = RoundedCornerShape(4.dp),
             modifier = Modifier.padding(0.dp)
                 .fillMaxWidth()
@@ -1661,7 +1665,7 @@ class HomeFragment : Fragment(), UserInteractionHandler {
             Text(text = CampaignStrings.get(CampaignStrings.DismissKey),
             color = PhotonColors.Violet20,
             textAlign = TextAlign.Center,
-            fontSize = 18.sp,
+            fontSize = 14.sp,
             modifier = Modifier.padding(8.dp))
         }
     }
