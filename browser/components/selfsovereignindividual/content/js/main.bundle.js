@@ -945,7 +945,7 @@ function ExplainDialogDisplayOption(props) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "If you check both, two dialogs will disappear. Similar to trusted site, but dialogic authorization is subject to expiration constraints. So, the app cannot access indefinitely.",
+        "If you check both, two dialogs will disappear. It's equivalent to disabled.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "If you uncheck both, two dialogs will appear."
       ] }),
@@ -1884,8 +1884,8 @@ function Nostr$2(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     Editable,
                     {
-                      value: item.properties.displayName,
-                      onChange: (value) => modifyCredentialToStore2({
+                      defaultValue: item.properties.displayName,
+                      onSubmit: (value) => modifyCredentialToStore2({
                         guid: item.guid,
                         properties: {
                           ...item.properties,
@@ -1895,8 +1895,8 @@ function Nostr$2(props) {
                       isPreviewFocusable: true,
                       isTruncated: true,
                       children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditableInput, {})
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
                       ]
                     }
                   ) }),
@@ -1906,8 +1906,8 @@ function Nostr$2(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     Editable,
                     {
-                      value: item.properties.memo,
-                      onChange: (value) => modifyCredentialToStore2({
+                      defaultValue: item.properties.memo,
+                      onSubmit: (value) => modifyCredentialToStore2({
                         guid: item.guid,
                         properties: {
                           ...item.properties,
@@ -1917,8 +1917,8 @@ function Nostr$2(props) {
                       isPreviewFocusable: true,
                       isTruncated: true,
                       children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditableInput, {})
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
                       ]
                     }
                   ) }),
@@ -2346,7 +2346,7 @@ function NIP07(props) {
       ) })
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
-  const getPasswordAuthorizedSites = reactExports.useCallback(() => {
+  const getDialogicAuthorizedSites = reactExports.useCallback(() => {
     const dialogicAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
       key.dialogicAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
@@ -2467,217 +2467,83 @@ function NIP07(props) {
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Tabs,
-            {
-              variant: "enclosed",
-              index: tabIndex,
-              onChange: (index) => {
-                setTabIndex(index);
-                resetState();
-              },
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Trusted Sites" }),
-                    tabPin(0)
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Protect Options" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "The following helps save you against theft:" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Tabs,
+              {
+                variant: "enclosed",
+                index: tabIndex,
+                onChange: (index) => {
+                  setTabIndex(index);
+                  resetState();
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }),
+                      tabPin(0)
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }),
+                      tabPin(1)
+                    ] })
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Dialogic Authorization" }),
-                    tabPin(1)
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Grid,
-                      {
-                        gridTemplateColumns: "300px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely. It helps protect you from phishing." }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                            Switch,
-                            {
-                              id: "nostr-pref-usedTrustedSites",
-                              isChecked: prefs.nostr.usedTrustedSites,
-                              onChange: (e) => handleUsedTrustedSites(e.target.checked)
-                            }
-                          ) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Input,
-                                {
-                                  placeholder: "https://example",
-                                  value: newSite,
-                                  onChange: handleNewSiteChange,
-                                  onKeyPress: (e) => {
-                                    if (e.key === "Enter") {
-                                      handleRegisterSite(e);
-                                    }
-                                  },
-                                  maxW: "300px"
-                                }
-                              ),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Button,
-                                {
-                                  variant: "outline",
-                                  colorScheme: "blue",
-                                  onClick: handleRegisterSite,
-                                  children: "Register to All keys"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Grid,
+                        {
+                          gridTemplateColumns: "300px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely." }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Switch,
+                              {
+                                id: "nostr-pref-usedTrustedSites",
+                                isChecked: prefs.nostr.usedTrustedSites,
+                                onChange: (e) => handleUsedTrustedSites(e.target.checked)
+                              }
+                            ) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
                                 /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                  MenuButton,
+                                  Input,
                                   {
-                                    as: Button,
-                                    variant: "outline",
-                                    colorScheme: "blue",
-                                    children: "Select Options"
+                                    placeholder: "https://example",
+                                    value: newSite,
+                                    onChange: handleNewSiteChange,
+                                    onKeyPress: (e) => {
+                                      if (e.key === "Enter") {
+                                        handleRegisterSite(e);
+                                      }
+                                    },
+                                    maxW: "300px"
                                   }
                                 ),
-                                /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                  Checkbox,
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Button,
                                   {
-                                    isChecked: newNallowedMethodPreset.includes(
-                                      option
-                                    ),
-                                    onChange: () => handleChangeNallowedMethod(option),
-                                    children: option
+                                    variant: "outline",
+                                    colorScheme: "blue",
+                                    onClick: handleRegisterSite,
+                                    children: "Register to All keys"
                                   }
-                                ) }, option)) })
+                                )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Button,
-                                {
-                                  variant: "outline",
-                                  colorScheme: "blue",
-                                  onClick: (e) => {
-                                    e.preventDefault();
-                                    handleResetNallowedMethod();
-                                  },
-                                  children: "Reset to default"
-                                }
-                              )
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
                             ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Grid,
-                      {
-                        gridTemplateColumns: "600px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: getTrustedSites()
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Grid,
-                      {
-                        gridTemplateColumns: "300px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Authorize interactively when the app requests you, having an expiration. It helps protect you from hacking." }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                            Switch,
-                            {
-                              id: "nostr-pref-usedPrimarypasswordToApps",
-                              isChecked: prefs.nostr.usedPrimarypasswordToApps,
-                              onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
-                            }
-                          ) }),
-                          prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expirationTimeForPrimarypasswordToApps", children: "Expiration Hour" }) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                              NumberInput,
-                              {
-                                id: "nostr-pref-expirationTimeForPrimarypasswordToApps",
-                                value: prefs.nostr.expirationTimeForPrimarypasswordToApps / OneHour,
-                                onChange: handleExpirationTimeForPrimarypasswordToApps,
-                                min: 0,
-                                size: "sm",
-                                maxW: 20,
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
-                                  ] })
-                                ]
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the Event Kind authorized every time" }) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                              VStack,
-                              {
-                                backgroundColor: "white",
-                                p: "2",
-                                alignItems: "flex-start",
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Input,
-                                      {
-                                        placeholder: "Input kind number",
-                                        value: newExcludedKindsPreset || prefs.nostr.excludedKindsPreset,
-                                        onChange: handleChangeExcludedKinds,
-                                        maxW: "300px"
-                                      }
-                                    ),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Button,
-                                      {
-                                        variant: "outline",
-                                        colorScheme: "blue",
-                                        onClick: (e) => {
-                                          e.preventDefault();
-                                          handleResetExcludedKinds("edit");
-                                        },
-                                        children: "Edit"
-                                      }
-                                    ),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Button,
-                                      {
-                                        variant: "outline",
-                                        colorScheme: "blue",
-                                        onClick: (e) => {
-                                          e.preventDefault();
-                                          handleResetExcludedKinds("default");
-                                        },
-                                        children: "Reset to default"
-                                      }
-                                    )
-                                  ] }),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
-                                ]
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for dialog dispaly settings" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                               /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                                /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { closeOnSelect: false, children: [
                                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     MenuButton,
                                     {
@@ -2687,13 +2553,13 @@ function NIP07(props) {
                                       children: "Select Options"
                                     }
                                   ),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     Checkbox,
                                     {
-                                      isChecked: newDialogDisplayOptionPreset.includes(
+                                      isChecked: newNallowedMethodPreset.includes(
                                         option
                                       ),
-                                      onChange: () => handleChangeDialogDisplayOption(option),
+                                      onChange: () => handleChangeNallowedMethod(option),
                                       children: option
                                     }
                                   ) }, option)) })
@@ -2705,40 +2571,180 @@ function NIP07(props) {
                                     colorScheme: "blue",
                                     onClick: (e) => {
                                       e.preventDefault();
-                                      handleResetDialogDisplayOption();
+                                      handleResetNallowedMethod();
                                     },
                                     children: "Reset to default"
                                   }
                                 )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                ExplainDialogDisplayOption,
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Grid,
+                        {
+                          gridTemplateColumns: "600px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: getTrustedSites()
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Grid,
+                        {
+                          gridTemplateColumns: "300px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Authorize interactively when the app requests you, having an expiration." }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Switch,
+                              {
+                                id: "nostr-pref-usedPrimarypasswordToApps",
+                                isChecked: prefs.nostr.usedPrimarypasswordToApps,
+                                onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
+                              }
+                            ) }),
+                            prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expirationTimeForPrimarypasswordToApps", children: "Expiration Hour" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                NumberInput,
                                 {
-                                  width: "100%",
-                                  protocolName: "nostr"
+                                  id: "nostr-pref-expirationTimeForPrimarypasswordToApps",
+                                  value: prefs.nostr.expirationTimeForPrimarypasswordToApps / OneHour,
+                                  onChange: handleExpirationTimeForPrimarypasswordToApps,
+                                  min: 0,
+                                  size: "sm",
+                                  maxW: 20,
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
+                                    ] })
+                                  ]
                                 }
-                              )
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Grid,
-                      {
-                        gridTemplateColumns: "600px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: getPasswordAuthorizedSites()
-                      }
-                    )
+                              ) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the Event Kind authorized every time" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                VStack,
+                                {
+                                  backgroundColor: "white",
+                                  p: "2",
+                                  alignItems: "flex-start",
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Input,
+                                        {
+                                          placeholder: "Input kind number",
+                                          value: newExcludedKindsPreset || prefs.nostr.excludedKindsPreset,
+                                          onChange: handleChangeExcludedKinds,
+                                          maxW: "300px"
+                                        }
+                                      ),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Button,
+                                        {
+                                          variant: "outline",
+                                          colorScheme: "blue",
+                                          onClick: (e) => {
+                                            e.preventDefault();
+                                            handleResetExcludedKinds("edit");
+                                          },
+                                          children: "Edit"
+                                        }
+                                      ),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Button,
+                                        {
+                                          variant: "outline",
+                                          colorScheme: "blue",
+                                          onClick: (e) => {
+                                            e.preventDefault();
+                                            handleResetExcludedKinds("default");
+                                          },
+                                          children: "Reset to default"
+                                        }
+                                      )
+                                    ] }),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
+                                  ]
+                                }
+                              ) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for dialog dispaly settings" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { closeOnSelect: false, children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      MenuButton,
+                                      {
+                                        as: Button,
+                                        variant: "outline",
+                                        colorScheme: "blue",
+                                        children: "Select Options"
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      Checkbox,
+                                      {
+                                        isChecked: newDialogDisplayOptionPreset.includes(
+                                          option
+                                        ),
+                                        onChange: () => handleChangeDialogDisplayOption(option),
+                                        children: option
+                                      }
+                                    ) }, option)) })
+                                  ] }),
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                    Button,
+                                    {
+                                      variant: "outline",
+                                      colorScheme: "blue",
+                                      onClick: (e) => {
+                                        e.preventDefault();
+                                        handleResetDialogDisplayOption();
+                                      },
+                                      children: "Reset to default"
+                                    }
+                                  )
+                                ] }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  ExplainDialogDisplayOption,
+                                  {
+                                    width: "100%",
+                                    protocolName: "nostr"
+                                  }
+                                )
+                              ] })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Grid,
+                        {
+                          gridTemplateColumns: "600px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: getDialogicAuthorizedSites()
+                        }
+                      )
+                    ] })
                   ] })
-                ] })
-              ]
-            }
-          ) })
+                ]
+              }
+            )
+          ] })
         ]
       }
     ),

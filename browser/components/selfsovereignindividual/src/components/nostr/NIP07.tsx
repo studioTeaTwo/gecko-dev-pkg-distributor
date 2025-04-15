@@ -638,6 +638,14 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           </Grid>
         </Box>
         <Box>
+          <Box>
+            <Heading as="h4" size="md">
+              Protect Options
+            </Heading>
+            <Text fontSize="sm">
+              The following helps save you against theft:
+            </Text>
+          </Box>
           <Tabs
             variant="enclosed"
             index={tabIndex}
@@ -648,13 +656,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           >
             <TabList>
               <Tab>
-                <Heading as="h4" size="md">
+                <Heading as="h5" size="md">
                   Trusted Sites
                 </Heading>
                 {tabPin(0)}
               </Tab>
               <Tab>
-                <Heading as="h4" size="md">
+                <Heading as="h5" size="md">
                   Dialogic Authorization
                 </Heading>
                 {tabPin(1)}
@@ -670,7 +678,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <GridItem colSpan={2}>
                     <Text fontSize="sm">
                       Any URL registered here will be allowed for your key
-                      indefinitely. It helps protect you from phishing.
+                      indefinitely.
                     </Text>
                   </GridItem>
                   <GridItem>
@@ -714,7 +722,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   </GridItem>
                   <GridItem>
                     <HStack>
-                      <Menu>
+                      <Menu closeOnSelect={false}>
                         <MenuButton
                           as={Button}
                           variant="outline"
@@ -774,7 +782,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <GridItem colSpan={2}>
                     <Text fontSize="sm">
                       Authorize interactively when the app requests you, having
-                      an expiration. It helps protect you from hacking.
+                      an expiration.
                     </Text>
                   </GridItem>
                   <GridItem>
@@ -869,7 +877,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                       </GridItem>
                       <GridItem>
                         <HStack>
-                          <Menu>
+                          <Menu closeOnSelect={false}>
                             <MenuButton
                               as={Button}
                               variant="outline"

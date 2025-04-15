@@ -38,13 +38,14 @@ function onLoad() {
 
   document.getElementById(
     "methodTrust"
-  ).label = `LEVEL2 Trust just this method - "${permission.method}"`;
+  ).label = `Trust just this method - "${permission.method}"`;
+  const OneHour = 60 * 60 * 1000;
+  document.getElementById("password").label = `Ask again after ${
+    permission.expirationTime / OneHour
+  } hours for ALL requests`;
   document.getElementById(
     "everytime"
-  ).label = `LEVEL1 Ask again after ${permission.expirationTime} hours for ALL requests"`;
-  document.getElementById(
-    "everytime"
-  ).label = `LEVEL0 Ask everytime (expiration 0) - "${permission.method}"`;
+  ).label = `Ask everytime (expiration 0) - "${permission.method}"`;
   // document.getElementById(
   //   "confirmOnly"
   // ).label = `Skip password, only confirmation dialog - "${permission.method}"`;

@@ -177,9 +177,8 @@ export function ExplainDialogDisplayOption(props: {
             Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the confirm
             dialog and prompting the password dialog alone.
             <br />
-            If you check both, two dialogs will disappear. Similar to trusted
-            site, but dialogic authorization is subject to expiration
-            constraints. So, the app cannot access indefinitely.
+            If you check both, two dialogs will disappear. It's equivalent to
+            disabled.
             <br />
             If you uncheck both, two dialogs will appear.
           </Text>
