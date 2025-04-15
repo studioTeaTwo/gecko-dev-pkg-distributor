@@ -181,7 +181,12 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -198,7 +203,12 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -231,10 +241,16 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
+
     removeAllCredentialsToStore();
 
     // Notify to the buit-in extension
@@ -387,6 +403,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             usedPrimarypasswordToSettings={
                               prefs.nostr.usedPrimarypasswordToSettings
                             }
+                            primaryPasswordEnabled={
+                              prefs.base.primaryPasswordEnabled
+                            }
+                            platform={prefs.base.platform}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -403,6 +423,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             usedPrimarypasswordToSettings={
                               prefs.nostr.usedPrimarypasswordToSettings
                             }
+                            primaryPasswordEnabled={
+                              prefs.base.primaryPasswordEnabled
+                            }
+                            platform={prefs.base.platform}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -453,6 +477,8 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings
                       }
+                      primaryPasswordEnabled={prefs.base.primaryPasswordEnabled}
+                      platform={prefs.base.platform}
                       goBack={() => resetState()}
                     ></KeyEditor>
                   )}

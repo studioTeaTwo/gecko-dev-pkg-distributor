@@ -227,6 +227,7 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
           ],
           primaryPasswordEnabled: lazy.SsiHelper.isPrimaryPasswordSet(),
           passwordRevealVisible: Services.policies.isAllowed("passwordReveal"),
+          platform: AppConstants.platform,
         },
       });
     } catch (ex) {

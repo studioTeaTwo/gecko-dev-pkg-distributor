@@ -117,7 +117,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -152,7 +157,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -192,7 +202,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -223,7 +238,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -243,7 +263,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -263,7 +288,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -305,7 +335,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -342,7 +377,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -374,7 +414,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -454,6 +499,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               usedPrimarypasswordToSettings={
                                 prefs.nostr.usedPrimarypasswordToSettings
                               }
+                              primaryPasswordEnabled={
+                                prefs.base.primaryPasswordEnabled
+                              }
+                              platform={prefs.base.platform}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}
@@ -572,6 +621,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               usedPrimarypasswordToSettings={
                                 prefs.nostr.usedPrimarypasswordToSettings
                               }
+                              primaryPasswordEnabled={
+                                prefs.base.primaryPasswordEnabled
+                              }
+                              platform={prefs.base.platform}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}

@@ -19,6 +19,7 @@ export interface SelfSovereignIndividualPrefs {
     menuPin: MenuItem; // selfsovereignindividual.ui.menuPin
     primaryPasswordEnabled: boolean; // SsiHelper.isPrimaryPasswordSet()
     passwordRevealVisible: boolean; // Services.policies.isAllowed("passwordReveal")
+    platform: string; // AppConstants.platform
     addons: { id: string; name: string; url: string }[]; // built-in addons list
   };
   nostr: {

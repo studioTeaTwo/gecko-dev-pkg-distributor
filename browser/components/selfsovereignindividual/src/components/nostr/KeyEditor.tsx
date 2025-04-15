@@ -63,11 +63,19 @@ interface Props {
   credential: NostrCredential;
   nostrKeys: NostrCredential[];
   usedPrimarypasswordToSettings: boolean;
+  primaryPasswordEnabled: boolean;
+  platform: string;
   goBack: (direction?: unknown) => void;
 }
 
 export default function KeyEditor(props: Props) {
-  const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
+  const {
+    credential,
+    nostrKeys,
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform,
+  } = props;
   const { modifyCredentialToStore } = dispatchEvents;
 
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
@@ -87,7 +95,9 @@ export default function KeyEditor(props: Props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }

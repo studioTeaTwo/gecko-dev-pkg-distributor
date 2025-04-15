@@ -531,7 +531,8 @@ function useChildActorEvent() {
       menuPin: "",
       addons: [],
       primaryPasswordEnabled: false,
-      passwordRevealVisible: false
+      passwordRevealVisible: false,
+      platform: ""
     },
     nostr: {
       enabled: true,
@@ -780,7 +781,9 @@ function Secret(props) {
     value,
     textProps,
     onChangeVisibility,
-    usedPrimarypasswordToSettings
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform
   } = props;
   const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
   const handleToggole = async () => {
@@ -789,7 +792,9 @@ function Secret(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -802,7 +807,9 @@ function Secret(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1022,7 +1029,13 @@ function changePrimary(guid, checked, keys) {
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
 function KeyEditor(props) {
-  const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
+  const {
+    credential,
+    nostrKeys,
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform
+  } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
@@ -1039,7 +1052,9 @@ function KeyEditor(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1760,7 +1775,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1775,7 +1792,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1801,7 +1820,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1932,6 +1953,8 @@ function Nostr$2(props) {
                         onChangeVisibility: () => {
                         },
                         usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                        platform: prefs.base.platform,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1946,6 +1969,8 @@ function Nostr$2(props) {
                         onChangeVisibility: () => {
                         },
                         usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                        platform: prefs.base.platform,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1998,6 +2023,8 @@ function Nostr$2(props) {
                   credential: nostrKeys[states.nostr.editingNo],
                   nostrKeys,
                   usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                  primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                  platform: prefs.base.platform,
                   goBack: () => resetState()
                 }
               ) });
@@ -2054,7 +2081,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2079,7 +2108,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2113,7 +2144,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2140,7 +2173,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2155,7 +2190,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2170,7 +2207,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2205,7 +2244,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2236,7 +2277,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2265,7 +2308,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2330,6 +2375,8 @@ function NIP07(props) {
               credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
               usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+              platform: prefs.base.platform,
               goBack: () => resetState()
             }
           ) });
@@ -2427,6 +2474,8 @@ function NIP07(props) {
               credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
               usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+              platform: prefs.base.platform,
               goBack: () => resetState()
             }
           ) });

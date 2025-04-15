@@ -7,7 +7,9 @@ import AlertPrimaryPassword from "./AlertPrimaryPassword";
 export default function Secret(props: {
   value: string;
   onChangeVisibility;
-  usedPrimarypasswordToSettings;
+  usedPrimarypasswordToSettings: boolean;
+  primaryPasswordEnabled: boolean;
+  platform: string;
   textProps?;
 }) {
   const [visible, setVisible] = useState(false);
@@ -17,6 +19,8 @@ export default function Secret(props: {
     textProps,
     onChangeVisibility,
     usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform,
   } = props;
 
   const maskedValue = useCallback(() => "*".repeat(value.length), [value]);
@@ -27,7 +31,9 @@ export default function Secret(props: {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -41,7 +47,9 @@ export default function Secret(props: {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }

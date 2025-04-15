@@ -168,6 +168,7 @@ export default function useChildActorEvent() {
       addons: [],
       primaryPasswordEnabled: false,
       passwordRevealVisible: false,
+      platform: "",
     },
     nostr: {
       enabled: true,
