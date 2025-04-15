@@ -339,8 +339,9 @@ const SurveyArea = {
    *   user has already dismissed.
    * @param {boolean} isStable - Whether this is the stable release of Tor
    *   Browser.
+   * @param {string} appLocale - The app locale currently in use.
    */
-  potentiallyShow(dismissVersion, isStable) {
+  potentiallyShow(dismissVersion, isStable, appLocale) {
     const now = Date.now();
     if (
       now < this._startDate ||
@@ -353,14 +354,13 @@ const SurveyArea = {
       return;
     }
 
-    // Determine the survey locale based on the about:tor locale.
+    // Determine the survey locale based on the app locale.
     // NOTE: We do not user document.l10n to translate the survey banner.
     // Instead we only translate the banner into a limited set of locales that
     // match the languages that the survey itself supports. This should match
     // the language of the survey when it is opened by the user.
-    const pageLocale = document.documentElement.getAttribute("lang");
     for (const localeData of this._localeDataSet) {
-      if (localeData.browserLocales.includes(pageLocale)) {
+      if (localeData.browserLocales.includes(appLocale)) {
         this._localeData = localeData;
         break;
       }
@@ -400,8 +400,9 @@ window.addEventListener("InitialData", event => {
     searchOnionize,
     messageData,
     surveyDismissVersion,
+    appLocale,
   } = event.detail;
   SearchWidget.setOnionizeState(!!searchOnionize);
   MessageArea.setMessageData(messageData, !!isStable, !!torConnectEnabled);
-  SurveyArea.potentiallyShow(surveyDismissVersion, isStable);
+  SurveyArea.potentiallyShow(surveyDismissVersion, isStable, appLocale);
 });
