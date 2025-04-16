@@ -248,6 +248,19 @@ jobs:
       env:
         GHA_ARCH: ${{fromJson('["x86_64","aarch64"]')[inputs.aarch64]}}
 
+
+    - name: Create AppImage
+      run: |
+        mkdir -p build/src
+        cp ~/output/ssb-*.tar.bz2 build/src
+
+        bash .github/workflows/src/appimage/build.sh
+        cp ssb*.AppImage* ~/output
+      env:
+        GHA_ARCH: ${{fromJson('["x86_64","aarch64"]')[inputs.aarch64]}}
+        GHA_display_version: ${{inputs.display_version}}
+
+
     #PUBLISH START
     - name: Publish🎁
       uses: actions/upload-artifact@v4

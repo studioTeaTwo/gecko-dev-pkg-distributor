@@ -28,29 +28,25 @@ set -eu
 
 export APPIMAGE_EXTRACT_AND_RUN=1
 
+WORKFLOW_PATH=.github/workflows/src/appimage
+
 rm -rf build/AppDir
-rm -rf build/firefox*
-mkdir -p build/src
+rm -rf build/ssb
 
-if [[ ! -f "build/src/$FIREFOX_PRODUCT.tar.bz2" ]]; then
-    echo "==> Downloading $FIREFOX_PRODUCT"
-    wget "https://download.mozilla.org/?product=$FIREFOX_PRODUCT-latest-ssl&os=$FIREFOX_OS&lang=$FIREFOX_LANG" -O "build/src/$FIREFOX_PRODUCT.tar.bz2" 
-fi
-
-tar -xvf "build/src/$FIREFOX_PRODUCT.tar.bz2" -C build
-mv build/firefox* build/AppDir
+tar -xvf build/src/ssb-*.tar.bz2 -C build
+mv build/ssb build/AppDir
 
 echo "==> Copying AppRun"
-cat AppRun | sed "s,FIREFOX_BIN_FILE,$( basename build/AppDir/firefox*-bin ),g" > build/AppDir/AppRun
+cat $WORKFLOW_PATH/AppRun | sed "s,FIREFOX_BIN_FILE,$( basename build/AppDir/ssb-bin ),g" > build/AppDir/AppRun
 chmod 755 build/AppDir/AppRun
 
 echo "==> Copying Firefox Desktop file"
-cp desktop/$FIREFOX_PRODUCT.desktop build/AppDir/.
+cp $WORKFLOW_PATH/ssb.desktop build/AppDir/.
 
 echo "==> Disable Auto Updates"
-cp -r distribution build/AppDir/.
+cp -r $WORKFLOW_PATH/distribution build/AppDir/.
 
-FIREFOX_ICON_NAME="$( cat desktop/$FIREFOX_PRODUCT.desktop | grep 'Icon=' | sed 's,Icon=,,g' )"
+FIREFOX_ICON_NAME="$( cat $WORKFLOW_PATH/ssb.desktop | grep 'Icon=' | sed 's,Icon=,,g' )"
 echo "==> Copying icon :: $FIREFOX_ICON_NAME"
 ln -sr build/AppDir/browser/chrome/icons/default/default128.png build/AppDir/$FIREFOX_ICON_NAME.png
 
@@ -67,14 +63,10 @@ export FIREFOX_BUILD_ID="$(cat build/AppDir/application.ini | grep -E 'BuildID' 
 
 ./build/appimagetool -n --comp gzip \
     build/AppDir \
-    --updateinformation "gh-releases-zsync|$GH_USER|$GH_REPO|$FIREFOX_PRODUCT|$FIREFOX_PRODUCT*.AppImage.zsync" \
-    $FIREFOX_PRODUCT-$FIREFOX_VERSION.r$FIREFOX_BUILD_ID-$( uname -m ).AppImage
+    --updateinformation "gh-releases-zsync|$GH_USER|$GH_REPO|latest|ssb*.AppImage.zsync" \
+    ssb-$GHA_display_version.linux-$GHA_ARCH.AppImage
 
 
-mkdir -p dist
-mv $FIREFOX_PRODUCT*.AppImage* dist/.
-echo "==> Done, saved $( realpath dist/$FIREFOX_PRODUCT*.AppImage)"
+echo "==> Done, saved $( realpath ssb*.AppImage)"
 
 echo "==> GitHub Actions "
-echo "FIREFOX_VERSION=$FIREFOX_VERSION" >> $GITHUB_ENV
-echo "FIREFOX_BUILD_ID=$FIREFOX_BUILD_ID" >> $GITHUB_ENV
