@@ -1902,47 +1902,43 @@ function Nostr$2(props) {
             /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: nostrKeys.map((item, i) => {
               return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.nostr.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: "0", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    Editable,
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
                     {
-                      defaultValue: item.properties.displayName,
-                      onSubmit: (value) => modifyCredentialToStore2({
-                        guid: item.guid,
-                        properties: {
-                          ...item.properties,
-                          displayName: value
-                        }
-                      }),
-                      isPreviewFocusable: true,
-                      isTruncated: true,
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
-                      ]
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            displayName: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.displayName
                     }
                   ) }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }) })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    Editable,
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
                     {
-                      defaultValue: item.properties.memo,
-                      onSubmit: (value) => modifyCredentialToStore2({
-                        guid: item.guid,
-                        properties: {
-                          ...item.properties,
-                          memo: value
-                        }
-                      }),
-                      isPreviewFocusable: true,
-                      isTruncated: true,
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
-                      ]
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            memo: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.memo
                     }
-                  ) }),
+                  ) }) }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "N Format" }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: item.identifier }),
@@ -2331,7 +2327,6 @@ function NIP07(props) {
         ).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
-    console.log("trustedSites", trustedSites);
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(

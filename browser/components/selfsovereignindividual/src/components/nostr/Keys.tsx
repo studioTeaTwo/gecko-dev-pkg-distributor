@@ -343,25 +343,22 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                   {states.nostr.editingNo !== i ? (
                     <Card maxW="md" overflow="hidden" key={i}>
                       <CardHeader pb="0">
-                        <Heading size="md">
-                          <Editable
-                            defaultValue={item.properties.displayName}
-                            onSubmit={value =>
+                        <Heading size="md" isTruncated>
+                          <div
+                            contentEditable
+                            onBlur={e => {
+                              e.preventDefault();
                               modifyCredentialToStore({
                                 guid: item.guid,
                                 properties: {
                                   ...item.properties,
-                                  displayName: value,
+                                  displayName: e.target.textContent,
                                 },
-                              })
-                            }
-                            isPreviewFocusable
-                            isTruncated
+                              });
+                            }}
                           >
-                            <EditablePreview overflowWrap="anywhere" />
-                            {/* Here is the custom input */}
-                            <Input as={EditableInput} />
-                          </Editable>
+                            {item.properties.displayName}
+                          </div>
                         </Heading>
                         <HStack>
                           {item.trustedSites.some(site => site.url === "*") && (
@@ -371,24 +368,23 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                       </CardHeader>
                       <CardBody>
                         <Box>
-                          <Editable
-                            defaultValue={item.properties.memo}
-                            onSubmit={value =>
-                              modifyCredentialToStore({
-                                guid: item.guid,
-                                properties: {
-                                  ...item.properties,
-                                  memo: value,
-                                },
-                              })
-                            }
-                            isPreviewFocusable
-                            isTruncated
-                          >
-                            <EditablePreview overflowWrap="anywhere" />
-                            {/* Here is the custom input */}
-                            <Input as={EditableInput} />
-                          </Editable>
+                          <Text fontSize="md" isTruncated>
+                            <div
+                              contentEditable
+                              onBlur={e => {
+                                e.preventDefault();
+                                modifyCredentialToStore({
+                                  guid: item.guid,
+                                  properties: {
+                                    ...item.properties,
+                                    memo: e.target.textContent,
+                                  },
+                                });
+                              }}
+                            >
+                              {item.properties.memo}
+                            </div>
+                          </Text>
                         </Box>
                         <Box mt={2}>
                           <Heading size="xs" textTransform="uppercase">
