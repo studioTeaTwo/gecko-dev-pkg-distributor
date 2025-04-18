@@ -479,12 +479,7 @@ function isDialogicAuthorized(target, type, authCache) {
   }
 
   const notExpired = dialogicAuthorizedSite.expirationTime > Date.now();
-  console.log(
-    "primarypassword-cache",
-    notExpired,
-    url,
-    dialogicAuthorizedSites
-  );
+  console.log("dialogic-cache", notExpired, url, dialogicAuthorizedSites);
   return notExpired;
 }
 
@@ -706,7 +701,7 @@ async function authByDialogs(
       updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
     }
     console.log(
-      "primarypassword-dialog",
+      "dialogic-prompt",
       isAuthorized,
       telemetryEvent,
       origin,
