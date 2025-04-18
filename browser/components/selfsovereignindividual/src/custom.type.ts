@@ -19,6 +19,7 @@ export interface SelfSovereignIndividualPrefs {
     menuPin: MenuItem; // selfsovereignindividual.ui.menuPin
     primaryPasswordEnabled: boolean; // SsiHelper.isPrimaryPasswordSet()
     passwordRevealVisible: boolean; // Services.policies.isAllowed("passwordReveal")
+    platform: string; // AppConstants.platform
     addons: { id: string; name: string; url: string }[]; // built-in addons list
   };
   nostr: {
@@ -67,7 +68,7 @@ interface TrustedSites {
   enabled: boolean;
   permissions: { nallowedMethod: string[] };
 }
-interface PasswordAuthorizedSites {
+interface DialogicAuthorizedSites {
   url: string;
   name: string;
   expirationTime: number;
@@ -77,7 +78,7 @@ export interface Credential
   extends Omit<
     OnlyUsedNsICredentialInfo,
     | "trustedSites"
-    | "passwordAuthorizedSites"
+    | "dialogicAuthorizedSites"
     | "properties"
     | "guid"
     | "timeCreated"
@@ -85,7 +86,7 @@ export interface Credential
   protocolName: ProtocolName;
   credentialName: CredentialName;
   trustedSites: TrustedSites[];
-  passwordAuthorizedSites: PasswordAuthorizedSites[];
+  dialogicAuthorizedSites: DialogicAuthorizedSites[];
   properties: {
     displayName: string;
     generationMethod: GenerationMethod;
@@ -94,15 +95,16 @@ export interface Credential
   guid?: string;
   timeCreated?: number;
 }
-export interface PasswordAuthorizedSitesForNostr
-  extends PasswordAuthorizedSites {
+export interface DialogicAuthorizedSitesForNostr
+  extends DialogicAuthorizedSites {
   permissions: {
+    everyTimeAuthorizedMethods: string[];
     skippedDialog: string[];
     excludedKinds: string[];
   };
 }
 export interface NostrCredential extends Credential {
-  passwordAuthorizedSites: PasswordAuthorizedSitesForNostr[];
+  dialogicAuthorizedSites: DialogicAuthorizedSitesForNostr[];
 }
 
 // Pass object type through JSON.stringify for IPC & JSONstorage

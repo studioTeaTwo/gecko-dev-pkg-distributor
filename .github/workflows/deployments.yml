@@ -250,6 +250,10 @@ jobs:
 
         sha256sum ssb-*.linux-x86_64.tar.bz2
         sha256sum ssb-*.linux-aarch64.tar.bz2
+        sha256sum ssb-*.linux-x86_64.AppImage
+        sha256sum ssb-*.linux-aarch64.AppImage
+        sha256sum ssb-*.linux-x86_64.AppImage.zsync
+        sha256sum ssb-*.linux-aarch64.AppImage.zsync
         sha256sum ssb-*.win64.installer.exe
         sha256sum ssb-*.macOS-universal.dmg
         sha256sum LINUX-x86_64.mar
@@ -283,6 +287,10 @@ jobs:
         files: |
           /home/runner/downloads/artifacts/ssb-*.linux-x86_64.tar.bz2
           /home/runner/downloads/artifacts/ssb-*.linux-aarch64.tar.bz2
+          /home/runner/downloads/artifacts/ssb-*.linux-x86_64.AppImage
+          /home/runner/downloads/artifacts/ssb-*.linux-aarch64.AppImage
+          /home/runner/downloads/artifacts/ssb-*.linux-x86_64.AppImage.zsync
+          /home/runner/downloads/artifacts/ssb-*.linux-aarch64.AppImage.zsync
           /home/runner/downloads/artifacts/ssb-*.win64.installer.exe
           /home/runner/downloads/artifacts/ssb-*.macOS-universal.dmg
           /home/runner/downloads/artifacts/LINUX-x86_64.mar

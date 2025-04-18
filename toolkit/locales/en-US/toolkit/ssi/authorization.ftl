@@ -4,4 +4,8 @@
 
 ssi-authorization-title =
     .title = Confirm Authorization
-    .style = min-width: 48em; min-height: 24em;
+    .style = min-width: 48em; min-height: 18em;
+
+ssi-SetPrimaryPassword-title =
+    .title = Required Primary Password
+    .style = min-width: 48em; min-height: 12em;

@@ -127,7 +127,7 @@ export class SsiStorage_json {
       encryptedSecret: credentialClone.secret,
       encryptedIdentifier: credentialClone.identifier,
       encryptedTrustedSites: credentialClone.trustedSites,
-      encryptedPasswordAuthorizedSites: credentialClone.passwordAuthorizedSites,
+      encryptedDialogicAuthorizedSites: credentialClone.dialogicAuthorizedSites,
       encryptedProperties: credentialClone.properties,
       guid: credentialClone.guid,
       encType: this._crypto.defaultEncType,
@@ -177,8 +177,8 @@ export class SsiStorage_json {
       resultCredential.secret = credential.secret;
       resultCredential.identifier = credential.identifier;
       resultCredential.trustedSites = credential.trustedSites;
-      resultCredential.passwordAuthorizedSites =
-        credential.passwordAuthorizedSites;
+      resultCredential.dialogicAuthorizedSites =
+        credential.dialogicAuthorizedSites;
       resultCredential.properties = credential.properties;
 
       // Send a notification that a credential was added.
@@ -256,7 +256,7 @@ export class SsiStorage_json {
       encSecret,
       encIdentifier,
       encTrustedSites,
-      encPasswordAuthorizedSites,
+      encDialogicAuthorizedSites,
       encProperties,
       encType,
       encUnknownFields,
@@ -270,8 +270,8 @@ export class SsiStorage_json {
         credentialItem.encryptedSecret = encSecret;
         credentialItem.encryptedIdentifier = encIdentifier;
         credentialItem.encryptedTrustedSites = encTrustedSites;
-        credentialItem.encryptedPasswordAuthorizedSites =
-          encPasswordAuthorizedSites;
+        credentialItem.encryptedDialogicAuthorizedSites =
+          encDialogicAuthorizedSites;
         credentialItem.encryptedProperties = encProperties;
         credentialItem.guid = newCredential.guid;
         credentialItem.encType = encType;
@@ -377,7 +377,7 @@ export class SsiStorage_json {
           case "encryptedSecret":
           case "encryptedIdentifier":
           case "encryptedTrustedSites":
-          case "encryptedPasswordAuthorizedSites":
+          case "encryptedDialogicAuthorizedSites":
           case "encryptedProperties":
           case "guid":
           case "encType":
@@ -427,7 +427,7 @@ export class SsiStorage_json {
           credentialItem.encryptedSecret,
           credentialItem.encryptedIdentifier,
           credentialItem.encryptedTrustedSites,
-          credentialItem.encryptedPasswordAuthorizedSites,
+          credentialItem.encryptedDialogicAuthorizedSites,
           credentialItem.encryptedProperties
         );
         // set nsICredentialMetaInfo values
@@ -575,7 +575,7 @@ export class SsiStorage_json {
           secret,
           identifier,
           trustedSites,
-          passwordAuthorizedSites,
+          dialogicAuthorizedSites,
           properties,
           unknownFields,
         }
@@ -584,7 +584,7 @@ export class SsiStorage_json {
           secret,
           identifier,
           trustedSites,
-          passwordAuthorizedSites,
+          dialogicAuthorizedSites,
           properties,
           unknownFields,
         ]),
@@ -597,7 +597,7 @@ export class SsiStorage_json {
         encryptedSecret,
         encryptedIdentifier,
         encryptedTrustedSites,
-        encryptedPasswordAuthorizedSites,
+        encryptedDialogicAuthorizedSites,
         encryptedProperties,
         encryptedUnknownFields,
       ] = ciphertexts.slice(6 * i, 6 * i + 6);
@@ -606,8 +606,8 @@ export class SsiStorage_json {
       encryptedCredential.secret = encryptedSecret;
       encryptedCredential.identifier = encryptedIdentifier;
       encryptedCredential.trustedSites = encryptedTrustedSites;
-      encryptedCredential.passwordAuthorizedSites =
-        encryptedPasswordAuthorizedSites;
+      encryptedCredential.dialogicAuthorizedSites =
+        encryptedDialogicAuthorizedSites;
       encryptedCredential.properties = encryptedProperties;
       encryptedCredential.unknownFields = encryptedUnknownFields;
 
@@ -631,7 +631,7 @@ export class SsiStorage_json {
           secret,
           identifier,
           trustedSites,
-          passwordAuthorizedSites,
+          dialogicAuthorizedSites,
           properties,
           unknownFields,
         }
@@ -640,7 +640,7 @@ export class SsiStorage_json {
           secret,
           identifier,
           trustedSites,
-          passwordAuthorizedSites,
+          dialogicAuthorizedSites,
           properties,
           unknownFields,
         ]),
@@ -654,7 +654,7 @@ export class SsiStorage_json {
           secret,
           identifier,
           trustedSites,
-          passwordAuthorizedSites,
+          dialogicAuthorizedSites,
           properties,
           unknownFields,
         ] = plaintexts.slice(6 * i, 6 * i + 6);
@@ -685,7 +685,7 @@ export class SsiStorage_json {
         decryptedCredential.secret = secret;
         decryptedCredential.identifier = identifier;
         decryptedCredential.trustedSites = trustedSites;
-        decryptedCredential.passwordAuthorizedSites = passwordAuthorizedSites;
+        decryptedCredential.dialogicAuthorizedSites = dialogicAuthorizedSites;
         decryptedCredential.properties = properties;
         decryptedCredential.unknownFields = unknownFields;
 
@@ -702,8 +702,8 @@ export class SsiStorage_json {
     let encSecret = this._crypto.encrypt(credential.secret);
     let encIdentifier = this._crypto.encrypt(credential.identifier);
     let encTrustedSites = this._crypto.encrypt(credential.trustedSites);
-    let encPasswordAuthorizedSites = this._crypto.encrypt(
-      credential.passwordAuthorizedSites
+    let encDialogicAuthorizedSites = this._crypto.encrypt(
+      credential.dialogicAuthorizedSites
     );
     let encProperties = this._crypto.encrypt(credential.properties);
 
@@ -719,7 +719,7 @@ export class SsiStorage_json {
       encSecret,
       encIdentifier,
       encTrustedSites,
-      encPasswordAuthorizedSites,
+      encDialogicAuthorizedSites,
       encProperties,
       encType,
       encUnknownFields,
@@ -744,8 +744,8 @@ export class SsiStorage_json {
         credential.secret = this._crypto.decrypt(credential.secret);
         credential.identifier = this._crypto.decrypt(credential.identifier);
         credential.trustedSites = this._crypto.decrypt(credential.trustedSites);
-        credential.passwordAuthorizedSites = this._crypto.decrypt(
-          credential.passwordAuthorizedSites
+        credential.dialogicAuthorizedSites = this._crypto.decrypt(
+          credential.dialogicAuthorizedSites
         );
         credential.properties = this._crypto.decrypt(credential.properties);
         // Verify unknownFields actually has a value
@@ -780,8 +780,8 @@ export class SsiStorage_json {
       aCredential.trustedSites = this._crypto.decrypt(
         aCredential.encryptedTrustedSites
       );
-      aCredential.passwordAuthorizedSites = this._crypto.decrypt(
-        aCredential.encryptedPasswordAuthorizedSites
+      aCredential.dialogicAuthorizedSites = this._crypto.decrypt(
+        aCredential.encryptedDialogicAuthorizedSites
       );
       aCredential.properties = this._crypto.decrypt(
         aCredential.encryptedProperties

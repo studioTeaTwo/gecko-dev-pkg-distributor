@@ -6,9 +6,9 @@ import {
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
 import {
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
 } from "../components/nostr/contants";
 
 /**
@@ -128,9 +128,9 @@ function transformToPayload(credential: Partial<Credential>) {
   if (credential.trustedSites) {
     newVal.trustedSites = JSON.stringify(credential.trustedSites);
   }
-  if (credential.passwordAuthorizedSites) {
-    newVal.passwordAuthorizedSites = JSON.stringify(
-      credential.passwordAuthorizedSites
+  if (credential.dialogicAuthorizedSites) {
+    newVal.dialogicAuthorizedSites = JSON.stringify(
+      credential.dialogicAuthorizedSites
     );
   }
   if (credential.properties) {
@@ -146,14 +146,14 @@ function transformCredentialsFromStore(
     const trustedSites = JSON.parse(
       credential.trustedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
-    const passwordAuthorizedSites = JSON.parse(
-      credential.passwordAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
+    const dialogicAuthorizedSites = JSON.parse(
+      credential.dialogicAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
     );
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {
       ...credential,
       trustedSites,
-      passwordAuthorizedSites,
+      dialogicAuthorizedSites,
       properties,
     };
   });
@@ -168,19 +168,20 @@ export default function useChildActorEvent() {
       addons: [],
       primaryPasswordEnabled: false,
       passwordRevealVisible: false,
+      platform: "",
     },
     nostr: {
       enabled: true,
       tabPin: "",
       tabPinInNip07: "",
       usedTrustedSites: false,
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
       expirationTimeForPrimarypasswordToSettings: 300000,
       usedPrimarypasswordToApps: true,
       expirationTimeForPrimarypasswordToApps: 86400000,
       dialogDisplayOptionPreset:
-        DefaultDialogDisplayOption.filter(Boolean).join(","),
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedBuiltinNip07: true,
       usedAccountChanged: true,

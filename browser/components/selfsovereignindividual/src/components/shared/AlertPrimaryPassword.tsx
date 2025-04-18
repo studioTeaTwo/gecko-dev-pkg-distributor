@@ -36,7 +36,7 @@ export default function AlertPrimaryPassword(props: Props) {
             Please set{" "}
             <Link
               color="teal.500"
-              href="https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US"
+              href="https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins"
             >
               primary password
             </Link>{" "}

@@ -4,7 +4,9 @@
 
 toolkit.jar:
 % content ssi %content/ssi/
-  content/ssi/dialogs/confirmAuthorization.css    (./dialogs/confirmAuthorization.css)
+  content/ssi/dialogs/alertSetPrimaryPassword.css   (./dialogs/alertSetPrimaryPassword.css)
+  content/ssi/dialogs/alertSetPrimaryPassword.xhtml (./dialogs/alertSetPrimaryPassword.xhtml)
+  content/ssi/dialogs/confirmAuthorization.css   (./dialogs/confirmAuthorization.css)
   content/ssi/dialogs/confirmAuthorization.js    (./dialogs/confirmAuthorization.js)
   content/ssi/dialogs/confirmAuthorization.xhtml (./dialogs/confirmAuthorization.xhtml)
 % resource ssi %ssi/

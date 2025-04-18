@@ -37,7 +37,7 @@ import {
 } from "../../shared/keys";
 import Secret from "../shared/Secret";
 import {
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   DefaultTrustedSites,
   NostrTemplate,
 } from "./contants";
@@ -85,7 +85,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod },
+        permissions: { nallowedMethod: DefaultNallowedMethods },
       })),
     ],
     [prefs.base.addons]
@@ -181,7 +181,12 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -198,7 +203,12 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -231,10 +241,16 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
+
     removeAllCredentialsToStore();
 
     // Notify to the buit-in extension
@@ -328,10 +344,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                     <Card maxW="md" overflow="hidden" key={i}>
                       <CardHeader pb="0">
                         <Heading size="md">
-                          {/* FIXME(ssb): more performable and high UX */}
                           <Editable
-                            value={item.properties.displayName}
-                            onChange={value =>
+                            defaultValue={item.properties.displayName}
+                            onSubmit={value =>
                               modifyCredentialToStore({
                                 guid: item.guid,
                                 properties: {
@@ -343,8 +358,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             isPreviewFocusable
                             isTruncated
                           >
-                            <EditablePreview />
-                            <EditableInput />
+                            <EditablePreview overflowWrap="anywhere" />
+                            {/* Here is the custom input */}
+                            <Input as={EditableInput} />
                           </Editable>
                         </Heading>
                         <HStack>
@@ -355,10 +371,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                       </CardHeader>
                       <CardBody>
                         <Box>
-                          {/* FIXME(ssb): more performable and high UX */}
                           <Editable
-                            value={item.properties.memo}
-                            onChange={value =>
+                            defaultValue={item.properties.memo}
+                            onSubmit={value =>
                               modifyCredentialToStore({
                                 guid: item.guid,
                                 properties: {
@@ -370,8 +385,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             isPreviewFocusable
                             isTruncated
                           >
-                            <EditablePreview />
-                            <EditableInput />
+                            <EditablePreview overflowWrap="anywhere" />
+                            {/* Here is the custom input */}
+                            <Input as={EditableInput} />
                           </Editable>
                         </Box>
                         <Box mt={2}>
@@ -387,6 +403,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             usedPrimarypasswordToSettings={
                               prefs.nostr.usedPrimarypasswordToSettings
                             }
+                            primaryPasswordEnabled={
+                              prefs.base.primaryPasswordEnabled
+                            }
+                            platform={prefs.base.platform}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -403,6 +423,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             usedPrimarypasswordToSettings={
                               prefs.nostr.usedPrimarypasswordToSettings
                             }
+                            primaryPasswordEnabled={
+                              prefs.base.primaryPasswordEnabled
+                            }
+                            platform={prefs.base.platform}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -453,6 +477,8 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                       usedPrimarypasswordToSettings={
                         prefs.nostr.usedPrimarypasswordToSettings
                       }
+                      primaryPasswordEnabled={prefs.base.primaryPasswordEnabled}
+                      platform={prefs.base.platform}
                       goBack={() => resetState()}
                     ></KeyEditor>
                   )}

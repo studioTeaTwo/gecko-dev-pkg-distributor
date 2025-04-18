@@ -27,7 +27,7 @@ nsCredentialInfo.prototype = {
   secret: null,
   identifier: null,
   trustedSites: null,
-  passwordAuthorizedSites: null,
+  dialogicAuthorizedSites: null,
   properties: null,
   unknownFields: null,
 
@@ -38,7 +38,7 @@ nsCredentialInfo.prototype = {
     aSecret,
     aIdentifier,
     aTrustedSites,
-    aPasswordAuthorizedSites,
+    aDialogicAuthorizedSites,
     aProperties
   ) {
     this.protocolName = aProtocolName;
@@ -47,7 +47,7 @@ nsCredentialInfo.prototype = {
     this.secret = aSecret;
     this.identifier = aIdentifier;
     this.trustedSites = aTrustedSites;
-    this.passwordAuthorizedSites = aPasswordAuthorizedSites;
+    this.dialogicAuthorizedSites = aDialogicAuthorizedSites;
     this.properties = aProperties;
   },
 
@@ -63,7 +63,7 @@ nsCredentialInfo.prototype = {
       this.secret != aCredential.secret ||
       this.identifier != aCredential.identifier ||
       this.trustedSites != aCredential.trustedSites ||
-      this.passwordAuthorizedSites != aCredential.passwordAuthorizedSites ||
+      this.dialogicAuthorizedSites != aCredential.dialogicAuthorizedSites ||
       this.properties != aCredential.properties
     ) {
       return false;
@@ -83,7 +83,7 @@ nsCredentialInfo.prototype = {
       this.secret,
       this.identifier,
       this.trustedSites,
-      this.passwordAuthorizedSites,
+      this.dialogicAuthorizedSites,
       this.properties
     );
 

@@ -42,17 +42,19 @@ import { promptForPrimaryPassword } from "../../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import {
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
   DialogDisplayOptions,
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
   NallowedMethods,
+  EveryTimeAuthorizedMethods,
 } from "./contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
   ExplainDialogDisplayOption,
+  ExplainEveryTimeAuthorizedMethod,
   ExplainNallowedMethod,
 } from "../shared/Examples";
 import { changePrimary } from "../shared/functions";
@@ -61,11 +63,19 @@ interface Props {
   credential: NostrCredential;
   nostrKeys: NostrCredential[];
   usedPrimarypasswordToSettings: boolean;
+  primaryPasswordEnabled: boolean;
+  platform: string;
   goBack: (direction?: unknown) => void;
 }
 
 export default function KeyEditor(props: Props) {
-  const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
+  const {
+    credential,
+    nostrKeys,
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform,
+  } = props;
   const { modifyCredentialToStore } = dispatchEvents;
 
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
@@ -85,7 +95,9 @@ export default function KeyEditor(props: Props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -159,7 +171,7 @@ export default function KeyEditor(props: Props) {
             url: url,
             name: url !== "*" ? "" : "<all_urls>",
             enabled: true,
-            permissions: { nallowedMethod: DefaultNallowedMethod },
+            permissions: { nallowedMethod: DefaultNallowedMethods },
           },
         ]);
     HandleChangeValue({ trustedSites: value });
@@ -183,10 +195,10 @@ export default function KeyEditor(props: Props) {
   };
 
   const handleRevokeSite = (
-    revokedSite: NostrCredential["passwordAuthorizedSites"][number]
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
   ) => {
     const value = {
-      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map(site => {
+      dialogicAuthorizedSites: editingKey.dialogicAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -202,21 +214,47 @@ export default function KeyEditor(props: Props) {
       return;
     }
 
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = value
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = value
       ? value.split(",")
       : [];
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetExcludedKinds = (siteNo: number) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds =
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds =
       DefaultExcludedKinds;
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
+  };
+
+  const handleSaveEveryTimeAuthorizedMethods = (
+    siteNo: number,
+    value: string
+  ) => {
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
+    );
+    if (
+      dialogicAuthorizedSites[
+        siteNo
+      ].permissions.everyTimeAuthorizedMethods.includes(value)
+    ) {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods =
+        dialogicAuthorizedSites[
+          siteNo
+        ].permissions.everyTimeAuthorizedMethods.filter(
+          method => method !== value
+        );
+    } else {
+      dialogicAuthorizedSites[
+        siteNo
+      ].permissions.everyTimeAuthorizedMethods.push(value);
+    }
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
 
   const handleSaveNallowedMethod = (siteNo: number, value: string) => {
@@ -228,37 +266,37 @@ export default function KeyEditor(props: Props) {
     } else {
       trustedSites[siteNo].permissions.nallowedMethod.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    HandleChangeValue({ trustedSites });
   };
   const handleResetNallowedMethod = (siteNo: number) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
-    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethods;
+    HandleChangeValue({ trustedSites });
   };
 
   const handleSaveSkippedDialog = (siteNo: number, value: string) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
     if (
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)
     ) {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog =
-        passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog =
+        dialogicAuthorizedSites[siteNo].permissions.skippedDialog.filter(
           method => method !== value
         );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetSkippedDialog = (siteNo: number) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.skippedDialog =
-      DefaultDialogDisplayOption;
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.skippedDialog =
+      DefaultDialogDisplayOptions;
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
 
   function EditableControls() {
@@ -290,7 +328,12 @@ export default function KeyEditor(props: Props) {
               <Editable
                 defaultValue={editingKey.properties.displayName}
                 onSubmit={value =>
-                  HandleChangeValue({ properties: { displayName: value } })
+                  HandleChangeValue({
+                    properties: {
+                      ...editingKey.properties,
+                      displayName: value,
+                    },
+                  })
                 }
                 fontSize="xl"
                 isPreviewFocusable
@@ -479,13 +522,13 @@ export default function KeyEditor(props: Props) {
               </Box>
               <Box>
                 <Heading size="xs" textTransform="uppercase" my={4}>
-                  Password Authorization
+                  Dialogic Authorization
                 </Heading>
                 <Grid gridTemplateColumns={"400px 1fr"} gap={2}>
-                  {!editingKey.passwordAuthorizedSites.length && (
+                  {!editingKey.dialogicAuthorizedSites.length && (
                     <Text fontSize="sm">No registered</Text>
                   )}
-                  {editingKey.passwordAuthorizedSites.map((site, i) => {
+                  {editingKey.dialogicAuthorizedSites.map((site, i) => {
                     const expirationTime = new Date(site.expirationTime);
                     return (
                       <>
@@ -546,6 +589,46 @@ export default function KeyEditor(props: Props) {
                               p="2"
                               alignItems="flex-start"
                             >
+                              <Heading size="sm">
+                                The Method authorized every time
+                              </Heading>
+                              <HStack>
+                                <Menu>
+                                  <MenuButton
+                                    as={Button}
+                                    variant="outline"
+                                    colorScheme="blue"
+                                  >
+                                    Select Options
+                                  </MenuButton>
+                                  <MenuList>
+                                    {EveryTimeAuthorizedMethods.map(option => (
+                                      <MenuItem
+                                        key={option}
+                                        closeOnSelect={false}
+                                      >
+                                        <Checkbox
+                                          isChecked={site.permissions.everyTimeAuthorizedMethods.includes(
+                                            option
+                                          )}
+                                          onChange={() =>
+                                            handleSaveEveryTimeAuthorizedMethods(
+                                              i,
+                                              option
+                                            )
+                                          }
+                                        >
+                                          {option}
+                                        </Checkbox>
+                                      </MenuItem>
+                                    ))}
+                                  </MenuList>
+                                </Menu>
+                              </HStack>
+                              <ExplainEveryTimeAuthorizedMethod
+                                width="100%"
+                                protocolName="nostr"
+                              />
                               <Heading size="sm">
                                 Event Kinds authorized every time
                               </Heading>

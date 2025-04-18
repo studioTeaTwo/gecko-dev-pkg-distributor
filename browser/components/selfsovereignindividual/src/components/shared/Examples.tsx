@@ -113,6 +113,35 @@ export function ExplainNallowedMethod(props: {
   );
 }
 
+export function ExplainEveryTimeAuthorizedMethod(props: {
+  width?: string;
+  protocolName: ProtocolName;
+}) {
+  return (
+    <Accordion allowToggle width={props.width || "100%"}>
+      <AccordionItem css={{ border: "none" }}>
+        <AccordionButton>
+          <HStack as="span" flex="1" textAlign="left">
+            <Icon as={MdHelp} />
+            <Text>Explanation</Text>
+          </HStack>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel pb={4}>
+          <Text size="sm">
+            The methods checked here will execute the authorization dialogs even
+            if the previous dialogic authorization has not yet expired.
+          </Text>
+          <Text>
+            This has lower priority than the dialog dispaly settings, so if both
+            are present, dialog will disappear.
+          </Text>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
 export function ExplainDialogDisplayOption(props: {
   width?: string;
   protocolName: ProtocolName;
@@ -129,33 +158,38 @@ export function ExplainDialogDisplayOption(props: {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Sets the display condition of the dialog box, when it has expired or
-            every-time-authorize setting exists.
+            Sets the conditions of the authorization dialogs displaying when it
+            has expired or the every-time-authorize settings exists.
           </Text>
           <Text size="sm">
-            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping password
-            dialog and prompting confirm dialog alone. The expiration is
-            counting up in the background and dialog will reappear once it has
-            expired.
+            Authorization dialogs consist of two dialogs. The confirmation
+            dialog is there to verify the app's request, and the password
+            dialog, by the OS account password or the Firefox primary password,
+            is there to prevent someone other than you from authorizing.
             <br />
-            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping confirm
-            dialog and prompting password dialog alone.
+            The expiration is counting up in the background and dialog will
+            reappear once it has expired.
+          </Text>
+          <Text size="sm">
+            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the password
+            dialog and prompting the confirm dialog alone.
             <br />
-            If you check both, two dialogs will disappear. Similar to trusted
-            site, but password authorization is subject to expiration
-            constraints.
+            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the confirm
+            dialog and prompting the password dialog alone.
+            <br />
+            If you check both, two dialogs will disappear. It's equivalent to
+            disabled.
             <br />
             If you uncheck both, two dialogs will appear.
           </Text>
           <Text size="sm">
-            Default preset is set the first time you authorize with a password.
-            And You can edit the settings for the corresponding URL for each
-            key.
+            Default preset is set the first time you authorize for the URL. And
+            you can edit the settings for the corresponding URL for each key.
           </Text>
           {props.protocolName === "nostr" && (
             <Text>
               This has lower priority than the excluded kinds, so if both are
-              present, authorization will proceed.
+              present, dialog will appear.
             </Text>
           )}
         </AccordionPanel>
@@ -177,11 +211,12 @@ export function ExampleNostrKind(props: { width?: string }) {
         </AccordionButton>
         <AccordionPanel pb={4}>
           <Text size="sm">
-            Specifies the Nostr Kind you want to display a dialog even if a
-            trusted site is set or the password is valid for that URL.{" "}
+            Specifies the Nostr Kind you want to necessarily display a
+            authorization dialog even if a trusted site is set or a dialogic
+            authorization has not yet expired for this URL.{" "}
           </Text>
           <Text size="sm">
-            Default preset is set the first time you authorize with a password.
+            Default preset is set the first time you authorize with a dialog.
             And You can edit the settings for the corresponding URL for each
             key.
           </Text>

@@ -24,15 +24,28 @@
  * onload() handler.
  */
 function onLoad() {
-  const { permission, caption, evidence, submission } = window.arguments[0];
+  const { permission, description, previousSelectionOnConfirm } =
+    window.arguments[0];
 
-  document.getElementById("caption").textContent = caption;
+  document.getElementById("caption").textContent = description.caption;
   document.getElementById("permission").textContent = permission.text;
-  document.getElementById("submission").textContent = submission;
+  document.getElementById("submission").textContent = description.submission;
+
+  if (previousSelectionOnConfirm) {
+    document.getElementById("settingValue").selectedItem =
+      document.getElementById(previousSelectionOnConfirm);
+  }
 
   document.getElementById(
     "methodTrust"
   ).label = `Trust just this method - "${permission.method}"`;
+  const OneHour = 60 * 60 * 1000;
+  document.getElementById("password").label = `Ask again after ${
+    permission.expirationTime / OneHour
+  } hours for ALL requests`;
+  document.getElementById(
+    "everytime"
+  ).label = `Ask everytime (expiration 0) - "${permission.method}"`;
   // document.getElementById(
   //   "confirmOnly"
   // ).label = `Skip password, only confirmation dialog - "${permission.method}"`;
@@ -43,10 +56,10 @@ function onLoad() {
   document.addEventListener("dialogaccept", onDialogAccept);
   document.addEventListener("dialogcancel", onDialogCancel);
 
-  if (evidence) {
+  if (description.evidence) {
     const box = document.getElementById("evidence");
     const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify(evidence, null, 2);
+    pre.textContent = JSON.stringify(description.evidence, null, 2);
     box.appendChild(pre);
   } else {
     document.getElementById("evidence").remove();

@@ -53,12 +53,12 @@ import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import {
   DefaultExcludedKinds,
-  DefaultNallowedMethod,
+  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
   DialogDisplayOptions,
   NallowedMethods,
-  DefaultDialogDisplayOption,
+  DefaultDialogDisplayOptions,
 } from "./contants";
 import {
   ExampleNostrKind,
@@ -117,7 +117,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -152,7 +157,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -169,7 +179,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
           enabled: true,
-          permissions: {},
+          permissions: { nallowedMethod: DefaultNallowedMethods },
         });
       }
       modifyCredentialToStore(
@@ -192,7 +202,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -223,7 +238,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -243,7 +263,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -256,14 +281,19 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
   const handleRevokeSite = async (
     identifier: string,
-    revokedSite: NostrCredential["passwordAuthorizedSites"][number]
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
   ) => {
     if (prefs.nostr.usedPrimarypasswordToSettings) {
       const primaryPasswordAuth = await promptForPrimaryPassword(
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -271,7 +301,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     const item = nostrkeys.find(key => key.identifier === identifier);
     modifyCredentialToStore({
       guid: item.guid,
-      passwordAuthorizedSites: item.passwordAuthorizedSites.map(site => {
+      dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -305,7 +335,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -342,16 +377,21 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
 
     onPrefChanged({
       protocolName: "nostr",
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
     });
-    setNewNallowedMethodPreset(DefaultNallowedMethod);
+    setNewNallowedMethodPreset(DefaultNallowedMethods);
   };
 
   const handleChangeDialogDisplayOption = (value: string) => {
@@ -374,7 +414,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (
+          !prefs.base.primaryPasswordEnabled &&
+          prefs.base.platform === "linux"
+        ) {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -382,9 +427,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     onPrefChanged({
       protocolName: "nostr",
       dialogDisplayOptionPreset:
-        DefaultDialogDisplayOption.filter(Boolean).join(","),
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
 
   const getTrustedSites = useCallback(() => {
@@ -424,7 +469,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                 <AccordionPanel pb={4}>
                   {nostrkeys
                     .filter(key =>
-                      key.trustedSites.some(_site => _site.url === site.url)
+                      key.trustedSites.some(
+                        _site => _site.enabled && _site.url === site.url
+                      )
                     )
                     .map((key, i) => {
                       return (
@@ -454,6 +501,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               usedPrimarypasswordToSettings={
                                 prefs.nostr.usedPrimarypasswordToSettings
                               }
+                              primaryPasswordEnabled={
+                                prefs.base.primaryPasswordEnabled
+                              }
+                              platform={prefs.base.platform}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}
@@ -480,15 +531,15 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     );
   }, [nostrkeys, states.nostr]);
 
-  const getPasswordAuthorizedSites = useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.reduce<{
+  const getDialogicAuthorizedSites = useCallback(() => {
+    const dialogicAuthorizedSites = nostrkeys.reduce<{
       [url: string]: {
         key: NostrCredential;
-        site: NostrCredential["passwordAuthorizedSites"][number];
+        site: NostrCredential["dialogicAuthorizedSites"][number];
         keyNo: number;
       }[];
     }>((acc, key, i) => {
-      key.passwordAuthorizedSites
+      key.dialogicAuthorizedSites
         .filter(site => site.expirationTime > Date.now())
         .forEach(site => {
           const found = Object.keys(acc).find(url => site.url === url);
@@ -500,8 +551,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         });
       return acc;
     }, {});
-    return Object.keys(passwordAuthorizedSites).length > 0 ? (
-      Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+    return Object.keys(dialogicAuthorizedSites).length > 0 ? (
+      Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
         return (
           <>
             <GridItem colSpan={2}>
@@ -572,6 +623,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               usedPrimarypasswordToSettings={
                                 prefs.nostr.usedPrimarypasswordToSettings
                               }
+                              primaryPasswordEnabled={
+                                prefs.base.primaryPasswordEnabled
+                              }
+                              platform={prefs.base.platform}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}
@@ -638,6 +693,14 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           </Grid>
         </Box>
         <Box>
+          <Box>
+            <Heading as="h4" size="md">
+              Protect Options
+            </Heading>
+            <Text fontSize="sm">
+              The following helps save you against theft:
+            </Text>
+          </Box>
           <Tabs
             variant="enclosed"
             index={tabIndex}
@@ -648,14 +711,14 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
           >
             <TabList>
               <Tab>
-                <Heading as="h4" size="md">
+                <Heading as="h5" size="md">
                   Trusted Sites
                 </Heading>
                 {tabPin(0)}
               </Tab>
               <Tab>
-                <Heading as="h4" size="md">
-                  Password Authorization
+                <Heading as="h5" size="md">
+                  Dialogic Authorization
                 </Heading>
                 {tabPin(1)}
               </Tab>
@@ -667,6 +730,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Any URL registered here will be allowed for your key
+                      indefinitely.
+                    </Text>
+                  </GridItem>
                   <GridItem>
                     <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
                   </GridItem>
@@ -708,7 +777,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   </GridItem>
                   <GridItem>
                     <HStack>
-                      <Menu>
+                      <Menu closeOnSelect={false}>
                         <MenuButton
                           as={Button}
                           variant="outline"
@@ -765,6 +834,12 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Authorize interactively when the app requests you, having
+                      an expiration.
+                    </Text>
+                  </GridItem>
                   <GridItem>
                     <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
                       Enable
@@ -857,7 +932,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                       </GridItem>
                       <GridItem>
                         <HStack>
-                          <Menu>
+                          <Menu closeOnSelect={false}>
                             <MenuButton
                               as={Button}
                               variant="outline"
@@ -910,7 +985,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   gap={6}
                   alignItems="start"
                 >
-                  {getPasswordAuthorizedSites()}
+                  {getDialogicAuthorizedSites()}
                 </Grid>
               </TabPanel>
             </TabPanels>

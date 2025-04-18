@@ -72,7 +72,7 @@ export const SsiHelper = {
         l.secret.includes(c) ||
         l.identifier.includes(c) ||
         l.trustedSites.includes(c) ||
-        l.passwordAuthorizedSites.includes(c) ||
+        l.dialogicAuthorizedSites.includes(c) ||
         l.properties.includes(c)
       );
     }
@@ -108,10 +108,10 @@ export const SsiHelper = {
       throw new Error("trustedSites must be non-empty strings");
     }
     if (
-      !aCredential.passwordAuthorizedSites ||
-      typeof aCredential.passwordAuthorizedSites != "string"
+      !aCredential.dialogicAuthorizedSites ||
+      typeof aCredential.dialogicAuthorizedSites != "string"
     ) {
-      throw new Error("passwordAuthorizedSites must be non-empty strings");
+      throw new Error("dialogicAuthorizedSites must be non-empty strings");
     }
 
     // In theory these nulls should just be rolled up into the encrypted
@@ -122,7 +122,7 @@ export const SsiHelper = {
       aCredential.secret.includes("\0") ||
       aCredential.identifier.includes("\0") ||
       aCredential.trustedSites.includes("\0") ||
-      aCredential.passwordAuthorizedSites.includes("\0") ||
+      aCredential.dialogicAuthorizedSites.includes("\0") ||
       aCredential.properties.includes("\0")
     ) {
       throw new Error("credential values can't contain nulls");
@@ -169,8 +169,8 @@ export const SsiHelper = {
       aCredential1.secret != aCredential2.secret ||
       aCredential1.identifier != aCredential2.identifier ||
       aCredential1.trustedSites != aCredential2.trustedSites ||
-      aCredential1.passwordAuthorizedSites !=
-        aCredential2.passwordAuthorizedSites
+      aCredential1.dialogicAuthorizedSites !=
+        aCredential2.dialogicAuthorizedSites
     ) {
       return false;
     }
@@ -214,7 +214,7 @@ export const SsiHelper = {
         aNewCredentialData.secret,
         aNewCredentialData.identifier,
         aNewCredentialData.trustedSites,
-        aNewCredentialData.passwordAuthorizedSites,
+        aNewCredentialData.dialogicAuthorizedSites,
         aNewCredentialData.properties
       );
       newCredential.unknownFields = aNewCredentialData.unknownFields;
@@ -248,7 +248,7 @@ export const SsiHelper = {
           case "secret":
           case "identifier":
           case "trustedSites":
-          case "passwordAuthorizedSites":
+          case "dialogicAuthorizedSites":
           case "properties":
           case "unknownFields":
           // nsICredentialMetaInfo (fall through)
@@ -308,11 +308,11 @@ export const SsiHelper = {
       );
     }
     if (
-      newCredential.passwordAuthorizedSites == null ||
-      !newCredential.passwordAuthorizedSites.length
+      newCredential.dialogicAuthorizedSites == null ||
+      !newCredential.dialogicAuthorizedSites.length
     ) {
       throw new Error(
-        "Can't add a credential with a null or empty passwordAuthorizedSites."
+        "Can't add a credential with a null or empty dialogicAuthorizedSites."
       );
     }
 
@@ -462,7 +462,7 @@ export const SsiHelper = {
       credential.secret,
       credential.identifier,
       credential.trustedSites,
-      credential.passwordAuthorizedSites,
+      credential.dialogicAuthorizedSites,
       credential.properties
     );
 
@@ -761,7 +761,8 @@ export const SsiHelper = {
   },
 
   async showConfirmAuthorizationDialog(dialogInfo) {
-    const { window, permission, caption, evidence, submission } = dialogInfo;
+    const { window, permission, description, previousSelectionOnConfirm } =
+      dialogInfo;
 
     // TODO(ssb): adjust the postion aligning with password dialog per OS
     const screenX = window.screen.width / 2 - 300;
@@ -774,11 +775,22 @@ export const SsiHelper = {
       "chrome://ssi/content/dialogs/confirmAuthorization.xhtml",
       "",
       features,
-      { permission, caption, evidence, submission },
+      { permission, description, previousSelectionOnConfirm },
       returnVals
     );
 
     return returnVals;
+  },
+
+  async showAlertPrimaryPasswordDialog(window) {
+    const screenX = window.screen.width / 2 - 300;
+    const screenY = window.screen.height / 2 - 300;
+    let features = `chrome,resizable,screenX=${screenX},screenY=${screenY}`;
+    const win = window.openDialog(
+      "chrome://ssi/content/dialogs/alertSetPrimaryPassword.xhtml",
+      "",
+      features
+    );
   },
 };
 

@@ -368,7 +368,14 @@ const DefaultExcludedKindList = {
 };
 const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
 const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
-const DefaultNallowedMethod = [];
+const DefaultNallowedMethods = [];
+const EveryTimeAuthorizedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "custom"
+];
 const DialogDisplayOptions = [
   "read-confirmOnly",
   "read-passwordOnly",
@@ -381,13 +388,19 @@ const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly"
 ];
-const DefaultDialogDisplayOption = [];
+const DefaultDialogDisplayOptions = [
+  "read-confirmOnly",
+  "sign-confirmOnly",
+  "encrypt-confirmOnly",
+  "decrypt-confirmOnly",
+  "custom-confirmOnly"
+];
 const DefaultTrustedSites = [
   {
     url: "http://localhost",
     name: "",
     enabled: true,
-    permissions: { nallowedMethod: DefaultNallowedMethod }
+    permissions: { nallowedMethod: DefaultNallowedMethods }
   }
 ];
 const NostrTemplate = {
@@ -399,9 +412,11 @@ const NostrTemplate = {
   // raw seckey
   primary: false,
   trustedSites: [],
-  passwordAuthorizedSites: [],
+  dialogicAuthorizedSites: [],
   properties: {
-    displayName: ""
+    displayName: "",
+    generationMethod: "import",
+    memo: ""
   }
 };
 function initStore() {
@@ -481,9 +496,9 @@ function transformToPayload(credential) {
   if (credential.trustedSites) {
     newVal.trustedSites = JSON.stringify(credential.trustedSites);
   }
-  if (credential.passwordAuthorizedSites) {
-    newVal.passwordAuthorizedSites = JSON.stringify(
-      credential.passwordAuthorizedSites
+  if (credential.dialogicAuthorizedSites) {
+    newVal.dialogicAuthorizedSites = JSON.stringify(
+      credential.dialogicAuthorizedSites
     );
   }
   if (credential.properties) {
@@ -497,15 +512,15 @@ function transformCredentialsFromStore(credentialForPayloads) {
       credential.trustedSites.replace(/^''$/g, '"')
       // TODO(ssb): investigate
     );
-    const passwordAuthorizedSites = JSON.parse(
-      credential.passwordAuthorizedSites.replace(/^''$/g, '"')
+    const dialogicAuthorizedSites = JSON.parse(
+      credential.dialogicAuthorizedSites.replace(/^''$/g, '"')
       // TODO(ssb): investigate
     );
     const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
     return {
       ...credential,
       trustedSites,
-      passwordAuthorizedSites,
+      dialogicAuthorizedSites,
       properties
     };
   });
@@ -516,19 +531,20 @@ function useChildActorEvent() {
       menuPin: "",
       addons: [],
       primaryPasswordEnabled: false,
-      passwordRevealVisible: false
+      passwordRevealVisible: false,
+      platform: ""
     },
     nostr: {
       enabled: true,
       tabPin: "",
       tabPinInNip07: "",
       usedTrustedSites: false,
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(","),
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
       usedPrimarypasswordToSettings: true,
       expirationTimeForPrimarypasswordToSettings: 3e5,
       usedPrimarypasswordToApps: true,
       expirationTimeForPrimarypasswordToApps: 864e5,
-      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(","),
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(","),
       excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
       usedBuiltinNip07: true,
       usedAccountChanged: true
@@ -738,7 +754,7 @@ function AlertPrimaryPassword(props) {
             Link,
             {
               color: "teal.500",
-              href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins?as=u&utm_source=inproduct&redirectslug=use-master-password-protect-stored-logins&redirectlocale=en-US",
+              href: "https://support.mozilla.org/en-US/kb/use-primary-password-protect-stored-logins",
               children: "primary password"
             }
           ),
@@ -765,7 +781,9 @@ function Secret(props) {
     value,
     textProps,
     onChangeVisibility,
-    usedPrimarypasswordToSettings
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform
   } = props;
   const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
   const handleToggole = async () => {
@@ -774,7 +792,9 @@ function Secret(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -787,7 +807,9 @@ function Secret(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -894,6 +916,21 @@ function ExplainNallowedMethod(props) {
     ] })
   ] }) });
 }
+function ExplainEveryTimeAuthorizedMethod(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { as: "span", flex: "1", textAlign: "left", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdHelp }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "Explanation" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "The methods checked here will execute the authorization dialogs even if the previous dialogic authorization has not yet expired." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the dialog dispaly settings, so if both are present, dialog will disappear." })
+    ] })
+  ] }) });
+}
 function ExplainDialogDisplayOption(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, width: props.width || "100%", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionButton, { children: [
@@ -904,18 +941,23 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the display condition of the dialog box, when it has expired or every-time-authorize setting exists." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Sets the conditions of the authorization dialogs displaying when it has expired or the every-time-authorize settings exists." }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Checking “[method]-confirmOnly“ is skipping password dialog and prompting confirm dialog alone. The expiration is counting up in the background and dialog will reappear once it has expired.",
+        "Authorization dialogs consist of two dialogs. The confirmation dialog is there to verify the app's request, and the password dialog, by the OS account password or the Firefox primary password, is there to prevent someone other than you from authorizing.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "Checking “[method]-passwordOnly“ is skipping confirm dialog and prompting password dialog alone.",
+        "The expiration is counting up in the background and dialog will reappear once it has expired."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
+        "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "If you check both, two dialogs will disappear. Similar to trusted site, but password authorization is subject to expiration constraints.",
+        "Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "If you check both, two dialogs will disappear. It's equivalent to disabled.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
         "If you uncheck both, two dialogs will appear."
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
-      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, authorization will proceed." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize for the URL. And you can edit the settings for the corresponding URL for each key." }),
+      props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, dialog will appear." })
     ] })
   ] }) });
 }
@@ -930,10 +972,10 @@ function ExampleNostrKind(props) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionPanel, { pb: 4, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Specifies the Nostr Kind you want to display a dialog even if a trusted site is set or the password is valid for that URL.",
+        "Specifies the Nostr Kind you want to necessarily display a authorization dialog even if a trusted site is set or a dialogic authorization has not yet expired for this URL.",
         " "
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a password. And You can edit the settings for the corresponding URL for each key." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize with a dialog. And You can edit the settings for the corresponding URL for each key." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default Set" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(TableContainer, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Table, { size: "sm", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Thead, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tr, { children: [
@@ -987,7 +1029,13 @@ function changePrimary(guid, checked, keys) {
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
 function KeyEditor(props) {
-  const { credential, nostrKeys, usedPrimarypasswordToSettings } = props;
+  const {
+    credential,
+    nostrKeys,
+    usedPrimarypasswordToSettings,
+    primaryPasswordEnabled,
+    platform
+  } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
@@ -1004,7 +1052,9 @@ function KeyEditor(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!primaryPasswordEnabled && platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1058,7 +1108,7 @@ function KeyEditor(props) {
         url,
         name: url !== "*" ? "" : "<all_urls>",
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod }
+        permissions: { nallowedMethod: DefaultNallowedMethods }
       }
     ]);
     HandleChangeValue({ trustedSites: value });
@@ -1079,7 +1129,7 @@ function KeyEditor(props) {
   };
   const handleRevokeSite = (revokedSite) => {
     const value = {
-      passwordAuthorizedSites: editingKey.passwordAuthorizedSites.map((site) => {
+      dialogicAuthorizedSites: editingKey.dialogicAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -1093,18 +1143,31 @@ function KeyEditor(props) {
       alert("Input must be Kind number or ','.");
       return;
     }
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = value ? value.split(",") : [];
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = value ? value.split(",") : [];
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetExcludedKinds = (siteNo) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.excludedKinds = DefaultExcludedKinds;
+    HandleChangeValue({ dialogicAuthorizedSites });
+  };
+  const handleSaveEveryTimeAuthorizedMethods = (siteNo, value) => {
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
+    );
+    if (dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods = dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.filter(
+        (method) => method !== value
+      );
+    } else {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.push(value);
+    }
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleSaveNallowedMethod = (siteNo, value) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
@@ -1113,32 +1176,32 @@ function KeyEditor(props) {
     } else {
       trustedSites[siteNo].permissions.nallowedMethod.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    HandleChangeValue({ trustedSites });
   };
   const handleResetNallowedMethod = (siteNo) => {
     const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
-    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethod;
-    HandleChangeValue({ passwordAuthorizedSites: trustedSites });
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethods;
+    HandleChangeValue({ trustedSites });
   };
   const handleSaveSkippedDialog = (siteNo, value) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    if (passwordAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog = passwordAuthorizedSites[siteNo].permissions.skippedDialog.filter(
+    if (dialogicAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog = dialogicAuthorizedSites[siteNo].permissions.skippedDialog.filter(
         (method) => method !== value
       );
     } else {
-      passwordAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
     }
-    HandleChangeValue({ passwordAuthorizedSites });
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   const handleResetSkippedDialog = (siteNo) => {
-    const passwordAuthorizedSites = JSON.parse(
-      JSON.stringify(editingKey.passwordAuthorizedSites)
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
     );
-    passwordAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOption;
-    HandleChangeValue({ passwordAuthorizedSites });
+    dialogicAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOptions;
+    HandleChangeValue({ dialogicAuthorizedSites });
   };
   function EditableControls() {
     const { isEditing, getEditButtonProps } = useEditableControls();
@@ -1164,7 +1227,12 @@ function KeyEditor(props) {
           Editable,
           {
             defaultValue: editingKey.properties.displayName,
-            onSubmit: (value) => HandleChangeValue({ properties: { displayName: value } }),
+            onSubmit: (value) => HandleChangeValue({
+              properties: {
+                ...editingKey.properties,
+                displayName: value
+              }
+            }),
             fontSize: "xl",
             isPreviewFocusable: true,
             children: [
@@ -1357,10 +1425,10 @@ function KeyEditor(props) {
               ] })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Dialogic Authorization" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
-                !editingKey.passwordAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
-                editingKey.passwordAuthorizedSites.map((site, i) => {
+                !editingKey.dialogicAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.dialogicAuthorizedSites.map((site, i) => {
                   const expirationTime = new Date(site.expirationTime);
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
@@ -1421,6 +1489,45 @@ function KeyEditor(props) {
                         p: "2",
                         alignItems: "flex-start",
                         children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "The Method authorized every time" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuButton,
+                              {
+                                as: Button,
+                                variant: "outline",
+                                colorScheme: "blue",
+                                children: "Select Options"
+                              }
+                            ),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: EveryTimeAuthorizedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuItem,
+                              {
+                                closeOnSelect: false,
+                                children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Checkbox,
+                                  {
+                                    isChecked: site.permissions.everyTimeAuthorizedMethods.includes(
+                                      option
+                                    ),
+                                    onChange: () => handleSaveEveryTimeAuthorizedMethods(
+                                      i,
+                                      option
+                                    ),
+                                    children: option
+                                  }
+                                )
+                              },
+                              option
+                            )) })
+                          ] }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainEveryTimeAuthorizedMethod,
+                            {
+                              width: "100%",
+                              protocolName: "nostr"
+                            }
+                          ),
                           /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Event Kinds authorized every time" }),
                           /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
                             /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1596,7 +1703,7 @@ function Nostr$2(props) {
         url: addon.url,
         name: addon.name,
         enabled: true,
-        permissions: { nallowedMethod: DefaultNallowedMethod }
+        permissions: { nallowedMethod: DefaultNallowedMethods }
       }))
     ],
     [prefs.base.addons]
@@ -1668,7 +1775,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1683,7 +1792,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1709,7 +1820,9 @@ function Nostr$2(props) {
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1792,8 +1905,8 @@ function Nostr$2(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     Editable,
                     {
-                      value: item.properties.displayName,
-                      onChange: (value) => modifyCredentialToStore2({
+                      defaultValue: item.properties.displayName,
+                      onSubmit: (value) => modifyCredentialToStore2({
                         guid: item.guid,
                         properties: {
                           ...item.properties,
@@ -1803,8 +1916,8 @@ function Nostr$2(props) {
                       isPreviewFocusable: true,
                       isTruncated: true,
                       children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditableInput, {})
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
                       ]
                     }
                   ) }),
@@ -1814,8 +1927,8 @@ function Nostr$2(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     Editable,
                     {
-                      value: item.properties.memo,
-                      onChange: (value) => modifyCredentialToStore2({
+                      defaultValue: item.properties.memo,
+                      onSubmit: (value) => modifyCredentialToStore2({
                         guid: item.guid,
                         properties: {
                           ...item.properties,
@@ -1825,8 +1938,8 @@ function Nostr$2(props) {
                       isPreviewFocusable: true,
                       isTruncated: true,
                       children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, {}),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditableInput, {})
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput })
                       ]
                     }
                   ) }),
@@ -1840,6 +1953,8 @@ function Nostr$2(props) {
                         onChangeVisibility: () => {
                         },
                         usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                        platform: prefs.base.platform,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1854,6 +1969,8 @@ function Nostr$2(props) {
                         onChangeVisibility: () => {
                         },
                         usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                        platform: prefs.base.platform,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1906,6 +2023,8 @@ function Nostr$2(props) {
                   credential: nostrKeys[states.nostr.editingNo],
                   nostrKeys,
                   usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+                  primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+                  platform: prefs.base.platform,
                   goBack: () => resetState()
                 }
               ) });
@@ -1962,7 +2081,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -1987,7 +2108,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2003,7 +2126,7 @@ function NIP07(props) {
           url: newSite,
           name: newSite !== "*" ? "" : "<all_urls>",
           enabled: true,
-          permissions: {}
+          permissions: { nallowedMethod: DefaultNallowedMethods }
         });
       }
       modifyCredentialToStore2(
@@ -2021,7 +2144,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2048,7 +2173,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2063,7 +2190,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2078,14 +2207,16 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
     const item = nostrkeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
-      passwordAuthorizedSites: item.passwordAuthorizedSites.map((site) => {
+      dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
         if (site.url === revokedSite.url) {
           site.expirationTime = 0;
         }
@@ -2113,7 +2244,9 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
@@ -2144,15 +2277,17 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
     onPrefChanged2({
       protocolName: "nostr",
-      nallowedMethodPreset: DefaultNallowedMethod.filter(Boolean).join(",")
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(",")
     });
-    setNewNallowedMethodPreset(DefaultNallowedMethod);
+    setNewNallowedMethodPreset(DefaultNallowedMethods);
   };
   const handleChangeDialogDisplayOption = (value) => {
     let newVal = [];
@@ -2173,15 +2308,17 @@ function NIP07(props) {
         "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
       );
       if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
+        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+          setIsOpenDialog(true);
+        }
         return;
       }
     }
     onPrefChanged2({
       protocolName: "nostr",
-      dialogDisplayOptionPreset: DefaultDialogDisplayOption.filter(Boolean).join(",")
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(",")
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOption);
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
@@ -2194,6 +2331,7 @@ function NIP07(props) {
         ).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
+    console.log("trustedSites", trustedSites);
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -2215,7 +2353,9 @@ function NIP07(props) {
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrkeys.filter(
-          (key) => key.trustedSites.some((_site) => _site.url === site.url)
+          (key) => key.trustedSites.some(
+            (_site) => _site.enabled && _site.url === site.url
+          )
         ).map((key, i) => {
           return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === i && states.nostr.editingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key.properties.displayName }),
@@ -2238,6 +2378,8 @@ function NIP07(props) {
               credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
               usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+              platform: prefs.base.platform,
               goBack: () => resetState()
             }
           ) });
@@ -2254,9 +2396,9 @@ function NIP07(props) {
       ) })
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
-  const getPasswordAuthorizedSites = reactExports.useCallback(() => {
-    const passwordAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
-      key.passwordAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
+  const getDialogicAuthorizedSites = reactExports.useCallback(() => {
+    const dialogicAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+      key.dialogicAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
         if (found) {
           acc[found].push({ key, site, keyNo: i });
@@ -2266,7 +2408,7 @@ function NIP07(props) {
       });
       return acc;
     }, {});
-    return Object.keys(passwordAuthorizedSites).length > 0 ? Object.entries(passwordAuthorizedSites).map(([url, keys]) => {
+    return Object.keys(dialogicAuthorizedSites).length > 0 ? Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           AccordionButton,
@@ -2335,6 +2477,8 @@ function NIP07(props) {
               credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
               usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
+              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
+              platform: prefs.base.platform,
               goBack: () => resetState()
             }
           ) });
@@ -2375,215 +2519,83 @@ function NIP07(props) {
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Tabs,
-            {
-              variant: "enclosed",
-              index: tabIndex,
-              onChange: (index) => {
-                setTabIndex(index);
-                resetState();
-              },
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Trusted Sites" }),
-                    tabPin(0)
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Protect Options" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "The following helps save you against theft:" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Tabs,
+              {
+                variant: "enclosed",
+                index: tabIndex,
+                onChange: (index) => {
+                  setTabIndex(index);
+                  resetState();
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }),
+                      tabPin(0)
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }),
+                      tabPin(1)
+                    ] })
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h4", size: "md", children: "Password Authorization" }),
-                    tabPin(1)
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Grid,
-                      {
-                        gridTemplateColumns: "300px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                            Switch,
-                            {
-                              id: "nostr-pref-usedTrustedSites",
-                              isChecked: prefs.nostr.usedTrustedSites,
-                              onChange: (e) => handleUsedTrustedSites(e.target.checked)
-                            }
-                          ) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Input,
-                                {
-                                  placeholder: "https://example",
-                                  value: newSite,
-                                  onChange: handleNewSiteChange,
-                                  onKeyPress: (e) => {
-                                    if (e.key === "Enter") {
-                                      handleRegisterSite(e);
-                                    }
-                                  },
-                                  maxW: "300px"
-                                }
-                              ),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Button,
-                                {
-                                  variant: "outline",
-                                  colorScheme: "blue",
-                                  onClick: handleRegisterSite,
-                                  children: "Register to All keys"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Grid,
+                        {
+                          gridTemplateColumns: "300px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Any URL registered here will be allowed for your key indefinitely." }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedTrustedSites", children: "Enable" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Switch,
+                              {
+                                id: "nostr-pref-usedTrustedSites",
+                                isChecked: prefs.nostr.usedTrustedSites,
+                                onChange: (e) => handleUsedTrustedSites(e.target.checked)
+                              }
+                            ) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Register" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
                                 /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                  MenuButton,
+                                  Input,
                                   {
-                                    as: Button,
-                                    variant: "outline",
-                                    colorScheme: "blue",
-                                    children: "Select Options"
+                                    placeholder: "https://example",
+                                    value: newSite,
+                                    onChange: handleNewSiteChange,
+                                    onKeyPress: (e) => {
+                                      if (e.key === "Enter") {
+                                        handleRegisterSite(e);
+                                      }
+                                    },
+                                    maxW: "300px"
                                   }
                                 ),
-                                /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                  Checkbox,
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Button,
                                   {
-                                    isChecked: newNallowedMethodPreset.includes(
-                                      option
-                                    ),
-                                    onChange: () => handleChangeNallowedMethod(option),
-                                    children: option
+                                    variant: "outline",
+                                    colorScheme: "blue",
+                                    onClick: handleRegisterSite,
+                                    children: "Register to All keys"
                                   }
-                                ) }, option)) })
+                                )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                Button,
-                                {
-                                  variant: "outline",
-                                  colorScheme: "blue",
-                                  onClick: (e) => {
-                                    e.preventDefault();
-                                    handleResetNallowedMethod();
-                                  },
-                                  children: "Reset to default"
-                                }
-                              )
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
                             ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Grid,
-                      {
-                        gridTemplateColumns: "600px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: getTrustedSites()
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Grid,
-                      {
-                        gridTemplateColumns: "300px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                            Switch,
-                            {
-                              id: "nostr-pref-usedPrimarypasswordToApps",
-                              isChecked: prefs.nostr.usedPrimarypasswordToApps,
-                              onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
-                            }
-                          ) }),
-                          prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expirationTimeForPrimarypasswordToApps", children: "Expiration Hour" }) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                              NumberInput,
-                              {
-                                id: "nostr-pref-expirationTimeForPrimarypasswordToApps",
-                                value: prefs.nostr.expirationTimeForPrimarypasswordToApps / OneHour,
-                                onChange: handleExpirationTimeForPrimarypasswordToApps,
-                                min: 0,
-                                size: "sm",
-                                maxW: 20,
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
-                                  ] })
-                                ]
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the Event Kind authorized every time" }) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                              VStack,
-                              {
-                                backgroundColor: "white",
-                                p: "2",
-                                alignItems: "flex-start",
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Input,
-                                      {
-                                        placeholder: "Input kind number",
-                                        value: newExcludedKindsPreset || prefs.nostr.excludedKindsPreset,
-                                        onChange: handleChangeExcludedKinds,
-                                        maxW: "300px"
-                                      }
-                                    ),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Button,
-                                      {
-                                        variant: "outline",
-                                        colorScheme: "blue",
-                                        onClick: (e) => {
-                                          e.preventDefault();
-                                          handleResetExcludedKinds("edit");
-                                        },
-                                        children: "Edit"
-                                      }
-                                    ),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                      Button,
-                                      {
-                                        variant: "outline",
-                                        colorScheme: "blue",
-                                        onClick: (e) => {
-                                          e.preventDefault();
-                                          handleResetExcludedKinds("default");
-                                        },
-                                        children: "Reset to default"
-                                      }
-                                    )
-                                  ] }),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
-                                ]
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for dialog dispaly settings" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
                               /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                                /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { closeOnSelect: false, children: [
                                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     MenuButton,
                                     {
@@ -2593,13 +2605,13 @@ function NIP07(props) {
                                       children: "Select Options"
                                     }
                                   ),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                                     Checkbox,
                                     {
-                                      isChecked: newDialogDisplayOptionPreset.includes(
+                                      isChecked: newNallowedMethodPreset.includes(
                                         option
                                       ),
-                                      onChange: () => handleChangeDialogDisplayOption(option),
+                                      onChange: () => handleChangeNallowedMethod(option),
                                       children: option
                                     }
                                   ) }, option)) })
@@ -2611,40 +2623,180 @@ function NIP07(props) {
                                     colorScheme: "blue",
                                     onClick: (e) => {
                                       e.preventDefault();
-                                      handleResetDialogDisplayOption();
+                                      handleResetNallowedMethod();
                                     },
                                     children: "Reset to default"
                                   }
                                 )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                                ExplainDialogDisplayOption,
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Grid,
+                        {
+                          gridTemplateColumns: "600px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: getTrustedSites()
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Grid,
+                        {
+                          gridTemplateColumns: "300px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "Authorize interactively when the app requests you, having an expiration." }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-usedPrimarypasswordToApps", children: "Enable" }) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Switch,
+                              {
+                                id: "nostr-pref-usedPrimarypasswordToApps",
+                                isChecked: prefs.nostr.usedPrimarypasswordToApps,
+                                onChange: (e) => handleUsedPrimarypasswordToApps(e.target.checked)
+                              }
+                            ) }),
+                            prefs.nostr.usedPrimarypasswordToApps && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-expirationTimeForPrimarypasswordToApps", children: "Expiration Hour" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                NumberInput,
                                 {
-                                  width: "100%",
-                                  protocolName: "nostr"
+                                  id: "nostr-pref-expirationTimeForPrimarypasswordToApps",
+                                  value: prefs.nostr.expirationTimeForPrimarypasswordToApps / OneHour,
+                                  onChange: handleExpirationTimeForPrimarypasswordToApps,
+                                  min: 0,
+                                  size: "sm",
+                                  maxW: 20,
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(NumberInputField, {}),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsxs(NumberInputStepper, { children: [
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberIncrementStepper, {}),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(NumberDecrementStepper, {})
+                                    ] })
+                                  ]
                                 }
-                              )
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Grid,
-                      {
-                        gridTemplateColumns: "600px 1fr",
-                        gap: 6,
-                        alignItems: "start",
-                        children: getPasswordAuthorizedSites()
-                      }
-                    )
+                              ) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for the Event Kind authorized every time" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                VStack,
+                                {
+                                  backgroundColor: "white",
+                                  p: "2",
+                                  alignItems: "flex-start",
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Input,
+                                        {
+                                          placeholder: "Input kind number",
+                                          value: newExcludedKindsPreset || prefs.nostr.excludedKindsPreset,
+                                          onChange: handleChangeExcludedKinds,
+                                          maxW: "300px"
+                                        }
+                                      ),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Button,
+                                        {
+                                          variant: "outline",
+                                          colorScheme: "blue",
+                                          onClick: (e) => {
+                                            e.preventDefault();
+                                            handleResetExcludedKinds("edit");
+                                          },
+                                          children: "Edit"
+                                        }
+                                      ),
+                                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                        Button,
+                                        {
+                                          variant: "outline",
+                                          colorScheme: "blue",
+                                          onClick: (e) => {
+                                            e.preventDefault();
+                                            handleResetExcludedKinds("default");
+                                          },
+                                          children: "Reset to default"
+                                        }
+                                      )
+                                    ] }),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
+                                  ]
+                                }
+                              ) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Preset for dialog dispaly settings" }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { closeOnSelect: false, children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      MenuButton,
+                                      {
+                                        as: Button,
+                                        variant: "outline",
+                                        colorScheme: "blue",
+                                        children: "Select Options"
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      Checkbox,
+                                      {
+                                        isChecked: newDialogDisplayOptionPreset.includes(
+                                          option
+                                        ),
+                                        onChange: () => handleChangeDialogDisplayOption(option),
+                                        children: option
+                                      }
+                                    ) }, option)) })
+                                  ] }),
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                    Button,
+                                    {
+                                      variant: "outline",
+                                      colorScheme: "blue",
+                                      onClick: (e) => {
+                                        e.preventDefault();
+                                        handleResetDialogDisplayOption();
+                                      },
+                                      children: "Reset to default"
+                                    }
+                                  )
+                                ] }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  ExplainDialogDisplayOption,
+                                  {
+                                    width: "100%",
+                                    protocolName: "nostr"
+                                  }
+                                )
+                              ] })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Grid,
+                        {
+                          gridTemplateColumns: "600px 1fr",
+                          gap: 6,
+                          alignItems: "start",
+                          children: getDialogicAuthorizedSites()
+                        }
+                      )
+                    ] })
                   ] })
-                ] })
-              ]
-            }
-          ) })
+                ]
+              }
+            )
+          ] })
         ]
       }
     ),

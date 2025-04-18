@@ -167,12 +167,12 @@ jobs:
         fi
 
         # SCCACHE START
-        {
-          echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
-          echo "mk_add_options 'export CCACHE_CPP2=yes'"
-          echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
-          echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
-        } >> mozconfig
+        # {
+        #   echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
+        #   echo "mk_add_options 'export CCACHE_CPP2=yes'"
+        #   echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
+        #   echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
+        # } >> mozconfig
         # SCCACHE END
 
         ./mach --no-interactive bootstrap --application-choice browser
