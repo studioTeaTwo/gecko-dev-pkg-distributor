@@ -469,7 +469,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                 <AccordionPanel pb={4}>
                   {nostrkeys
                     .filter(key =>
-                      key.trustedSites.some(_site => _site.url === site.url)
+                      key.trustedSites.some(
+                        _site => _site.enabled && _site.url === site.url
+                      )
                     )
                     .map((key, i) => {
                       return (

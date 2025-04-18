@@ -522,7 +522,7 @@ export default function KeyEditor(props: Props) {
               </Box>
               <Box>
                 <Heading size="xs" textTransform="uppercase" my={4}>
-                  Password Authorization
+                  Dialogic Authorization
                 </Heading>
                 <Grid gridTemplateColumns={"400px 1fr"} gap={2}>
                   {!editingKey.dialogicAuthorizedSites.length && (

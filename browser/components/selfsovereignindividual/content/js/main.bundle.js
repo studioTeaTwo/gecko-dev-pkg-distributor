@@ -1425,7 +1425,7 @@ function KeyEditor(props) {
               ] })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Password Authorization" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Dialogic Authorization" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
                 !editingKey.dialogicAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
                 editingKey.dialogicAuthorizedSites.map((site, i) => {
@@ -2331,6 +2331,7 @@ function NIP07(props) {
         ).flat().map((site) => JSON.stringify(site))
       )
     ).map((site) => JSON.parse(site));
+    console.log("trustedSites", trustedSites);
     return trustedSites.length > 0 ? trustedSites.map((site) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -2352,7 +2353,9 @@ function NIP07(props) {
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrkeys.filter(
-          (key) => key.trustedSites.some((_site) => _site.url === site.url)
+          (key) => key.trustedSites.some(
+            (_site) => _site.enabled && _site.url === site.url
+          )
         ).map((key, i) => {
           return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === i && states.nostr.editingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key.properties.displayName }),
