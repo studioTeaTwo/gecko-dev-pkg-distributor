@@ -8,7 +8,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
-import { promptForPrimaryPassword } from "../../shared/utils";
+import { authorizePrimaryPassword } from "../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { SelfSovereignIndividualDefaultProps } from "../../custom.type";
 
@@ -20,14 +20,13 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   // const [error, setError] = useState("");
 
   const handleUsedPrimarypasswordToSettings = async (checked: boolean) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({

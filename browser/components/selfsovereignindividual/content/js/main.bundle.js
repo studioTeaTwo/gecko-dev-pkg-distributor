@@ -735,6 +735,20 @@ function promptForPrimaryPassword(messageId) {
     );
   });
 }
+async function authorizePrimaryPassword(protocolName, prefs, setIsOpenDialog, messageId) {
+  if (prefs[protocolName].usedPrimarypasswordToSettings) {
+    const primaryPasswordAuth = await promptForPrimaryPassword(
+      "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+    );
+    if (!primaryPasswordAuth) {
+      if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
+        setIsOpenDialog(true);
+      }
+      return false;
+    }
+  }
+  return true;
+}
 function AlertPrimaryPassword(props) {
   const { cancelRef, onClose, isOpen } = props;
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -948,13 +962,13 @@ function ExplainDialogDisplayOption(props) {
         "The expiration is counting up in the background and dialog will reappear once it has expired."
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
-        "Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
+        "- Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
+        "- Checking “[method]-passwordOnly“ is skipping the confirm dialog and prompting the password dialog alone.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "If you check both, two dialogs will disappear. It's equivalent to disabled.",
+        "- If you check both, two dialogs will disappear. It's equivalent to disabled.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "If you uncheck both, two dialogs will appear."
+        "- If you uncheck both, two dialogs will appear."
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Default preset is set the first time you authorize for the URL. And you can edit the settings for the corresponding URL for each key." }),
       props.protocolName === "nostr" && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "This has lower priority than the excluded kinds, so if both are present, dialog will appear." })
@@ -1029,13 +1043,7 @@ function changePrimary(guid, checked, keys) {
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
 function KeyEditor(props) {
-  const {
-    credential,
-    nostrKeys,
-    usedPrimarypasswordToSettings,
-    primaryPasswordEnabled,
-    platform
-  } = props;
+  const { credential, nostrKeys, prefs } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
   const [editingKey, setEditingKey] = reactExports.useState(null);
   const [newSite, setNewSite] = reactExports.useState("");
@@ -1047,16 +1055,13 @@ function KeyEditor(props) {
     setEditingKey(JSON.parse(JSON.stringify(credential)));
   }, []);
   const handleSave = async () => {
-    if (usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     modifyCredentialToStore2(editingKey, {
       newExtensionForTrustedSite: newExtensions
@@ -1770,16 +1775,13 @@ function Nostr$2(props) {
     setImportedKey("");
   };
   const handleChangePrimary = async (checked, item) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     changePrimary(item.guid, checked, nostrKeys);
   };
@@ -1787,16 +1789,13 @@ function Nostr$2(props) {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     if (item.primary === true) {
       const prev = nostrKeys.find((key) => !key.primary);
@@ -1815,16 +1814,13 @@ function Nostr$2(props) {
     if (!confirm("All data will be deleted. Okay?")) {
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     removeAllCredentialsToStore2();
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });
@@ -2018,9 +2014,7 @@ function Nostr$2(props) {
                 {
                   credential: nostrKeys[states.nostr.editingNo],
                   nostrKeys,
-                  usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                  primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-                  platform: prefs.base.platform,
+                  prefs,
                   goBack: () => resetState()
                 }
               ) });
@@ -2072,16 +2066,13 @@ function NIP07(props) {
     [credentials]
   );
   const handleUsedTrustedSites = async (checked) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({ protocolName: "nostr", usedTrustedSites: checked });
   };
@@ -2099,16 +2090,13 @@ function NIP07(props) {
       alert("The url exists already.");
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     for (const key of nostrkeys) {
       const idx = key.trustedSites.findIndex((site) => site.url === newSite);
@@ -2134,17 +2122,34 @@ function NIP07(props) {
       );
     }
   };
-  const handleRemoveSite = async (removedSite) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
+  const handleRemoveTrustedSite = async (identifier, removedSite) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    const item = nostrkeys.find((key) => key.identifier === identifier);
+    modifyCredentialToStore2({
+      guid: item.guid,
+      trustedSites: item.trustedSites.map((site) => {
+        if (site.url === removedSite.url) {
+          site.enabled = false;
         }
-        return;
-      }
+        return site;
+      })
+    });
+  };
+  const handleRemoveAllTrustedSites = async (removedSite) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     for (const item of nostrkeys) {
       modifyCredentialToStore2({
@@ -2164,16 +2169,13 @@ function NIP07(props) {
     onPrefChanged2({ protocolName: "nostr", usedBuiltinNip07: checked });
   };
   const handleUsedPrimarypasswordToApps = async (checked) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",
@@ -2181,33 +2183,27 @@ function NIP07(props) {
     });
   };
   const handleExpirationTimeForPrimarypasswordToApps = async (valueAsString, valueAsNumber) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",
       expirationTimeForPrimarypasswordToApps: valueAsNumber * OneHour
     });
   };
-  const handleRevokeSite = async (identifier, revokedSite) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+  const handleRevokeAuthorizedSite = async (identifier, revokedSite) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     const item = nostrkeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
@@ -2219,6 +2215,27 @@ function NIP07(props) {
         return site;
       })
     });
+  };
+  const handleRevokeAllAuthorizedSites = async (revokedSite) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    for (const item of nostrkeys) {
+      modifyCredentialToStore2({
+        guid: item.guid,
+        dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
+          if (site.url === revokedSite) {
+            site.expirationTime = 0;
+          }
+          return site;
+        })
+      });
+    }
   };
   const handleUsedAccountChanged = (e) => {
     e.preventDefault();
@@ -2235,16 +2252,13 @@ function NIP07(props) {
     setNewExcludedKindsPreset(value);
   };
   const handleResetExcludedKinds = async (sort) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",
@@ -2268,16 +2282,13 @@ function NIP07(props) {
     setNewNallowedMethodPreset(newVal);
   };
   const handleResetNallowedMethod = async () => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",
@@ -2299,16 +2310,13 @@ function NIP07(props) {
     setNewDialogDisplayOptionPreset(newVal);
   };
   const handleResetDialogDisplayOption = async () => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",
@@ -2352,29 +2360,49 @@ function NIP07(props) {
             (_site) => _site.enabled && _site.url === site.url
           )
         ).map((key, i) => {
-          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === i && states.nostr.editingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key.properties.displayName }),
-            " ",
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              IconButton,
-              {
-                icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
-                variant: "transparent",
-                "aria-label": "Edit Key",
-                onClick: () => updateState("nostr", {
-                  editingNo: i,
-                  editingUrl: site.url
-                })
-              }
-            )
-          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === i && states.nostr.editingUrl === site.url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Grid,
+            {
+              gridTemplateColumns: "550px 1fr",
+              gap: 6,
+              alignItems: "start",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: key.properties.displayName }),
+                  " ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                      variant: "transparent",
+                      "aria-label": "Edit Key",
+                      onClick: () => updateState("nostr", {
+                        editingNo: i,
+                        editingUrl: site.url
+                      })
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: () => handleRemoveTrustedSite(
+                      key.identifier,
+                      site
+                    ),
+                    children: "Remove"
+                  }
+                ) })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
             KeyEditor,
             {
               credential: nostrkeys[states.nostr.editingNo],
               nostrKeys: nostrkeys,
-              usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-              platform: prefs.base.platform,
+              prefs,
               goBack: () => resetState()
             }
           ) });
@@ -2385,7 +2413,7 @@ function NIP07(props) {
         {
           variant: "outline",
           colorScheme: "blue",
-          onClick: () => handleRemoveSite(site),
+          onClick: () => handleRemoveAllTrustedSites(site),
           children: "Remove from All keys"
         }
       ) })
@@ -2404,81 +2432,90 @@ function NIP07(props) {
       return acc;
     }, {});
     return Object.keys(dialogicAuthorizedSites).length > 0 ? Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          AccordionButton,
-          {
-            textAlign: "left",
-            css: { padding: 0, lineBreak: "anywhere" },
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
-                url,
-                keys[0].site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                  " (",
-                  keys[0].site.name,
-                  ")"
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: keys.map((item) => {
-          const expirationTime = new Date(item.site.expirationTime);
-          return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === item.keyNo && states.nostr.editingUrl === url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Grid,
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Accordion, { allowToggle: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(AccordionItem, { css: { border: "none" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            AccordionButton,
             {
-              gridTemplateColumns: "700px 1fr",
-              gap: 6,
-              alignItems: "start",
+              textAlign: "left",
+              css: { padding: 0, lineBreak: "anywhere" },
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: item.key.properties.displayName }),
-                  " ",
-                  " - until ",
-                  expirationTime.toLocaleDateString(),
-                  " ",
-                  expirationTime.toLocaleTimeString(),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    IconButton,
-                    {
-                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
-                      variant: "transparent",
-                      "aria-label": "Edit Key",
-                      onClick: () => updateState("nostr", {
-                        editingNo: item.keyNo,
-                        editingUrl: url
-                      })
-                    }
-                  )
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(Heading, { as: "h5", size: "sm", children: [
+                  url,
+                  keys[0].site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                    " (",
+                    keys[0].site.name,
+                    ")"
+                  ] })
                 ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Button,
-                  {
-                    variant: "outline",
-                    colorScheme: "blue",
-                    onClick: () => handleRevokeSite(
-                      item.key.identifier,
-                      item.site
-                    ),
-                    children: "Revoke"
-                  }
-                ) })
+                /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionIcon, {})
               ]
             }
-          ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
-            KeyEditor,
-            {
-              credential: nostrkeys[states.nostr.editingNo],
-              nostrKeys: nostrkeys,
-              usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-              primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-              platform: prefs.base.platform,
-              goBack: () => resetState()
-            }
-          ) });
-        }) })
-      ] }) }) }) });
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: keys.map((item) => {
+            const expirationTime = new Date(item.site.expirationTime);
+            return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: !(states.nostr.editingNo === item.keyNo && states.nostr.editingUrl === url) ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Grid,
+              {
+                gridTemplateColumns: "550px 1fr",
+                gap: 6,
+                alignItems: "start",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: item.key.properties.displayName }),
+                    " ",
+                    " - until ",
+                    expirationTime.toLocaleDateString(),
+                    " ",
+                    expirationTime.toLocaleTimeString(),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      IconButton,
+                      {
+                        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                        variant: "transparent",
+                        "aria-label": "Edit Key",
+                        onClick: () => updateState("nostr", {
+                          editingNo: item.keyNo,
+                          editingUrl: url
+                        })
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      variant: "outline",
+                      colorScheme: "blue",
+                      onClick: () => handleRevokeAuthorizedSite(
+                        item.key.identifier,
+                        item.site
+                      ),
+                      children: "Revoke"
+                    }
+                  ) })
+                ]
+              }
+            ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+              KeyEditor,
+              {
+                credential: nostrkeys[states.nostr.editingNo],
+                nostrKeys: nostrkeys,
+                prefs,
+                goBack: () => resetState()
+              }
+            ) });
+          }) })
+        ] }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: "outline",
+            colorScheme: "blue",
+            onClick: () => handleRevokeAllAuthorizedSites(url),
+            children: "Revoke All keys"
+          }
+        ) })
+      ] });
     }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
   }, [nostrkeys, states.nostr]);
   const cancelRef = React.useRef();
@@ -2585,7 +2622,7 @@ function NIP07(props) {
                                   }
                                 )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "600px" })
                             ] }),
                             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Presets to narrow down to specific methods" }) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
@@ -2624,7 +2661,7 @@ function NIP07(props) {
                                   }
                                 )
                               ] }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "100%", protocolName: "nostr" })
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(ExplainNallowedMethod, { width: "600px", protocolName: "nostr" })
                             ] }),
                             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}) }),
                             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, {})
@@ -2634,7 +2671,7 @@ function NIP07(props) {
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
                         Grid,
                         {
-                          gridTemplateColumns: "600px 1fr",
+                          gridTemplateColumns: "700px 1fr",
                           gap: 6,
                           alignItems: "start",
                           children: getTrustedSites()
@@ -2722,7 +2759,7 @@ function NIP07(props) {
                                         }
                                       )
                                     ] }),
-                                    /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "100%" })
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleNostrKind, { width: "600px" })
                                   ]
                                 }
                               ) }),
@@ -2766,7 +2803,7 @@ function NIP07(props) {
                                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                                   ExplainDialogDisplayOption,
                                   {
-                                    width: "100%",
+                                    width: "600px",
                                     protocolName: "nostr"
                                   }
                                 )
@@ -2780,7 +2817,7 @@ function NIP07(props) {
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
                         Grid,
                         {
-                          gridTemplateColumns: "600px 1fr",
+                          gridTemplateColumns: "700px 1fr",
                           gap: 6,
                           alignItems: "start",
                           children: getDialogicAuthorizedSites()
@@ -2810,14 +2847,13 @@ function Nostr$1(props) {
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   const handleUsedPrimarypasswordToSettings = async (checked) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        setIsOpenDialog(true);
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
     onPrefChanged2({
       protocolName: "nostr",

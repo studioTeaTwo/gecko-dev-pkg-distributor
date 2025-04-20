@@ -171,16 +171,15 @@ export function ExplainDialogDisplayOption(props: {
             reappear once it has expired.
           </Text>
           <Text size="sm">
-            Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the password
-            dialog and prompting the confirm dialog alone.
+            - Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the
+            password dialog and prompting the confirm dialog alone.
             <br />
-            Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the confirm
-            dialog and prompting the password dialog alone.
+            - Checking &ldquo;[method]-passwordOnly&ldquo; is skipping the
+            confirm dialog and prompting the password dialog alone.
             <br />
-            If you check both, two dialogs will disappear. It's equivalent to
+            - If you check both, two dialogs will disappear. It's equivalent to
             disabled.
-            <br />
-            If you uncheck both, two dialogs will appear.
+            <br />- If you uncheck both, two dialogs will appear.
           </Text>
           <Text size="sm">
             Default preset is set the first time you authorize for the URL. And

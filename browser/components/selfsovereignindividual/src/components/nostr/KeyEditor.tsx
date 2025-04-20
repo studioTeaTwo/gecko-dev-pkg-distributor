@@ -37,8 +37,11 @@ import {
   MdOutlineTimerOff,
 } from "../shared/react-icons/Icons";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
-import { NostrCredential } from "../../custom.type";
-import { promptForPrimaryPassword } from "../../shared/utils";
+import {
+  NostrCredential,
+  SelfSovereignIndividualPrefs,
+} from "../../custom.type";
+import { authorizePrimaryPassword } from "../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import {
   DefaultExcludedKinds,
@@ -62,20 +65,12 @@ import { changePrimary } from "../shared/functions";
 interface Props {
   credential: NostrCredential;
   nostrKeys: NostrCredential[];
-  usedPrimarypasswordToSettings: boolean;
-  primaryPasswordEnabled: boolean;
-  platform: string;
+  prefs: SelfSovereignIndividualPrefs;
   goBack: (direction?: unknown) => void;
 }
 
 export default function KeyEditor(props: Props) {
-  const {
-    credential,
-    nostrKeys,
-    usedPrimarypasswordToSettings,
-    primaryPasswordEnabled,
-    platform,
-  } = props;
+  const { credential, nostrKeys, prefs } = props;
   const { modifyCredentialToStore } = dispatchEvents;
 
   const [editingKey, setEditingKey] = useState<Props["credential"]>(null);
@@ -90,16 +85,13 @@ export default function KeyEditor(props: Props) {
   }, []);
 
   const handleSave = async () => {
-    if (usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     modifyCredentialToStore(editingKey, {
