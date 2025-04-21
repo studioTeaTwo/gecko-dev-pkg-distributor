@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { HStack, IconButton, Text } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, MdOutlineContentCopy } from "./react-icons/Icons";
-import { promptForPrimaryPassword } from "../../shared/utils";
+import { promptForPrimaryPassword } from "./utils";
 import AlertPrimaryPassword from "./AlertPrimaryPassword";
 
 export default function Secret(props: {

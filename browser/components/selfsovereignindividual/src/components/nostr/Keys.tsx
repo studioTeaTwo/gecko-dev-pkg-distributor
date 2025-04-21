@@ -6,9 +6,6 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Editable,
-  EditableInput,
-  EditablePreview,
   Flex,
   Grid,
   GridItem,
@@ -34,14 +31,14 @@ import {
   decodeFromNostrKey,
   encodeToNostrKey,
   NostrTypeGuard,
-} from "../../shared/keys";
+} from "../shared/keys";
 import Secret from "../shared/Secret";
 import {
   DefaultNallowedMethods,
   DefaultTrustedSites,
   NostrTemplate,
 } from "./contants";
-import { promptForPrimaryPassword } from "../../shared/utils";
+import { authorizePrimaryPassword } from "../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
@@ -176,19 +173,13 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     checked,
     item: NostrDisplayedCredential
   ) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     changePrimary(item.guid, checked, nostrKeys);
@@ -198,19 +189,13 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     if (!confirm("The key can't be restored if no backup. Okay?")) {
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     if (item.primary === true) {
@@ -236,19 +221,13 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     if (!confirm("All data will be deleted. Okay?")) {
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     removeAllCredentialsToStore();
@@ -343,25 +322,22 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                   {states.nostr.editingNo !== i ? (
                     <Card maxW="md" overflow="hidden" key={i}>
                       <CardHeader pb="0">
-                        <Heading size="md">
-                          <Editable
-                            defaultValue={item.properties.displayName}
-                            onSubmit={value =>
+                        <Heading size="md" isTruncated>
+                          <div
+                            contentEditable
+                            onBlur={e => {
+                              e.preventDefault();
                               modifyCredentialToStore({
                                 guid: item.guid,
                                 properties: {
                                   ...item.properties,
-                                  displayName: value,
+                                  displayName: e.target.textContent,
                                 },
-                              })
-                            }
-                            isPreviewFocusable
-                            isTruncated
+                              });
+                            }}
                           >
-                            <EditablePreview overflowWrap="anywhere" />
-                            {/* Here is the custom input */}
-                            <Input as={EditableInput} />
-                          </Editable>
+                            {item.properties.displayName}
+                          </div>
                         </Heading>
                         <HStack>
                           {item.trustedSites.some(site => site.url === "*") && (
@@ -371,24 +347,23 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                       </CardHeader>
                       <CardBody>
                         <Box>
-                          <Editable
-                            defaultValue={item.properties.memo}
-                            onSubmit={value =>
-                              modifyCredentialToStore({
-                                guid: item.guid,
-                                properties: {
-                                  ...item.properties,
-                                  memo: value,
-                                },
-                              })
-                            }
-                            isPreviewFocusable
-                            isTruncated
-                          >
-                            <EditablePreview overflowWrap="anywhere" />
-                            {/* Here is the custom input */}
-                            <Input as={EditableInput} />
-                          </Editable>
+                          <Text fontSize="md" isTruncated>
+                            <div
+                              contentEditable
+                              onBlur={e => {
+                                e.preventDefault();
+                                modifyCredentialToStore({
+                                  guid: item.guid,
+                                  properties: {
+                                    ...item.properties,
+                                    memo: e.target.textContent,
+                                  },
+                                });
+                              }}
+                            >
+                              {item.properties.memo}
+                            </div>
+                          </Text>
                         </Box>
                         <Box mt={2}>
                           <Heading size="xs" textTransform="uppercase">
@@ -474,11 +449,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                     <KeyEditor
                       credential={nostrKeys[states.nostr.editingNo]}
                       nostrKeys={nostrKeys}
-                      usedPrimarypasswordToSettings={
-                        prefs.nostr.usedPrimarypasswordToSettings
-                      }
-                      primaryPasswordEnabled={prefs.base.primaryPasswordEnabled}
-                      platform={prefs.base.platform}
+                      prefs={prefs}
                       goBack={() => resetState()}
                     ></KeyEditor>
                   )}

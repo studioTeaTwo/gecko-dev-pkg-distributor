@@ -46,7 +46,7 @@ import {
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
 } from "../../custom.type";
-import { promptForPrimaryPassword } from "../../shared/utils";
+import { authorizePrimaryPassword } from "../shared/utils";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
@@ -112,19 +112,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   );
 
   const handleUsedTrustedSites = async (checked: boolean) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked });
@@ -152,19 +146,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       alert("The url exists already.");
       return;
     }
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     for (const key of nostrkeys) {
@@ -194,22 +182,41 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     }
   };
 
-  const handleRemoveSite = async (
+  const handleRemoveTrustedSite = async (
+    identifier: string,
     removedSite: NostrCredential["trustedSites"][number]
   ) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    const item = nostrkeys.find(key => key.identifier === identifier);
+    modifyCredentialToStore({
+      guid: item.guid,
+      trustedSites: item.trustedSites.map(site => {
+        if (site.url === removedSite.url) {
+          site.enabled = false;
         }
-        return;
-      }
+        return site;
+      }),
+    });
+  };
+
+  const handleRemoveAllTrustedSites = async (
+    removedSite: NostrCredential["trustedSites"][number]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     for (const item of nostrkeys) {
@@ -233,19 +240,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   };
 
   const handleUsedPrimarypasswordToApps = async (checked: boolean) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({
@@ -258,19 +259,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     valueAsString: string,
     valueAsNumber: number
   ) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({
@@ -279,23 +274,17 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     });
   };
 
-  const handleRevokeSite = async (
+  const handleRevokeAuthorizedSite = async (
     identifier: string,
     revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
   ) => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     const item = nostrkeys.find(key => key.identifier === identifier);
@@ -308,6 +297,31 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
         return site;
       }),
     });
+  };
+
+  const handleRevokeAllAuthorizedSites = async (
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]["url"]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    for (const item of nostrkeys) {
+      modifyCredentialToStore({
+        guid: item.guid,
+        dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
+          if (site.url === revokedSite) {
+            site.expirationTime = 0;
+          }
+          return site;
+        }),
+      });
+    }
   };
 
   const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -330,19 +344,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setNewExcludedKindsPreset(value);
   };
   const handleResetExcludedKinds = async (sort: "edit" | "default") => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({
@@ -372,19 +380,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setNewNallowedMethodPreset(newVal);
   };
   const handleResetNallowedMethod = async () => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({
@@ -409,19 +411,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setNewDialogDisplayOptionPreset(newVal);
   };
   const handleResetDialogDisplayOption = async () => {
-    if (prefs.nostr.usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
-        "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
-      );
-      if (!primaryPasswordAuth) {
-        if (
-          !prefs.base.primaryPasswordEnabled &&
-          prefs.base.platform === "linux"
-        ) {
-          setIsOpenDialog(true);
-        }
-        return;
-      }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
     }
 
     onPrefChanged({
@@ -480,31 +476,45 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             states.nostr.editingNo === i &&
                             states.nostr.editingUrl === site.url
                           ) ? (
-                            <Box>
-                              <label>{key.properties.displayName}</label>{" "}
-                              <IconButton
-                                icon={<MdEdit />}
-                                variant="transparent"
-                                aria-label="Edit Key"
-                                onClick={() =>
-                                  updateState("nostr", {
-                                    editingNo: i,
-                                    editingUrl: site.url,
-                                  })
-                                }
-                              />
-                            </Box>
+                            <Grid
+                              gridTemplateColumns={"550px 1fr"}
+                              gap={6}
+                              alignItems="start"
+                            >
+                              <GridItem>
+                                <label>{key.properties.displayName}</label>{" "}
+                                <IconButton
+                                  icon={<MdEdit />}
+                                  variant="transparent"
+                                  aria-label="Edit Key"
+                                  onClick={() =>
+                                    updateState("nostr", {
+                                      editingNo: i,
+                                      editingUrl: site.url,
+                                    })
+                                  }
+                                />
+                              </GridItem>
+                              <GridItem>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() =>
+                                    handleRemoveTrustedSite(
+                                      key.identifier,
+                                      site
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </Button>
+                              </GridItem>
+                            </Grid>
                           ) : (
                             <KeyEditor
                               credential={nostrkeys[states.nostr.editingNo]}
                               nostrKeys={nostrkeys}
-                              usedPrimarypasswordToSettings={
-                                prefs.nostr.usedPrimarypasswordToSettings
-                              }
-                              primaryPasswordEnabled={
-                                prefs.base.primaryPasswordEnabled
-                              }
-                              platform={prefs.base.platform}
+                              prefs={prefs}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}
@@ -519,7 +529,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
             <Button
               variant="outline"
               colorScheme="blue"
-              onClick={() => handleRemoveSite(site)}
+              onClick={() => handleRemoveAllTrustedSites(site)}
             >
               Remove from All keys
             </Button>
@@ -555,7 +565,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
         return (
           <>
-            <GridItem colSpan={2}>
+            <GridItem>
               <Accordion allowToggle>
                 <AccordionItem css={{ border: "none" }}>
                   <AccordionButton
@@ -580,7 +590,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             states.nostr.editingUrl === url
                           ) ? (
                             <Grid
-                              gridTemplateColumns={"700px 1fr"}
+                              gridTemplateColumns={"550px 1fr"}
                               gap={6}
                               alignItems="start"
                             >
@@ -606,7 +616,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                                   variant="outline"
                                   colorScheme="blue"
                                   onClick={() =>
-                                    handleRevokeSite(
+                                    handleRevokeAuthorizedSite(
                                       item.key.identifier,
                                       item.site
                                     )
@@ -620,13 +630,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             <KeyEditor
                               credential={nostrkeys[states.nostr.editingNo]}
                               nostrKeys={nostrkeys}
-                              usedPrimarypasswordToSettings={
-                                prefs.nostr.usedPrimarypasswordToSettings
-                              }
-                              primaryPasswordEnabled={
-                                prefs.base.primaryPasswordEnabled
-                              }
-                              platform={prefs.base.platform}
+                              prefs={prefs}
                               goBack={() => resetState()}
                             ></KeyEditor>
                           )}
@@ -636,6 +640,15 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   </AccordionPanel>
                 </AccordionItem>
               </Accordion>
+            </GridItem>
+            <GridItem>
+              <Button
+                variant="outline"
+                colorScheme="blue"
+                onClick={() => handleRevokeAllAuthorizedSites(url)}
+              >
+                Revoke All keys
+              </Button>
             </GridItem>
           </>
         );
@@ -770,7 +783,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                         Register to All keys
                       </Button>
                     </InputGroup>
-                    <ExampleUrlMatch width="100%" />
+                    <ExampleUrlMatch width="600px" />
                   </GridItem>
                   <GridItem>
                     <label>Presets to narrow down to specific methods</label>
@@ -813,7 +826,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                         Reset to default
                       </Button>
                     </HStack>
-                    <ExplainNallowedMethod width="100%" protocolName="nostr" />
+                    <ExplainNallowedMethod width="600px" protocolName="nostr" />
                   </GridItem>
                   <GridItem>
                     <Divider />
@@ -821,7 +834,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <GridItem></GridItem>
                 </Grid>
                 <Grid
-                  gridTemplateColumns={"600px 1fr"}
+                  gridTemplateColumns={"700px 1fr"}
                   gap={6}
                   alignItems="start"
                 >
@@ -924,7 +937,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                               Reset to default
                             </Button>
                           </InputGroup>
-                          <ExampleNostrKind width="100%" />
+                          <ExampleNostrKind width="600px" />
                         </VStack>
                       </GridItem>
                       <GridItem>
@@ -969,7 +982,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                           </Button>
                         </HStack>
                         <ExplainDialogDisplayOption
-                          width="100%"
+                          width="600px"
                           protocolName="nostr"
                         />
                       </GridItem>
@@ -981,7 +994,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <GridItem></GridItem>
                 </Grid>
                 <Grid
-                  gridTemplateColumns={"600px 1fr"}
+                  gridTemplateColumns={"700px 1fr"}
                   gap={6}
                   alignItems="start"
                 >

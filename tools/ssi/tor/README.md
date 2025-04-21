@@ -7,8 +7,6 @@ Started over from v0.2.0mvp. Be careful about using older tags.
   - Not use the firefox-upgrade merge request of ssi repository.
   - Make it a separate independent patch, not mixed with others.
 
-
-
 ## merge history
 git checkout -b mvp-tor tor-browser-128.6.0esr-14.0-1-build1
 ssb-merge-1.patch
@@ -25,6 +23,7 @@ ssb-merge-10.patch
 ssb-merge-11.patch
 ssb-merge-12.patch
 ssb-merge-13.patch
+ssb-merge-14.patch
 
 ### ssb-merge-1.patch
 - git merge v0.2.0mvp-128.6.0esr
@@ -59,3 +58,5 @@ ssb-merge-13.patch
 - d38ecce6
 ### ssb-merge-13.patch
 - c54a5724
+### ssb-merge-14.patch
+- b65ec401
