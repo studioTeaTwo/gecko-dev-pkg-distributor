@@ -5,9 +5,9 @@
  * [the paper on truncated SHA512/256](https://eprint.iacr.org/2010/548.pdf).
  * @module
  */
-import { HashMD } from './_md.js';
-import u64 from './_u64.js';
-import { wrapConstructor } from './utils.js';
+import { HashMD } from 'resource://ssi/protocols/hashes/_md.sys.mjs';
+import u64 from 'resource://ssi/protocols/hashes/_u64.sys.mjs';
+import { wrapConstructor } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 // Round contants (first 32 bits of the fractional parts of the cube roots of the first 80 primes 2..409):
 // prettier-ignore
 const [SHA512_Kh, SHA512_Kl] = /* @__PURE__ */ (() => u64.split([

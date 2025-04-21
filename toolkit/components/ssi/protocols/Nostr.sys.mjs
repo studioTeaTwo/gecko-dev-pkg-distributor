@@ -34,6 +34,7 @@ export const Nostr = {
     const signature = await Bitcoin.BIP340.sign(message, guid);
     return signature;
   },
+
   /**
    *
    * @param {string} plaintext
@@ -57,6 +58,7 @@ export const Nostr = {
 
     return "";
   },
+
   /**
    *
    * @param {string} ciphertext
@@ -80,6 +82,7 @@ export const Nostr = {
 
     return "";
   },
+
   /**
    *
    * @param {object} event Nostr Event
@@ -91,6 +94,7 @@ export const Nostr = {
     );
     return eventHash;
   },
+
   /**
    *
    * @param {object} event Nostr Event
@@ -99,6 +103,7 @@ export const Nostr = {
   validateEvent(event) {
     return _validateEvent(event);
   },
+
   /**
    *
    * @param {string} npub "npub1abc..."

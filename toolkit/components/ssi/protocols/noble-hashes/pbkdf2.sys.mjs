@@ -2,9 +2,9 @@
  * PBKDF (RFC 2898). Can be used to create a key from password and salt.
  * @module
  */
-import { ahash, anumber } from './_assert.js';
-import { hmac } from './hmac.js';
-import { asyncLoop, checkOpts, createView, Hash, toBytes, } from './utils.js';
+import { ahash, anumber } from 'resource://ssi/protocols/hashes/_assert.sys.mjs';
+import { hmac } from 'resource://ssi/protocols/hashes/hmac.sys.mjs';
+import { asyncLoop, checkOpts, createView, Hash, toBytes, } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 // Common prologue and epilogue for sync/async functions
 function pbkdf2Init(hash, _password, _salt, _opts) {
     ahash(hash);
