@@ -3,6 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs";
+import { Bitcoin } from "resource://ssi/protocols/Bitcoin.sys.mjs";
+import { Nostr } from "resource://ssi/protocols/Nostr.sys.mjs";
 
 const TELEMETRY_EVENT_CATEGORY = "ssi";
 const TELEMETRY_MIN_MS_BETWEEN_OPEN_MANAGEMENT = 5000;
@@ -108,6 +110,44 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
       // Default to enabled just in case a search is attempted before we get a response.
       primaryPasswordEnabled: true,
       passwordRevealVisible: true,
+      // Pass `toolkit.components.ssi.protcols`
+      // TODO(ssb): Consider whether to do it in the parent process.
+      generate(protocolName, credentialName, option) {
+        if (protocolName === "bitcoin") {
+          if (credentialName === "bip39") {
+            if (option && option.import) {
+              if (!Bitcoin.BIP39.validateMnemonic(option.mnemonic)) {
+                return [false, null];
+              }
+
+              const hdkey = Bitcoin.BIP32.getHDKeyFromMnemonic(
+                option.mnemonic,
+                option.passphrase ? option.passphrase : ""
+              );
+              return [
+                true,
+                {
+                  xpub: hdkey.publicExtendedKey,
+                  xpriv: hdkey.privateExtendedKey,
+                },
+              ];
+            }
+
+            // the return is `{ mnemonic, xpub, xpriv }`
+            return Bitcoin.BIP39.generateMnemonic(
+              "about",
+              option && option.strength ? option.strength : 256,
+              option && option.passphrase ? option.passphrase : ""
+            );
+          }
+        } else if (protocolName === "nostr") {
+          if (credentialName === "nsec") {
+            return Nostr.generateSecretKey();
+          } else if (credentialName === "npub") {
+            return Nostr.generatePublicKey(option.secretKey);
+          }
+        }
+      },
     };
     waivedContent.AboutSelfSovereignIndividualUtils = Cu.cloneInto(
       AboutSelfSovereignIndividualUtils,
@@ -124,7 +164,7 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         ),
       },
     };
-    for (const protocolName of ["nostr"]) {
+    for (const protocolName of ["bitcoin", "nostr"]) {
       const defaults = {
         enabled: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.enabled`
@@ -153,9 +193,16 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
         usedAccountChanged: Services.prefs.getBoolPref(
           `selfsovereignindividual.${protocolName}.event.accountChanged.enabled`
         ),
+        tabPin: Services.prefs.getStringPref(
+          `selfsovereignindividual.${protocolName}.ui.tabPin`
+        ),
       };
 
-      if (protocolName === "nostr") {
+      if (protocolName === "bitcoin") {
+        prefs.bitcoin = {
+          ...defaults,
+        };
+      } else if (protocolName === "nostr") {
         prefs.nostr = {
           ...defaults,
           usedBuiltinNip07: Services.prefs.getBoolPref(
@@ -163,9 +210,6 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
           ),
           excludedKindsPreset: Services.prefs.getStringPref(
             "selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset"
-          ),
-          tabPin: Services.prefs.getStringPref(
-            "selfsovereignindividual.nostr.ui.tabPin"
           ),
           tabPinInNip07: Services.prefs.getStringPref(
             "selfsovereignindividual.nostr.ui.nip07.tabPin"

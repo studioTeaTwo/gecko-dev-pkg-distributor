@@ -366,16 +366,16 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
         changeSet.dialogDisplayOptionPreset
       );
     }
-    if (changeSet.hasOwnProperty("excludedKindsPreset")) {
-      Services.prefs.setStringPref(
-        `selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset`,
-        changeSet.excludedKindsPreset
-      );
-    }
     if (changeSet.hasOwnProperty("usedAccountChanged")) {
       Services.prefs.setBoolPref(
         `selfsovereignindividual.${changeSet.protocolName}.event.accountChanged.enabled`,
         changeSet.usedAccountChanged
+      );
+    }
+    if (changeSet.hasOwnProperty("tabPin")) {
+      Services.prefs.setStringPref(
+        `selfsovereignindividual.${changeSet.protocolName}.ui.tabPin`,
+        changeSet.tabPin
       );
     }
     if (changeSet.protocolName === "nostr") {
@@ -385,10 +385,10 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
           changeSet.usedBuiltinNip07
         );
       }
-      if (changeSet.hasOwnProperty("tabPin")) {
+      if (changeSet.hasOwnProperty("excludedKindsPreset")) {
         Services.prefs.setStringPref(
-          "selfsovereignindividual.nostr.ui.tabPin",
-          changeSet.tabPin
+          `selfsovereignindividual.nostr.primarypassword.toApps.excludedKindsPreset`,
+          changeSet.excludedKindsPreset
         );
       }
       if (changeSet.hasOwnProperty("tabPinInNip07")) {

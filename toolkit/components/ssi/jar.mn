@@ -17,7 +17,7 @@ toolkit.jar:
 #endif
   ssi/protocols/Bitcoin.sys.mjs (./protocols/Bitcoin.sys.mjs)
   ssi/protocols/Nostr.sys.mjs (./protocols/Nostr.sys.mjs)
-  ssi/protocols/utils/hdkey.mjs (./protocols/utils/hdkey.mjs)
+  ssi/protocols/utils/hdkey.sys.mjs (./protocols/utils/hdkey.sys.mjs)
   ssi/protocols/utils/wordlists.mjs (./protocols/utils/wordlists.mjs)
   ssi/protocols/ciphers/_arx.sys.mjs (./protocols/noble-ciphers/_arx.sys.mjs)
   ssi/protocols/ciphers/_assert.sys.mjs (./protocols/noble-ciphers/_assert.sys.mjs)
@@ -40,6 +40,7 @@ toolkit.jar:
   ssi/protocols/hashes/hkdf.sys.mjs (./protocols/noble-hashes/hkdf.sys.mjs)
   ssi/protocols/hashes/hmac.sys.mjs (./protocols/noble-hashes/hmac.sys.mjs)
   ssi/protocols/hashes/pbkdf2.sys.mjs (./protocols/noble-hashes/pbkdf2.sys.mjs)
+  ssi/protocols/hashes/ripemd160.sys.mjs (./protocols/noble-hashes/ripemd160.sys.mjs)
   ssi/protocols/hashes/sha256.sys.mjs (./protocols/noble-hashes/sha256.sys.mjs)
   ssi/protocols/hashes/sha512.sys.mjs (./protocols/noble-hashes/sha512.sys.mjs)
   ssi/protocols/hashes/utils.sys.mjs (./protocols/noble-hashes/utils.sys.mjs)

@@ -5,11 +5,11 @@ import {
   ProtocolName,
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
+import { DefaultExcludedKinds } from "../components/nostr/contants";
 import {
   DefaultDialogDisplayOptions,
-  DefaultExcludedKinds,
   DefaultNallowedMethods,
-} from "../components/nostr/contants";
+} from "../components/shared/contants";
 
 /**
  * Send to child actor
@@ -169,6 +169,19 @@ export default function useChildActorEvent() {
       primaryPasswordEnabled: false,
       passwordRevealVisible: false,
       platform: "",
+    },
+    bitcoin: {
+      enabled: true,
+      tabPin: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 300000,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 86400000,
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      usedAccountChanged: true,
     },
     nostr: {
       enabled: true,

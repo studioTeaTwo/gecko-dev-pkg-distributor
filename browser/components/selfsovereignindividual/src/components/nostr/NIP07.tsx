@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
   Accordion,
   AccordionButton,
@@ -45,21 +39,22 @@ import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
+  SelfSovereignIndividualPrefs,
 } from "../../custom.type";
-import { authorizePrimaryPassword } from "../shared/utils";
+import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
+import { DefaultExcludedKinds } from "./contants";
 import {
-  DefaultExcludedKinds,
   DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
   DialogDisplayOptions,
   NallowedMethods,
   DefaultDialogDisplayOptions,
-} from "./contants";
+} from "../shared/contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
@@ -71,7 +66,10 @@ import { StateContext } from "../../contexts/StatesProvider";
 const OneHour = 60 * 60 * 1000;
 
 export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
-  const { prefs, credentials } = props;
+  const { prefs, credentials: nostrKeys } = props as {
+    prefs: SelfSovereignIndividualPrefs;
+    credentials: NostrCredential[];
+  };
   const { states, resetState, updateState } = useContext(StateContext);
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
@@ -103,14 +101,6 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       "nostr"
     );
 
-  const nostrkeys = useMemo(
-    () =>
-      credentials
-        .filter(credential => credential.protocolName === "nostr")
-        .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
-    [credentials]
-  );
-
   const handleUsedTrustedSites = async (checked: boolean) => {
     const isAuthorized = await authorizePrimaryPassword(
       "nostr",
@@ -139,10 +129,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const existings = nostrkeys.filter(key =>
+    const existings = nostrKeys.filter(key =>
       key.trustedSites.some(site => site.url === newSite && site.enabled)
     );
-    if (nostrkeys.length === existings.length) {
+    if (nostrKeys.length === existings.length) {
       alert("The url exists already.");
       return;
     }
@@ -155,7 +145,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    for (const key of nostrkeys) {
+    for (const key of nostrKeys) {
       const idx = key.trustedSites.findIndex(site => site.url === newSite);
       if (idx >= 0) {
         if (key.trustedSites[idx].enabled) {
@@ -195,7 +185,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    const item = nostrkeys.find(key => key.identifier === identifier);
+    const item = nostrKeys.find(key => key.identifier === identifier);
     modifyCredentialToStore({
       guid: item.guid,
       trustedSites: item.trustedSites.map(site => {
@@ -219,7 +209,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore({
         guid: item.guid,
         trustedSites: item.trustedSites.map(site => {
@@ -287,7 +277,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    const item = nostrkeys.find(key => key.identifier === identifier);
+    const item = nostrKeys.find(key => key.identifier === identifier);
     modifyCredentialToStore({
       guid: item.guid,
       dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
@@ -311,7 +301,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore({
         guid: item.guid,
         dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
@@ -431,7 +421,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   const getTrustedSites = useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys
+        nostrKeys
           .map(key =>
             key.trustedSites
               .filter(site => site.enabled)
@@ -463,7 +453,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                   <AccordionIcon />
                 </AccordionButton>
                 <AccordionPanel pb={4}>
-                  {nostrkeys
+                  {nostrKeys
                     .filter(key =>
                       key.trustedSites.some(
                         _site => _site.enabled && _site.url === site.url
@@ -512,8 +502,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             </Grid>
                           ) : (
                             <KeyEditor
-                              credential={nostrkeys[states.nostr.editingNo]}
-                              nostrKeys={nostrkeys}
+                              credential={nostrKeys[states.nostr.editingNo]}
+                              nostrKeys={nostrKeys}
                               prefs={prefs}
                               goBack={() => resetState()}
                             ></KeyEditor>
@@ -539,10 +529,10 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     ) : (
       <Text>No site enabled</Text>
     );
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
 
   const getDialogicAuthorizedSites = useCallback(() => {
-    const dialogicAuthorizedSites = nostrkeys.reduce<{
+    const dialogicAuthorizedSites = nostrKeys.reduce<{
       [url: string]: {
         key: NostrCredential;
         site: NostrCredential["dialogicAuthorizedSites"][number];
@@ -628,8 +618,8 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                             </Grid>
                           ) : (
                             <KeyEditor
-                              credential={nostrkeys[states.nostr.editingNo]}
-                              nostrKeys={nostrkeys}
+                              credential={nostrKeys[states.nostr.editingNo]}
+                              nostrKeys={nostrKeys}
                               prefs={prefs}
                               goBack={() => resetState()}
                             ></KeyEditor>
@@ -656,7 +646,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     ) : (
       <Text>No site enabled</Text>
     );
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
 
   const cancelRef = React.useRef();
   const onCloseDialog = () => {

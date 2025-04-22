@@ -9,18 +9,28 @@ import {
 } from "resource://ssi/protocols/hashes/utils.sys.mjs";
 import { sha256 } from "resource://ssi/protocols/hashes/sha256.sys.mjs";
 import { sha512 } from "resource://ssi/protocols/hashes/sha512.sys.mjs";
-import {
-  pbkdf2,
-  pbkdf2Async,
-} from "resource://ssi/protocols/hashes/pbkdf2.sys.mjs";
+import { pbkdf2 } from "resource://ssi/protocols/hashes/pbkdf2.sys.mjs";
 import {
   abytes,
   anumber,
 } from "resource://ssi/protocols/hashes/_assert.sys.mjs";
 import { utils as baseUtils } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { wordlists } from "resource://ssi/protocols/utils/wordlists.mjs";
+import { HDKey } from "resource://ssi/protocols/utils/hdkey.sys.mjs";
 
 export const Bitcoin = {
+  // ref: https://github.com/paulmillr/scure-bip32
+  BIP32: {
+    getHDKeyFromMnemonic(mnemonic, passphrase) {
+      const seed = pbkdf2(sha512, normalize(mnemonic).nfkd, psalt(passphrase), {
+        c: 2048,
+        dkLen: 64,
+      });
+      const hdkey = HDKey.fromMasterSeed(seed);
+      return hdkey;
+    },
+  },
+
   // ref: https://github.com/paulmillr/scure-bip39
   BIP39: {
     /**
@@ -34,39 +44,79 @@ export const Bitcoin = {
       if (strength % 32 !== 0 || strength > 256) {
         throw new TypeError("Invalid entropy");
       }
-      const nm = entropyToMnemonic(randomBytes(strength / 8), wordlists.en);
+
+      const mnemonic = entropyToMnemonic(
+        randomBytes(strength / 8),
+        wordlists.en
+      );
+      const hdkey = Bitcoin.BIP32.getHDKeyFromMnemonic(mnemonic, passphrase);
+      const xpub = hdkey.publicExtendedKey;
+      const xpriv = hdkey.privateExtendedKey;
 
       if (type === "about") {
         // Call `Services.ssi.searchCredentialsAsync` from settings
-        return nm;
+        return { mnemonic, xpub, xpriv };
       }
 
-      const xpub = nm;
       const existings = await Services.ssi.searchCredentialsAsync({
         protocolName: "bitcoin",
         credentialName: "bip39",
       });
-
       const credential = await Services.ssi.addCredential({
         protocolName: "bitcoin",
         credentialName: "bip39",
         identifier: xpub,
-        secret: nm,
+        secret: mnemonic,
         primary: existings.length === 0,
-        trustedSites: [],
+        trustedSites: [], // FIXME(ssb): DefaultTrustedSites
+        dialogicAuthorizedSites: [],
         properties: {
           passphrase,
+          xpriv,
           displayName: xpub,
           generationFrom: type,
           generationMethod: "new",
           sharedWith: [],
         },
       });
-      return credential;
+
+      // Exclude the secret properties for browser.ssi.
+      // eslint-disable-next-line no-unused-vars
+      const { secret, properties, unknownFields, ...rest } = credential;
+      return rest;
+    },
+
+    /**
+     *
+     * @param {string} mnemonic
+     * @param {string[]} wordlist
+     * @returns {boolean}
+     */
+    validateMnemonic(mnemonic, wordlist = wordlists.en) {
+      try {
+        mnemonicToEntropy(mnemonic, wordlist);
+      } catch (e) {
+        console.log("validateMnemonic", e);
+        return false;
+      }
+      return true;
     },
   },
 
   BIP340: {
+    generatePrivateKey() {
+      return schnorr.utils.randomPrivateKey();
+    },
+
+    /**
+     *
+     * @param {string | Uint8Array<ArrayBufferLike>} secretKey
+     * @returns
+     */
+    generatePublicKey(secretKey) {
+      return bytesToHex(schnorr.getPublicKey(secretKey));
+    },
+
     /**
      *
      * @param {string} message
@@ -89,6 +139,32 @@ export const Bitcoin = {
     },
   },
 };
+
+/**
+ *
+ * @param {string} str
+ * @returns
+ */
+function nfkd(str) {
+  if (typeof str !== "string") {
+    throw new TypeError("invalid mnemonic type: " + typeof str);
+  }
+  return str.normalize("NFKD");
+}
+
+/**
+ *
+ * @param {string} str
+ * @returns
+ */
+function normalize(str) {
+  const norm = nfkd(str);
+  const words = norm.split(" ");
+  if (![12, 15, 18, 21, 24].includes(words.length)) {
+    throw new Error("Invalid mnemonic");
+  }
+  return { nfkd: norm, words };
+}
 
 /**
  *
@@ -128,12 +204,40 @@ function getCoder(wordlist) {
 
 /**
  *
+ * @param {string} mnemonic
+ * @param {string[]} wordlist
+ * @returns {Uint8Array}
+ */
+function mnemonicToEntropy(mnemonic, wordlist) {
+  const { words } = normalize(mnemonic);
+  const entropy = getCoder(wordlist).decode(words);
+  aentropy(entropy);
+  return entropy;
+}
+
+/**
+ *
  * @param {Uint8Array} entropy
  * @param {string[]} wordlist
- * @returns
+ * @returns {string}
  */
 function entropyToMnemonic(entropy, wordlist) {
   aentropy(entropy);
   const words = getCoder(wordlist).encode(entropy);
   return words.join(" ");
+}
+
+const psalt = passphrase => nfkd("mnemonic" + passphrase);
+
+/**
+ *
+ * @param {string} mnemonic
+ * @param {string} passphrase
+ * @returns {Uint8Array}
+ */
+export function mnemonicToSeedSync(mnemonic, passphrase = "") {
+  return pbkdf2(sha512, normalize(mnemonic).nfkd, psalt(passphrase), {
+    c: 2048,
+    dkLen: 64,
+  });
 }

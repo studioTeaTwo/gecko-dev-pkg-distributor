@@ -6,9 +6,9 @@ import React, { useState, useEffect } from "react";
 import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
 import Menu from "./Menu";
 import Bitcoin from "./bitcoin";
-import Lightning from "./lightning";
+// import Lightning from "./lightning";
 import Nostr from "./nostr";
-import ECash from "./ecash";
+// import ECash from "./ecash";
 import { MenuItem } from "../custom.type";
 import useChildActorEvent, {
   dispatchEvents,
@@ -32,11 +32,11 @@ function SelfSovereignIndividual() {
 
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
-      return <Bitcoin />;
-    } else if (selectedMenu === "lightning") {
-      return <Lightning />;
-    } else if (selectedMenu === "ecash") {
-      return <ECash />;
+      return <Bitcoin prefs={prefs} credentials={credentials} />;
+      // } else if (selectedMenu === "lightning") {
+      //   return <Lightning />;
+      // } else if (selectedMenu === "ecash") {
+      //   return <ECash />;
     } else if (selectedMenu === "nostr") {
       return <Nostr prefs={prefs} credentials={credentials} />;
     }

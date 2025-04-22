@@ -41,18 +41,18 @@ import {
   NostrCredential,
   SelfSovereignIndividualPrefs,
 } from "../../custom.type";
-import { authorizePrimaryPassword } from "../shared/utils";
+import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import { DefaultExcludedKinds } from "./contants";
 import {
-  DefaultExcludedKinds,
-  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
-  DialogDisplayOptions,
+  DefaultNallowedMethods,
   DefaultDialogDisplayOptions,
   NallowedMethods,
   EveryTimeAuthorizedMethods,
-} from "./contants";
+  DialogDisplayOptions,
+} from "../shared/contants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,

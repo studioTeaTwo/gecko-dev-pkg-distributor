@@ -26,6 +26,23 @@ const utf8Encoder = new TextEncoder();
 export const Nostr = {
   /**
    *
+   * @returns {string}
+   */
+  async generateSecretKey() {
+    return Bitcoin.BIP340.generatePrivateKey();
+  },
+
+  /**
+   *
+   * @param {string | Uint8Array<ArrayBufferLike>} secretKey
+   * @returns {string}
+   */
+  async generatePublicKey(secretKey) {
+    return Bitcoin.BIP340.generatePublicKey(secretKey);
+  },
+
+  /**
+   *
    * @param {string} message
    * @param {string} guid
    * @returns {string}

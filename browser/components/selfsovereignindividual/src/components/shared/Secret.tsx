@@ -1,39 +1,31 @@
 import React, { useCallback, useState } from "react";
 import { HStack, IconButton, Text } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, MdOutlineContentCopy } from "./react-icons/Icons";
-import { promptForPrimaryPassword } from "./utils";
+import { authorizePrimaryPassword } from "./ipc";
 import AlertPrimaryPassword from "./AlertPrimaryPassword";
+import { SelfSovereignIndividualPrefs } from "../../custom.type";
 
 export default function Secret(props: {
   value: string;
   onChangeVisibility;
-  usedPrimarypasswordToSettings: boolean;
-  primaryPasswordEnabled: boolean;
-  platform: string;
+  prefs: SelfSovereignIndividualPrefs;
   textProps?;
 }) {
   const [visible, setVisible] = useState(false);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const {
-    value,
-    textProps,
-    onChangeVisibility,
-    usedPrimarypasswordToSettings,
-    primaryPasswordEnabled,
-    platform,
-  } = props;
+  const { value, textProps, onChangeVisibility, prefs } = props;
 
   const maskedValue = useCallback(() => "*".repeat(value.length), [value]);
 
   const handleToggole = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        "nostr",
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }
@@ -42,14 +34,14 @@ export default function Secret(props: {
     onChangeVisibility();
   };
   const handleCopy = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        "nostr",
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }

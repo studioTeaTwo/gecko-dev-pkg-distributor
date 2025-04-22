@@ -1,7 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
+  Grid,
+  GridItem,
   Heading,
   Spinner,
+  Switch,
   Tab,
   TabList,
   TabPanel,
@@ -12,19 +15,39 @@ import {
 import Keys from "./Keys";
 import NIP07 from "./NIP07";
 import More from "./More";
-import { SelfSovereignIndividualDefaultProps } from "../../custom.type";
+import {
+  NostrCredential,
+  SelfSovereignIndividualDefaultProps,
+} from "../../custom.type";
 import TabPin from "../shared/TabPin";
 import { StateContext } from "../../contexts/StatesProvider";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
 
 export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   const { prefs, credentials } = props;
   const { resetState } = useContext(StateContext);
+  const { onPrefChanged } = dispatchEvents;
 
   const [tabIndex, setTabIndex] = useState(-1);
 
   useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPin));
   }, [prefs.nostr.tabPin]);
+
+  const nostrKeys = useMemo(
+    () =>
+      credentials
+        .filter(credential => credential.protocolName === "nostr")
+        .sort((a, b) => (b.primary ? 1 : 0)) as NostrCredential[],
+    [credentials]
+  );
+
+  const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", enabled: checked });
+  };
 
   const tabPin = (tabId: number) =>
     TabPin(
@@ -39,6 +62,18 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         Your keys are stored locally, isolated from and inaccessible to the web
         app.
       </Text>
+      <Grid gridTemplateColumns={"100px 1fr"} gap={6} mb="2rem">
+        <GridItem>
+          <label htmlFor="nostr-pref-enabled">Enable</label>
+        </GridItem>
+        <GridItem>
+          <Switch
+            id="nostr-pref-enabled"
+            isChecked={prefs.nostr.enabled}
+            onChange={handleEnable}
+          />
+        </GridItem>
+      </Grid>
       {prefs.nostr.tabPin ? (
         <Tabs
           variant="enclosed"
@@ -70,13 +105,13 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Keys prefs={prefs} credentials={credentials} />
+              <Keys prefs={prefs} credentials={nostrKeys} />
             </TabPanel>
             <TabPanel>
-              <NIP07 prefs={prefs} credentials={credentials} />
+              <NIP07 prefs={prefs} credentials={nostrKeys} />
             </TabPanel>
             <TabPanel>
-              <More prefs={prefs} credentials={credentials} />
+              <More prefs={prefs} credentials={nostrKeys} />
             </TabPanel>
           </TabPanels>
         </Tabs>

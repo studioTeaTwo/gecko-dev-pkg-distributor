@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -20,30 +20,32 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
 } from "../../custom.type";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import {
-  BIP340,
   decodeFromNostrKey,
   encodeToNostrKey,
   NostrTypeGuard,
 } from "../shared/keys";
 import Secret from "../shared/Secret";
+import { NostrTemplate } from "./contants";
 import {
-  DefaultNallowedMethods,
-  DefaultTrustedSites,
-  NostrTemplate,
-} from "./contants";
-import { authorizePrimaryPassword } from "../shared/utils";
+  authorizePrimaryPassword,
+  generateSecretOnToolkit,
+} from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import { changePrimary } from "../shared/functions";
 import { StateContext } from "../../contexts/StatesProvider";
+import {
+  DefaultNallowedMethods,
+  DefaultTrustedSites,
+} from "../shared/contants";
 
 interface NostrDisplayedCredential extends NostrCredential {
   nseckey: string;
@@ -59,22 +61,19 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     deleteCredentialToStore,
     removeAllCredentialsToStore,
     onPrimaryChanged,
-    onPrefChanged,
   } = dispatchEvents;
 
+  const [nostrKeys, setNostrKeys] = useState<NostrDisplayedCredential[]>([]);
   const [importedKey, setImportedKey] = useState("");
   const [newKey, setNewKey] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
 
-  const nostrKeys = useMemo(
-    () =>
-      credentials
-        .filter(credential => credential.protocolName === "nostr")
-        .map(addInterpretedKeys)
-        .sort((a, b) => (b.primary ? 1 : 0)) as NostrDisplayedCredential[],
-    [credentials]
-  );
+  useEffect(() => {
+    Promise.all(credentials.map(addInterpretedKeys)).then(credentials => {
+      setNostrKeys(credentials);
+    });
+  }, [credentials]);
   const defaultTrustedSites = useMemo(
     () => [
       ...DefaultTrustedSites,
@@ -88,20 +87,15 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     [prefs.base.addons]
   );
 
-  const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-
-    const checked = e.target.checked;
-    onPrefChanged({ protocolName: "nostr", enabled: checked });
-  };
-
-  const handleGenNewKey = (
+  const handleGenNewKey = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
 
-    const seckey = BIP340.generateSecretKey();
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const seckey = await generateSecretOnToolkit("nostr", "nsec");
+    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey,
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
@@ -123,7 +117,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   };
 
   const handleImportedKeyChange = e => setImportedKey(e.target.value);
-  const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSave = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault();
 
     let nseckey = importedKey;
@@ -148,7 +144,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey,
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
@@ -241,10 +239,14 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     setIsOpenDialog(false);
   };
 
-  function addInterpretedKeys(item: NostrCredential): NostrDisplayedCredential {
+  async function addInterpretedKeys(
+    item: NostrCredential
+  ): Promise<NostrDisplayedCredential> {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    const rawPubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: rawSeckey,
+    });
     return { ...item, nseckey, rawPubkey };
   }
 
@@ -257,16 +259,6 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       >
         <Box>
           <Grid gridTemplateColumns={"100px 1fr"} gap={6}>
-            <GridItem>
-              <label htmlFor="nostr-pref-enabled">Enable</label>
-            </GridItem>
-            <GridItem>
-              <Switch
-                id="nostr-pref-enabled"
-                isChecked={prefs.nostr.enabled}
-                onChange={handleEnable}
-              />
-            </GridItem>
             <GridItem>
               <label>New Key</label>
             </GridItem>
@@ -375,13 +367,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                           <Secret
                             value={item.nseckey}
                             onChangeVisibility={() => {}}
-                            usedPrimarypasswordToSettings={
-                              prefs.nostr.usedPrimarypasswordToSettings
-                            }
-                            primaryPasswordEnabled={
-                              prefs.base.primaryPasswordEnabled
-                            }
-                            platform={prefs.base.platform}
+                            prefs={prefs}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -395,13 +381,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                           <Secret
                             value={item.secret}
                             onChangeVisibility={() => {}}
-                            usedPrimarypasswordToSettings={
-                              prefs.nostr.usedPrimarypasswordToSettings
-                            }
-                            primaryPasswordEnabled={
-                              prefs.base.primaryPasswordEnabled
-                            }
-                            platform={prefs.base.platform}
+                            prefs={prefs}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>

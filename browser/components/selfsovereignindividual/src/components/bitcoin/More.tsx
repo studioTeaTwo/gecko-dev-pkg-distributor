@@ -21,7 +21,7 @@ export default function More(props: SelfSovereignIndividualDefaultProps) {
 
   const handleUsedPrimarypasswordToSettings = async (checked: boolean) => {
     const isAuthorized = await authorizePrimaryPassword(
-      "nostr",
+      "bitcoin",
       prefs,
       setIsOpenDialog
     );
@@ -30,7 +30,7 @@ export default function More(props: SelfSovereignIndividualDefaultProps) {
     }
 
     onPrefChanged({
-      protocolName: "nostr",
+      protocolName: "bitcoin",
       usedPrimarypasswordToSettings: checked,
     });
   };
@@ -50,14 +50,14 @@ export default function More(props: SelfSovereignIndividualDefaultProps) {
         <HStack>
           <Grid gridTemplateColumns={"400px 1fr"} gap={6}>
             <GridItem>
-              <label htmlFor="nostr-pref-usedPrimarypasswordToSettings">
+              <label htmlFor="bitcoin-pref-usedPrimarypasswordToSettings">
                 Use primary password to setting page
               </label>
             </GridItem>
             <GridItem>
               <Switch
-                id="nostr-pref-usedPrimarypasswordToSettings"
-                isChecked={prefs.nostr.usedPrimarypasswordToSettings}
+                id="bitcoin-pref-usedPrimarypasswordToSettings"
+                isChecked={prefs.bitcoin.usedPrimarypasswordToSettings}
                 onChange={e =>
                   handleUsedPrimarypasswordToSettings(e.target.checked)
                 }

@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, b as bytesToHex, s as schnorr, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, S as Menu$1, U as MenuButton, W as MenuList, X as MenuItem, Y as Checkbox, Z as Switch, _ as StackDivider, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, R as React, A as AlertDialog, M as ModalOverlay, a as AlertDialogContent, b as ModalHeader, c as ModalCloseButton, d as ModalBody, L as Link, e as ModalFooter, T as Text, f as Box, G as Grid, g as GridItem, h as InputGroup, i as Input, F as Flex, C as Card, k as CardHeader, l as Heading, m as Tooltip, n as CardBody, o as CardFooter, S as Switch, p as StackDivider, q as Tabs, s as TabList, t as Tab, u as TabPanels, v as TabPanel, w as Spinner, x as bech32, y as bytesToHex, z as Accordion, D as AccordionItem, E as AccordionButton, J as Icon, K as AccordionIcon, N as AccordionPanel, O as TableContainer, P as Table, Q as Thead, U as Tr, W as Th, X as Tbody, Y as Td, Z as Editable, _ as EditablePreview, $ as EditableInput, a0 as Textarea, a1 as Menu$1, a2 as MenuButton, a3 as MenuList, a4 as MenuItem, a5 as Checkbox, a6 as useEditableControls, a7 as hexToBytes, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as clientExports, af as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -360,13 +360,29 @@ function MdOutlineContentCopy(props) {
     ]
   })(props);
 }
-const SafeProtocols = ["http", "https", "moz-extension"];
-const SpecialCards = ["*", "<all_urls>"];
 const DefaultExcludedKindList = {
   13194: { nip: 47, name: "NWC Wallet Info" },
   23194: { nip: 47, name: "NWC Wallet Request" }
 };
 const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
+const NostrTemplate = {
+  protocolName: "nostr",
+  credentialName: "nsec",
+  identifier: "",
+  // npubkey
+  secret: "",
+  // raw seckey
+  primary: false,
+  trustedSites: [],
+  dialogicAuthorizedSites: [],
+  properties: {
+    displayName: "",
+    generationMethod: "import",
+    memo: ""
+  }
+};
+const SafeProtocols = ["http", "https", "moz-extension"];
+const SpecialCards = ["*", "<all_urls>"];
 const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
 const DefaultNallowedMethods = [];
 const EveryTimeAuthorizedMethods = [
@@ -403,22 +419,6 @@ const DefaultTrustedSites = [
     permissions: { nallowedMethod: DefaultNallowedMethods }
   }
 ];
-const NostrTemplate = {
-  protocolName: "nostr",
-  credentialName: "nsec",
-  identifier: "",
-  // npubkey
-  secret: "",
-  // raw seckey
-  primary: false,
-  trustedSites: [],
-  dialogicAuthorizedSites: [],
-  properties: {
-    displayName: "",
-    generationMethod: "import",
-    memo: ""
-  }
-};
 function initStore() {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
@@ -533,6 +533,18 @@ function useChildActorEvent() {
       primaryPasswordEnabled: false,
       passwordRevealVisible: false,
       platform: ""
+    },
+    bitcoin: {
+      enabled: true,
+      tabPin: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 3e5,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 864e5,
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      usedAccountChanged: true
     },
     nostr: {
       enabled: true,
@@ -695,38 +707,40 @@ function Menu(props) {
   }, [selectedMenu, menuPin]);
   return /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { children: buildMenu() });
 }
-function Bitcoin(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"' });
-}
-function Lightning(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Lightning Is the Common Language of the Bitcoin Economy"' });
-}
-const BIP340 = {
-  generateSecretKey: () => schnorr.utils.randomPrivateKey(),
-  generatePublicKey: (secretKey) => bytesToHex(schnorr.getPublicKey(secretKey))
-};
-const NostrTypeGuard = {
-  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
-};
-const Bech32MaxSize = 5e3;
-const encodeToNostrKey = (prefix, bytes) => {
-  const words = bech32.toWords(bytes);
-  return bech32.encode(
-    prefix,
-    words,
-    Bech32MaxSize
-  );
-};
-const decodeFromNostrKey = (nip19) => {
-  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
-  const data = new Uint8Array(bech32.fromWords(words));
-  switch (prefix) {
-    case "nsec":
-      return { type: prefix, data };
-    case "npub":
-      return { type: prefix, data: bytesToHex(data) };
+const StateContext = React.createContext(null);
+const DefaultState = {
+  bitcoin: {
+    editingNo: -1,
+    editingUrl: ""
+  },
+  nostr: {
+    editingNo: -1,
+    editingUrl: ""
   }
 };
+const StateProvider = ({ children }) => {
+  const [states, setStates] = reactExports.useState({
+    ...DefaultState
+  });
+  function updateState(protocolName, value) {
+    setStates((prev) => {
+      const current = { ...prev[protocolName] };
+      prev[protocolName] = { ...current, ...value };
+      return { ...prev };
+    });
+  }
+  function resetState() {
+    setStates({ ...DefaultState });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(StateContext.Provider, { value: { states, resetState, updateState }, children });
+};
+function generateSecretOnToolkit(protocolName, credentialName, option) {
+  return window.AboutSelfSovereignIndividualUtils.generate(
+    protocolName,
+    credentialName,
+    option
+  );
+}
 function promptForPrimaryPassword(messageId) {
   return new Promise((resolve) => {
     window.AboutSelfSovereignIndividualUtils.promptForPrimaryPassword(
@@ -738,7 +752,7 @@ function promptForPrimaryPassword(messageId) {
 async function authorizePrimaryPassword(protocolName, prefs, setIsOpenDialog, messageId) {
   if (prefs[protocolName].usedPrimarypasswordToSettings) {
     const primaryPasswordAuth = await promptForPrimaryPassword(
-      "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      messageId ?? "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
     );
     if (!primaryPasswordAuth) {
       if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
@@ -791,24 +805,17 @@ function AlertPrimaryPassword(props) {
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  const {
-    value,
-    textProps,
-    onChangeVisibility,
-    usedPrimarypasswordToSettings,
-    primaryPasswordEnabled,
-    platform
-  } = props;
+  const { value, textProps, onChangeVisibility, prefs } = props;
   const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
   const handleToggole = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        "nostr",
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }
@@ -816,14 +823,14 @@ function Secret(props) {
     onChangeVisibility();
   };
   const handleCopy = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        "nostr",
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }
@@ -870,6 +877,556 @@ function Secret(props) {
     )
   ] });
 }
+const { modifyCredentialToStore, onPrimaryChanged } = dispatchEvents;
+function changePrimary(guid, checked, keys) {
+  let newPrimaryGuid = "";
+  if (checked === true) {
+    const prevs = keys.filter((key) => key.primary);
+    for (const prev of prevs) {
+      modifyCredentialToStore({
+        guid: prev.guid,
+        primary: false
+      });
+    }
+    newPrimaryGuid = guid;
+  } else {
+    const prev = keys.find((key) => !key.primary);
+    if (prev) {
+      modifyCredentialToStore({
+        guid: prev.guid,
+        primary: true
+      });
+      newPrimaryGuid = prev.guid;
+    }
+  }
+  setTimeout(() => {
+    modifyCredentialToStore({
+      guid,
+      primary: checked
+    });
+  });
+  onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
+}
+const BitcoinTemplate = {
+  protocolName: "bitcoin",
+  credentialName: "bip39",
+  identifier: "",
+  // xpub
+  secret: "",
+  // mnemonic
+  primary: false,
+  trustedSites: [],
+  dialogicAuthorizedSites: [],
+  properties: {
+    passphrase: "",
+    xpriv: "",
+    displayName: "",
+    generationMethod: "new",
+    generationFrom: "about",
+    memo: ""
+  }
+};
+function Bitcoin$1(props) {
+  const { prefs, credentials } = props;
+  const { states, resetState, updateState } = reactExports.useContext(StateContext);
+  const {
+    addCredentialToStore: addCredentialToStore2,
+    modifyCredentialToStore: modifyCredentialToStore2,
+    deleteCredentialToStore: deleteCredentialToStore2,
+    removeAllCredentialsToStore: removeAllCredentialsToStore2,
+    onPrimaryChanged: onPrimaryChanged2
+  } = dispatchEvents;
+  const [importedKey, setImportedSeed] = reactExports.useState("");
+  const [newSeed, setNewSeed] = reactExports.useState("");
+  const [passphrase, setPassphrase] = reactExports.useState("");
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const mnemonics = reactExports.useMemo(
+    () => credentials.filter(
+      (credential) => credential.credentialName === "bip39"
+    ),
+    [credentials]
+  );
+  const defaultTrustedSites = reactExports.useMemo(
+    () => [
+      ...DefaultTrustedSites,
+      ...prefs.base.addons.map((addon) => ({
+        url: addon.url,
+        name: addon.name,
+        enabled: true,
+        permissions: { nallowedMethod: DefaultNallowedMethods }
+      }))
+    ],
+    [prefs.base.addons]
+  );
+  const handlePassphraseChange = (e) => setPassphrase(e.target.value);
+  const handleGenNewSeed = async (e) => {
+    e.preventDefault();
+    const { mnemonic, xpub, xpriv } = await generateSecretOnToolkit(
+      "bitcoin",
+      "bip39",
+      { passphrase }
+    );
+    console.log("seed", mnemonic, xpub, xpriv);
+    addCredentialToStore2({
+      ...BitcoinTemplate,
+      identifier: xpub,
+      secret: mnemonic,
+      primary: mnemonics.length === 0,
+      trustedSites: defaultTrustedSites,
+      properties: {
+        passphrase,
+        xpriv,
+        displayName: xpub,
+        generationMethod: "new",
+        generationFrom: "about",
+        memo: ""
+      }
+    });
+    setNewSeed(xpub);
+  };
+  const handleImportedKeyChange = (e) => setImportedSeed(e.target.value);
+  const handleImportedKeySave = async (e) => {
+    e.preventDefault();
+    const mnemonic = importedKey;
+    console.log("mnemonic", mnemonic);
+    const result = await generateSecretOnToolkit("bitcoin", "bip39", {
+      import: true,
+      mnemonic,
+      passphrase
+    });
+    if (!result[0]) {
+      alert("Invalid!");
+      return;
+    }
+    addCredentialToStore2({
+      ...BitcoinTemplate,
+      identifier: result[1].xpub,
+      secret: mnemonic,
+      primary: mnemonics.length === 0,
+      trustedSites: defaultTrustedSites,
+      properties: {
+        passphrase,
+        xpriv: result[1].xpriv,
+        displayName: result[1].xpub,
+        generationMethod: "new",
+        generationFrom: "about",
+        memo: ""
+      }
+    });
+    setImportedSeed("");
+  };
+  const handleChangePrimary = async (checked, item) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    changePrimary(item.guid, checked, mnemonics);
+  };
+  const handleDeleteCredential = async (item) => {
+    if (!confirm("The key can't be restored if no backup. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    if (item.primary === true) {
+      const prev = mnemonics.find((key) => !key.primary);
+      if (prev) {
+        modifyCredentialToStore2({
+          guid: prev.guid,
+          primary: true
+        });
+      }
+      onPrimaryChanged2({
+        protocolName: "bitcoin",
+        guid: prev ? prev.guid : ""
+      });
+    }
+    deleteCredentialToStore2(item, mnemonics);
+  };
+  const handleAllRemove = async (e) => {
+    e.preventDefault();
+    if (!confirm("All data will be deleted. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    removeAllCredentialsToStore2();
+    onPrimaryChanged2({ protocolName: "bitcoin", guid: "" });
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      VStack,
+      {
+        divider: /* @__PURE__ */ jsxRuntimeExports.jsx(StackDivider, { borderColor: "gray.200" }),
+        spacing: 4,
+        align: "stretch",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "New Seed" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    placeholder: "optional passphrase",
+                    value: passphrase,
+                    onChange: handlePassphraseChange,
+                    maxW: "200px"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: handleGenNewSeed,
+                    children: "Generate"
+                  }
+                )
+              ] }),
+              newSeed && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { as: "mark", ml: "10px", children: newSeed })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Import" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  placeholder: "mnemonic words",
+                  value: importedKey,
+                  onChange: handleImportedKeyChange,
+                  onKeyPress: (e) => {
+                    if (e.key === "Enter") {
+                      handleImportedKeySave(e);
+                    }
+                  },
+                  maxW: "500px"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  placeholder: "optional passphrase",
+                  value: passphrase,
+                  onChange: handlePassphraseChange,
+                  maxW: "200px"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  variant: "outline",
+                  colorScheme: "blue",
+                  onClick: handleImportedKeySave,
+                  children: "Save"
+                }
+              )
+            ] }) })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+            mnemonics.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No key registered" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: mnemonics.map((item, i) => {
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: "0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            displayName: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.displayName
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            memo: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.memo
+                    }
+                  ) }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "X Format" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: item.identifier }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        value: item.properties.xpriv,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        textProps: { fontSize: "md", isTruncated: true }
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "mnemonic" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        value: item.secret,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "passphrase" }),
+                    item.properties.passphrase ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        value: item.properties.passphrase,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
+                      }
+                    ) : "none"
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
+                    item.properties.generationMethod === "import" ? "Imported" : "Generated",
+                    " ",
+                    "at ",
+                    new Date(item.timeCreated).toLocaleDateString(),
+                    " ",
+                    new Date(item.timeCreated).toLocaleTimeString()
+                  ] }) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
+                  mnemonics.length > 1 && /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { gap: "2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Switch,
+                      {
+                        isChecked: item.primary,
+                        onChange: (e) => handleChangePrimary(e.target.checked, item),
+                        alignSelf: "center"
+                      }
+                    ),
+                    item.primary && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "primary now" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                      variant: "transparent",
+                      fontSize: "20px",
+                      "aria-label": "Edit Key",
+                      onClick: () => updateState("bitcoin", { editingNo: i })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdDeleteForever, {}),
+                      variant: "transparent",
+                      fontSize: "20px",
+                      "aria-label": "Delete Key",
+                      onClick: () => handleDeleteCredential(item)
+                    }
+                  )
+                ] })
+              ] }, i) });
+            }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "ghost", colorScheme: "blue", onClick: handleAllRemove, children: "Reset" }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
+function More$1(props) {
+  const { prefs } = props;
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const handleUsedPrimarypasswordToSettings = async (checked) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    onPrefChanged2({
+      protocolName: "bitcoin",
+      usedPrimarypasswordToSettings: checked
+    });
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      VStack,
+      {
+        divider: /* @__PURE__ */ jsxRuntimeExports.jsx(StackDivider, { borderColor: "gray.200" }),
+        spacing: 4,
+        align: "stretch",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "bitcoin-pref-usedPrimarypasswordToSettings", children: "Use primary password to setting page" }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Switch,
+            {
+              id: "bitcoin-pref-usedPrimarypasswordToSettings",
+              isChecked: prefs.bitcoin.usedPrimarypasswordToSettings,
+              onChange: (e) => handleUsedPrimarypasswordToSettings(e.target.checked)
+            }
+          ) })
+        ] }) })
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
+function Bitcoin(props) {
+  const { prefs, credentials } = props;
+  const { resetState } = reactExports.useContext(StateContext);
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
+  const [tabIndex, setTabIndex] = reactExports.useState(-1);
+  reactExports.useEffect(() => {
+    setTabIndex(parseInt(prefs.bitcoin.tabPin));
+  }, [prefs.bitcoin.tabPin]);
+  const tabPin = (tabId) => TabPin(
+    tabId.toString(),
+    { key: "tabPin", value: prefs.bitcoin.tabPin },
+    "bitcoin"
+  );
+  const bitcoinKeys = reactExports.useMemo(
+    () => credentials.filter((credential) => credential.protocolName === "bitcoin").sort((a, b) => b.primary ? 1 : 0),
+    [credentials]
+  );
+  const handleEnable = (e) => {
+    e.preventDefault();
+    const checked = e.target.checked;
+    onPrefChanged2({ protocolName: "bitcoin", enabled: checked });
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "bitcoin-pref-enabled", children: "Enable" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Switch,
+        {
+          id: "bitcoin-pref-enabled",
+          isChecked: prefs.bitcoin.enabled,
+          onChange: handleEnable
+        }
+      ) })
+    ] }),
+    prefs.bitcoin.tabPin ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Tabs,
+      {
+        variant: "enclosed",
+        index: tabIndex,
+        onChange: (index) => {
+          setTabIndex(index);
+          resetState();
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "BIP-39" }),
+              tabPin(0)
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }),
+              tabPin(1)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin$1, { prefs, credentials: bitcoinKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(More$1, { prefs, credentials: bitcoinKeys }) })
+          ] })
+        ]
+      }
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
+  ] });
+}
+const NostrTypeGuard = {
+  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
+};
+const Bech32MaxSize = 5e3;
+const encodeToNostrKey = (prefix, bytes) => {
+  const words = bech32.toWords(bytes);
+  return bech32.encode(
+    prefix,
+    words,
+    Bech32MaxSize
+  );
+};
+const decodeFromNostrKey = (nip19) => {
+  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
+  const data = new Uint8Array(bech32.fromWords(words));
+  switch (prefix) {
+    case "nsec":
+      return { type: prefix, data };
+    case "npub":
+      return { type: prefix, data: bytesToHex(data) };
+  }
+};
 function ExampleUrlMatch(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     Accordion,
@@ -959,7 +1516,7 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
         "Authorization dialogs consist of two dialogs. The confirmation dialog is there to verify the app's request, and the password dialog, by the OS account password or the Firefox primary password, is there to prevent someone other than you from authorizing.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "The expiration is counting up in the background and dialog will reappear once it has expired."
+        "The authorization will have an expiration date, and when it expires dialogs will reappear again."
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
         "- Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
@@ -1011,36 +1568,6 @@ function ExampleNostrKind(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "sm", children: "Note: App can arbitrarily enforce your authorization even if you opt-out here. It's because they deemed that authorization important enough to ask for your consent." })
     ] })
   ] }) });
-}
-const { modifyCredentialToStore, onPrimaryChanged } = dispatchEvents;
-function changePrimary(guid, checked, keys) {
-  let newPrimaryGuid = "";
-  if (checked === true) {
-    const prevs = keys.filter((key) => key.primary);
-    for (const prev of prevs) {
-      modifyCredentialToStore({
-        guid: prev.guid,
-        primary: false
-      });
-    }
-    newPrimaryGuid = guid;
-  } else {
-    const prev = keys.find((key) => !key.primary);
-    if (prev) {
-      modifyCredentialToStore({
-        guid: prev.guid,
-        primary: true
-      });
-      newPrimaryGuid = prev.guid;
-    }
-  }
-  setTimeout(() => {
-    modifyCredentialToStore({
-      guid,
-      primary: checked
-    });
-  });
-  onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
 function KeyEditor(props) {
   const { credential, nostrKeys, prefs } = props;
@@ -1660,30 +2187,7 @@ function KeyEditor(props) {
     )
   ] });
 }
-const StateContext = React.createContext(null);
-const DefaultState = {
-  nostr: {
-    editingNo: -1,
-    editingUrl: ""
-  }
-};
-const StateProvider = ({ children }) => {
-  const [states, setStates] = reactExports.useState({
-    ...DefaultState
-  });
-  function updateState(protocolName, value) {
-    setStates((prev) => {
-      const current = { ...prev[protocolName] };
-      prev[protocolName] = { ...current, ...value };
-      return { ...prev };
-    });
-  }
-  function resetState() {
-    setStates({ ...DefaultState });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(StateContext.Provider, { value: { states, resetState, updateState }, children });
-};
-function Nostr$2(props) {
+function Nostr$1(props) {
   const { prefs, credentials } = props;
   const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const {
@@ -1691,16 +2195,17 @@ function Nostr$2(props) {
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
     removeAllCredentialsToStore: removeAllCredentialsToStore2,
-    onPrimaryChanged: onPrimaryChanged2,
-    onPrefChanged: onPrefChanged2
+    onPrimaryChanged: onPrimaryChanged2
   } = dispatchEvents;
+  const [nostrKeys, setNostrKeys] = reactExports.useState([]);
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  const nostrKeys = reactExports.useMemo(
-    () => credentials.filter((credential) => credential.protocolName === "nostr").map(addInterpretedKeys).sort((a, b) => b.primary ? 1 : 0),
-    [credentials]
-  );
+  reactExports.useEffect(() => {
+    Promise.all(credentials.map(addInterpretedKeys)).then((credentials2) => {
+      setNostrKeys(credentials2);
+    });
+  }, [credentials]);
   const defaultTrustedSites = reactExports.useMemo(
     () => [
       ...DefaultTrustedSites,
@@ -1713,15 +2218,12 @@ function Nostr$2(props) {
     ],
     [prefs.base.addons]
   );
-  const handleEnable = (e) => {
+  const handleGenNewKey = async (e) => {
     e.preventDefault();
-    const checked = e.target.checked;
-    onPrefChanged2({ protocolName: "nostr", enabled: checked });
-  };
-  const handleGenNewKey = (e) => {
-    e.preventDefault();
-    const seckey = BIP340.generateSecretKey();
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const seckey = await generateSecretOnToolkit("nostr", "nsec");
+    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
@@ -1737,7 +2239,7 @@ function Nostr$2(props) {
     setNewKey(npubkey);
   };
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value);
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     let nseckey = importedKey;
     if (!NostrTypeGuard.isNSec(nseckey)) {
@@ -1759,7 +2261,9 @@ function Nostr$2(props) {
       alert("The typed key is existing!");
       return;
     }
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
@@ -1829,10 +2333,12 @@ function Nostr$2(props) {
   const onCloseDialog = () => {
     setIsOpenDialog(false);
   };
-  function addInterpretedKeys(item) {
+  async function addInterpretedKeys(item) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    const rawPubkey = await generateSecretOnToolkit("nostr", "npub", {
+      secretKey: rawSeckey
+    });
     return { ...item, nseckey, rawPubkey };
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -1844,15 +2350,6 @@ function Nostr$2(props) {
         align: "stretch",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-enabled", children: "Enable" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Switch,
-              {
-                id: "nostr-pref-enabled",
-                isChecked: prefs.nostr.enabled,
-                onChange: handleEnable
-              }
-            ) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "New Key" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1944,9 +2441,7 @@ function Nostr$2(props) {
                         value: item.nseckey,
                         onChangeVisibility: () => {
                         },
-                        usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-                        platform: prefs.base.platform,
+                        prefs,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1960,9 +2455,7 @@ function Nostr$2(props) {
                         value: item.secret,
                         onChangeVisibility: () => {
                         },
-                        usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-                        platform: prefs.base.platform,
+                        prefs,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -2036,7 +2529,7 @@ function Nostr$2(props) {
 }
 const OneHour = 60 * 60 * 1e3;
 function NIP07(props) {
-  const { prefs, credentials } = props;
+  const { prefs, credentials: nostrKeys } = props;
   const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
@@ -2061,10 +2554,6 @@ function NIP07(props) {
     { key: "tabPinInNip07", value: prefs.nostr.tabPinInNip07 },
     "nostr"
   );
-  const nostrkeys = reactExports.useMemo(
-    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
-    [credentials]
-  );
   const handleUsedTrustedSites = async (checked) => {
     const isAuthorized = await authorizePrimaryPassword(
       "nostr",
@@ -2083,10 +2572,10 @@ function NIP07(props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const existings = nostrkeys.filter(
+    const existings = nostrKeys.filter(
       (key) => key.trustedSites.some((site) => site.url === newSite && site.enabled)
     );
-    if (nostrkeys.length === existings.length) {
+    if (nostrKeys.length === existings.length) {
       alert("The url exists already.");
       return;
     }
@@ -2098,7 +2587,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const key of nostrkeys) {
+    for (const key of nostrKeys) {
       const idx = key.trustedSites.findIndex((site) => site.url === newSite);
       if (idx >= 0) {
         if (key.trustedSites[idx].enabled) {
@@ -2131,7 +2620,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    const item = nostrkeys.find((key) => key.identifier === identifier);
+    const item = nostrKeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
       trustedSites: item.trustedSites.map((site) => {
@@ -2151,7 +2640,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore2({
         guid: item.guid,
         trustedSites: item.trustedSites.map((site) => {
@@ -2205,7 +2694,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    const item = nostrkeys.find((key) => key.identifier === identifier);
+    const item = nostrKeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
       dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
@@ -2225,7 +2714,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore2({
         guid: item.guid,
         dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
@@ -2327,7 +2816,7 @@ function NIP07(props) {
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys.map(
+        nostrKeys.map(
           (key) => key.trustedSites.filter((site) => site.enabled).map((site) => {
             const { permissions, ...rest } = site;
             return rest;
@@ -2355,7 +2844,7 @@ function NIP07(props) {
             ]
           }
         ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrkeys.filter(
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrKeys.filter(
           (key) => key.trustedSites.some(
             (_site) => _site.enabled && _site.url === site.url
           )
@@ -2400,8 +2889,8 @@ function NIP07(props) {
           ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
             KeyEditor,
             {
-              credential: nostrkeys[states.nostr.editingNo],
-              nostrKeys: nostrkeys,
+              credential: nostrKeys[states.nostr.editingNo],
+              nostrKeys,
               prefs,
               goBack: () => resetState()
             }
@@ -2418,9 +2907,9 @@ function NIP07(props) {
         }
       ) })
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
   const getDialogicAuthorizedSites = reactExports.useCallback(() => {
-    const dialogicAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+    const dialogicAuthorizedSites = nostrKeys.reduce((acc, key, i) => {
       key.dialogicAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
         if (found) {
@@ -2498,8 +2987,8 @@ function NIP07(props) {
             ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
               KeyEditor,
               {
-                credential: nostrkeys[states.nostr.editingNo],
-                nostrKeys: nostrkeys,
+                credential: nostrKeys[states.nostr.editingNo],
+                nostrKeys,
                 prefs,
                 goBack: () => resetState()
               }
@@ -2517,7 +3006,7 @@ function NIP07(props) {
         ) })
       ] });
     }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -2842,7 +3331,7 @@ function NIP07(props) {
     )
   ] });
 }
-function Nostr$1(props) {
+function More(props) {
   const { prefs } = props;
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
@@ -2897,10 +3386,20 @@ function Nostr$1(props) {
 function Nostr(props) {
   const { prefs, credentials } = props;
   const { resetState } = reactExports.useContext(StateContext);
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
     setTabIndex(parseInt(prefs.nostr.tabPin));
   }, [prefs.nostr.tabPin]);
+  const nostrKeys = reactExports.useMemo(
+    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
+    [credentials]
+  );
+  const handleEnable = (e) => {
+    e.preventDefault();
+    const checked = e.target.checked;
+    onPrefChanged2({ protocolName: "nostr", enabled: checked });
+  };
   const tabPin = (tabId) => TabPin(
     tabId.toString(),
     { key: "tabPin", value: prefs.nostr.tabPin },
@@ -2908,6 +3407,17 @@ function Nostr(props) {
   );
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-enabled", children: "Enable" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Switch,
+        {
+          id: "nostr-pref-enabled",
+          isChecked: prefs.nostr.enabled,
+          onChange: handleEnable
+        }
+      ) })
+    ] }),
     prefs.nostr.tabPin ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Tabs,
       {
@@ -2933,17 +3443,14 @@ function Nostr(props) {
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$2, { prefs, credentials }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, { prefs, credentials }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials: nostrKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, { prefs, credentials: nostrKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(More, { prefs, credentials: nostrKeys }) })
           ] })
         ]
       }
     ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
   ] });
-}
-function ECash(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Automation of the way we pay for goods and services is already underway, as can be seen by the variety and growth of electronic banking services available to consumers."' });
 }
 function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent();
@@ -2957,11 +3464,7 @@ function SelfSovereignIndividual() {
   }, [prefs.base.menuPin]);
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin, {});
-    } else if (selectedMenu === "lightning") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Lightning, {});
-    } else if (selectedMenu === "ecash") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(ECash, {});
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin, { prefs, credentials });
     } else if (selectedMenu === "nostr") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr, { prefs, credentials });
     }

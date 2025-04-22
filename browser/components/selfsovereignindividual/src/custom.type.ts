@@ -22,6 +22,9 @@ export interface SelfSovereignIndividualPrefs {
     platform: string; // AppConstants.platform
     addons: { id: string; name: string; url: string }[]; // built-in addons list
   };
+  bitcoin: {
+    tabPin: string; // selfsovereignindividual.bitcoin.ui.tabPin
+  } & ProtocolDefaultPrefs;
   nostr: {
     tabPin: string; // selfsovereignindividual.nostr.ui.tabPin
     tabPinInNip07: string; // selfsovereignindividual.nostr.ui.nip07.tabPin
@@ -37,6 +40,10 @@ export interface SelfSovereignIndividualDefaultProps {
 }
 // States only in about:selfsovereignindividual
 export interface AboutSelfSovereignIndividualStates {
+  bitcoin: {
+    editingNo: number; // Key number being edited
+    editingUrl: string; // TrustedSite URL being edited
+  };
   nostr: {
     editingNo: number; // Key number being edited
     editingUrl: string; // TrustedSite URL being edited
@@ -60,8 +67,7 @@ export type ProtocolName =
   | "ecash"
   | "nostr"
   | "did:dht";
-export type CredentialName = "bip39" | "lnc" | "nsec";
-export type GenerationMethod = "bip340" | "import";
+export type CredentialName = "bip39" | "nsec";
 interface TrustedSites {
   url: string;
   name: string;
@@ -74,7 +80,7 @@ interface DialogicAuthorizedSites {
   expirationTime: number;
   permissions: Record<string, unknown>;
 }
-export interface Credential
+export interface BaseCredential
   extends Omit<
     OnlyUsedNsICredentialInfo,
     | "trustedSites"
@@ -89,12 +95,21 @@ export interface Credential
   dialogicAuthorizedSites: DialogicAuthorizedSites[];
   properties: {
     displayName: string;
-    generationMethod: GenerationMethod;
     memo?: string;
   };
   guid?: string;
   timeCreated?: number;
 }
+
+export interface BitcoinCredential extends BaseCredential {
+  properties: {
+    passphrase: string;
+    xpriv: string;
+    generationMethod: "new" | "import";
+    generationFrom: "about" | "browser";
+  } & BaseCredential["properties"];
+}
+
 export interface DialogicAuthorizedSitesForNostr
   extends DialogicAuthorizedSites {
   permissions: {
@@ -103,9 +118,14 @@ export interface DialogicAuthorizedSitesForNostr
     excludedKinds: string[];
   };
 }
-export interface NostrCredential extends Credential {
+export interface NostrCredential extends BaseCredential {
   dialogicAuthorizedSites: DialogicAuthorizedSitesForNostr[];
+  properties: {
+    generationMethod: "bip340" | "import";
+  } & BaseCredential["properties"];
 }
+
+export type Credential = BitcoinCredential | NostrCredential;
 
 // Pass object type through JSON.stringify for IPC & JSONstorage
 export interface CredentialForPayload extends OnlyUsedNsICredentialInfo {

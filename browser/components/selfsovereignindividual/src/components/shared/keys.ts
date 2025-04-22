@@ -1,17 +1,6 @@
 // ref: https://github.com/nbd-wtf/nostr-tools
-import { Hex } from "@noble/curves/abstract/utils";
-import { schnorr } from "@noble/curves/secp256k1";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bech32 } from "@scure/base";
-
-/**
- * Bitocin
- */
-export const BIP340 = {
-  generateSecretKey: () => schnorr.utils.randomPrivateKey(),
-  generatePublicKey: (secretKey: Hex) =>
-    bytesToHex(schnorr.getPublicKey(secretKey)),
-};
 
 /**
  * Nostr
