@@ -2,10 +2,11 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { bech32 } from "@scure/base";
 import { log } from "../shared/logger";
 import { state } from "./state";
-
-// NOTE(ssb): Currently firefox does not support externally_connectable.
-// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
-const SafeProtocols = ["http", "https", "moz-extension"];
+import {
+  ERR_MSG_NOT_ENABLED,
+  ERR_MSG_NOT_SUPPORTED,
+} from "../shared/constants";
+import { supported, sendTab } from "./utils";
 
 const MapBetweenPrefAndState = {
   enabled: "enabled",
@@ -20,10 +21,6 @@ const DialogMessage = {
   "nostr/nip44/decrypt": "App is requesting you.",
 };
 
-const ERR_MSG_NOT_ENABLED =
-  "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
-const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
-
 // Proceed calls from contents
 export const doNostrAction = async (
   tabId: number,
@@ -32,7 +29,7 @@ export const doNostrAction = async (
   args: FixMe
 ) => {
   if (!state.nostr.prefs.enabled) {
-    throw new Error(ERR_MSG_NOT_ENABLED);
+    throw new Error(ERR_MSG_NOT_ENABLED("nostr"));
   }
   if (!supported(origin)) {
     throw new Error(ERR_MSG_NOT_SUPPORTED);
@@ -50,7 +47,7 @@ export const doNostrAction = async (
         { caption: DialogMessage[action], submission: "" }
       );
       if (credentials.length === 0) {
-        throw new Error(ERR_MSG_NOT_ENABLED);
+        throw new Error(ERR_MSG_NOT_ENABLED("nostr"));
       }
       state.nostr = {
         ...state.nostr,
@@ -144,7 +141,7 @@ export const doNostrAction = async (
 };
 
 export async function init() {
-  log("experimental-api start...");
+  log("nostr start...");
 
   state.nostr.credentialName = "nsec";
 
@@ -230,24 +227,6 @@ browser.ssi.nostr.onPrefEnabledChanged.addListener(() =>
  * Internal Utils
  *
  */
-
-async function sendTab(tab: browser.tabs.Tab, action: string, data: FixMe) {
-  if (!supported(tab.url)) {
-    // browser origin event is not sent anything
-    return;
-  }
-
-  browser.tabs
-    .sendMessage(tab.id, {
-      action,
-      args: data,
-    })
-    .catch();
-}
-
-function supported(tabUrl: string): boolean {
-  return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
-}
 
 function decodeNpub(npub) {
   const Bech32MaxSize = 5000;

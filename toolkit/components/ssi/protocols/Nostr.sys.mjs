@@ -7,6 +7,7 @@ import {
   bytesToHex,
   concatBytes,
   randomBytes,
+  hexToBytes,
 } from "resource://ssi/protocols/hashes/utils.sys.mjs";
 import { base64, bech32 } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { secp256k1 } from "resource://ssi/protocols/curves/secp256k1.sys.mjs";
@@ -22,6 +23,7 @@ import { Bitcoin } from "resource://ssi/protocols/Bitcoin.sys.mjs";
 
 const utf8Decoder = new TextDecoder("utf-8");
 const utf8Encoder = new TextEncoder();
+const Bech32MaxSize = 5000;
 
 export const Nostr = {
   /**
@@ -43,6 +45,21 @@ export const Nostr = {
 
   /**
    *
+   * @param {string} pubkey - npub or hex type
+   */
+  convertPublicKey(pubkey) {
+    if (pubkey.startsWith("npub")) {
+      const { words } = bech32.decode(pubkey, Bech32MaxSize);
+      const data = new Uint8Array(bech32.fromWords(words));
+      return bytesToHex(data);
+    }
+    const bytes = hexToBytes(pubkey);
+    const words = bech32.toWords(bytes);
+    return bech32.encode("npub", words, Bech32MaxSize);
+  },
+
+  /**
+   *
    * @param {string} message
    * @param {string} guid
    * @returns {string}
@@ -57,6 +74,8 @@ export const Nostr = {
    * @param {string} plaintext
    * @param {string} guid
    * @param {object} option
+   * @param {string} option.type - "nip04" | "nip44"
+   * @param {string} option.pubkey - HEX type
    * @returns {string}
    */
   async encrypt(plaintext, guid, { type, pubkey }) {
@@ -81,6 +100,8 @@ export const Nostr = {
    * @param {string} ciphertext
    * @param {string} guid
    * @param {object} option
+   * @param {string} option.type - "nip04" | "nip44"
+   * @param {string} option.pubkey - HEX type
    * @returns {string}
    */
   async decrypt(ciphertext, guid, { type, pubkey }) {
@@ -301,7 +322,6 @@ function decryptNip44(payload, conversationKey) {
 }
 
 function _decodeNpub(npub) {
-  const Bech32MaxSize = 5000;
   const { prefix, words } = bech32.decode(npub, Bech32MaxSize);
   if (prefix !== "npub") {
     throw new Error("Not npub!");

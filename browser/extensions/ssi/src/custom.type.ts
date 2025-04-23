@@ -7,13 +7,21 @@ export type ProtocolName =
   | "ecash"
   | "nostr"
   | "did:dht";
-export const availableCalls = [
+export const availableCallsBitcoin = [
+  "bitcoin/generate",
+  "bitcoin/shareWith",
+] as const;
+export const availableCallsNostr = [
   "nostr/getPublicKey",
   "nostr/signEvent",
   "nostr/nip04/encrypt",
   "nostr/nip04/decrypt",
   "nostr/nip44/encrypt",
   "nostr/nip44/decrypt",
+] as const;
+export const availableCalls = [
+  ...availableCallsBitcoin,
+  ...availableCallsNostr,
 ] as const;
 export type AvailableCalls = (typeof availableCalls)[number];
 
@@ -34,14 +42,14 @@ declare global {
   function cloneInto(
     obj: object,
     scope: Window,
-    option?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
+    options?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any;
   function exportFunction(
     // eslint-disable-next-line @typescript-eslint/ban-types
     func: Function,
     scope: Window,
-    option?: { defineAs?: string; allowCrossOriginArguments?: boolean }
+    options?: { defineAs?: string; allowCrossOriginArguments?: boolean }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): (...args) => any;
   function XPCNativeWrapper(obj: object): void;
@@ -78,5 +86,6 @@ export type NostrEvent = {
  * Nostr
  */
 export interface SelfSovereignIndividualPrefs {
+  bitcoin: SelfSovereignIndividualDefaultPrefs;
   nostr: SelfSovereignIndividualDefaultPrefs;
 }

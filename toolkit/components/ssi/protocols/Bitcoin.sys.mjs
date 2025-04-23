@@ -17,6 +17,17 @@ import {
 import { utils as baseUtils } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { wordlists } from "resource://ssi/protocols/utils/wordlists.mjs";
 import { HDKey } from "resource://ssi/protocols/utils/hdkey.sys.mjs";
+import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs";
+
+// see: browser/components/selfsovereignindividual/src/components/bitcoin/constants.ts
+const DefaultTrustedSites = [
+  {
+    url: "http://localhost",
+    name: "",
+    enabled: true,
+    permissions: { nallowedMethod: [] },
+  },
+];
 
 export const Bitcoin = {
   // ref: https://github.com/paulmillr/scure-bip32
@@ -35,11 +46,11 @@ export const Bitcoin = {
   BIP39: {
     /**
      *
-     * @param {string} type 'about' | 'browser'
-     * @param {number} strength
-     * @param {string} passphrase
+     * @param {string} origin - origin URL generated from
+     * @param {number=} strength
+     * @param {string=} passphrase
      */
-    async generateMnemonic(type, strength = 256, passphrase = "") {
+    async generateMnemonic(origin, strength = 256, passphrase = "") {
       anumber(strength);
       if (strength % 32 !== 0 || strength > 256) {
         throw new TypeError("Invalid entropy");
@@ -53,32 +64,47 @@ export const Bitcoin = {
       const xpub = hdkey.publicExtendedKey;
       const xpriv = hdkey.privateExtendedKey;
 
-      if (type === "about") {
+      if (origin.startsWith("about:")) {
         // Call `Services.ssi.searchCredentialsAsync` from settings
         return { mnemonic, xpub, xpriv };
       }
 
+      // In browser.ssi, Firstly make credential so that the user can authorize. If the user rejects, delete it.
+      const ssi = WebExtensionPolicy.getByID(
+        "experimentapi-ssi@teatwo.dev"
+      )?.extension;
+      const defaultTrustedSites = [
+        ...DefaultTrustedSites,
+        {
+          url: ssi.getURL().slice(0, -1),
+          name: ssi.name,
+          enabled: true,
+          permissions: { nallowedMethod: [] },
+        },
+      ];
       const existings = await Services.ssi.searchCredentialsAsync({
         protocolName: "bitcoin",
         credentialName: "bip39",
       });
-      const credential = await Services.ssi.addCredential({
+      let newCredential = {
         protocolName: "bitcoin",
         credentialName: "bip39",
         identifier: xpub,
         secret: mnemonic,
         primary: existings.length === 0,
-        trustedSites: [], // FIXME(ssb): DefaultTrustedSites
-        dialogicAuthorizedSites: [],
-        properties: {
+        trustedSites: JSON.stringify(defaultTrustedSites),
+        dialogicAuthorizedSites: JSON.stringify([]),
+        properties: JSON.stringify({
           passphrase,
           xpriv,
           displayName: xpub,
-          generationFrom: type,
+          generationFrom: origin,
           generationMethod: "new",
           sharedWith: [],
-        },
-      });
+        }),
+      };
+      newCredential = SsiHelper.vanillaObjectToCredential(newCredential);
+      const credential = await Services.ssi.addCredentialAsync(newCredential);
 
       // Exclude the secret properties for browser.ssi.
       // eslint-disable-next-line no-unused-vars
@@ -96,7 +122,6 @@ export const Bitcoin = {
       try {
         mnemonicToEntropy(mnemonic, wordlist);
       } catch (e) {
-        console.log("validateMnemonic", e);
         return false;
       }
       return true;

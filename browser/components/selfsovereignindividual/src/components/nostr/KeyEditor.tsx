@@ -43,7 +43,7 @@ import {
 } from "../../custom.type";
 import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
-import { DefaultExcludedKinds } from "./contants";
+import { DefaultExcludedKinds } from "./constants";
 import {
   SafeProtocols,
   SpecialCards,
@@ -52,7 +52,7 @@ import {
   NallowedMethods,
   EveryTimeAuthorizedMethods,
   DialogDisplayOptions,
-} from "../shared/contants";
+} from "../shared/constants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,

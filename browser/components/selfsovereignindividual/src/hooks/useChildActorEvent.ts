@@ -5,11 +5,11 @@ import {
   ProtocolName,
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
-import { DefaultExcludedKinds } from "../components/nostr/contants";
+import { DefaultExcludedKinds } from "../components/nostr/constants";
 import {
   DefaultDialogDisplayOptions,
   DefaultNallowedMethods,
-} from "../components/shared/contants";
+} from "../components/shared/constants";
 
 /**
  * Send to child actor

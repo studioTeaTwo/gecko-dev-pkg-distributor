@@ -16,7 +16,7 @@ import {
   Icon,
   HStack,
 } from "@chakra-ui/react";
-import { DefaultExcludedKindList } from "../nostr/contants";
+import { DefaultExcludedKindList } from "../nostr/constants";
 import { MdHelp } from "./react-icons/Icons";
 import { ProtocolName } from "src/custom.type";
 

@@ -15,7 +15,7 @@ export function signEvent(event) {
   let eventHash = "";
   return new window.Promise((resolve, reject) => {
     // Attach your holding public key to verify it is the same as the current primary key.
-    window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(
+    window.wrappedJSObject.ssi.nostr.getPublicKeySync(
       exportFunction((error, pubkey) => {
         if (error) {
           reject(error);
@@ -24,7 +24,7 @@ export function signEvent(event) {
         eventHash = bytesToHex(
           sha256(new window.TextEncoder().encode(serializeEvent(signedEvent)))
         );
-        window.wrappedJSObject.ssi.nostr.signWithCallback(
+        window.wrappedJSObject.ssi.nostr.signSync(
           window.JSON.stringify(signedEvent),
           exportFunction((error, signature) => {
             if (error) {
@@ -49,7 +49,7 @@ export function signEvent(event) {
 }
 export function nip04Encrypt(pubkey, plaintext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.encryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.encryptSync(
       plaintext,
       exportFunction((error, ciphertext) => {
         if (error) {
@@ -70,7 +70,7 @@ export function nip04Encrypt(pubkey, plaintext) {
 }
 export function nip04Decrypt(pubkey, ciphertext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.decryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.decryptSync(
       ciphertext,
       exportFunction((error, plaintext) => {
         if (error) {
@@ -91,7 +91,7 @@ export function nip04Decrypt(pubkey, ciphertext) {
 }
 export function nip44Encrypt(pubkey, plaintext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.encryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.encryptSync(
       plaintext,
       exportFunction((error, ciphertext) => {
         if (error) {
@@ -112,7 +112,7 @@ export function nip44Encrypt(pubkey, plaintext) {
 }
 export function nip44Decrypt(pubkey, ciphertext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.decryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.decryptSync(
       ciphertext,
       exportFunction((error, plaintext) => {
         if (error) {

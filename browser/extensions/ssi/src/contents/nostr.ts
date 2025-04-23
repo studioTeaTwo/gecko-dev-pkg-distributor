@@ -1,15 +1,7 @@
 import { WindowSSI } from "../window.ssi.type";
 import { log } from "../shared/logger";
 import {
-  generate,
-  getPublicKey,
-  getPublicKeyWithCallback,
-  sign,
-  signWithCallback,
-  encrypt,
-  encryptWithCallback,
-  decrypt,
-  decryptWithCallback,
+  NostrApi,
   _invoke,
   addEventListener,
   removeEventListener,
@@ -17,18 +9,15 @@ import {
 
 // Object shared with inpage scripts.
 const _nostr = new window.Object() as WindowSSI["nostr"];
-_nostr.generate = exportFunction(generate, window);
-_nostr.getPublicKey = exportFunction(getPublicKey, window);
-_nostr.getPublicKeyWithCallback = exportFunction(
-  getPublicKeyWithCallback,
-  window
-);
-_nostr.sign = exportFunction(sign, window);
-_nostr.signWithCallback = exportFunction(signWithCallback, window);
-_nostr.encrypt = exportFunction(encrypt, window);
-_nostr.encryptWithCallback = exportFunction(encryptWithCallback, window);
-_nostr.decrypt = exportFunction(decrypt, window);
-_nostr.decryptWithCallback = exportFunction(decryptWithCallback, window);
+_nostr.generate = exportFunction(NostrApi.generate, window);
+_nostr.getPublicKey = exportFunction(NostrApi.getPublicKey, window);
+_nostr.getPublicKeySync = exportFunction(NostrApi.getPublicKeySync, window);
+_nostr.sign = exportFunction(NostrApi.sign, window);
+_nostr.signSync = exportFunction(NostrApi.signSync, window);
+_nostr.encrypt = exportFunction(NostrApi.encrypt, window);
+_nostr.encryptSync = exportFunction(NostrApi.encryptSync, window);
+_nostr.decrypt = exportFunction(NostrApi.decrypt, window);
+_nostr.decryptSync = exportFunction(NostrApi.decryptSync, window);
 
 // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
 // ref: https://github.com/nostr-protocol/nips/pull/1174

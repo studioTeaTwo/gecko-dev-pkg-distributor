@@ -46,7 +46,7 @@ import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import TabPin from "../shared/TabPin";
 import { MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
-import { DefaultExcludedKinds } from "./contants";
+import { DefaultExcludedKinds } from "./constants";
 import {
   DefaultNallowedMethods,
   SafeProtocols,
@@ -54,7 +54,7 @@ import {
   DialogDisplayOptions,
   NallowedMethods,
   DefaultDialogDisplayOptions,
-} from "../shared/contants";
+} from "../shared/constants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,

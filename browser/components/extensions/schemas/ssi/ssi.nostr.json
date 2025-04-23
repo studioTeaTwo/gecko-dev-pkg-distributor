@@ -67,7 +67,7 @@
             "name": "tabId",
             "type": "integer",
             "minimum": -1,
-            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
           },
           {
             "name": "message",
@@ -75,7 +75,7 @@
             "description": "The message to sign. If it's not a string it must be stringified."
           },
           {
-            "name": "option",
+            "name": "options",
             "type": "object",
             "description": "Direction about sign detail",
             "properties": {
@@ -108,7 +108,7 @@
             "name": "tabId",
             "type": "integer",
             "minimum": -1,
-            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
           },
           {
             "name": "plaintext",
@@ -116,7 +116,7 @@
             "description": "The plain text to encrypt"
           },
           {
-            "name": "option",
+            "name": "options",
             "type": "object",
             "description": "Direction about encryption detail",
             "properties": {
@@ -160,7 +160,7 @@
             "name": "tabId",
             "type": "integer",
             "minimum": -1,
-            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
           },
           {
             "name": "ciphertext",
@@ -168,7 +168,7 @@
             "description": "The cipher text to decrypt"
           },
           {
-            "name": "option",
+            "name": "options",
             "type": "object",
             "description": "Direction about decryption detail",
             "properties": {

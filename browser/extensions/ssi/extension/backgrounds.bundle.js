@@ -862,6 +862,129 @@ exports.bytes = exports.stringToBytes;
 
 /***/ }),
 
+/***/ 772:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = exports.doBitcoinAction = void 0;
+const logger_1 = __webpack_require__(874);
+const state_1 = __webpack_require__(975);
+const constants_1 = __webpack_require__(709);
+const utils_1 = __webpack_require__(135);
+const MapBetweenPrefAndState = {
+    enabled: "enabled",
+};
+const DialogMessage = {
+    "bitcoin/generate": "App is requesting you.",
+    "bitcoin/shareWith": "App is requesting you to share your \"SECRET\".",
+};
+// Proceed calls from contents
+const doBitcoinAction = async (tabId, origin, action, args) => {
+    if (!state_1.state.bitcoin.prefs.enabled) {
+        throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("bitcoin"));
+    }
+    if (!(0, utils_1.supported)(origin)) {
+        throw new Error(constants_1.ERR_MSG_NOT_SUPPORTED);
+    }
+    switch (action) {
+        case "bitcoin/generate": {
+            console.log("bitcoin generate");
+            if (args.type == null ||
+                !["mnemonic", "derivation"].includes(args.type)) {
+                throw new Error(`Invalid type: ${args.type}`);
+            }
+            const identifier = await browser.ssi.bitcoin.generate(tabId, args, {
+                caption: DialogMessage[action],
+                submission: "",
+            });
+            if (!identifier) {
+                throw new Error("Failed to generate");
+            }
+            return identifier;
+        }
+        case "bitcoin/shareWith": {
+            if (args.pubkey == null || typeof args.pubkey !== "string") {
+                throw new window.Error("Invalid partner's pubkey");
+            }
+            if (args.type == null ||
+                !["mnemonic", "derivation", "xpriv"].includes(args.type)) {
+                throw new Error(`Invalid type: ${args.type}`);
+            }
+            const pubkey = args.pubkey;
+            delete args.pubkey; // Delete to pass schema check of built-in API
+            const encryptedSecret = await browser.ssi.bitcoin.shareWith(tabId, pubkey, args, {
+                caption: DialogMessage[action],
+                submission: "Once you share, you can't take it back. Please check carefully!"
+            });
+            if (!encryptedSecret) {
+                throw new Error("Failed to shareWith");
+            }
+            return encryptedSecret.secret;
+        }
+        default:
+            throw new Error("Not implemented");
+    }
+};
+exports.doBitcoinAction = doBitcoinAction;
+async function init() {
+    (0, logger_1.log)("bitcoin start...");
+    state_1.state.bitcoin.credentialName = "bip39";
+    // Get setting values from the prefs.
+    const results = await browser.ssi.bitcoin.getPrefs();
+    const prefs = {};
+    Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+        prefs[_state] =
+            results && results[_pref] ? results[_pref] : state_1.state.bitcoin.prefs[_pref];
+    });
+    state_1.state.bitcoin = {
+        ...state_1.state.bitcoin,
+        prefs: prefs,
+    };
+    (0, logger_1.log)("bitcoin inited in background", state_1.state.bitcoin);
+}
+exports.init = init;
+// The message listener to listen to experimental-apis calls
+// After, those calls get passed on to the content scripts.
+const onPrimaryChangedCallback = async () => {
+    const credentials = await browser.ssi.searchCredentialsWithoutSecret(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+    {
+        protocolName: "bitcoin",
+        credentialName: state_1.state.bitcoin.credentialName,
+        primary: true,
+    });
+    (0, logger_1.log)("primary changed!", credentials);
+};
+browser.ssi.bitcoin.onPrimaryChanged.addListener(onPrimaryChangedCallback);
+const onPrefChangedCallback = async (prefKey) => {
+    // Update new value
+    const results = await browser.ssi.bitcoin.getPrefs();
+    const stateName = MapBetweenPrefAndState[prefKey];
+    const newVal = results[stateName];
+    state_1.state.bitcoin.prefs[stateName] = newVal;
+    (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.bitcoin);
+    // Send the message to the contents
+    // AccountChanged should only be held in the background.
+    if (["enabled"].includes(prefKey)) {
+        const tabs = await browser.tabs.query({
+            status: "complete",
+            discarded: false,
+        });
+        for (const tab of tabs) {
+            (0, logger_1.log)("send to tab", tab);
+            (0, utils_1.sendTab)(tab, "bitcoin/providerChanged", state_1.state.bitcoin.prefs[stateName]);
+        }
+    }
+};
+browser.ssi.bitcoin.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("enabled"));
+/**
+ * Internal Utils
+ *
+ */
+
+
+/***/ }),
+
 /***/ 684:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -872,9 +995,8 @@ const utils_1 = __webpack_require__(175);
 const base_1 = __webpack_require__(203);
 const logger_1 = __webpack_require__(874);
 const state_1 = __webpack_require__(975);
-// NOTE(ssb): Currently firefox does not support externally_connectable.
-// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
-const SafeProtocols = ["http", "https", "moz-extension"];
+const constants_1 = __webpack_require__(709);
+const utils_2 = __webpack_require__(135);
 const MapBetweenPrefAndState = {
     enabled: "enabled",
 };
@@ -886,15 +1008,13 @@ const DialogMessage = {
     "nostr/nip44/encrypt": "App is requesting you.",
     "nostr/nip44/decrypt": "App is requesting you.",
 };
-const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
-const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
 // Proceed calls from contents
 const doNostrAction = async (tabId, origin, action, args) => {
     if (!state_1.state.nostr.prefs.enabled) {
-        throw new Error(ERR_MSG_NOT_ENABLED);
+        throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("nostr"));
     }
-    if (!supported(origin)) {
-        throw new Error(ERR_MSG_NOT_SUPPORTED);
+    if (!(0, utils_2.supported)(origin)) {
+        throw new Error(constants_1.ERR_MSG_NOT_SUPPORTED);
     }
     switch (action) {
         case "nostr/getPublicKey": {
@@ -904,7 +1024,7 @@ const doNostrAction = async (tabId, origin, action, args) => {
                 primary: true,
             }, { caption: DialogMessage[action], submission: "" });
             if (credentials.length === 0) {
-                throw new Error(ERR_MSG_NOT_ENABLED);
+                throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("nostr"));
             }
             state_1.state.nostr = {
                 ...state_1.state.nostr,
@@ -977,7 +1097,7 @@ const doNostrAction = async (tabId, origin, action, args) => {
 };
 exports.doNostrAction = doNostrAction;
 async function init() {
-    (0, logger_1.log)("experimental-api start...");
+    (0, logger_1.log)("nostr start...");
     state_1.state.nostr.credentialName = "nsec";
     // Get setting values from the prefs.
     const results = await browser.ssi.nostr.getPrefs();
@@ -1020,7 +1140,7 @@ const onPrimaryChangedCallback = async () => {
     const pubkey = decodeNpub(state_1.state.nostr.npub);
     for (const tab of tabs) {
         (0, logger_1.log)("send to tab", tab);
-        sendTab(tab, "nostr/accountChanged", pubkey);
+        (0, utils_2.sendTab)(tab, "nostr/accountChanged", pubkey);
     }
 };
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
@@ -1040,7 +1160,7 @@ const onPrefChangedCallback = async (prefKey) => {
         });
         for (const tab of tabs) {
             (0, logger_1.log)("send to tab", tab);
-            sendTab(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
+            (0, utils_2.sendTab)(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
         }
     }
 };
@@ -1049,21 +1169,6 @@ browser.ssi.nostr.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("
  * Internal Utils
  *
  */
-async function sendTab(tab, action, data) {
-    if (!supported(tab.url)) {
-        // browser origin event is not sent anything
-        return;
-    }
-    browser.tabs
-        .sendMessage(tab.id, {
-        action,
-        args: data,
-    })
-        .catch();
-}
-function supported(tabUrl) {
-    return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
-}
 function decodeNpub(npub) {
     const Bech32MaxSize = 5000;
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
@@ -1085,14 +1190,65 @@ exports.state = void 0;
 // NOTE(ssb): We can hold multiple selfsovereignidentities here, just within background.
 // But don't expose them to the contents, so that Peter Todd is not suspected of being Satoshi Nakamoto.
 exports.state = {
+    bitcoin: {
+        credentialName: "",
+        xpub: "",
+        prefs: {
+            enabled: false,
+        },
+    },
     nostr: {
         credentialName: "",
         npub: "",
         prefs: {
-            enabled: true,
+            enabled: false,
         },
     },
 };
+
+
+/***/ }),
+
+/***/ 135:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.supported = exports.sendTab = void 0;
+const constants_1 = __webpack_require__(709);
+async function sendTab(tab, action, data) {
+    if (!supported(tab.url)) {
+        // browser origin event is not sent anything
+        return;
+    }
+    browser.tabs
+        .sendMessage(tab.id, {
+        action,
+        args: data,
+    })
+        .catch();
+}
+exports.sendTab = sendTab;
+function supported(tabUrl) {
+    return constants_1.SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
+}
+exports.supported = supported;
+
+
+/***/ }),
+
+/***/ 709:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ERR_MSG_NOT_SUPPORTED = exports.ERR_MSG_NOT_ENABLED = exports.SafeProtocols = void 0;
+// NOTE(ssb): Currently firefox does not support externally_connectable.
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
+exports.SafeProtocols = ["http", "https", "moz-extension"];
+const ERR_MSG_NOT_ENABLED = (protocolName) => `window.ssi.${protocolName} is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.`;
+exports.ERR_MSG_NOT_ENABLED = ERR_MSG_NOT_ENABLED;
+exports.ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${exports.SafeProtocols.join(",")}.`;
 
 
 /***/ }),
@@ -1151,18 +1307,24 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 const logger_1 = __webpack_require__(874);
+const bitcoin_1 = __webpack_require__(772);
 const nostr_1 = __webpack_require__(684);
+__webpack_require__(772);
 __webpack_require__(684);
 (0, logger_1.log)("background-script working");
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
-    if (message.action.includes("nostr/")) {
+    if (message.action.includes("bitcoin/")) {
+        return (0, bitcoin_1.doBitcoinAction)(sender.tab.id, message.origin, message.action, message.args);
+    }
+    else if (message.action.includes("nostr/")) {
         return (0, nostr_1.doNostrAction)(sender.tab.id, message.origin, message.action, message.args);
     }
     return false;
 });
+(0, bitcoin_1.init)();
 (0, nostr_1.init)();
 
 })();

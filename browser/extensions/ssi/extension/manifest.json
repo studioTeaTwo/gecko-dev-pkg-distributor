@@ -10,7 +10,7 @@
     }
   },
 
-  "permissions": ["tabs", "<all_urls>", "ssi", "ssi.nostr"],
+  "permissions": ["tabs", "<all_urls>", "ssi", "ssi.bitcoin", "ssi.nostr"],
 
   "background": {
     "scripts": ["backgrounds.bundle.js"]

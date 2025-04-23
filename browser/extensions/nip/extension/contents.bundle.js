@@ -615,13 +615,13 @@ function signEvent(event) {
     let eventHash = "";
     return new window.Promise((resolve, reject) => {
         // Attach your holding public key to verify it is the same as the current primary key.
-        window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(exportFunction((error, pubkey) => {
+        window.wrappedJSObject.ssi.nostr.getPublicKeySync(exportFunction((error, pubkey) => {
             if (error) {
                 reject(error);
             }
             signedEvent.pubkey = pubkey;
             eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
-            window.wrappedJSObject.ssi.nostr.signWithCallback(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
+            window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
                 if (error) {
                     reject(error);
                 }
@@ -639,7 +639,7 @@ function signEvent(event) {
 exports.signEvent = signEvent;
 function nip04Encrypt(pubkey, plaintext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.encryptWithCallback(plaintext, exportFunction((error, ciphertext) => {
+        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, exportFunction((error, ciphertext) => {
             if (error) {
                 reject(error);
             }
@@ -654,7 +654,7 @@ function nip04Encrypt(pubkey, plaintext) {
 exports.nip04Encrypt = nip04Encrypt;
 function nip04Decrypt(pubkey, ciphertext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.decryptWithCallback(ciphertext, exportFunction((error, plaintext) => {
+        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, exportFunction((error, plaintext) => {
             if (error) {
                 reject(error);
             }
@@ -669,7 +669,7 @@ function nip04Decrypt(pubkey, ciphertext) {
 exports.nip04Decrypt = nip04Decrypt;
 function nip44Encrypt(pubkey, plaintext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.encryptWithCallback(plaintext, exportFunction((error, ciphertext) => {
+        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, exportFunction((error, ciphertext) => {
             if (error) {
                 reject(error);
             }
@@ -684,7 +684,7 @@ function nip44Encrypt(pubkey, plaintext) {
 exports.nip44Encrypt = nip44Encrypt;
 function nip44Decrypt(pubkey, ciphertext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.decryptWithCallback(ciphertext, exportFunction((error, plaintext) => {
+        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, exportFunction((error, plaintext) => {
             if (error) {
                 reject(error);
             }

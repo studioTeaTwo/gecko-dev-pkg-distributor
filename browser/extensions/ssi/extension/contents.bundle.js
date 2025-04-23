@@ -7,89 +7,117 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.decryptWithCallback = exports.decrypt = exports.encryptWithCallback = exports.encrypt = exports.signWithCallback = exports.sign = exports.getPublicKeyWithCallback = exports.getPublicKey = exports.generate = void 0;
+exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.NostrApi = exports.BitcoinApi = void 0;
 const custom_type_1 = __webpack_require__(711);
+/**
+ * Bitcoin
+ */
+exports.BitcoinApi = {
+    generate(option) {
+        return _callRuntime("bitcoin/generate", option);
+    },
+    generateSync(callback, option) {
+        _callRuntime("bitcoin/generate", option)
+            .then(identifier => {
+            callback(null, identifier);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+    shareWith(pubkey, option) {
+        return _callRuntime(`bitcoin/shareWith`, {
+            pubkey,
+            ...option,
+        });
+    },
+    shareWithSync(pubkey, callback, option) {
+        return _callRuntime(`bitcoin/shareWith`, {
+            pubkey,
+            ...option,
+        })
+            .then(ciphertext => {
+            callback(null, ciphertext);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+};
 /**
  * Nostr
  */
-function generate() {
-    return window.Promise.resolve("Not implemented");
-}
-exports.generate = generate;
-function getPublicKey(option) {
-    return _callRuntime("nostr/getPublicKey", option);
-}
-exports.getPublicKey = getPublicKey;
-function getPublicKeyWithCallback(callback, option) {
-    _callRuntime("nostr/getPublicKey", option)
-        .then(publicKey => {
-        callback(null, publicKey);
-    })
-        .catch(error => {
-        callback(error, "");
-    });
-}
-exports.getPublicKeyWithCallback = getPublicKeyWithCallback;
-function sign(message, option) {
-    return _callRuntime(`nostr/${option.type}`, {
-        message,
-        ...option,
-    });
-}
-exports.sign = sign;
-function signWithCallback(message, callback, option) {
-    _callRuntime(`nostr/${option.type}`, {
-        message,
-        ...option,
-    })
-        .then(signature => {
-        callback(null, signature);
-    })
-        .catch(error => {
-        callback(error, "");
-    });
-}
-exports.signWithCallback = signWithCallback;
-function encrypt(plaintext, option) {
-    return _callRuntime(`nostr/${option.type}/encrypt`, {
-        plaintext,
-        ...option,
-    });
-}
-exports.encrypt = encrypt;
-function encryptWithCallback(plaintext, callback, option) {
-    return _callRuntime(`nostr/${option.type}/encrypt`, {
-        plaintext,
-        ...option,
-    })
-        .then(ciphertext => {
-        callback(null, ciphertext);
-    })
-        .catch(error => {
-        callback(error, "");
-    });
-}
-exports.encryptWithCallback = encryptWithCallback;
-function decrypt(ciphertext, option) {
-    return _callRuntime(`nostr/${option.type}/decrypt`, {
-        ciphertext,
-        ...option,
-    });
-}
-exports.decrypt = decrypt;
-function decryptWithCallback(ciphertext, callback, option) {
-    return _callRuntime(`nostr/${option.type}/decrypt`, {
-        ciphertext,
-        ...option,
-    })
-        .then(plaintext => {
-        callback(null, plaintext);
-    })
-        .catch(error => {
-        callback(error, "");
-    });
-}
-exports.decryptWithCallback = decryptWithCallback;
+exports.NostrApi = {
+    generate() {
+        return window.Promise.resolve("Not implemented");
+    },
+    getPublicKey(option) {
+        return _callRuntime("nostr/getPublicKey", option);
+    },
+    getPublicKeySync(callback, option) {
+        _callRuntime("nostr/getPublicKey", option)
+            .then(publicKey => {
+            callback(null, publicKey);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+    sign(message, option) {
+        return _callRuntime(`nostr/${option.type}`, {
+            message,
+            ...option,
+        });
+    },
+    signSync(message, callback, option) {
+        _callRuntime(`nostr/${option.type}`, {
+            message,
+            ...option,
+        })
+            .then(signature => {
+            callback(null, signature);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+    encrypt(plaintext, option) {
+        return _callRuntime(`nostr/${option.type}/encrypt`, {
+            plaintext,
+            ...option,
+        });
+    },
+    encryptSync(plaintext, callback, option) {
+        return _callRuntime(`nostr/${option.type}/encrypt`, {
+            plaintext,
+            ...option,
+        })
+            .then(ciphertext => {
+            callback(null, ciphertext);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+    decrypt(ciphertext, option) {
+        return _callRuntime(`nostr/${option.type}/decrypt`, {
+            ciphertext,
+            ...option,
+        });
+    },
+    decryptSync(ciphertext, callback, option) {
+        return _callRuntime(`nostr/${option.type}/decrypt`, {
+            ciphertext,
+            ...option,
+        })
+            .then(plaintext => {
+            callback(null, plaintext);
+        })
+            .catch(error => {
+            callback(error, "");
+        });
+    },
+};
 /**
  * Event
  */
@@ -123,6 +151,21 @@ function _callRuntime(action, option) {
     }
     // TODO(ssb): Validate option
     switch (action) {
+        case "bitcoin/generate": {
+            if (option.type == null || typeof option.type !== "string") {
+                throw new window.Error("Missing the type for required");
+            }
+            break;
+        }
+        case "bitcoin/shareWith": {
+            if (option.pubkey == null || typeof option.pubkey !== "string") {
+                throw new window.Error("Missing the pubkey for required");
+            }
+            if (option.type == null || typeof option.type !== "string") {
+                throw new window.Error("Missing the type for required");
+            }
+            break;
+        }
         case "nostr/signEvent": {
             if (option.message == null || typeof option.message !== "string") {
                 throw new window.Error("Invalid message");
@@ -134,7 +177,6 @@ function _callRuntime(action, option) {
             if (option.plaintext == null || typeof option.plaintext !== "string") {
                 throw new window.Error("Invalid plaintext");
             }
-            // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
             if (option.pubkey == null || typeof option.pubkey !== "string") {
                 throw new window.Error("Invalid partner's pubkey");
             }
@@ -146,7 +188,6 @@ function _callRuntime(action, option) {
             if (option.ciphertext == null || typeof option.ciphertext !== "string") {
                 throw new window.Error("Invalid ciphertext");
             }
-            // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
             if (option.pubkey == null || typeof option.pubkey !== "string") {
                 throw new window.Error("Invalid partner's pubkey");
             }
@@ -173,6 +214,45 @@ exports._callRuntime = _callRuntime;
 
 /***/ }),
 
+/***/ 653:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = exports.bitcoin = void 0;
+const logger_1 = __webpack_require__(874);
+const api_1 = __webpack_require__(71);
+// Object shared with inpage scripts.
+const _bitcoin = new window.Object();
+_bitcoin.generate = exportFunction(api_1.BitcoinApi.generate, window);
+_bitcoin.generateSync = exportFunction(api_1.BitcoinApi.generateSync, window);
+_bitcoin.shareWith = exportFunction(api_1.BitcoinApi.shareWith, window);
+_bitcoin.shareWithSync = exportFunction(api_1.BitcoinApi.shareWithSync, window);
+_bitcoin._proxy = new window.EventTarget();
+// TODO(ssb): Ideally should conceal
+_bitcoin._invoke = exportFunction((0, api_1._invoke)(_bitcoin._proxy), window);
+_bitcoin.addEventListener = exportFunction((0, api_1.addEventListener)(_bitcoin._proxy), window);
+_bitcoin.removeEventListener = exportFunction((0, api_1.removeEventListener)(_bitcoin._proxy), window);
+exports.bitcoin = _bitcoin;
+async function init() {
+    // The message listener to listen to background calls
+    // After, emit event to return the response to the inpages.
+    browser.runtime.onMessage.addListener(request => {
+        (0, logger_1.log)("content-script onMessage", request);
+        const action = request.action.replace("bitcoin/", "");
+        const data = request.args;
+        // forward account changed messaged to inpage script
+        if (action === "accountChanged") {
+            window.wrappedJSObject.ssi.bitcoin._invoke(action, data);
+            XPCNativeWrapper(window.wrappedJSObject.ssi);
+        }
+    });
+}
+exports.init = init;
+
+
+/***/ }),
+
 /***/ 45:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -183,15 +263,15 @@ const logger_1 = __webpack_require__(874);
 const api_1 = __webpack_require__(71);
 // Object shared with inpage scripts.
 const _nostr = new window.Object();
-_nostr.generate = exportFunction(api_1.generate, window);
-_nostr.getPublicKey = exportFunction(api_1.getPublicKey, window);
-_nostr.getPublicKeyWithCallback = exportFunction(api_1.getPublicKeyWithCallback, window);
-_nostr.sign = exportFunction(api_1.sign, window);
-_nostr.signWithCallback = exportFunction(api_1.signWithCallback, window);
-_nostr.encrypt = exportFunction(api_1.encrypt, window);
-_nostr.encryptWithCallback = exportFunction(api_1.encryptWithCallback, window);
-_nostr.decrypt = exportFunction(api_1.decrypt, window);
-_nostr.decryptWithCallback = exportFunction(api_1.decryptWithCallback, window);
+_nostr.generate = exportFunction(api_1.NostrApi.generate, window);
+_nostr.getPublicKey = exportFunction(api_1.NostrApi.getPublicKey, window);
+_nostr.getPublicKeySync = exportFunction(api_1.NostrApi.getPublicKeySync, window);
+_nostr.sign = exportFunction(api_1.NostrApi.sign, window);
+_nostr.signSync = exportFunction(api_1.NostrApi.signSync, window);
+_nostr.encrypt = exportFunction(api_1.NostrApi.encrypt, window);
+_nostr.encryptSync = exportFunction(api_1.NostrApi.encryptSync, window);
+_nostr.decrypt = exportFunction(api_1.NostrApi.decrypt, window);
+_nostr.decryptSync = exportFunction(api_1.NostrApi.decryptSync, window);
 // NOTE(ssb): A experimental feature for providers. Currently not freeze nor seal.
 // ref: https://github.com/nostr-protocol/nips/pull/1174
 _nostr.messageBoard = cloneInto({}, window);
@@ -225,14 +305,22 @@ exports.init = init;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.availableCalls = void 0;
-exports.availableCalls = [
+exports.availableCalls = exports.availableCallsNostr = exports.availableCallsBitcoin = void 0;
+exports.availableCallsBitcoin = [
+    "bitcoin/generate",
+    "bitcoin/shareWith",
+];
+exports.availableCallsNostr = [
     "nostr/getPublicKey",
     "nostr/signEvent",
     "nostr/nip04/encrypt",
     "nostr/nip04/decrypt",
     "nostr/nip44/encrypt",
     "nostr/nip44/decrypt",
+];
+exports.availableCalls = [
+    ...exports.availableCallsBitcoin,
+    ...exports.availableCallsNostr,
 ];
 const verifiedSymbol = Symbol("verified");
 
@@ -343,12 +431,14 @@ __webpack_unused_export__ = ({ value: true });
 /* eslint-env webextensions */
 const shouldInject_1 = __webpack_require__(880);
 const logger_1 = __webpack_require__(874);
+const bitcoin_1 = __webpack_require__(653);
 const nostr_1 = __webpack_require__(45);
 const api_1 = __webpack_require__(71);
 (0, logger_1.log)("content-script working", browser.runtime.getURL("contents.bundle.js"));
 // Object shared with inpage scripts.
 const windowSSI = new window.Object();
 windowSSI._scope = "ssi";
+windowSSI.bitcoin = bitcoin_1.bitcoin;
 windowSSI.nostr = nostr_1.nostr;
 windowSSI._proxy = new window.EventTarget();
 // TODO(ssb): Ideally should conceal
@@ -360,10 +450,11 @@ if ((0, shouldInject_1.shouldInject)()) {
     window.wrappedJSObject.ssi = windowSSI;
     for (const api of [
         window.wrappedJSObject.ssi,
+        window.wrappedJSObject.ssi.bitcoin,
         window.wrappedJSObject.ssi.nostr,
     ]) {
         for (const property of Object.getOwnPropertyNames(api)) {
-            Object.defineProperty(window.wrappedJSObject.ssi.nostr, property, {
+            Object.defineProperty(api, property, {
                 writable: false,
                 configurable: false,
             });
@@ -374,6 +465,7 @@ if ((0, shouldInject_1.shouldInject)()) {
         configurable: false,
     });
     XPCNativeWrapper(window.wrappedJSObject.ssi);
+    (0, bitcoin_1.init)();
     (0, nostr_1.init)();
 }
 

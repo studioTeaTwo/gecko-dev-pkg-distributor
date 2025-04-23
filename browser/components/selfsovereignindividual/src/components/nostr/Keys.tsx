@@ -32,7 +32,7 @@ import {
   NostrTypeGuard,
 } from "../shared/keys";
 import Secret from "../shared/Secret";
-import { NostrTemplate } from "./contants";
+import { NostrTemplate } from "./constants";
 import {
   authorizePrimaryPassword,
   generateSecretOnToolkit,
@@ -45,7 +45,7 @@ import { StateContext } from "../../contexts/StatesProvider";
 import {
   DefaultNallowedMethods,
   DefaultTrustedSites,
-} from "../shared/contants";
+} from "../shared/constants";
 
 interface NostrDisplayedCredential extends NostrCredential {
   nseckey: string;
@@ -390,7 +390,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             {item.properties.generationMethod === "import"
                               ? "Imported"
                               : "Generated"}{" "}
-                            at {new Date(item.timeCreated).toLocaleDateString()}
+                            on {new Date(item.timeCreated).toLocaleDateString()}
                             &nbsp;
                             {new Date(item.timeCreated).toLocaleTimeString()}
                           </Text>

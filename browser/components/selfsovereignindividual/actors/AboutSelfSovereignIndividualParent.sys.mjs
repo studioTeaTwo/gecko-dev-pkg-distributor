@@ -301,12 +301,10 @@ export class AboutSelfSovereignIndividualParent extends JSWindowActorParent {
     );
     guid.data = changeSet.guid;
 
-    switch (changeSet.protocolName) {
-      case "nostr": {
-        Services.obs.notifyObservers(guid, "SSI_PRIMARY_KEY_CHANGED_IN_NOSTR");
-        break;
-      }
-    }
+    Services.obs.notifyObservers(
+      guid,
+      `SSI_PRIMARY_KEY_CHANGED_IN_${changeSet.protocolName.toUpperCase()}`
+    );
   }
 
   #prefChanged(changeSet) {

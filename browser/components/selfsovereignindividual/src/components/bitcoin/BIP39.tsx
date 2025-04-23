@@ -37,8 +37,8 @@ import { StateContext } from "../../contexts/StatesProvider";
 import {
   DefaultTrustedSites,
   DefaultNallowedMethods,
-} from "../shared/contants";
-import { BitcoinTemplate } from "./contants";
+} from "../shared/constants";
+import { BitcoinTemplate } from "./constants";
 
 interface BitcoinDisplayedCredential extends BitcoinCredential {
   nseckey: string;
@@ -106,7 +106,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
         xpriv,
         displayName: xpub,
         generationMethod: "new",
-        generationFrom: "about",
+        generationFrom: location.href,
         memo: "",
       },
     });
@@ -124,7 +124,6 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     e.preventDefault();
 
     const mnemonic = importedKey;
-    console.log("mnemonic", mnemonic);
     const result = await generateSecretOnToolkit("bitcoin", "bip39", {
       import: true,
       mnemonic,
@@ -145,8 +144,8 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
         passphrase: passphrase,
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
-        generationMethod: "new",
-        generationFrom: "about",
+        generationMethod: "import",
+        generationFrom: location.href,
         memo: "",
       },
     });
@@ -399,13 +398,16 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                         )}
                       </Box>
                       <Box>
-                        <Text fontSize="sm" isTruncated>
+                        <Text fontSize="sm">
                           {item.properties.generationMethod === "import"
                             ? "Imported"
                             : "Generated"}{" "}
-                          at {new Date(item.timeCreated).toLocaleDateString()}
+                          on {new Date(item.timeCreated).toLocaleDateString()}
                           &nbsp;
-                          {new Date(item.timeCreated).toLocaleTimeString()}
+                          {new Date(
+                            item.timeCreated
+                          ).toLocaleTimeString()} at{" "}
+                          {item.properties.generationFrom}
                         </Text>
                       </Box>
                     </CardBody>
@@ -422,13 +424,13 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                           {item.primary && <Text>primary now</Text>}
                         </Flex>
                       )}
-                      <IconButton
+                      {/* <IconButton
                         icon={<MdEdit />}
                         variant="transparent"
                         fontSize="20px"
                         aria-label="Edit Key"
                         onClick={() => updateState("bitcoin", { editingNo: i })}
-                      />
+                      /> */}
                       <IconButton
                         icon={<MdDeleteForever />}
                         variant="transparent"

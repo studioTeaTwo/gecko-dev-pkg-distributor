@@ -7,6 +7,7 @@
 import { shouldInject } from "../shared/shouldInject";
 import { log } from "../shared/logger";
 import { WindowSSI } from "../window.ssi.type";
+import { bitcoin, init as bitcoinInit } from "./bitcoin";
 import { nostr, init as nostrInit } from "./nostr";
 import { _invoke, addEventListener, removeEventListener } from "./api";
 
@@ -16,6 +17,7 @@ log("content-script working", browser.runtime.getURL("contents.bundle.js"));
 const windowSSI = new window.Object() as WindowSSI;
 windowSSI._scope = "ssi";
 
+windowSSI.bitcoin = bitcoin;
 windowSSI.nostr = nostr;
 
 windowSSI._proxy = new window.EventTarget();
@@ -35,10 +37,11 @@ if (shouldInject()) {
   window.wrappedJSObject.ssi = windowSSI;
   for (const api of [
     window.wrappedJSObject.ssi,
+    window.wrappedJSObject.ssi.bitcoin,
     window.wrappedJSObject.ssi.nostr,
   ]) {
     for (const property of Object.getOwnPropertyNames(api)) {
-      Object.defineProperty(window.wrappedJSObject.ssi.nostr, property, {
+      Object.defineProperty(api, property, {
         writable: false,
         configurable: false,
       });
@@ -50,5 +53,6 @@ if (shouldInject()) {
   });
   XPCNativeWrapper(window.wrappedJSObject.ssi);
 
+  bitcoinInit();
   nostrInit();
 }

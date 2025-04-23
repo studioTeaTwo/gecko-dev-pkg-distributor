@@ -60,12 +60,17 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 });
 
-const PROTOCOL_NAMES = ["nostr"];
-const CREDENTIAL_NAMES = ["nsec"];
+export const CREDENTIAL_MAP = {
+  bitcoin: ["bip39"],
+  nostr: ["nsec"],
+};
+const PROTOCOL_NAMES = Object.keys(CREDENTIAL_MAP);
+const CREDENTIAL_NAMES = Object.values(CREDENTIAL_MAP).flat();
 const capitalize = function (str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 const DIALOG_SYSTEM_MESSAGE = protocolName => ({
+  generate: `generate ${capitalize(protocolName)} key`,
   read: `read ${capitalize(protocolName)} public key`,
   sign: `sign with ${capitalize(protocolName)}`,
   encrypt: `encrypt with ${capitalize(protocolName)}`,
@@ -74,7 +79,7 @@ const DIALOG_SYSTEM_MESSAGE = protocolName => ({
 });
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
-// below is from browser/components/selfsovereignindividual/src/components/nostr/contants.ts
+// below is from browser/components/selfsovereignindividual/src/components/shared/contants.ts
 const SpecialCards = ["*", "<all_urls>"];
 
 export const browserSsiHelper = {
@@ -100,11 +105,7 @@ export const browserSsiHelper = {
       fire.async().catch(() => {}); // ignore Message Manager disconnects
     };
 
-    let obsTopic;
-    if (protocolName === "nostr") {
-      obsTopic = "SSI_PRIMARY_KEY_CHANGED_IN_NOSTR";
-    }
-
+    const obsTopic = `SSI_PRIMARY_KEY_CHANGED_IN_${protocolName.toUpperCase()}`;
     Services.obs.addObserver(callback, obsTopic);
     return () => {
       Services.obs.removeObserver(callback, obsTopic);
@@ -208,6 +209,38 @@ export const browserSsiHelper = {
 
     return true;
   },
+  validateHierarchy(hierarchy) {
+    if (hierarchy == null) {
+      return false;
+    }
+
+    // TODO(ssb)
+
+    return true;
+  },
+  /**
+   *
+   * @param {object} context
+   * @param {number} tabId
+   * @returns
+   */
+  getOrigin(context, tabId) {
+    const { browser, window } = context.extension.tabManager.get(tabId);
+
+    return {
+      browsingContext: browser.browsingContext,
+      window,
+      site: {
+        origin: browser.contentPrincipal.originNoSuffix,
+        url: browser.contentPrincipal.spec,
+        isSystemPrincipal: browser.contentPrincipal.isSystemPrincipal,
+      },
+      extension: {
+        origin: context.xulBrowser.contentPrincipal.originNoSuffix,
+        url: context.xulBrowser.contentPrincipal.spec,
+      },
+    };
+  },
   /**
    *
    * @param {Context} context
@@ -221,10 +254,8 @@ export const browserSsiHelper = {
     // Prepare stuff
     const { protocolName, credentialName } = credential;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
-    const { site, extension, browsingContext, window } = getOrigin(
-      context,
-      tabId
-    );
+    const { site, extension, browsingContext, window } =
+      browserSsiHelper.getOrigin(context, tabId);
     const internalPrefs = browserSsiHelper.getInternalPrefs(protocolName);
     console.log(
       "authorize",
@@ -387,29 +418,6 @@ async function execAuth(target, extensionName, prefs, authCache, dialogInfo) {
 
 /**
  *
- * @param {object} context
- * @param {number} tabId
- * @returns
- */
-function getOrigin(context, tabId) {
-  const { browser, window } = context.extension.tabManager.get(tabId);
-
-  return {
-    browsingContext: browser.browsingContext,
-    window,
-    site: {
-      origin: browser.contentPrincipal.originNoSuffix,
-      url: browser.contentPrincipal.spec,
-      isSystemPrincipal: browser.contentPrincipal.isSystemPrincipal,
-    },
-    extension: {
-      origin: context.xulBrowser.contentPrincipal.originNoSuffix,
-      url: context.xulBrowser.contentPrincipal.spec,
-    },
-  };
-}
-/**
- *
  * @param {string} url
  * @param {MethodType} type
  * @param {object[]} trustedSites
@@ -504,7 +512,7 @@ async function authByDialogs(
 ) {
   const { url, origin } = target;
   const { cacheKey, dialogicAuthorizedSites } = authCache;
-  const { type, evidence, enforce, embedderElement } = dialogInfo;
+  const { type, embedderElement } = dialogInfo;
 
   // Prepare expiration time.
   const protocolName = cacheKey.split(":")[0];
@@ -537,8 +545,7 @@ async function authByDialogs(
     url,
     protocolName,
     dialogicAuthorizedSites,
-    enforce,
-    evidence
+    dialogInfo
   );
   // This is lower priority than `skippedDialog`, so it differenciate _isAuthMandatory.
   const authorizedEveryTime =
@@ -574,6 +581,7 @@ async function authByDialogs(
         text: permissionText,
         method: type,
         expirationTime: prefs.expirationTime,
+        enforce: dialogInfo.enforce,
       },
       description: {
         caption: dialogInfo.caption,
@@ -650,6 +658,8 @@ async function authByDialogs(
         // Since it was trusted, we will round it up.
         return true;
       }
+      // `result.settingValue` is "noop", because `type` is "generate" or `dialogInfo.enforce` is true.
+      // go to password dialog
     } else {
       // The user has canceled, so return false.
       return false;
@@ -658,11 +668,10 @@ async function authByDialogs(
 
   // 2. Suggest password prompt
   const skippedPassword =
-    !_isAuthMandatory &&
     dialogicAuthorizedSite.permissions.skippedDialog.includes(
       `${type}-confirmOnly`
     );
-  if (!skippedPassword) {
+  if (_isAuthMandatory || !skippedPassword) {
     const isOSAuthEnabled = lazy.SsiHelper.getOSAuthEnabled(
       lazy.SsiHelper.OS_AUTH_FOR_PASSWORDS_PREF
     );

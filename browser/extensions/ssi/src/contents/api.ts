@@ -2,123 +2,183 @@ import {
   NostrSignType,
   NostrEncryptType,
   NostrDecryptType,
+  BitcoinShareType,
 } from "../window.ssi.type";
 import { type AvailableCalls, availableCalls } from "../custom.type";
+
+/**
+ * Bitcoin
+ */
+
+export const BitcoinApi = {
+  generate(option) {
+    return _callRuntime<string>("bitcoin/generate", option);
+  },
+  generateSync(callback, option) {
+    _callRuntime<string>("bitcoin/generate", option)
+      .then(identifier => {
+        callback(null, identifier);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+
+  shareWith(
+    pubkey,
+    option: {
+      type: BitcoinShareType;
+      xpub?: string;
+      path?: string; // m or m/*
+    }
+  ) {
+    return _callRuntime<string>(`bitcoin/shareWith`, {
+      pubkey,
+      ...option,
+    });
+  },
+  shareWithSync(
+    pubkey,
+    callback,
+    option: {
+      type: BitcoinShareType;
+      xpub?: string;
+      path?: string; // m or m/*
+    }
+  ) {
+    return _callRuntime<string>(`bitcoin/shareWith`, {
+      pubkey,
+      ...option,
+    })
+      .then(ciphertext => {
+        callback(null, ciphertext);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+};
 
 /**
  * Nostr
  */
 
-export function generate() {
-  return window.Promise.resolve("Not implemented");
-}
-export function getPublicKey(option) {
-  return _callRuntime<string>("nostr/getPublicKey", option);
-}
-export function getPublicKeyWithCallback(callback, option) {
-  _callRuntime<string>("nostr/getPublicKey", option)
-    .then(publicKey => {
-      callback(null, publicKey);
-    })
-    .catch(error => {
-      callback(error, "");
-    });
-}
-export function sign(
-  message,
-  option: {
-    type: NostrSignType;
-  }
-) {
-  return _callRuntime<string>(`nostr/${option.type}`, {
+export const NostrApi = {
+  generate() {
+    return window.Promise.resolve("Not implemented");
+  },
+
+  getPublicKey(option) {
+    return _callRuntime<string>("nostr/getPublicKey", option);
+  },
+  getPublicKeySync(callback, option) {
+    _callRuntime<string>("nostr/getPublicKey", option)
+      .then(publicKey => {
+        callback(null, publicKey);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+
+  sign(
     message,
-    ...option,
-  });
-}
-export function signWithCallback(
-  message,
-  callback,
-  option: {
-    type: NostrSignType;
-  }
-) {
-  _callRuntime<string>(`nostr/${option.type}`, {
+    option: {
+      type: NostrSignType;
+    }
+  ) {
+    return _callRuntime<string>(`nostr/${option.type}`, {
+      message,
+      ...option,
+    });
+  },
+  signSync(
     message,
-    ...option,
-  })
-    .then(signature => {
-      callback(null, signature);
+    callback,
+    option: {
+      type: NostrSignType;
+    }
+  ) {
+    _callRuntime<string>(`nostr/${option.type}`, {
+      message,
+      ...option,
     })
-    .catch(error => {
-      callback(error, "");
-    });
-}
-export function encrypt(
-  plaintext,
-  option: {
-    type: NostrEncryptType;
-    pubkey?: string;
-    version?: string;
-  }
-) {
-  return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+      .then(signature => {
+        callback(null, signature);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+
+  encrypt(
     plaintext,
-    ...option,
-  });
-}
-export function encryptWithCallback(
-  plaintext,
-  callback,
-  option: {
-    type: NostrEncryptType;
-    pubkey?: string;
-    version?: string;
-  }
-) {
-  return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+    option: {
+      type: NostrEncryptType;
+      pubkey?: string;
+      version?: string;
+    }
+  ) {
+    return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+      plaintext,
+      ...option,
+    });
+  },
+  encryptSync(
     plaintext,
-    ...option,
-  })
-    .then(ciphertext => {
-      callback(null, ciphertext);
+    callback,
+    option: {
+      type: NostrEncryptType;
+      pubkey?: string;
+      version?: string;
+    }
+  ) {
+    return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
+      plaintext,
+      ...option,
     })
-    .catch(error => {
-      callback(error, "");
+      .then(ciphertext => {
+        callback(null, ciphertext);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+
+  decrypt(
+    ciphertext,
+    option: {
+      type: NostrDecryptType;
+      pubkey?: string;
+      version?: string;
+    }
+  ) {
+    return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
+      ciphertext,
+      ...option,
     });
-}
-export function decrypt(
-  ciphertext,
-  option: {
-    type: NostrDecryptType;
-    pubkey?: string;
-    version?: string;
-  }
-) {
-  return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
+  },
+  decryptSync(
     ciphertext,
-    ...option,
-  });
-}
-export function decryptWithCallback(
-  ciphertext,
-  callback,
-  option: {
-    type: NostrDecryptType;
-    pubkey?: string;
-    version?: string;
-  }
-) {
-  return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
-    ciphertext,
-    ...option,
-  })
-    .then(plaintext => {
-      callback(null, plaintext);
+    callback,
+    option: {
+      type: NostrDecryptType;
+      pubkey?: string;
+      version?: string;
+    }
+  ) {
+    return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
+      ciphertext,
+      ...option,
     })
-    .catch(error => {
-      callback(error, "");
-    });
-}
+      .then(plaintext => {
+        callback(null, plaintext);
+      })
+      .catch(error => {
+        callback(error, "");
+      });
+  },
+};
 
 /**
  * Event
@@ -162,6 +222,21 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
   }
   // TODO(ssb): Validate option
   switch (action) {
+    case "bitcoin/generate": {
+      if (option.type == null || typeof option.type !== "string") {
+        throw new window.Error("Missing the type for required");
+      }
+      break;
+    }
+    case "bitcoin/shareWith": {
+      if (option.pubkey == null || typeof option.pubkey !== "string") {
+        throw new window.Error("Missing the pubkey for required");
+      }
+      if (option.type == null || typeof option.type !== "string") {
+        throw new window.Error("Missing the type for required");
+      }
+      break;
+    }
     case "nostr/signEvent": {
       if (option.message == null || typeof option.message !== "string") {
         throw new window.Error("Invalid message");
@@ -173,7 +248,6 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
       if (option.plaintext == null || typeof option.plaintext !== "string") {
         throw new window.Error("Invalid plaintext");
       }
-      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
       if (option.pubkey == null || typeof option.pubkey !== "string") {
         throw new window.Error("Invalid partner's pubkey");
       }
@@ -185,7 +259,6 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
       if (option.ciphertext == null || typeof option.ciphertext !== "string") {
         throw new window.Error("Invalid ciphertext");
       }
-      // TODO(ssb): validate in the terms of cryptography. e.g. `function isProbPub` in toolkit/components/ssi/protocols/noble-curves/abstract/weierstrass.sys.mjs
       if (option.pubkey == null || typeof option.pubkey !== "string") {
         throw new window.Error("Invalid partner's pubkey");
       }

@@ -978,7 +978,7 @@ function Bitcoin$1(props) {
         xpriv,
         displayName: xpub,
         generationMethod: "new",
-        generationFrom: "about",
+        generationFrom: location.href,
         memo: ""
       }
     });
@@ -988,7 +988,6 @@ function Bitcoin$1(props) {
   const handleImportedKeySave = async (e) => {
     e.preventDefault();
     const mnemonic = importedKey;
-    console.log("mnemonic", mnemonic);
     const result = await generateSecretOnToolkit("bitcoin", "bip39", {
       import: true,
       mnemonic,
@@ -1008,8 +1007,8 @@ function Bitcoin$1(props) {
         passphrase,
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
-        generationMethod: "new",
-        generationFrom: "about",
+        generationMethod: "import",
+        generationFrom: location.href,
         memo: ""
       }
     });
@@ -1230,13 +1229,18 @@ function Bitcoin$1(props) {
                       }
                     ) : "none"
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", children: [
                     item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
-                    "at ",
+                    "on ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
-                    new Date(item.timeCreated).toLocaleTimeString()
+                    new Date(
+                      item.timeCreated
+                    ).toLocaleTimeString(),
+                    " at",
+                    " ",
+                    item.properties.generationFrom
                   ] }) })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
@@ -1251,16 +1255,6 @@ function Bitcoin$1(props) {
                     ),
                     item.primary && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "primary now" })
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    IconButton,
-                    {
-                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
-                      variant: "transparent",
-                      fontSize: "20px",
-                      "aria-label": "Edit Key",
-                      onClick: () => updateState("bitcoin", { editingNo: i })
-                    }
-                  ),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     IconButton,
                     {
@@ -2463,7 +2457,7 @@ function Nostr$1(props) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
                     item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
-                    "at ",
+                    "on ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
                     new Date(item.timeCreated).toLocaleTimeString()
