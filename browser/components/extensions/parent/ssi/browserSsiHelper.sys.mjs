@@ -79,7 +79,7 @@ const DIALOG_SYSTEM_MESSAGE = protocolName => ({
 });
 const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 
-// below is from browser/components/selfsovereignindividual/src/components/shared/contants.ts
+// below is from browser/components/selfsovereignindividual/src/components/shared/constants.ts
 const SpecialCards = ["*", "<all_urls>"];
 
 export const browserSsiHelper = {

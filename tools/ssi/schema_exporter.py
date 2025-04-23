@@ -8,7 +8,7 @@
 # typedoc spec: https://typedoc.org/documents/Tags.html
 # xpidl spec: https://firefox-source-docs.mozilla.org/xpcom/xpidl.html
 #
-# The markdown design is based on MDN: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/action
+# The markdown design is based on MDN: https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/action
 
 import json
 import os
@@ -25,6 +25,7 @@ repository_name = 'gecko-dev-for-ssi'
 repository_url = f"https://gitlab.com/studioteatwo/{repository_name}/-/blob/mvp/"
 doc_list = [
     'browser/components/extensions/schemas/ssi/ssi.json',
+    'browser/components/extensions/schemas/ssi/ssi.bitcoin.json',
     'browser/components/extensions/schemas/ssi/ssi.nostr.json',
     'toolkit/components/ssi/nsICredentialInfo.idl',
     'toolkit/components/ssi/nsICredentialMetaInfo.idl',
@@ -156,7 +157,7 @@ def create_member_file(namespace, type, data):
         output_text += f"{data['description']}\n\n"
 
     if 'async' in data:
-        output_text += "This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
+        output_text += "This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
 
     if type in ['functions', 'events'] :
         output_text += '## Syntax\n\n'
@@ -291,9 +292,10 @@ def typedoc(file_path):
 def build_window(file_name, jsondata):
     switch_dict = {
         'WindowSSI': 'ssi',
+        'WindowSSIBitcoin': 'ssi.bitcoin',
         'WindowSSINostr': 'ssi.nostr',
     }
-    window_data = [node for node in jsondata['children'] if node['name'] in ['WindowSSI', 'WindowSSINostr']]
+    window_data = [node for node in jsondata['children'] if node['name'] in ['WindowSSI', 'WindowSSIBitcoin', 'WindowSSINostr']]
     for data in window_data:
         namespace = switch_dict.get(data['name'])
 
@@ -313,7 +315,9 @@ def build_window(file_name, jsondata):
         output_text += "\n\n"
 
         types_data = []
-        if namespace == 'ssi.nostr':
+        if namespace == 'ssi.bitcoin':
+            types_data = [node for node in jsondata['children'] if node['name'].startswith('Bitcoin')]
+        elif namespace == 'ssi.nostr':
             types_data = [node for node in jsondata['children'] if node['name'].startswith('Nostr')]
         if len(types_data) > 0:
             output_text += "## Types\n\n"
@@ -328,7 +332,7 @@ def build_window(file_name, jsondata):
         properties_data = [node for node in data['children'] if node['kind'] == 1024 and node['name'].startswith('_') == False]
         if len(properties_data) > 0:
             for node in properties_data:
-                if 'name' in node and node['name'] not in ['nostr']:
+                if 'name' in node and node['name'] not in ['bitcoin', 'nostr']:
                     create_member_file_window(namespace, node['kind'], node)
 
         functions_data = [node for node in data['children'] if node['kind'] == 2048 and node['name'].startswith('_') == False]
@@ -453,7 +457,7 @@ def create_member_file_window(namespace, kind, data):
                 for node in returns[0]['content']:
                     output_text += node['text']
             else:
-                output_text += 'None ([undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)).'
+                output_text += 'None ([undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined)).'
             output_text += "\n\n"
 
             throws = [node for node in data['comment'].get('blockTags', []) if node['tag'] == '@throws']
@@ -477,14 +481,17 @@ def get_repository_text(namespace):
     if namespace == 'ssi':
         repository += doc_list[0]
         ext = 'json'
-    elif namespace == "ssi.nostr":
+    elif namespace == "ssi.bitcoin":
         repository += doc_list[1]
         ext = 'json'
-    elif namespace == "nsICredentialInfo":
+    elif namespace == "ssi.nostr":
         repository += doc_list[2]
+        ext = 'json'
+    elif namespace == "nsICredentialInfo":
+        repository += doc_list[3]
         ext = 'idl'
     elif namespace == "nsICredentialMetaInfo":
-        repository += doc_list[3]
+        repository += doc_list[4]
         ext = 'idl'
     elif namespace.startswith('window.'):
         namespace = 'window.ssi'
