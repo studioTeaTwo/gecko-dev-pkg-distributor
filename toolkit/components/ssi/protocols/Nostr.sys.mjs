@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { sha256 } from "resource://ssi/protocols/hashes/sha256.sys.mjs";
+import { sha256 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
 import {
   bytesToHex,
   concatBytes,

@@ -16,12 +16,11 @@
  * @module
  **/
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// TODO: import { AffinePoint } from './curve.js';
-import { getMinHashLength, mapHashToField } from './modular.sys.mjs';
-import { ensureBytes, memoized } from './utils.sys.mjs';
-// prettier-ignore
-import { createHasher } from './hash-to-curve.sys.mjs';
-import { weierstrassPoints, } from './weierstrass.sys.mjs';
+// TODO: import { AffinePoint } from './curve.ts';
+import { createHasher, } from "./hash-to-curve.js";
+import { getMinHashLength, mapHashToField } from "./modular.js";
+import { ensureBytes, memoized } from "./utils.js";
+import { weierstrassPoints, } from "./weierstrass.js";
 // prettier-ignore
 const _0n = BigInt(0), _1n = BigInt(1), _2n = BigInt(2), _3n = BigInt(3);
 // Not used with BLS12-381 (no sequential `11` in X). Useful for other curves.
@@ -149,7 +148,7 @@ export function bls(CURVE) {
     // This up to x2 faster than just `map(({g1, g2})=>pairing({g1,g2}))`
     function pairingBatch(pairs, withFinalExponent = true) {
         const res = [];
-        // This cache precomputed toAffine for all points
+        // Cache precomputed toAffine for all points
         G1.ProjectivePoint.normalizeZ(pairs.map(({ g1 }) => g1));
         G2.ProjectivePoint.normalizeZ(pairs.map(({ g2 }) => g2));
         for (const { g1, g2 } of pairs) {

@@ -6,16 +6,18 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha512 } from '@noble/hashes/sha512';
+import { sha512 } from '@noble/hashes/sha2';
 import { concatBytes, randomBytes, utf8ToBytes } from '@noble/hashes/utils';
-import { twistedEdwards } from './abstract/edwards.js';
-import { createHasher, expand_message_xmd, } from './abstract/hash-to-curve.js';
-import { Field, FpSqrtEven, isNegativeLE, mod, pow2 } from './abstract/modular.js';
-import { montgomery } from './abstract/montgomery.js';
-import { pippenger } from './abstract/curve.js';
-import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from './abstract/utils.js';
+import { pippenger } from "./abstract/curve.js";
+import { twistedEdwards } from "./abstract/edwards.js";
+import { createHasher, expand_message_xmd, } from "./abstract/hash-to-curve.js";
+import { Field, FpInvertBatch, FpSqrtEven, isNegativeLE, mod, pow2 } from "./abstract/modular.js";
+import { montgomery } from "./abstract/montgomery.js";
+import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from "./abstract/utils.js";
+// 2n**255n - 19n
 const ED25519_P = BigInt('57896044618658097711785492504343953926634992332820282019728792003956564819949');
 // √(-1) aka √(a) aka 2^((p-1)/4)
+// Fp.sqrt(Fp.neg(1))
 const ED25519_SQRT_M1 = /* @__PURE__ */ BigInt('19681161376707505956807079304988542015446066515923890162744021073123829784752');
 // prettier-ignore
 const _0n = BigInt(0), _1n = BigInt(1), _2n = BigInt(2), _3n = BigInt(3);
@@ -72,7 +74,7 @@ function uvRatio(u, v) {
         x = mod(-x, P);
     return { isValid: useRoot1 || useRoot2, value: x };
 }
-// Just in case
+/** Weird / bogus points, useful for debugging. */
 export const ED25519_TORSION_SUBGROUP = [
     '0100000000000000000000000000000000000000000000000000000000000000',
     'c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a',
@@ -85,19 +87,15 @@ export const ED25519_TORSION_SUBGROUP = [
 ];
 const Fp = /* @__PURE__ */ (() => Field(ED25519_P, undefined, true))();
 const ed25519Defaults = /* @__PURE__ */ (() => ({
-    // Param: a
-    a: BigInt(-1), // Fp.create(-1) is proper; our way still works and is faster
-    // d is equal to -121665/121666 over finite field.
-    // Negative number is P - number, and division is invert(number, P)
+    // Removing Fp.create() will still work, and is 10% faster on sign
+    a: Fp.create(BigInt(-1)),
+    // d is -121665/121666 a.k.a. Fp.neg(121665 * Fp.inv(121666))
     d: BigInt('37095705934669439343138083508754565189542113879843219016388785533085940283555'),
-    // Finite field 𝔽p over which we'll do calculations; 2n**255n - 19n
+    // Finite field 2n**255n - 19n
     Fp,
-    // Subgroup order: how many points curve has
-    // 2n**252n + 27742317777372353535851937790883648493n;
+    // Subgroup order 2n**252n + 27742317777372353535851937790883648493n;
     n: BigInt('7237005577332262213973186563042994240857116359379907606001950938285454250989'),
-    // Cofactor
     h: _8n,
-    // Base point (x, y) aka generator point
     Gx: BigInt('15112221349535400772501151409588531511454012693041857206046113283949847762202'),
     Gy: BigInt('46316835694926478169428394003475163141307993866256225615783033603165251855960'),
     hash: sha512,
@@ -249,10 +247,10 @@ function map_to_curve_elligator2_edwards25519(u) {
     xd = Fp.cmov(xd, Fp.ONE, e); //  10. xd = CMOV(xd, 1, e)
     yn = Fp.cmov(yn, Fp.ONE, e); //  11. yn = CMOV(yn, 1, e)
     yd = Fp.cmov(yd, Fp.ONE, e); //  12. yd = CMOV(yd, 1, e)
-    const inv = Fp.invertBatch([xd, yd]); // batch division
-    return { x: Fp.mul(xn, inv[0]), y: Fp.mul(yn, inv[1]) }; //  13. return (xn, xd, yn, yd)
+    const [xd_inv, yd_inv] = FpInvertBatch(Fp, [xd, yd], true); // batch division
+    return { x: Fp.mul(xn, xd_inv), y: Fp.mul(yn, yd_inv) }; //  13. return (xn, xd, yn, yd)
 }
-const htf = /* @__PURE__ */ (() => createHasher(ed25519.ExtendedPoint, (scalars) => map_to_curve_elligator2_edwards25519(scalars[0]), {
+export const ed25519_hasher = /* @__PURE__ */ (() => createHasher(ed25519.ExtendedPoint, (scalars) => map_to_curve_elligator2_edwards25519(scalars[0]), {
     DST: 'edwards25519_XMD:SHA-512_ELL2_RO_',
     encodeDST: 'edwards25519_XMD:SHA-512_ELL2_NU_',
     p: Fp.ORDER,
@@ -261,9 +259,9 @@ const htf = /* @__PURE__ */ (() => createHasher(ed25519.ExtendedPoint, (scalars)
     expand: 'xmd',
     hash: sha512,
 }))();
-export const hashToCurve = /* @__PURE__ */ (() => htf.hashToCurve)();
-export const encodeToCurve = /* @__PURE__ */ (() => htf.encodeToCurve)();
-function assertRstPoint(other) {
+export const hashToCurve = /* @__PURE__ */ (() => ed25519_hasher.hashToCurve)();
+export const encodeToCurve = /* @__PURE__ */ (() => ed25519_hasher.encodeToCurve)();
+function aristp(other) {
     if (!(other instanceof RistPoint))
         throw new Error('RistrettoPoint expected');
 }
@@ -418,7 +416,7 @@ class RistPoint {
     }
     // Compare one point to another.
     equals(other) {
-        assertRstPoint(other);
+        aristp(other);
         const { ex: X1, ey: Y1 } = this.ep;
         const { ex: X2, ey: Y2 } = other.ep;
         const mod = ed25519.CURVE.Fp.create;
@@ -428,11 +426,11 @@ class RistPoint {
         return one || two;
     }
     add(other) {
-        assertRstPoint(other);
+        aristp(other);
         return new RistPoint(this.ep.add(other.ep));
     }
     subtract(other) {
-        assertRstPoint(other);
+        aristp(other);
         return new RistPoint(this.ep.subtract(other.ep));
     }
     multiply(scalar) {
@@ -463,5 +461,6 @@ export const hashToRistretto255 = (msg, options) => {
     const P = RistPoint.hashToCurve(uniform_bytes);
     return P;
 };
+/** @deprecated */
 export const hash_to_ristretto255 = hashToRistretto255; // legacy
 //# sourceMappingURL=ed25519.js.map

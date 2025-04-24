@@ -4,16 +4,13 @@
 
 import { schnorr } from "resource://ssi/protocols/curves/secp256k1.sys.mjs";
 import {
+  abytes,
+  anumber,
   bytesToHex,
   randomBytes,
 } from "resource://ssi/protocols/hashes/utils.sys.mjs";
-import { sha256 } from "resource://ssi/protocols/hashes/sha256.sys.mjs";
-import { sha512 } from "resource://ssi/protocols/hashes/sha512.sys.mjs";
+import { sha256, sha512 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
 import { pbkdf2 } from "resource://ssi/protocols/hashes/pbkdf2.sys.mjs";
-import {
-  abytes,
-  anumber,
-} from "resource://ssi/protocols/hashes/_assert.sys.mjs";
 import { utils as baseUtils } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { wordlists } from "resource://ssi/protocols/utils/wordlists.mjs";
 import { HDKey } from "resource://ssi/protocols/utils/hdkey.sys.mjs";

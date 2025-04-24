@@ -11,12 +11,12 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha256 } from 'resource://ssi/protocols/hashes/sha256.sys.mjs';
+import { sha256 } from 'resource://ssi/protocols/hashes/sha2.sys.mjs';
 import { randomBytes } from 'resource://ssi/protocols/hashes/utils.sys.mjs';
 import { createCurve } from 'resource://ssi/protocols/curves/_shortw_utils.sys.mjs';
 import { createHasher, isogenyMap } from 'resource://ssi/protocols/curves/hash-to-curve.sys.mjs';
 import { Field, mod, pow2 } from 'resource://ssi/protocols/curves/modular.sys.mjs';
-import { inRange, aInRange, bytesToNumberBE, concatBytes, ensureBytes, numberToBytesBE, } from 'resource://ssi/protocols/curves/utils.sys.mjs';
+import { aInRange, bytesToNumberBE, concatBytes, ensureBytes, inRange, numberToBytesBE, } from 'resource://ssi/protocols/curves/utils.sys.mjs';
 import { mapToCurveSimpleSWU } from 'resource://ssi/protocols/curves/weierstrass.sys.mjs';
 const secp256k1P = BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f');
 const secp256k1N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
@@ -53,26 +53,28 @@ function sqrtMod(y) {
 }
 const Fpk1 = Field(secp256k1P, undefined, undefined, { sqrt: sqrtMod });
 /**
- * secp256k1 short weierstrass curve and ECDSA signatures over it.
+ * secp256k1 curve, ECDSA and ECDH methods.
+ *
+ * Field: `2n**256n - 2n**32n - 2n**9n - 2n**8n - 2n**7n - 2n**6n - 2n**4n - 1n`
  *
  * @example
+ * ```js
  * import { secp256k1 } from '@noble/curves/secp256k1';
- *
  * const priv = secp256k1.utils.randomPrivateKey();
  * const pub = secp256k1.getPublicKey(priv);
  * const msg = new Uint8Array(32).fill(1); // message hash (not message) in ecdsa
  * const sig = secp256k1.sign(msg, priv); // `{prehash: true}` option is available
  * const isValid = secp256k1.verify(sig, msg, pub) === true;
+ * ```
  */
 export const secp256k1 = createCurve({
-    a: BigInt(0), // equation params: a, b
+    a: BigInt(0),
     b: BigInt(7),
-    Fp: Fpk1, // Field's prime: 2n**256n - 2n**32n - 2n**9n - 2n**8n - 2n**7n - 2n**6n - 2n**4n - 1n
-    n: secp256k1N, // Curve order, total count of valid points in the field
-    // Base point (x, y) aka generator point
+    Fp: Fpk1,
+    n: secp256k1N,
     Gx: BigInt('55066263022277343669578718895168534326250603453777594175500187360389116729240'),
     Gy: BigInt('32670510020758816978083085130507043184471273380659243275938904335757337482424'),
-    h: BigInt(1), // Cofactor
+    h: BigInt(1),
     lowS: true, // Allow only low-S signatures by default in sign() and verify()
     endo: {
         // Endomorphism, see above
@@ -210,12 +212,14 @@ function schnorrVerify(signature, message, publicKey) {
  * Schnorr signatures over secp256k1.
  * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
  * @example
+ * ```js
  * import { schnorr } from '@noble/curves/secp256k1';
  * const priv = schnorr.utils.randomPrivateKey();
  * const pub = schnorr.getPublicKey(priv);
  * const msg = new TextEncoder().encode('hello');
  * const sig = schnorr.sign(msg, priv);
  * const isValid = schnorr.verify(sig, msg, pub);
+ * ```
  */
 export const schnorr = /* @__PURE__ */ (() => ({
     getPublicKey: schnorrGetPublicKey,
@@ -265,7 +269,8 @@ const mapSWU = /* @__PURE__ */ (() => mapToCurveSimpleSWU(Fpk1, {
     B: BigInt('1771'),
     Z: Fpk1.create(BigInt('-11')),
 }))();
-const htf = /* @__PURE__ */ (() => createHasher(secp256k1.ProjectivePoint, (scalars) => {
+/** Hashing / encoding to secp256k1 points / field. RFC 9380 methods. */
+export const secp256k1_hasher = /* @__PURE__ */ (() => createHasher(secp256k1.ProjectivePoint, (scalars) => {
     const { x, y } = mapSWU(Fpk1.create(scalars[0]));
     return isoMap(x, y);
 }, {
@@ -277,8 +282,6 @@ const htf = /* @__PURE__ */ (() => createHasher(secp256k1.ProjectivePoint, (scal
     expand: 'xmd',
     hash: sha256,
 }))();
-/** secp256k1 hash-to-curve from [RFC 9380](https://www.rfc-editor.org/rfc/rfc9380). */
-export const hashToCurve = /* @__PURE__ */ (() => htf.hashToCurve)();
-/** secp256k1 encode-to-curve from [RFC 9380](https://www.rfc-editor.org/rfc/rfc9380). */
-export const encodeToCurve = /* @__PURE__ */ (() => htf.encodeToCurve)();
+export const hashToCurve = /* @__PURE__ */ (() => secp256k1_hasher.hashToCurve)();
+export const encodeToCurve = /* @__PURE__ */ (() => secp256k1_hasher.encodeToCurve)();
 //# sourceMappingURL=secp256k1.js.map

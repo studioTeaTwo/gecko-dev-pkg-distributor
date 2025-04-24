@@ -10,8 +10,8 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import * as mod from './modular.js';
-import { bitLen, bitMask, concatBytes, notImplemented } from './utils.js';
+import * as mod from "./modular.js";
+import { bitLen, bitMask, concatBytes, notImplemented } from "./utils.js";
 // Be friendly to bad ECMAScript parsers by not using bigint literals
 // prettier-ignore
 const _0n = BigInt(0), _1n = BigInt(1), _2n = BigInt(2), _3n = BigInt(3);
@@ -67,7 +67,6 @@ export function tower12(opts) {
     // Fp
     const Fp = mod.Field(ORDER);
     const FpNONRESIDUE = Fp.create(opts.NONRESIDUE || BigInt(-1));
-    const FpLegendre = mod.FpLegendre(ORDER);
     const Fpdiv2 = Fp.div(Fp.ONE, _2n); // 1/2
     // Fp2
     const FP2_FROBENIUS_COEFFICIENTS = calcFrobeniusCoefficients(Fp, FpNONRESIDUE, Fp.ORDER, 2)[0];
@@ -157,16 +156,16 @@ export function tower12(opts) {
             const { c0, c1 } = num;
             if (Fp.is0(c1)) {
                 // if c0 is quadratic residue
-                if (Fp.eql(FpLegendre(Fp, c0), Fp.ONE))
+                if (mod.FpLegendre(Fp, c0) === 1)
                     return Fp2.create({ c0: Fp.sqrt(c0), c1: Fp.ZERO });
                 else
                     return Fp2.create({ c0: Fp.ZERO, c1: Fp.sqrt(Fp.div(c0, FpNONRESIDUE)) });
             }
             const a = Fp.sqrt(Fp.sub(Fp.sqr(c0), Fp.mul(Fp.sqr(c1), FpNONRESIDUE)));
             let d = Fp.mul(Fp.add(a, c0), Fpdiv2);
-            const legendre = FpLegendre(Fp, d);
+            const legendre = mod.FpLegendre(Fp, d);
             // -1, Quadratic non residue
-            if (!Fp.is0(legendre) && !Fp.eql(legendre, Fp.ONE))
+            if (legendre === -1)
                 d = Fp.sub(d, a);
             const a0 = Fp.sqrt(d);
             const candidateSqrt = Fp2.create({ c0: a0, c1: Fp.div(Fp.mul(c1, Fpdiv2), a0) });
@@ -388,9 +387,9 @@ export function tower12(opts) {
     const Fp12 = {
         ORDER: Fp2.ORDER, // TODO: unused, but need to verify
         isLE: Fp6.isLE,
-        BITS: 2 * Fp2.BITS,
-        BYTES: 2 * Fp2.BYTES,
-        MASK: bitMask(2 * Fp2.BITS),
+        BITS: 2 * Fp6.BITS,
+        BYTES: 2 * Fp6.BYTES,
+        MASK: bitMask(2 * Fp6.BITS),
         ZERO: { c0: Fp6.ZERO, c1: Fp6.ZERO },
         ONE: { c0: Fp6.ONE, c1: Fp6.ZERO },
         create: (num) => num,

@@ -5,11 +5,10 @@
  */
 
 import { hmac } from "resource://ssi/protocols/hashes/hmac.sys.mjs";
-import { ripemd160 } from "resource://ssi/protocols/hashes/ripemd160.sys.mjs";
-import { sha256 } from "resource://ssi/protocols/hashes/sha256.sys.mjs";
-import { sha512 } from "resource://ssi/protocols/hashes/sha512.sys.mjs";
-import { abytes } from "resource://ssi/protocols/hashes/_assert.sys.mjs";
+import { ripemd160 } from "resource://ssi/protocols/hashes/legacy.sys.mjs";
+import { sha256, sha512 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
 import {
+  abytes,
   bytesToHex,
   concatBytes,
   createView,
