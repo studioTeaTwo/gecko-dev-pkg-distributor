@@ -135,7 +135,7 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
 
             // the return is `{ mnemonic, xpub, xpriv }`
             return Bitcoin.BIP39.generateMnemonic(
-              "about",
+              option.origin,
               option && option.strength ? option.strength : 256,
               option && option.passphrase ? option.passphrase : ""
             );

@@ -96,6 +96,8 @@ export interface BaseCredential
   properties: {
     displayName: string;
     memo?: string;
+    generationFrom: string; // generated `location.href.origin`
+    sharing: object[];
   };
   guid?: string;
   timeCreated?: number;
@@ -106,7 +108,6 @@ export interface BitcoinCredential extends BaseCredential {
     passphrase: string;
     xpriv: string;
     generationMethod: "new" | "import";
-    generationFrom: string; // generated `location.href.origin`
   } & BaseCredential["properties"];
 }
 

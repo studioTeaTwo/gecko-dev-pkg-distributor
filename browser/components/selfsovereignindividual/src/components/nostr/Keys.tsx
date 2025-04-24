@@ -107,6 +107,8 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       properties: {
         displayName: npubkey,
         generationMethod: "bip340",
+        generationFrom: location.href,
+        sharing: [],
       },
     });
 
@@ -158,6 +160,8 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       properties: {
         displayName: npubkey,
         generationMethod: "import",
+        generationFrom: location.href,
+        sharing: [],
       },
     });
 

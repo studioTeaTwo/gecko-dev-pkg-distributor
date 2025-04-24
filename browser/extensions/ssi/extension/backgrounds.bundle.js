@@ -877,7 +877,7 @@ const MapBetweenPrefAndState = {
 };
 const DialogMessage = {
     "bitcoin/generate": "App is requesting you.",
-    "bitcoin/shareWith": "App is requesting you to share your \"SECRET\".",
+    "bitcoin/shareWith": 'App is requesting you to share your "SECRET".',
 };
 // Proceed calls from contents
 const doBitcoinAction = async (tabId, origin, action, args) => {
@@ -915,7 +915,7 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
             delete args.pubkey; // Delete to pass schema check of built-in API
             const encryptedSecret = await browser.ssi.bitcoin.shareWith(tabId, pubkey, args, {
                 caption: DialogMessage[action],
-                submission: "Once you share, you can't take it back. Please check carefully!"
+                submission: "Once you share, you can't take it back. Please check carefully!",
             });
             if (!encryptedSecret) {
                 throw new Error("Failed to shareWith");

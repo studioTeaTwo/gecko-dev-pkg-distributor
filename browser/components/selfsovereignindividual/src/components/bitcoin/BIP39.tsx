@@ -88,10 +88,11 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
   ) => {
     e.preventDefault();
 
+    const origin = location.href;
     const { mnemonic, xpub, xpriv } = await generateSecretOnToolkit(
       "bitcoin",
       "bip39",
-      { passphrase: passphrase }
+      { origin, passphrase: passphrase }
     );
     console.log("seed", mnemonic, xpub, xpriv);
 
@@ -106,7 +107,8 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
         xpriv,
         displayName: xpub,
         generationMethod: "new",
-        generationFrom: location.href,
+        generationFrom: origin,
+        sharing: [],
         memo: "",
       },
     });
@@ -124,7 +126,9 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     e.preventDefault();
 
     const mnemonic = importedKey;
+    const origin = location.href;
     const result = await generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
       import: true,
       mnemonic,
       passphrase: passphrase,
@@ -145,7 +149,8 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
         generationMethod: "import",
-        generationFrom: location.href,
+        generationFrom: origin,
+        sharing: [],
         memo: "",
       },
     });
@@ -328,6 +333,9 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                       <HStack>
                         {item.trustedSites.some(site => site.url === "*") && (
                           <Tooltip label="All URL trusted">🚨</Tooltip>
+                        )}
+                        {item.properties.sharing.length > 0 && (
+                          <Tooltip label="Sharing">🛜</Tooltip>
                         )}
                       </HStack>
                     </CardHeader>

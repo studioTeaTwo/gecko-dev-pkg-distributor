@@ -203,13 +203,14 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               } else if (type === "derivation") {
                 // Not implemented
               }
-              const credentials = await Services.ssi.searchCredentialsAsync(
+              let credentials = await Services.ssi.searchCredentialsAsync(
                 pointing
               );
               if (credentials.length === 0) {
                 return errorValue;
               }
 
+              // Authorize
               let npub = "";
               if (pubkey.startsWith("npub")) {
                 npub = pubkey;
@@ -217,7 +218,6 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               } else {
                 npub = lazy.Nostr.convertPublicKey(pubkey);
               }
-              const plaintext = credentials[0].secret;
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,
                 tabId,
@@ -246,14 +246,37 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
 
               // Encrypt
               const ciphertext = await lazy.Nostr.encrypt(
-                plaintext,
+                credentials[0].secret,
                 nostrKeys[0].guid,
                 { type: "nip44", pubkey }
               );
+
+              // Record the share
+              const { site } = lazy.browserSsiHelper.getOrigin(context, tabId);
+              const sender = nostrKeys[0].identifier;
+              const receiver = npub;
+              // It has been updated due to authorization, so get it again.
+              credentials = await Services.ssi.searchCredentialsAsync(pointing);
+              const properties = JSON.parse(credentials[0].properties);
+              properties.sharing.push({
+                url: site.origin,
+                guid: credentials[0].guid,
+                identifier: credentials[0].identifier,
+                sender,
+                receiver,
+                date: Date.now(),
+              });
+              const newCredential = credentials[0].clone();
+              newCredential.properties = JSON.stringify(properties);
+              await Services.ssi.modifyCredential(
+                credentials[0],
+                newCredential
+              );
+
               return {
                 secret: ciphertext,
-                sender: nostrKeys[0].identifier, // Unnecessary?
-                receiver: npub,
+                sender, // Unnecessary?
+                receiver,
               };
             } catch (e) {
               console.error(e);

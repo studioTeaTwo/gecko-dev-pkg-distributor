@@ -60,7 +60,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SsiHelper: "resource://gre/modules/SsiHelper.sys.mjs",
 });
 
-export const CREDENTIAL_MAP = {
+const CREDENTIAL_MAP = {
   bitcoin: ["bip39"],
   nostr: ["nsec"],
 };
@@ -83,6 +83,7 @@ const MESSAGE_ID = "builtinapi-ssi-access-authlocked-os-auth-dialog-message";
 const SpecialCards = ["*", "<all_urls>"];
 
 export const browserSsiHelper = {
+  CREDENTIAL_MAP,
   // ref: https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   onPrimaryChangedRegister: protocolName => fire => {
     // Validate params

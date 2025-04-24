@@ -961,10 +961,11 @@ function Bitcoin$1(props) {
   const handlePassphraseChange = (e) => setPassphrase(e.target.value);
   const handleGenNewSeed = async (e) => {
     e.preventDefault();
+    const origin = location.href;
     const { mnemonic, xpub, xpriv } = await generateSecretOnToolkit(
       "bitcoin",
       "bip39",
-      { passphrase }
+      { origin, passphrase }
     );
     console.log("seed", mnemonic, xpub, xpriv);
     addCredentialToStore2({
@@ -978,7 +979,8 @@ function Bitcoin$1(props) {
         xpriv,
         displayName: xpub,
         generationMethod: "new",
-        generationFrom: location.href,
+        generationFrom: origin,
+        sharing: [],
         memo: ""
       }
     });
@@ -988,7 +990,9 @@ function Bitcoin$1(props) {
   const handleImportedKeySave = async (e) => {
     e.preventDefault();
     const mnemonic = importedKey;
+    const origin = location.href;
     const result = await generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
       import: true,
       mnemonic,
       passphrase
@@ -1008,7 +1012,8 @@ function Bitcoin$1(props) {
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
         generationMethod: "import",
-        generationFrom: location.href,
+        generationFrom: origin,
+        sharing: [],
         memo: ""
       }
     });
@@ -1163,7 +1168,10 @@ function Bitcoin$1(props) {
                       children: item.properties.displayName
                     }
                   ) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }) })
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                    item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }),
+                    item.properties.sharing.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Sharing", children: "🛜" })
+                  ] })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -2227,7 +2235,9 @@ function Nostr$1(props) {
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
-        generationMethod: "bip340"
+        generationMethod: "bip340",
+        generationFrom: location.href,
+        sharing: []
       }
     });
     setNewKey(npubkey);
@@ -2267,7 +2277,9 @@ function Nostr$1(props) {
       trustedSites: defaultTrustedSites,
       properties: {
         displayName: npubkey,
-        generationMethod: "import"
+        generationMethod: "import",
+        generationFrom: location.href,
+        sharing: []
       }
     });
     setImportedKey("");
