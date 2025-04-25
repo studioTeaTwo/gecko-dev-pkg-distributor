@@ -1,7 +1,4 @@
-"use strict";
 /*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.bytes = exports.stringToBytes = exports.str = exports.bytesToString = exports.hex = exports.utf8 = exports.bech32m = exports.bech32 = exports.base58check = exports.createBase58check = exports.base58xmr = exports.base58xrp = exports.base58flickr = exports.base58 = exports.base64urlnopad = exports.base64url = exports.base64nopad = exports.base64 = exports.base32crockford = exports.base32hexnopad = exports.base32hex = exports.base32nopad = exports.base32 = exports.base16 = exports.utils = exports.assertNumber = void 0;
 function isBytes(a) {
     return a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === 'Uint8Array');
 }
@@ -32,7 +29,7 @@ function anumber(n) {
     if (!Number.isSafeInteger(n))
         throw new Error(`invalid integer: ${n}`);
 }
-exports.assertNumber = anumber;
+export const assertNumber = anumber;
 function aArr(input) {
     if (!Array.isArray(input))
         throw new Error('array expected');
@@ -323,7 +320,7 @@ function checksum(len, fn) {
     };
 }
 // prettier-ignore
-exports.utils = {
+export const utils = {
     alphabet, chain, checksum, convertRadix, convertRadix2, radix, radix2, join, padding,
 };
 // RFC 4648 aka RFC 3548
@@ -331,25 +328,25 @@ exports.utils = {
 /**
  * base16 encoding.
  */
-exports.base16 = chain(radix2(4), alphabet('0123456789ABCDEF'), join(''));
-exports.base32 = chain(radix2(5), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), padding(5), join(''));
-exports.base32nopad = chain(radix2(5), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), join(''));
-exports.base32hex = chain(radix2(5), alphabet('0123456789ABCDEFGHIJKLMNOPQRSTUV'), padding(5), join(''));
-exports.base32hexnopad = chain(radix2(5), alphabet('0123456789ABCDEFGHIJKLMNOPQRSTUV'), join(''));
-exports.base32crockford = chain(radix2(5), alphabet('0123456789ABCDEFGHJKMNPQRSTVWXYZ'), join(''), normalize((s) => s.toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1')));
+export const base16 = chain(radix2(4), alphabet('0123456789ABCDEF'), join(''));
+export const base32 = chain(radix2(5), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), padding(5), join(''));
+export const base32nopad = chain(radix2(5), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), join(''));
+export const base32hex = chain(radix2(5), alphabet('0123456789ABCDEFGHIJKLMNOPQRSTUV'), padding(5), join(''));
+export const base32hexnopad = chain(radix2(5), alphabet('0123456789ABCDEFGHIJKLMNOPQRSTUV'), join(''));
+export const base32crockford = chain(radix2(5), alphabet('0123456789ABCDEFGHJKMNPQRSTVWXYZ'), join(''), normalize((s) => s.toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1')));
 /**
  * base64 with padding. For no padding, use `base64nopad`.
  * @example
  * const b = base64.decode('A951'); // Uint8Array.from([ 3, 222, 117 ])
  * base64.encode(b); // 'A951'
  */
-exports.base64 = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'), padding(6), join(''));
+export const base64 = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'), padding(6), join(''));
 /**
  * base64 without padding.
  */
-exports.base64nopad = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'), join(''));
-exports.base64url = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'), padding(6), join(''));
-exports.base64urlnopad = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'), join(''));
+export const base64nopad = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'), join(''));
+export const base64url = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'), padding(6), join(''));
+export const base64urlnopad = chain(radix2(6), alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'), join(''));
 // base58 code
 // -----------
 const genBase58 = /* @__NO_SIDE_EFFECTS__ */ (abc) => chain(radix(58), alphabet(abc), join(''));
@@ -357,9 +354,9 @@ const genBase58 = /* @__NO_SIDE_EFFECTS__ */ (abc) => chain(radix(58), alphabet(
  * Base58: base64 without characters +, /, 0, O, I, l.
  * Quadratic (O(n^2)) - so, can't be used on large inputs.
  */
-exports.base58 = genBase58('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
-exports.base58flickr = genBase58('123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ');
-exports.base58xrp = genBase58('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');
+export const base58 = genBase58('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
+export const base58flickr = genBase58('123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ');
+export const base58xrp = genBase58('rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz');
 // Data len (index) -> encoded block len
 const XMR_BLOCK_LEN = [0, 2, 3, 5, 6, 7, 9, 10, 11];
 /**
@@ -367,12 +364,12 @@ const XMR_BLOCK_LEN = [0, 2, 3, 5, 6, 7, 9, 10, 11];
  * Done in 8-byte blocks (which equals 11 chars in decoding). Last (non-full) block padded with '1' to size in XMR_BLOCK_LEN.
  * Block encoding significantly reduces quadratic complexity of base58.
  */
-exports.base58xmr = {
+export const base58xmr = {
     encode(data) {
         let res = '';
         for (let i = 0; i < data.length; i += 8) {
             const block = data.subarray(i, i + 8);
-            res += exports.base58.encode(block).padStart(XMR_BLOCK_LEN[block.length], '1');
+            res += base58.encode(block).padStart(XMR_BLOCK_LEN[block.length], '1');
         }
         return res;
     },
@@ -381,7 +378,7 @@ exports.base58xmr = {
         for (let i = 0; i < str.length; i += 11) {
             const slice = str.slice(i, i + 11);
             const blockLen = XMR_BLOCK_LEN.indexOf(slice.length);
-            const block = exports.base58.decode(slice);
+            const block = base58.decode(slice);
             for (let j = 0; j < block.length - blockLen; j++) {
                 if (block[j] !== 0)
                     throw new Error('base58xmr: wrong padding');
@@ -391,13 +388,12 @@ exports.base58xmr = {
         return Uint8Array.from(res);
     },
 };
-const createBase58check = (sha256) => chain(checksum(4, (data) => sha256(sha256(data))), exports.base58);
-exports.createBase58check = createBase58check;
+export const createBase58check = (sha256) => chain(checksum(4, (data) => sha256(sha256(data))), base58);
 /**
  * Use `createBase58check` instead.
  * @deprecated
  */
-exports.base58check = exports.createBase58check;
+export const base58check = createBase58check;
 const BECH_ALPHABET = chain(alphabet('qpzry9x8gf2tvdw0s3jn54khce6mua7l'), join(''));
 const POLYMOD_GENERATORS = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
 function bech32Polymod(pre) {
@@ -496,15 +492,15 @@ function genBech32(encoding) {
 /**
  * Low-level bech32 operations. Operates on words.
  */
-exports.bech32 = genBech32('bech32');
-exports.bech32m = genBech32('bech32m');
+export const bech32 = genBech32('bech32');
+export const bech32m = genBech32('bech32m');
 /**
  * UTF-8-to-byte decoder. Uses built-in TextDecoder / TextEncoder.
  * @example
  * const b = utf8.decode("hey"); // => new Uint8Array([ 104, 101, 121 ])
  * const str = utf8.encode(b); // "hey"
  */
-exports.utf8 = {
+export const utf8 = {
     encode: (data) => new TextDecoder().decode(data),
     decode: (str) => new TextEncoder().encode(str),
 };
@@ -514,32 +510,30 @@ exports.utf8 = {
  * const b = hex.decode("0102ff"); // => new Uint8Array([ 1, 2, 255 ])
  * const str = hex.encode(b); // "0102ff"
  */
-exports.hex = chain(radix2(4), alphabet('0123456789abcdef'), join(''), normalize((s) => {
+export const hex = chain(radix2(4), alphabet('0123456789abcdef'), join(''), normalize((s) => {
     if (typeof s !== 'string' || s.length % 2 !== 0)
         throw new TypeError(`hex.decode: expected string, got ${typeof s} with length ${s.length}`);
     return s.toLowerCase();
 }));
 // prettier-ignore
 const CODERS = {
-    utf8: exports.utf8, hex: exports.hex, base16: exports.base16, base32: exports.base32, base64: exports.base64, base64url: exports.base64url, base58: exports.base58, base58xmr: exports.base58xmr
+    utf8, hex, base16, base32, base64, base64url, base58, base58xmr
 };
 const coderTypeError = 'Invalid encoding type. Available types: utf8, hex, base16, base32, base64, base64url, base58, base58xmr';
-const bytesToString = (type, bytes) => {
+export const bytesToString = (type, bytes) => {
     if (typeof type !== 'string' || !CODERS.hasOwnProperty(type))
         throw new TypeError(coderTypeError);
     if (!isBytes(bytes))
         throw new TypeError('bytesToString() expects Uint8Array');
     return CODERS[type].encode(bytes);
 };
-exports.bytesToString = bytesToString;
-exports.str = exports.bytesToString; // as in python, but for bytes only
-const stringToBytes = (type, str) => {
+export const str = bytesToString; // as in python, but for bytes only
+export const stringToBytes = (type, str) => {
     if (!CODERS.hasOwnProperty(type))
         throw new TypeError(coderTypeError);
     if (typeof str !== 'string')
         throw new TypeError('stringToBytes() expects string');
     return CODERS[type].decode(str);
 };
-exports.stringToBytes = stringToBytes;
-exports.bytes = exports.stringToBytes;
+export const bytes = stringToBytes;
 //# sourceMappingURL=index.js.map

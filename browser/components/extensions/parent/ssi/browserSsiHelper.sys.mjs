@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {Object} Target
+ * @typedef {object} Target
  * @property {string} origin contentPrincipal.originNoSuffix
  * @property {string} url contentPrincipal.spec
  */
@@ -18,7 +18,7 @@
  */
 
 /**
- * @typedef {Object} Prefs
+ * @typedef {object} Prefs
  * @property {boolean} enabledTrustedSites
  * @property {boolean} enabledDialogicAuthorization
  * @property {string[]} nallowedMethodPreset
@@ -28,20 +28,20 @@
  */
 
 /**
- * @typedef {Object} Credential
+ * @typedef {object} Credential
  * @property {string} protocolName
  * @property {string} credentialName
  */
 
 /**
- * @typedef {Object} AuthCache
+ * @typedef {object} AuthCache
  * @property {string} cacheKey
  * @property {object[]} trustedSites credential.trustedSites
  * @property {object[]} dialogicAuthorizedSites credential.dialogicAuthorizedSites
  */
 
 /**
- * @typedef {Object} DialogInfo
+ * @typedef {object} DialogInfo
  * @property {MethodType} type
  * @property {object} evidence NostrEvent etc.
  * @property {string} caption
@@ -223,7 +223,7 @@ export const browserSsiHelper = {
    *
    * @param {object} context
    * @param {number} tabId
-   * @returns
+   * @returns {object}
    */
   getOrigin(context, tabId) {
     const { browser, window } = context.extension.tabManager.get(tabId);
@@ -249,7 +249,7 @@ export const browserSsiHelper = {
    * @param {Credential} credential
    * @param {DialogInfo} dialogInfo
    * @param {boolean} onlyExtension
-   * @returns {Promise<bool>}
+   * @returns {Promise<boolean>}
    */
   async authorize(context, tabId, credential, dialogInfo, onlyExtension) {
     // Prepare stuff

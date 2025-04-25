@@ -125,9 +125,8 @@ export class HDKey {
     }
     if (isPriv) {
       return new HDKey({ ...opt, privateKey: key.slice(1) });
-    } else {
-      return new HDKey({ ...opt, publicKey: key });
     }
+    return new HDKey({ ...opt, publicKey: key });
   }
 
   static fromJSON(json) {

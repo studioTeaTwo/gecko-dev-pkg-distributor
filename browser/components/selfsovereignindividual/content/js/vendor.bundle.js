@@ -33367,6 +33367,7 @@ const Text = forwardRef(function Text2(props, ref) {
   );
 });
 Text.displayName = "Text";
+/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 function isBytes$1(a) {
   return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
 }
@@ -33376,11 +33377,10 @@ function abytes(b, ...lengths) {
   if (lengths.length > 0 && !lengths.includes(b.length))
     throw new Error("Uint8Array expected of length " + lengths + ", got length=" + b.length);
 }
-/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-const hasHexBuiltin = (
+const hasHexBuiltin = /* @__PURE__ */ (() => (
   // @ts-ignore
   typeof Uint8Array.from([]).toHex === "function" && typeof Uint8Array.fromHex === "function"
-);
+))();
 const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 function bytesToHex(bytes) {
   abytes(bytes);

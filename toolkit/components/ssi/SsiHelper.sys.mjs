@@ -771,7 +771,7 @@ export const SsiHelper = {
     let returnVals = {
       confirmed: false,
     };
-    const win = window.openDialog(
+    window.openDialog(
       "chrome://ssi/content/dialogs/confirmAuthorization.xhtml",
       "",
       features,
@@ -786,7 +786,7 @@ export const SsiHelper = {
     const screenX = window.screen.width / 2 - 300;
     const screenY = window.screen.height / 2 - 300;
     let features = `chrome,resizable,screenX=${screenX},screenY=${screenY}`;
-    const win = window.openDialog(
+    window.openDialog(
       "chrome://ssi/content/dialogs/alertSetPrimaryPassword.xhtml",
       "",
       features

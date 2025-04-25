@@ -267,7 +267,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
                 date: Date.now(),
               });
               const newCredential = credentials[0].clone();
-              newCredential.properties = JSON.stringify(properties);
+              newCredential.properties = context.jsonStringify(properties);
               await Services.ssi.modifyCredential(
                 credentials[0],
                 newCredential
