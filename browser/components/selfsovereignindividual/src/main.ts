@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 /* global RPMGetStringPref:false */
-
+/// <reference lib="dom" />
 import HomeOverlay from "./home/overlay";
 // import ssiPanelMessaging from "./messages.js";
 

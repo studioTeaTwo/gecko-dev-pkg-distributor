@@ -105,9 +105,7 @@ export default function KeyEditor(props: Props) {
   };
   const handleGoBack = async () => {
     if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
-      const result = window.confirm(
-        "Not yet saved. Do you really want to leave?"
-      );
+      const result = confirm("Not yet saved. Do you really want to leave?");
       if (!result) {
         return;
       }

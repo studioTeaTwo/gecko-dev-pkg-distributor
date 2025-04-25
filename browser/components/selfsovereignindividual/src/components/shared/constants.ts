@@ -1,3 +1,5 @@
+import { DialogDisplayOption, NallowedMethod } from "../../custom.type";
+
 export const SafeProtocols = ["http", "https", "moz-extension"];
 export const SpecialCards = ["*", "<all_urls>"];
 
@@ -5,7 +7,7 @@ export const SpecialCards = ["*", "<all_urls>"];
  * Copyset of initial values in StaticPrefList.yaml for the setting UI.
  * Note that master data remains StaticPrefList.yaml because those are shared with other components like browser.ssi as well.
  */
-export const NallowedMethods = [
+export const NallowedMethods: NallowedMethod[] = [
   "read",
   "sign",
   "encrypt",
@@ -15,7 +17,7 @@ export const NallowedMethods = [
 ];
 export const DefaultNallowedMethods = [];
 
-export const EveryTimeAuthorizedMethods = [
+export const EveryTimeAuthorizedMethods: NallowedMethod[] = [
   "read",
   "sign",
   "encrypt",
@@ -25,7 +27,7 @@ export const EveryTimeAuthorizedMethods = [
 ];
 export const DefaultEveryTimeAuthorizedMethods = [];
 
-export const DialogDisplayOptions = [
+export const DialogDisplayOptions: DialogDisplayOption[] = [
   "read-confirmOnly",
   "read-passwordOnly",
   "sign-confirmOnly",
@@ -39,7 +41,7 @@ export const DialogDisplayOptions = [
   "custom-confirmOnly",
   "custom-passwordOnly",
 ];
-export const DefaultDialogDisplayOptions = [
+export const DefaultDialogDisplayOptions: DialogDisplayOption[] = [
   "read-confirmOnly",
   "sign-confirmOnly",
   "encrypt-confirmOnly",

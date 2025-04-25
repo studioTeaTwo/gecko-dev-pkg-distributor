@@ -17,7 +17,7 @@ import {
  */
 
 function initStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
       bubbles: true,
     })
@@ -25,7 +25,7 @@ function initStore() {
 }
 
 function getAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualGetAllCredentials", {
       bubbles: true,
     })
@@ -33,7 +33,7 @@ function getAllCredentialsToStore() {
 }
 
 function addCredentialToStore(credential: Credential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential),
@@ -45,7 +45,7 @@ function modifyCredentialToStore(
   credential: Partial<Credential>,
   options?: { newExtensionForTrustedSite: string[] }
 ) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualUpdateCredential", {
       bubbles: true,
       detail: { credential: transformToPayload(credential), options },
@@ -54,7 +54,7 @@ function modifyCredentialToStore(
 }
 
 function deleteCredentialToStore(deletedCredential: Credential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential),
@@ -63,7 +63,7 @@ function deleteCredentialToStore(deletedCredential: Credential) {
 }
 
 function removeAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualRemoveAllCredentials", {
       bubbles: true,
     })
@@ -74,7 +74,7 @@ function onPrimaryChanged(changeSet: {
   protocolName: ProtocolName;
   guid: string;
 }) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrimaryChanged", {
       bubbles: true,
       detail: changeSet,
@@ -87,7 +87,7 @@ function onPrefChanged(
     protocolName: ProtocolName | "base";
   } & Partial<SelfSovereignIndividualPrefs[keyof SelfSovereignIndividualPrefs]>
 ) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrefChanged", {
       bubbles: true,
       detail: changeSet,
@@ -195,12 +195,12 @@ export default function useChildActorEvent() {
 
   // Only do once
   useEffect(() => {
-    window.addEventListener(
+    addEventListener(
       "AboutSelfSovereignIndividualChromeToContent",
       receiveFromChildActor
     );
     return () => {
-      window.removeEventListener(
+      removeEventListener(
         "AboutSelfSovereignIndividualChromeToContent",
         receiveFromChildActor
       );

@@ -433,14 +433,14 @@ const DefaultTrustedSites = [
   }
 ];
 function initStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
       bubbles: true
     })
   );
 }
 function addCredentialToStore(credential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential)
@@ -448,7 +448,7 @@ function addCredentialToStore(credential) {
   );
 }
 function modifyCredentialToStore$1(credential, options) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualUpdateCredential", {
       bubbles: true,
       detail: { credential: transformToPayload(credential), options }
@@ -456,7 +456,7 @@ function modifyCredentialToStore$1(credential, options) {
   );
 }
 function deleteCredentialToStore(deletedCredential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential)
@@ -464,14 +464,14 @@ function deleteCredentialToStore(deletedCredential) {
   );
 }
 function removeAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualRemoveAllCredentials", {
       bubbles: true
     })
   );
 }
 function onPrimaryChanged$1(changeSet) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrimaryChanged", {
       bubbles: true,
       detail: changeSet
@@ -479,7 +479,7 @@ function onPrimaryChanged$1(changeSet) {
   );
 }
 function onPrefChanged(changeSet) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrefChanged", {
       bubbles: true,
       detail: changeSet
@@ -569,12 +569,12 @@ function useChildActorEvent() {
   const [credentials, setCredentials] = reactExports.useState([]);
   const [credentialsFromStore, setCredentialsFromStore] = reactExports.useState([null, []]);
   reactExports.useEffect(() => {
-    window.addEventListener(
+    addEventListener(
       "AboutSelfSovereignIndividualChromeToContent",
       receiveFromChildActor
     );
     return () => {
-      window.removeEventListener(
+      removeEventListener(
         "AboutSelfSovereignIndividualChromeToContent",
         receiveFromChildActor
       );
@@ -1101,9 +1101,7 @@ function BIP39Editor(props) {
   };
   const handleGoBack = async () => {
     if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
-      const result = window.confirm(
-        "Not yet saved. Do you really want to leave?"
-      );
+      const result = confirm("Not yet saved. Do you really want to leave?");
       if (!result) {
         return;
       }
@@ -2266,9 +2264,7 @@ function KeyEditor(props) {
   };
   const handleGoBack = async () => {
     if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
-      const result = window.confirm(
-        "Not yet saved. Do you really want to leave?"
-      );
+      const result = confirm("Not yet saved. Do you really want to leave?");
       if (!result) {
         return;
       }
@@ -3212,7 +3208,9 @@ function NIP07(props) {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
   reactExports.useEffect(() => {
-    setNewNallowedMethodPreset(prefs.nostr.nallowedMethodPreset.split(","));
+    setNewNallowedMethodPreset(
+      prefs.nostr.nallowedMethodPreset.split(",")
+    );
   }, [prefs.nostr.nallowedMethodPreset]);
   reactExports.useEffect(() => {
     setNewDialogDisplayOptionPreset(
@@ -3481,7 +3479,9 @@ function NIP07(props) {
       protocolName: "nostr",
       dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(",")
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
+    setNewDialogDisplayOptionPreset(
+      DefaultDialogDisplayOptions
+    );
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(

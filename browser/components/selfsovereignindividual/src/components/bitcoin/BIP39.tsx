@@ -123,7 +123,9 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
 
   const handleImportedKeyChange = e => setImportedSeed(e.target.value);
   const handleImportedKeySave = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.KeyboardEvent<HTMLInputElement>
   ) => {
     e.preventDefault();
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -117,7 +117,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
 
   const handleImportedKeyChange = e => setImportedKey(e.target.value);
   const handleSave = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.KeyboardEvent<HTMLInputElement>
   ) => {
     e.preventDefault();
 

@@ -37,6 +37,8 @@ import {
 } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
+  DialogDisplayOption,
+  NallowedMethod,
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
   SelfSovereignIndividualPrefs,
@@ -75,9 +77,11 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
 
   const [newSite, setNewSite] = useState("");
   const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
-  const [newNallowedMethodPreset, setNewNallowedMethodPreset] = useState([]);
+  const [newNallowedMethodPreset, setNewNallowedMethodPreset] = useState<
+    NallowedMethod[]
+  >([]);
   const [newDialogDisplayOptionPreset, setNewDialogDisplayOptionPreset] =
-    useState([]);
+    useState<DialogDisplayOption[]>([]);
   const [tabIndex, setTabIndex] = useState(-1);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
@@ -86,11 +90,13 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
   }, [prefs.nostr.tabPinInNip07]);
   useEffect(() => {
-    setNewNallowedMethodPreset(prefs.nostr.nallowedMethodPreset.split(","));
+    setNewNallowedMethodPreset(
+      prefs.nostr.nallowedMethodPreset.split(",") as NallowedMethod[]
+    );
   }, [prefs.nostr.nallowedMethodPreset]);
   useEffect(() => {
     setNewDialogDisplayOptionPreset(
-      prefs.nostr.dialogDisplayOptionPreset.split(",")
+      prefs.nostr.dialogDisplayOptionPreset.split(",") as DialogDisplayOption[]
     );
   }, [prefs.nostr.dialogDisplayOptionPreset]);
 
@@ -355,7 +361,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     }
   };
 
-  const handleChangeNallowedMethod = (value: string) => {
+  const handleChangeNallowedMethod = (value: NallowedMethod) => {
     let newVal = [];
     if (newNallowedMethodPreset.includes(value)) {
       newVal = newNallowedMethodPreset.filter(method => method !== value);
@@ -386,7 +392,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
     setNewNallowedMethodPreset(DefaultNallowedMethods);
   };
 
-  const handleChangeDialogDisplayOption = (value: string) => {
+  const handleChangeDialogDisplayOption = (value: DialogDisplayOption) => {
     let newVal = [];
     if (newDialogDisplayOptionPreset.includes(value)) {
       newVal = newDialogDisplayOptionPreset.filter(method => method !== value);
@@ -415,7 +421,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       dialogDisplayOptionPreset:
         DefaultDialogDisplayOptions.filter(Boolean).join(","),
     });
-    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
+    setNewDialogDisplayOptionPreset(
+      DefaultDialogDisplayOptions as unknown as DialogDisplayOption[]
+    );
   };
 
   const getTrustedSites = useCallback(() => {
