@@ -97,7 +97,14 @@ export interface BaseCredential
     displayName: string;
     memo?: string;
     generationFrom: string; // generated `location.href.origin`
-    sharing: object[];
+    sharing: {
+      url: string;
+      guid: string;
+      identifier: string; // xpub
+      sender: string; // npub
+      receiver: string; // npub
+      date: number;
+    }[];
   };
   guid?: string;
   timeCreated?: number;

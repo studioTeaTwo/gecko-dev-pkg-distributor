@@ -15436,7 +15436,7 @@
 # Preset for the dialog Display Option to calls from webapps.
 - name: selfsovereignindividual.bitcoin.primarypassword.toApps.dialogDisplayOptionPreset
   type: String
-  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,custom-confirmOnly"
+  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,generate-confirmOnly,custom-confirmOnly"
   mirror: never
 
 # Permitting to emit `accountChanged` event
@@ -15500,7 +15500,7 @@
 # Preset for the dialog Display Option to calls from webapps.
 - name: selfsovereignindividual.nostr.primarypassword.toApps.dialogDisplayOptionPreset
   type: String
-  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,custom-confirmOnly"
+  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,generate-confirmOnly,custom-confirmOnly"
   mirror: never
 
 # Preset for the Event Kind authorized every time to calls from webapps.

@@ -5,7 +5,14 @@ export const SpecialCards = ["*", "<all_urls>"];
  * Copyset of initial values in StaticPrefList.yaml for the setting UI.
  * Note that master data remains StaticPrefList.yaml because those are shared with other components like browser.ssi as well.
  */
-export const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
+export const NallowedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "generate",
+  "custom",
+];
 export const DefaultNallowedMethods = [];
 
 export const EveryTimeAuthorizedMethods = [
@@ -13,6 +20,7 @@ export const EveryTimeAuthorizedMethods = [
   "sign",
   "encrypt",
   "decrypt",
+  "generate",
   "custom",
 ];
 export const DefaultEveryTimeAuthorizedMethods = [];
@@ -26,6 +34,8 @@ export const DialogDisplayOptions = [
   "encrypt-passwordOnly",
   "decrypt-confirmOnly",
   "decrypt-passwordOnly",
+  "generate-confirmOnly",
+  "generate-passwordOnly",
   "custom-confirmOnly",
   "custom-passwordOnly",
 ];
@@ -34,6 +44,7 @@ export const DefaultDialogDisplayOptions = [
   "sign-confirmOnly",
   "encrypt-confirmOnly",
   "decrypt-confirmOnly",
+  "generate-confirmOnly",
   "custom-confirmOnly",
 ];
 

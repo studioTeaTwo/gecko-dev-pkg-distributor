@@ -32,6 +32,7 @@ import {
 } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
+import BIP39Editor from "./BIP39Editor";
 import { changePrimary } from "../shared/functions";
 import { StateContext } from "../../contexts/StatesProvider";
 import {
@@ -316,37 +317,10 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
             {mnemonics.map((item, i) => {
               return (
                 <>
-                  <Card maxW="md" overflow="hidden" key={i}>
-                    <CardHeader pb="0">
-                      <Heading size="md" isTruncated>
-                        <div
-                          contentEditable
-                          onBlur={e => {
-                            e.preventDefault();
-                            modifyCredentialToStore({
-                              guid: item.guid,
-                              properties: {
-                                ...item.properties,
-                                displayName: e.target.textContent,
-                              },
-                            });
-                          }}
-                        >
-                          {item.properties.displayName}
-                        </div>
-                      </Heading>
-                      <HStack>
-                        {item.trustedSites.some(site => site.url === "*") && (
-                          <Tooltip label="All URL trusted">🚨</Tooltip>
-                        )}
-                        {item.properties.sharing.length > 0 && (
-                          <Tooltip label="Sharing">🛜</Tooltip>
-                        )}
-                      </HStack>
-                    </CardHeader>
-                    <CardBody>
-                      <Box>
-                        <Text fontSize="md" isTruncated>
+                  {states.bitcoin.editingNo !== i ? (
+                    <Card maxW="md" overflow="hidden" key={i}>
+                      <CardHeader pb="0">
+                        <Heading size="md" isTruncated>
                           <div
                             contentEditable
                             onBlur={e => {
@@ -355,50 +329,63 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                                 guid: item.guid,
                                 properties: {
                                   ...item.properties,
-                                  memo: e.target.textContent,
+                                  displayName: e.target.textContent,
                                 },
                               });
                             }}
                           >
-                            {item.properties.memo}
+                            {item.properties.displayName}
                           </div>
-                        </Text>
-                      </Box>
-                      <Box mt={2}>
-                        <Heading size="xs" textTransform="uppercase">
-                          X Format
                         </Heading>
-                        <Text fontSize="md" isTruncated>
-                          {item.identifier}
-                        </Text>
-                        <Secret
-                          value={item.properties.xpriv}
-                          onChangeVisibility={() => {}}
-                          prefs={prefs}
-                          textProps={{ fontSize: "md", isTruncated: true }}
-                        />
-                      </Box>
-                      <Box mt={2}>
-                        <Heading size="xs" textTransform="uppercase">
-                          mnemonic
-                        </Heading>
-                        <Secret
-                          value={item.secret}
-                          onChangeVisibility={() => {}}
-                          prefs={prefs}
-                          textProps={{
-                            fontSize: "md",
-                            overflowWrap: "anywhere",
-                          }}
-                        />
-                      </Box>
-                      <Box mt={2}>
-                        <Heading size="xs" textTransform="uppercase">
-                          passphrase
-                        </Heading>
-                        {item.properties.passphrase ? (
+                        <HStack>
+                          {item.trustedSites.some(site => site.url === "*") && (
+                            <Tooltip label="All URL trusted">🚨</Tooltip>
+                          )}
+                          {item.properties.sharing.length > 0 && (
+                            <Tooltip label="Sharing">🛜</Tooltip>
+                          )}
+                        </HStack>
+                      </CardHeader>
+                      <CardBody>
+                        <Box>
+                          <Text fontSize="md" isTruncated>
+                            <div
+                              contentEditable
+                              onBlur={e => {
+                                e.preventDefault();
+                                modifyCredentialToStore({
+                                  guid: item.guid,
+                                  properties: {
+                                    ...item.properties,
+                                    memo: e.target.textContent,
+                                  },
+                                });
+                              }}
+                            >
+                              {item.properties.memo}
+                            </div>
+                          </Text>
+                        </Box>
+                        <Box mt={2}>
+                          <Heading size="xs" textTransform="uppercase">
+                            X Format
+                          </Heading>
+                          <Text fontSize="md" isTruncated>
+                            {item.identifier}
+                          </Text>
                           <Secret
-                            value={item.properties.passphrase}
+                            value={item.properties.xpriv}
+                            onChangeVisibility={() => {}}
+                            prefs={prefs}
+                            textProps={{ fontSize: "md", isTruncated: true }}
+                          />
+                        </Box>
+                        <Box mt={2}>
+                          <Heading size="xs" textTransform="uppercase">
+                            mnemonic
+                          </Heading>
+                          <Secret
+                            value={item.secret}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
                             textProps={{
@@ -406,53 +393,78 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                               overflowWrap: "anywhere",
                             }}
                           />
-                        ) : (
-                          "none"
+                        </Box>
+                        <Box mt={2}>
+                          <Heading size="xs" textTransform="uppercase">
+                            passphrase
+                          </Heading>
+                          {item.properties.passphrase ? (
+                            <Secret
+                              value={item.properties.passphrase}
+                              onChangeVisibility={() => {}}
+                              prefs={prefs}
+                              textProps={{
+                                fontSize: "md",
+                                overflowWrap: "anywhere",
+                              }}
+                            />
+                          ) : (
+                            "none"
+                          )}
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm">
+                            {item.properties.generationMethod === "import"
+                              ? "Imported"
+                              : "Generated"}{" "}
+                            on {new Date(item.timeCreated).toLocaleDateString()}
+                            &nbsp;
+                            {new Date(
+                              item.timeCreated
+                            ).toLocaleTimeString()} at{" "}
+                            {item.properties.generationFrom}
+                          </Text>
+                        </Box>
+                      </CardBody>
+                      <CardFooter pt="0" justify="space-evenly">
+                        {mnemonics.length > 1 && (
+                          <Flex gap="2">
+                            <Switch
+                              isChecked={item.primary}
+                              onChange={e =>
+                                handleChangePrimary(e.target.checked, item)
+                              }
+                              alignSelf="center"
+                            />
+                            {item.primary && <Text>primary now</Text>}
+                          </Flex>
                         )}
-                      </Box>
-                      <Box>
-                        <Text fontSize="sm">
-                          {item.properties.generationMethod === "import"
-                            ? "Imported"
-                            : "Generated"}{" "}
-                          on {new Date(item.timeCreated).toLocaleDateString()}
-                          &nbsp;
-                          {new Date(
-                            item.timeCreated
-                          ).toLocaleTimeString()} at{" "}
-                          {item.properties.generationFrom}
-                        </Text>
-                      </Box>
-                    </CardBody>
-                    <CardFooter pt="0" justify="space-evenly">
-                      {mnemonics.length > 1 && (
-                        <Flex gap="2">
-                          <Switch
-                            isChecked={item.primary}
-                            onChange={e =>
-                              handleChangePrimary(e.target.checked, item)
-                            }
-                            alignSelf="center"
-                          />
-                          {item.primary && <Text>primary now</Text>}
-                        </Flex>
-                      )}
-                      {/* <IconButton
-                        icon={<MdEdit />}
-                        variant="transparent"
-                        fontSize="20px"
-                        aria-label="Edit Key"
-                        onClick={() => updateState("bitcoin", { editingNo: i })}
-                      /> */}
-                      <IconButton
-                        icon={<MdDeleteForever />}
-                        variant="transparent"
-                        fontSize="20px"
-                        aria-label="Delete Key"
-                        onClick={() => handleDeleteCredential(item)}
-                      />
-                    </CardFooter>
-                  </Card>
+                        <IconButton
+                          icon={<MdEdit />}
+                          variant="transparent"
+                          fontSize="20px"
+                          aria-label="Edit Key"
+                          onClick={() =>
+                            updateState("bitcoin", { editingNo: i })
+                          }
+                        />
+                        <IconButton
+                          icon={<MdDeleteForever />}
+                          variant="transparent"
+                          fontSize="20px"
+                          aria-label="Delete Key"
+                          onClick={() => handleDeleteCredential(item)}
+                        />
+                      </CardFooter>
+                    </Card>
+                  ) : (
+                    <BIP39Editor
+                      credential={mnemonics[states.bitcoin.editingNo]}
+                      mnemonics={mnemonics}
+                      prefs={prefs}
+                      goBack={() => resetState()}
+                    ></BIP39Editor>
+                  )}
                 </>
               );
             })}
