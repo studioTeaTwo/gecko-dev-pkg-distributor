@@ -30,7 +30,7 @@ export const Nostr = {
    *
    * @returns {string}
    */
-  async generateSecretKey() {
+  generateSecretKey() {
     return Bitcoin.BIP340.generatePrivateKey();
   },
 
@@ -39,7 +39,7 @@ export const Nostr = {
    * @param {string | Uint8Array<ArrayBufferLike>} secretKey
    * @returns {string}
    */
-  async generatePublicKey(secretKey) {
+  generatePublicKey(secretKey) {
     return Bitcoin.BIP340.generatePublicKey(secretKey);
   },
 

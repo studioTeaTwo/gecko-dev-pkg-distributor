@@ -52,7 +52,6 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,
-    removeAllCredentialsToStore,
     onPrimaryChanged,
   } = dispatchEvents;
 
@@ -89,12 +88,15 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     e.preventDefault();
 
     const origin = location.href;
-    const { mnemonic, xpub, xpriv } = await generateSecretOnToolkit(
-      "bitcoin",
-      "bip39",
-      { origin, passphrase: passphrase }
-    );
-    console.log("seed", mnemonic, xpub, xpriv);
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
+      passphrase: passphrase,
+    });
+    if (!result[0]) {
+      alert("Invalid!");
+      return;
+    }
+    const { mnemonic, xpub, xpriv } = await result[1];
 
     addCredentialToStore({
       ...BitcoinTemplate,
@@ -103,13 +105,12 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       primary: mnemonics.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...BitcoinTemplate.properties,
         passphrase: passphrase,
         xpriv,
         displayName: xpub,
         generationMethod: "new",
         generationFrom: origin,
-        sharing: [],
-        memo: "",
       },
     });
 
@@ -127,7 +128,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
 
     const mnemonic = importedKey;
     const origin = location.href;
-    const result = await generateSecretOnToolkit("bitcoin", "bip39", {
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
       import: true,
       mnemonic,
@@ -145,13 +146,12 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       primary: mnemonics.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...BitcoinTemplate.properties,
         passphrase: passphrase,
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
         generationMethod: "import",
         generationFrom: origin,
-        sharing: [],
-        memo: "",
       },
     });
 
@@ -206,7 +206,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       });
     }
 
-    deleteCredentialToStore(item, mnemonics);
+    deleteCredentialToStore(item);
   };
 
   const handleAllRemove = async (
@@ -225,10 +225,15 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    removeAllCredentialsToStore();
+    for (const credential of mnemonics) {
+      deleteCredentialToStore(credential);
+    }
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "bitcoin", guid: "" });
+
+    // FIXME(ssb)
+    location.reload();
   };
 
   const cancelRef = React.useRef();

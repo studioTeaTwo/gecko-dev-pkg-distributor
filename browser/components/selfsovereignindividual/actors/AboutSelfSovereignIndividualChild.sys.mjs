@@ -113,39 +113,49 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
       // Pass `toolkit.components.ssi.protcols`
       // TODO(ssb): Consider whether to do it in the parent process.
       generate(protocolName, credentialName, option) {
-        if (protocolName === "bitcoin") {
-          if (credentialName === "bip39") {
-            if (option && option.import) {
-              if (!Bitcoin.BIP39.validateMnemonic(option.mnemonic)) {
-                return [false, null];
+        try {
+          if (protocolName === "bitcoin") {
+            if (credentialName === "bip39") {
+              if (option && option.import) {
+                if (!Bitcoin.BIP39.validateMnemonic(option.mnemonic)) {
+                  return [false, null];
+                }
+
+                const hdkey = Bitcoin.BIP32.getHDKeyFromMnemonic(
+                  option.mnemonic,
+                  option.passphrase ? option.passphrase : ""
+                );
+                return [
+                  true,
+                  {
+                    xpub: hdkey.publicExtendedKey,
+                    xpriv: hdkey.privateExtendedKey,
+                  },
+                ];
               }
 
-              const hdkey = Bitcoin.BIP32.getHDKeyFromMnemonic(
-                option.mnemonic,
-                option.passphrase ? option.passphrase : ""
-              );
+              // the return is `Promise<{ mnemonic, xpub, xpriv }>`
               return [
                 true,
-                {
-                  xpub: hdkey.publicExtendedKey,
-                  xpriv: hdkey.privateExtendedKey,
-                },
+                Bitcoin.BIP39.generateMnemonic(
+                  option.origin,
+                  option && option.strength ? option.strength : 256,
+                  option && option.passphrase ? option.passphrase : ""
+                ),
               ];
             }
-
-            // the return is `{ mnemonic, xpub, xpriv }`
-            return Bitcoin.BIP39.generateMnemonic(
-              option.origin,
-              option && option.strength ? option.strength : 256,
-              option && option.passphrase ? option.passphrase : ""
-            );
+          } else if (protocolName === "nostr") {
+            if (credentialName === "nsec") {
+              const seckey = Nostr.generateSecretKey();
+              return [true, seckey];
+            } else if (credentialName === "npub") {
+              const pubkey = Nostr.generatePublicKey(option.secretKey);
+              return [true, pubkey];
+            }
           }
-        } else if (protocolName === "nostr") {
-          if (credentialName === "nsec") {
-            return Nostr.generateSecretKey();
-          } else if (credentialName === "npub") {
-            return Nostr.generatePublicKey(option.secretKey);
-          }
+        } catch (e) {
+          console.error(e);
+          return [false, null];
         }
       },
     };

@@ -53,19 +53,7 @@ function modifyCredentialToStore(
   );
 }
 
-function deleteCredentialToStore(
-  deletedCredential: Credential,
-  credentials: Credential[]
-) {
-  if (credentials.length <= 2) {
-    if (credentials.length === 2) {
-      const leftCredential = credentials.find(
-        credential => credential.guid !== deletedCredential.guid
-      );
-      leftCredential.primary = true;
-      modifyCredentialToStore(leftCredential);
-    }
-  }
+function deleteCredentialToStore(deletedCredential: Credential) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,

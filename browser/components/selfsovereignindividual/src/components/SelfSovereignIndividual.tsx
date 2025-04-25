@@ -7,8 +7,9 @@ import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
 import Menu from "./Menu";
 import Bitcoin from "./bitcoin";
 // import Lightning from "./lightning";
-import Nostr from "./nostr";
 // import ECash from "./ecash";
+import Nostr from "./nostr";
+import Settings from "./settings";
 import { MenuItem } from "../custom.type";
 import useChildActorEvent, {
   dispatchEvents,
@@ -39,6 +40,8 @@ function SelfSovereignIndividual() {
       //   return <ECash />;
     } else if (selectedMenu === "nostr") {
       return <Nostr prefs={prefs} credentials={credentials} />;
+    } else if (selectedMenu === "settings") {
+      return <Settings prefs={prefs} credentials={credentials} />;
     }
   };
 

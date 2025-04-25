@@ -20,8 +20,10 @@ export const NostrTemplate: Omit<NostrCredential, "guid" | "timeCreated"> = {
   trustedSites: [],
   dialogicAuthorizedSites: [],
   properties: {
-    displayName: "",
     generationMethod: "import",
+    generationFrom: "",
+    sharing: [],
+    displayName: "",
     memo: "",
   },
 };

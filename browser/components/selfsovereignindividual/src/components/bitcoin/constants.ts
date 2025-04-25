@@ -18,9 +18,10 @@ export const BitcoinTemplate: Omit<BitcoinCredential, "guid" | "timeCreated"> =
     properties: {
       passphrase: "",
       xpriv: "",
-      displayName: "",
       generationMethod: "new",
-      generationFrom: "about",
+      generationFrom: "",
+      sharing: [],
+      displayName: "",
       memo: "",
     },
   };

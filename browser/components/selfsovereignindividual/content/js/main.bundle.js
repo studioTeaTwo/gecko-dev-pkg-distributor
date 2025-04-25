@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, R as React, A as AlertDialog, M as ModalOverlay, a as AlertDialogContent, b as ModalHeader, c as ModalCloseButton, d as ModalBody, L as Link, e as ModalFooter, T as Text, f as Box, G as Grid, g as GridItem, h as InputGroup, i as Input, F as Flex, C as Card, k as CardHeader, l as Heading, m as Tooltip, n as CardBody, o as CardFooter, S as Switch, p as StackDivider, q as Tabs, s as TabList, t as Tab, u as TabPanels, v as TabPanel, w as Spinner, x as bech32, y as bytesToHex, z as Accordion, D as AccordionItem, E as AccordionButton, J as Icon, K as AccordionIcon, N as AccordionPanel, O as TableContainer, P as Table, Q as Thead, U as Tr, W as Th, X as Tbody, Y as Td, Z as Editable, _ as EditablePreview, $ as EditableInput, a0 as Textarea, a1 as Menu$1, a2 as MenuButton, a3 as MenuList, a4 as MenuItem, a5 as Checkbox, a6 as useEditableControls, a7 as hexToBytes, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as clientExports, af as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, F as Flex, a as Box, S as Spacer, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, V as VStack, T as Text, G as Grid, g as GridItem, h as InputGroup, i as Input, C as Card, k as CardHeader, l as Heading, m as Tooltip, n as CardBody, o as CardFooter, p as Switch, q as StackDivider, s as Tabs, t as TabList, u as Tab, v as TabPanels, w as TabPanel, x as Spinner, y as bech32, z as bytesToHex, E as Accordion, J as AccordionItem, K as AccordionButton, N as Icon, O as AccordionIcon, P as AccordionPanel, Q as TableContainer, U as Table, W as Thead, X as Tr, Y as Th, Z as Tbody, _ as Td, $ as Editable, a0 as EditablePreview, a1 as EditableInput, a2 as Textarea, a3 as Menu$1, a4 as MenuButton, a5 as MenuList, a6 as MenuItem, a7 as Checkbox, a8 as useEditableControls, a9 as hexToBytes, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -376,8 +376,10 @@ const NostrTemplate = {
   trustedSites: [],
   dialogicAuthorizedSites: [],
   properties: {
-    displayName: "",
     generationMethod: "import",
+    generationFrom: "",
+    sharing: [],
+    displayName: "",
     memo: ""
   }
 };
@@ -442,16 +444,7 @@ function modifyCredentialToStore$1(credential, options) {
     })
   );
 }
-function deleteCredentialToStore(deletedCredential, credentials) {
-  if (credentials.length <= 2) {
-    if (credentials.length === 2) {
-      const leftCredential = credentials.find(
-        (credential) => credential.guid !== deletedCredential.guid
-      );
-      leftCredential.primary = true;
-      modifyCredentialToStore$1(leftCredential);
-    }
-  }
+function deleteCredentialToStore(deletedCredential) {
   window.dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,
@@ -705,7 +698,24 @@ function Menu(props) {
       TabPin(menu.name, { key: "menuPin", value: menuPin }, "base")
     ] }, index)) });
   }, [selectedMenu, menuPin]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { children: buildMenu() });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { direction: "column", gap: "10", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: buildMenu() }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Spacer, {}),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: selectedMenu === "settings" ? "solid" : "transparent",
+          onClick: (e) => {
+            e.preventDefault();
+            setSelectedMenu("settings");
+          },
+          children: "Settings"
+        }
+      ) })
+    ] })
+  ] });
 }
 const StateContext = React.createContext(null);
 const DefaultState = {
@@ -920,9 +930,10 @@ const BitcoinTemplate = {
   properties: {
     passphrase: "",
     xpriv: "",
-    displayName: "",
     generationMethod: "new",
-    generationFrom: "about",
+    generationFrom: "",
+    sharing: [],
+    displayName: "",
     memo: ""
   }
 };
@@ -933,7 +944,6 @@ function Bitcoin$1(props) {
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
-    removeAllCredentialsToStore: removeAllCredentialsToStore2,
     onPrimaryChanged: onPrimaryChanged2
   } = dispatchEvents;
   const [importedKey, setImportedSeed] = reactExports.useState("");
@@ -962,12 +972,15 @@ function Bitcoin$1(props) {
   const handleGenNewSeed = async (e) => {
     e.preventDefault();
     const origin = location.href;
-    const { mnemonic, xpub, xpriv } = await generateSecretOnToolkit(
-      "bitcoin",
-      "bip39",
-      { origin, passphrase }
-    );
-    console.log("seed", mnemonic, xpub, xpriv);
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
+      passphrase
+    });
+    if (!result[0]) {
+      alert("Invalid!");
+      return;
+    }
+    const { mnemonic, xpub, xpriv } = await result[1];
     addCredentialToStore2({
       ...BitcoinTemplate,
       identifier: xpub,
@@ -975,13 +988,12 @@ function Bitcoin$1(props) {
       primary: mnemonics.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...BitcoinTemplate.properties,
         passphrase,
         xpriv,
         displayName: xpub,
         generationMethod: "new",
-        generationFrom: origin,
-        sharing: [],
-        memo: ""
+        generationFrom: origin
       }
     });
     setNewSeed(xpub);
@@ -991,7 +1003,7 @@ function Bitcoin$1(props) {
     e.preventDefault();
     const mnemonic = importedKey;
     const origin = location.href;
-    const result = await generateSecretOnToolkit("bitcoin", "bip39", {
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
       import: true,
       mnemonic,
@@ -1008,13 +1020,12 @@ function Bitcoin$1(props) {
       primary: mnemonics.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...BitcoinTemplate.properties,
         passphrase,
         xpriv: result[1].xpriv,
         displayName: result[1].xpub,
         generationMethod: "import",
-        generationFrom: origin,
-        sharing: [],
-        memo: ""
+        generationFrom: origin
       }
     });
     setImportedSeed("");
@@ -1055,7 +1066,7 @@ function Bitcoin$1(props) {
         guid: prev ? prev.guid : ""
       });
     }
-    deleteCredentialToStore2(item, mnemonics);
+    deleteCredentialToStore2(item);
   };
   const handleAllRemove = async (e) => {
     e.preventDefault();
@@ -1070,8 +1081,11 @@ function Bitcoin$1(props) {
     if (!isAuthorized) {
       return;
     }
-    removeAllCredentialsToStore2();
+    for (const credential of mnemonics) {
+      deleteCredentialToStore2(credential);
+    }
     onPrimaryChanged2({ protocolName: "bitcoin", guid: "" });
+    location.reload();
   };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -2196,18 +2210,15 @@ function Nostr$1(props) {
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
-    removeAllCredentialsToStore: removeAllCredentialsToStore2,
     onPrimaryChanged: onPrimaryChanged2
   } = dispatchEvents;
-  const [nostrKeys, setNostrKeys] = reactExports.useState([]);
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  reactExports.useEffect(() => {
-    Promise.all(credentials.map(addInterpretedKeys)).then((credentials2) => {
-      setNostrKeys(credentials2);
-    });
-  }, [credentials]);
+  const nostrKeys = reactExports.useMemo(
+    () => credentials.map(addInterpretedKeys),
+    [credentials]
+  );
   const defaultTrustedSites = reactExports.useMemo(
     () => [
       ...DefaultTrustedSites,
@@ -2222,8 +2233,8 @@ function Nostr$1(props) {
   );
   const handleGenNewKey = async (e) => {
     e.preventDefault();
-    const seckey = await generateSecretOnToolkit("nostr", "nsec");
-    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, seckey] = generateSecretOnToolkit("nostr", "nsec");
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: seckey
     });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
@@ -2234,10 +2245,10 @@ function Nostr$1(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "bip340",
-        generationFrom: location.href,
-        sharing: []
+        generationFrom: location.href
       }
     });
     setNewKey(npubkey);
@@ -2265,7 +2276,7 @@ function Nostr$1(props) {
       alert("The typed key is existing!");
       return;
     }
-    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: seckey
     });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
@@ -2276,10 +2287,10 @@ function Nostr$1(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "import",
-        generationFrom: location.href,
-        sharing: []
+        generationFrom: location.href
       }
     });
     setImportedKey("");
@@ -2317,7 +2328,7 @@ function Nostr$1(props) {
       }
       onPrimaryChanged2({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
-    deleteCredentialToStore2(item, nostrKeys);
+    deleteCredentialToStore2(item);
   };
   const handleAllRemove = async (e) => {
     e.preventDefault();
@@ -2332,17 +2343,20 @@ function Nostr$1(props) {
     if (!isAuthorized) {
       return;
     }
-    removeAllCredentialsToStore2();
+    for (const credential of nostrKeys) {
+      deleteCredentialToStore2(credential);
+    }
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });
+    location.reload();
   };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
   };
-  async function addInterpretedKeys(item) {
+  function addInterpretedKeys(item) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, rawPubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: rawSeckey
     });
     return { ...item, nseckey, rawPubkey };
@@ -3458,6 +3472,55 @@ function Nostr(props) {
     ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
   ] });
 }
+function Settings(props) {
+  const { prefs, credentials } = props;
+  const { onPrimaryChanged: onPrimaryChanged2, removeAllCredentialsToStore: removeAllCredentialsToStore2 } = dispatchEvents;
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const handleAllRemove = async (e) => {
+    e.preventDefault();
+    if (!confirm("All data will be deleted. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    removeAllCredentialsToStore2();
+    for (const protocolName of ["bitcoin", "nostr"]) {
+      onPrimaryChanged2({ protocolName, guid: "" });
+    }
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "setting-pref-reset", children: "Delete All data" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: "outline",
+          colorScheme: "blue",
+          onClick: handleAllRemove,
+          children: "Reset"
+        }
+      ) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
 function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent();
   const { initStore: initStore2 } = dispatchEvents;
@@ -3473,6 +3536,8 @@ function SelfSovereignIndividual() {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin, { prefs, credentials });
     } else if (selectedMenu === "nostr") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr, { prefs, credentials });
+    } else if (selectedMenu === "settings") {
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Settings, { prefs, credentials });
     }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { m: 10, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { w: "100%", h: "100%", templateColumns: "200px auto", gap: 4, children: [

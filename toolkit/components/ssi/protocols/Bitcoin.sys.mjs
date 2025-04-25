@@ -94,10 +94,11 @@ export const Bitcoin = {
         properties: JSON.stringify({
           passphrase,
           xpriv,
-          displayName: xpub,
-          generationFrom: origin,
           generationMethod: "new",
-          sharedWith: [],
+          generationFrom: origin,
+          sharing: [],
+          displayName: xpub,
+          memo: "",
         }),
       };
       newCredential = SsiHelper.vanillaObjectToCredential(newCredential);

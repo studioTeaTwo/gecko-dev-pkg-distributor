@@ -2,7 +2,7 @@
  * SelfSovereignIndividual prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
-export type MenuItem = ProtocolName | "";
+export type MenuItem = ProtocolName | "settings" | "";
 export interface ProtocolDefaultPrefs {
   enabled: boolean; // selfsovereignindividual.[protocolName].enabled
   usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled

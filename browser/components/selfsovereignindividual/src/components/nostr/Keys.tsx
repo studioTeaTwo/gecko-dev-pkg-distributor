@@ -59,21 +59,18 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,
-    removeAllCredentialsToStore,
     onPrimaryChanged,
   } = dispatchEvents;
 
-  const [nostrKeys, setNostrKeys] = useState<NostrDisplayedCredential[]>([]);
   const [importedKey, setImportedKey] = useState("");
   const [newKey, setNewKey] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
 
-  useEffect(() => {
-    Promise.all(credentials.map(addInterpretedKeys)).then(credentials => {
-      setNostrKeys(credentials);
-    });
-  }, [credentials]);
+  const nostrKeys = useMemo(
+    () => credentials.map(addInterpretedKeys) as NostrDisplayedCredential[],
+    [credentials]
+  );
   const defaultTrustedSites = useMemo(
     () => [
       ...DefaultTrustedSites,
@@ -92,8 +89,8 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   ) => {
     e.preventDefault();
 
-    const seckey = await generateSecretOnToolkit("nostr", "nsec");
-    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, seckey] = generateSecretOnToolkit("nostr", "nsec");
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: seckey,
     });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
@@ -105,10 +102,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "bip340",
         generationFrom: location.href,
-        sharing: [],
       },
     });
 
@@ -146,7 +143,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    const pubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: seckey,
     });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
@@ -158,10 +155,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "import",
         generationFrom: location.href,
-        sharing: [],
       },
     });
 
@@ -213,7 +210,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
 
-    deleteCredentialToStore(item, nostrKeys);
+    deleteCredentialToStore(item);
   };
 
   const handleAllRemove = async (
@@ -232,10 +229,15 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    removeAllCredentialsToStore();
+    for (const credential of nostrKeys) {
+      deleteCredentialToStore(credential);
+    }
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "nostr", guid: "" });
+
+    // FIXME(ssb)
+    location.reload();
   };
 
   const cancelRef = React.useRef();
@@ -243,12 +245,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     setIsOpenDialog(false);
   };
 
-  async function addInterpretedKeys(
-    item: NostrCredential
-  ): Promise<NostrDisplayedCredential> {
+  function addInterpretedKeys(item: NostrCredential): NostrDisplayedCredential {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = await generateSecretOnToolkit("nostr", "npub", {
+    const [, rawPubkey] = generateSecretOnToolkit("nostr", "npub", {
       secretKey: rawSeckey,
     });
     return { ...item, nseckey, rawPubkey };

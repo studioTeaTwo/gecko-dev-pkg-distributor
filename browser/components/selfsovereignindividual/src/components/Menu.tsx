@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { VStack, Button, HStack } from "@chakra-ui/react";
+import { Box, Button, Divider, Flex, HStack, Spacer } from "@chakra-ui/react";
 import { MenuItem, ProtocolName } from "../custom.type";
 import BitcoinIcon from "./shared/Logo";
 import { GiBirdTwitter } from "./shared/react-icons/Icons";
@@ -43,7 +43,26 @@ function Menu(props: Props) {
     );
   }, [selectedMenu, menuPin]);
 
-  return <VStack>{buildMenu()}</VStack>;
+  return (
+    <Flex direction="column" gap="10">
+      <Box>{buildMenu()}</Box>
+      <Spacer />
+      <Box>
+        <Divider />
+        <HStack>
+          <Button
+            variant={selectedMenu === "settings" ? "solid" : "transparent"}
+            onClick={e => {
+              e.preventDefault();
+              setSelectedMenu("settings");
+            }}
+          >
+            Settings
+          </Button>
+        </HStack>
+      </Box>
+    </Flex>
+  );
 }
 
 export default Menu;
