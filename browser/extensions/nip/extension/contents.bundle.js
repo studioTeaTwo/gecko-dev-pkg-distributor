@@ -1035,24 +1035,17 @@ function signEvent(event) {
     const signedEvent = { ...event };
     let eventHash = "";
     return new window.Promise((resolve, reject) => {
-        // Attach your holding public key to verify it is the same as the current primary key.
-        window.wrappedJSObject.ssi.nostr.getPublicKeySync(exportFunction((error, pubkey) => {
+        // Leave it to the app to verify it is the same as the current primary key.
+        eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
+        window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
             if (error) {
                 reject(error);
             }
-            signedEvent.pubkey = pubkey;
-            eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
-            window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
-                if (error) {
-                    reject(error);
-                }
-                signedEvent.id = eventHash;
-                signedEvent.sig = signature;
-                resolve(cloneInto(signedEvent, window));
-            }, window), cloneInto({
-                type: "signEvent",
-            }, window));
-            XPCNativeWrapper(window.wrappedJSObject.ssi);
+            signedEvent.id = eventHash;
+            signedEvent.sig = signature;
+            resolve(cloneInto(signedEvent, window));
+        }, window), cloneInto({
+            type: "signEvent",
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });

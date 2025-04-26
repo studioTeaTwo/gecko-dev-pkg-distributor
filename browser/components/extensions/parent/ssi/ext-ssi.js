@@ -81,23 +81,42 @@ this.ssi = class extends ExtensionAPI {
               }
             );
             if (tabId > -1) {
-              Object.entries(lazy.browserSsiHelper.CREDENTIAL_MAP).forEach(
-                async ([_protocolName, _credentialNames]) => {
-                  for (const _credentialName of _credentialNames) {
-                    const isAuthorized = await lazy.browserSsiHelper.authorize(
-                      context,
-                      tabId,
-                      {
-                        protocolName: _protocolName,
-                        credentialName: _credentialName,
-                      },
-                      { type: "read", caption, submission, enforce },
-                      false
-                    );
-                    authorizationMap[_protocolName][_credentialName] =
-                      isAuthorized;
+              await Promise.all(
+                Object.entries(lazy.browserSsiHelper.CREDENTIAL_MAP).map(
+                  async ([_protocolName, _credentialNames]) => {
+                    // Match search criteria
+                    if (
+                      params.protocolName &&
+                      params.protocolName !== _protocolName
+                    ) {
+                      return;
+                    }
+
+                    for (const _credentialName of _credentialNames) {
+                      // Match search criteria
+                      if (
+                        params.credentialName &&
+                        params.credentialName !== _credentialName
+                      ) {
+                        continue;
+                      }
+
+                      const isAuthorized =
+                        await lazy.browserSsiHelper.authorize(
+                          context,
+                          tabId,
+                          {
+                            protocolName: _protocolName,
+                            credentialName: _credentialName,
+                          },
+                          { type: "read", caption, submission, enforce },
+                          false
+                        );
+                      authorizationMap[_protocolName][_credentialName] =
+                        isAuthorized;
+                    }
                   }
-                }
+                )
               );
             }
 
@@ -135,14 +154,7 @@ this.ssi = class extends ExtensionAPI {
                   credentialName: credential.credentialName,
                   primary: credential.primary,
                 };
-                if (
-                  !(
-                    credential.protocolName === "bitcoin" &&
-                    credential.credentialName === "bip39"
-                  )
-                ) {
-                  filteredVal.identifier = credential.identifier;
-                }
+                filteredVal.identifier = credential.identifier;
                 return filteredVal;
               });
             return filteredCredentials;

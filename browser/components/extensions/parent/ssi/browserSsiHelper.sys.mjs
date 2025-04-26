@@ -512,7 +512,7 @@ async function authByDialogs(
   dialogInfo
 ) {
   const { url, origin } = target;
-  const { cacheKey, dialogicAuthorizedSites } = authCache;
+  const { cacheKey, trustedSites, dialogicAuthorizedSites } = authCache;
   const { type, embedderElement } = dialogInfo;
 
   // Prepare expiration time.
@@ -534,8 +534,8 @@ async function authByDialogs(
       dialogicAuthorizedSite.permissions.excludedKinds =
         prefs.excludedKindsPreset;
     }
-    Services.ssi.authCache.update(cacheKey, {
-      dialogicAuthorizedSites: [dialogicAuthorizedSite],
+    await Services.ssi.authCache.update(cacheKey, {
+      dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
     });
   }
   let _authExpirationTime = dialogicAuthorizedSite.expirationTime;
@@ -597,7 +597,7 @@ async function authByDialogs(
       // Save new setting value
       dialogicAuthorizedSite.permissions.previousSelectionOnConfirm =
         result.settingValue;
-      Services.ssi.authCache.update(cacheKey, {
+      await Services.ssi.authCache.update(cacheKey, {
         dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
       });
       // Update for each individual result
@@ -614,7 +614,7 @@ async function authByDialogs(
             type
           );
         }
-        Services.ssi.authCache.update(cacheKey, {
+        await Services.ssi.authCache.update(cacheKey, {
           dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
         });
 
@@ -624,17 +624,16 @@ async function authByDialogs(
             `${type}-confirmOnly`
           );
         if (skippedPassword) {
-          updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
+          await updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
           return true;
         }
         // go to password dialog
       } else if (["fullTrust", "methodTrust"].includes(result.settingValue)) {
         // Save new trusted site
-        const auth = Services.ssi.authCache.get(cacheKey);
-        const idx = auth.trustedSites.findIndex(site => site.url === origin);
+        const idx = trustedSites.findIndex(site => site.url === origin);
         let newVal;
         if (idx >= 0) {
-          newVal = { ...auth.trustedSites[idx] };
+          newVal = { ...trustedSites[idx] };
           newVal.enabled = true;
           if (result.settingValue === "fullTrust") {
             newVal.permissions.nallowedMethod = [];
@@ -653,7 +652,7 @@ async function authByDialogs(
         ) {
           newVal.permissions.nallowedMethod.push(type);
         }
-        Services.ssi.authCache.update(cacheKey, {
+        await Services.ssi.authCache.update(cacheKey, {
           trustedSites: [newVal],
         });
         // Since it was trusted, we will round it up.
@@ -708,7 +707,7 @@ async function authByDialogs(
       "success_unsupported_platform",
     ].includes(telemetryEvent.value);
     if (isAuthorized && enteredPassword) {
-      updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
+      await updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
     }
     console.log(
       "dialogic-prompt",
@@ -783,12 +782,12 @@ function isAuthMandatory(
  * @param {string} cacheKey
  * @param {object} dialogicAuthorizedSite
  */
-function updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite) {
+async function updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite) {
   const shouldUpdate = prefs.expirationTime > 0;
   dialogicAuthorizedSite.expirationTime = shouldUpdate
     ? Date.now() + prefs.expirationTime
     : 0;
-  Services.ssi.authCache.update(cacheKey, {
+  await Services.ssi.authCache.update(cacheKey, {
     dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
   });
 }
