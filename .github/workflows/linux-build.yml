@@ -111,6 +111,13 @@ jobs:
         mozconfig = []
 
         mozconfig.append('ac_add_options --with-branding=browser/branding/unofficial')
+        
+        with open("browser/config/version_forked.txt", "r") as file:
+            version_forked = file.read().strip()
+        github_head_ref = os.getenv("GITHUB_HEAD_REF")
+        github_ref = os.getenv("GITHUB_REF", "")
+        branch = github_head_ref if github_head_ref else github_ref.replace("refs/heads/", "")
+        mozconfig.append(f"ac_add_options --with-ssb-version={version_forked}{branch}")
 
         if disable_updater:
           mozconfig.append('ac_add_options --disable-updater')

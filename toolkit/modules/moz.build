@@ -281,6 +281,7 @@ for var in (
     "DLL_SUFFIX",
     "DEBUG_JS_MODULES",
     "OMNIJAR_NAME",
+    "SSB_VERSION",
 ):
     DEFINES[var] = CONFIG[var] or ""
 
