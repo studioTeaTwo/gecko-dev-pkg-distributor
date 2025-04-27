@@ -9,7 +9,7 @@ declare namespace browser.ssi {
     enforce?: boolean;
   };
 
-  const searchCredentialsWithoutSecret: (
+  const searchCredentials: (
     tabId: number,
     criteria: {
       protocolName: string;

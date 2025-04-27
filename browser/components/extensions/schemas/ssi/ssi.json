@@ -96,7 +96,7 @@
     ],
     "functions": [
       {
-        "name": "searchCredentialsWithoutSecret",
+        "name": "searchCredentials",
         "type": "function",
         "description": "Return the requested credentials without secrets such like secret key and private setting. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,

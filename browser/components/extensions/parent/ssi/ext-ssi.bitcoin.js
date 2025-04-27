@@ -113,7 +113,9 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               );
               if (!isAuthorized) {
                 // Delete the credential
-                await Services.ssi.removeCredential(credential);
+                await lazy.SsiHelper.removeCredentialWithoutSecret({
+                  guid: credential.guid,
+                });
                 return errorValue;
               }
 
@@ -191,7 +193,6 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               }
 
               // Get the shared credential.
-              // TODO(ssb): Here comes all secret information. It is necessary if there is a reason to present it to the user, but if not, encapsulate it in services.ssi.
               const pointing = {
                 protocolName: "bitcoin",
               };
@@ -203,9 +204,10 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               } else if (type === "derivation") {
                 // Not implemented
               }
-              let credentials = await Services.ssi.searchCredentialsAsync(
-                pointing
-              );
+              let credentials =
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing, [
+                  "displayName",
+                ]);
               if (credentials.length === 0) {
                 return errorValue;
               }
@@ -245,32 +247,27 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               }
 
               // Encrypt
-              const ciphertext = await lazy.Nostr.encrypt(
-                credentials[0].secret,
+              const ciphertext = await lazy.Nostr.encryptSecret(
+                credentials[0].guid,
                 nostrKeys[0].guid,
-                { type: "nip44", pubkey }
+                pubkey
               );
 
               // Record the share
               const { site } = lazy.browserSsiHelper.getOrigin(context, tabId);
               const sender = nostrKeys[0].identifier;
               const receiver = npub;
-              // It has been updated due to authorization, so get it again.
-              credentials = await Services.ssi.searchCredentialsAsync(pointing);
-              const properties = JSON.parse(credentials[0].properties);
-              properties.sharing.push({
+              const history = {
                 url: site.origin,
                 guid: credentials[0].guid,
                 identifier: credentials[0].identifier,
                 sender,
                 receiver,
                 date: Date.now(),
-              });
-              const newCredential = credentials[0].clone();
-              newCredential.properties = JSON.stringify(properties); // TODO(ssb): Consider to replace `BaseContext.jsonStringify`
-              await Services.ssi.modifyCredential(
-                credentials[0],
-                newCredential
+              };
+              await lazy.SsiHelper.modifyCrendetialWithoutSecret(
+                { guid: credentials[0].guid },
+                { sharing: history }
               );
 
               return {

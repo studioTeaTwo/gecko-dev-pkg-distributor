@@ -72,10 +72,10 @@ export const Nostr = {
   /**
    *
    * @param {string} plaintext
-   * @param {string} guid
+   * @param {string} guid - guid pointing out the user's nostr key
    * @param {object} option
    * @param {string} option.type - "nip04" | "nip44"
-   * @param {string} option.pubkey - HEX type
+   * @param {string} option.pubkey - the partner's nostr key. HEX type
    * @returns {string}
    */
   async encrypt(plaintext, guid, { type, pubkey }) {
@@ -93,6 +93,26 @@ export const Nostr = {
     }
 
     return "";
+  },
+
+  /**
+   *
+   * @param {string} guid - guid pointing out the shared secret
+   * @param {string} sender - guid pointing out the user's nostr key
+   * @param {string} pubkey - the partner's nostr key. HEX type
+   * @returns
+   */
+  async encryptSecret(guid, sender, pubkey) {
+    const credentials = await Services.ssi.searchCredentialsAsync({ guid });
+    if (credentials.length === 0) {
+      return "";
+    }
+
+    const cipertext = await Nostr.encrypt(credentials[0].secret, sender, {
+      type: "nip44",
+      pubkey,
+    });
+    return cipertext;
   },
 
   /**

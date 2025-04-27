@@ -750,14 +750,61 @@ export const SsiHelper = {
     });
   },
 
-  async searchCredentialsWithoutSecret(matchData) {
+  /**
+   *
+   * @param {object} matchData
+   * @param {string[]=} exemptions - property names exempted in properties
+   * @returns
+   */
+  async searchCredentialsWithoutSecret(matchData, exemptions) {
     const credentials = await Services.ssi.searchCredentialsAsync(matchData);
     return credentials.map(credential => {
       // Exclude the secret properties
       // eslint-disable-next-line no-unused-vars
       const { secret, properties, unknownFields, ...rest } = credential;
+      if (exemptions && exemptions.length) {
+        const _properties = JSON.parse(properties);
+        const filteredVal = {};
+        for (const property of exemptions) {
+          filteredVal[property] = _properties[property];
+        }
+        return { ...rest, properties: JSON.stringify(filteredVal) };
+      }
+
       return rest;
     });
+  },
+
+  /**
+   *
+   * @param {object} matchData
+   * @param {object} newValues key is propertyName, value is new value
+   */
+  async modifyCrendetialWithoutSecret(matchData, newValues) {
+    const credentials = await Services.ssi.searchCredentialsAsync(matchData);
+    if (!credentials.length) {
+      throw new Error("No matched credential");
+    }
+
+    const newCredential = credentials[0].clone();
+    for (const property of Object.keys(newValues)) {
+      if (property === "sharing") {
+        const properties = JSON.parse(credentials[0].properties);
+        properties.sharing.push(newValues.sharing);
+        newCredential.properties = JSON.stringify(properties);
+      }
+    }
+
+    await Services.ssi.modifyCredential(credentials[0], newCredential);
+  },
+
+  async removeCredentialWithoutSecret(matchData) {
+    const credentials = await Services.ssi.searchCredentialsAsync(matchData);
+    if (!credentials.length) {
+      throw new Error("No matched credential");
+    }
+
+    Services.ssi.removeCredential(credentials[0]);
   },
 
   async showConfirmAuthorizationDialog(dialogInfo) {

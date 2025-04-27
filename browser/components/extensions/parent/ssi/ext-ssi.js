@@ -21,7 +21,7 @@ this.ssi = class extends ExtensionAPI {
 
     return {
       ssi: {
-        async searchCredentialsWithoutSecret(
+        async searchCredentials(
           tabId,
           { protocolName = "", credentialName = "", primary = true },
           { caption = "", submission = "", enforce = false }

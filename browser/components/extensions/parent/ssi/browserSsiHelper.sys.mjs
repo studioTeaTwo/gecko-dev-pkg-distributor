@@ -243,6 +243,8 @@ export const browserSsiHelper = {
     };
   },
   /**
+   * Executes authorization.
+   * This applies to both the web extension that called it directly and the tab app at the top of the call stack.
    *
    * @param {Context} context
    * @param {number} tabId
@@ -269,9 +271,10 @@ export const browserSsiHelper = {
     // Check permission
     if (site.isSystemPrincipal || site.url.startsWith("about:")) {
       // This is assumed `about:` pages.
-      return false;
+      // TODO(ssb): Consider whether this validation is necessary
+      // return false;
     }
-    if (!site.origin || !extension.origin) {
+    if ((!onlyExtension && !site.origin) || !extension.origin) {
       return false;
     }
     const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret({
@@ -333,7 +336,6 @@ export const browserSsiHelper = {
     };
 
     // Auth. Check trusted sites and password authorization for the tab app and webextension respectively.
-    // TODO(ssb): Even if you call it multiple times in one transaction, the dialog will only be called once.
     const resultExtensiton = await execAuth(
       extension,
       context.extension.name,
@@ -600,10 +602,17 @@ async function authByDialogs(
       await Services.ssi.authCache.update(cacheKey, {
         dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
       });
+
+      const skippedPassword =
+        !_isAuthMandatory &&
+        dialogicAuthorizedSite.permissions.skippedDialog.includes(
+          `${type}-confirmOnly`
+        );
       // Update for each individual result
       if (["password", "everytime"].includes(result.settingValue)) {
         if (result.settingValue === "password") {
           dialogicAuthorizedSite.permissions.everyTimeAuthorizedMethods = [];
+          await updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
         } else if (
           result.settingValue === "everytime" &&
           !dialogicAuthorizedSite.permissions.everyTimeAuthorizedMethods.includes(
@@ -613,18 +622,12 @@ async function authByDialogs(
           dialogicAuthorizedSite.permissions.everyTimeAuthorizedMethods.push(
             type
           );
+          await Services.ssi.authCache.update(cacheKey, {
+            dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
+          });
         }
-        await Services.ssi.authCache.update(cacheKey, {
-          dialogicAuthorizedSites: [{ ...dialogicAuthorizedSite }],
-        });
 
-        const skippedPassword =
-          !_isAuthMandatory &&
-          dialogicAuthorizedSite.permissions.skippedDialog.includes(
-            `${type}-confirmOnly`
-          );
         if (skippedPassword) {
-          await updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
           return true;
         }
         // go to password dialog
@@ -657,9 +660,15 @@ async function authByDialogs(
         });
         // Since it was trusted, we will round it up.
         return true;
+      } else {
+        // `result.settingValue` is "noop", because `type` is "generate" or `dialogInfo.enforce` is true.
+        // eslint-disable-next-line no-lonely-if
+        if (type === "generate" && skippedPassword) {
+          await updateExpirationTime(prefs, cacheKey, dialogicAuthorizedSite);
+          return true;
+        }
+        // go to password dialog
       }
-      // `result.settingValue` is "noop", because `type` is "generate" or `dialogInfo.enforce` is true.
-      // go to password dialog
     } else {
       // The user has canceled, so return false.
       return false;

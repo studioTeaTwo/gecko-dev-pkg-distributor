@@ -968,7 +968,7 @@ exports.init = init;
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+    const credentials = await browser.ssi.searchCredentials(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
     {
         protocolName: "bitcoin",
         credentialName: state_1.state.bitcoin.credentialName,
@@ -1039,7 +1039,7 @@ const doNostrAction = async (tabId, origin, action, args) => {
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            const credentials = await browser.ssi.searchCredentialsWithoutSecret(tabId, {
+            const credentials = await browser.ssi.searchCredentials(tabId, {
                 protocolName: "nostr",
                 credentialName: state_1.state.nostr.credentialName,
                 primary: true,
@@ -1137,7 +1137,7 @@ exports.init = init;
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+    const credentials = await browser.ssi.searchCredentials(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
     {
         protocolName: "nostr",
         credentialName: state_1.state.nostr.credentialName,
