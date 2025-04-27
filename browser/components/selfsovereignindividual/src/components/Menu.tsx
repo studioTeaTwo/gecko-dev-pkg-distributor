@@ -18,8 +18,6 @@ function Menu(props: Props) {
     const list: { name: ProtocolName; icon: JSX.Element }[] = [
       { name: "bitcoin", icon: <BitcoinIcon /> },
       { name: "nostr", icon: <GiBirdTwitter /> },
-      // { name: 'lightning', icon: <MdElectricBolt />},
-      // { name: 'ecash', icon: null},
     ];
     return (
       <>

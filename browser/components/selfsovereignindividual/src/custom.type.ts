@@ -61,12 +61,7 @@ type OnlyUsedNsICredentialInfo = Omit<
   Pick<nsICredentialMetaInfo, "guid" | "timeCreated">;
 
 // ViewEntity in about:selfsovereignindividual
-export type ProtocolName =
-  | "bitcoin"
-  | "lightning"
-  | "ecash"
-  | "nostr"
-  | "did:dht";
+export type ProtocolName = "bitcoin" | "nostr";
 export type CredentialName = "bip39" | "nsec";
 export type NallowedMethod =
   | "read"
@@ -75,13 +70,7 @@ export type NallowedMethod =
   | "decrypt"
   | "generate"
   | "custom";
-export type EveryTimeAuthorizedMethod =
-  | "read"
-  | "sign"
-  | "encrypt"
-  | "decrypt"
-  | "generate"
-  | "custom";
+export type EveryTimeAuthorizedMethod = NallowedMethod;
 export type DialogDisplayOption =
   | "read-confirmOnly"
   | "read-passwordOnly"

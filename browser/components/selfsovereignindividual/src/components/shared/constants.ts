@@ -15,7 +15,7 @@ export const NallowedMethods: NallowedMethod[] = [
   "generate",
   "custom",
 ];
-export const DefaultNallowedMethods = [];
+export const DefaultNallowedMethods: NallowedMethod[] = [];
 
 export const EveryTimeAuthorizedMethods: NallowedMethod[] = [
   "read",
@@ -25,7 +25,7 @@ export const EveryTimeAuthorizedMethods: NallowedMethod[] = [
   "generate",
   "custom",
 ];
-export const DefaultEveryTimeAuthorizedMethods = [];
+export const DefaultEveryTimeAuthorizedMethods: NallowedMethod[] = [];
 
 export const DialogDisplayOptions: DialogDisplayOption[] = [
   "read-confirmOnly",

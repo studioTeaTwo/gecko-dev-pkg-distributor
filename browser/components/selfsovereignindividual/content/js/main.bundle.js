@@ -690,8 +690,6 @@ function Menu(props) {
     const list = [
       { name: "bitcoin", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(BitcoinLogo, {}) },
       { name: "nostr", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(GiBirdTwitter, {}) }
-      // { name: 'lightning', icon: <MdElectricBolt />},
-      // { name: 'ecash', icon: null},
     ];
     return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: list.map((menu, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -3479,9 +3477,7 @@ function NIP07(props) {
       protocolName: "nostr",
       dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(",")
     });
-    setNewDialogDisplayOptionPreset(
-      DefaultDialogDisplayOptions
-    );
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(

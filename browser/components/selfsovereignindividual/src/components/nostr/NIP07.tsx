@@ -41,7 +41,6 @@ import {
   NallowedMethod,
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
-  SelfSovereignIndividualPrefs,
 } from "../../custom.type";
 import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
@@ -68,15 +67,17 @@ import { StateContext } from "../../contexts/StatesProvider";
 const OneHour = 60 * 60 * 1000;
 
 export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
-  const { prefs, credentials: nostrKeys } = props as {
-    prefs: SelfSovereignIndividualPrefs;
+  const { prefs, credentials: nostrKeys } = props as Omit<
+    SelfSovereignIndividualDefaultProps,
+    "credentials"
+  > & {
     credentials: NostrCredential[];
   };
   const { states, resetState, updateState } = useContext(StateContext);
   const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
 
   const [newSite, setNewSite] = useState("");
-  const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState("");
+  const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState(""); // Note that it remains a string
   const [newNallowedMethodPreset, setNewNallowedMethodPreset] = useState<
     NallowedMethod[]
   >([]);
@@ -421,9 +422,7 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
       dialogDisplayOptionPreset:
         DefaultDialogDisplayOptions.filter(Boolean).join(","),
     });
-    setNewDialogDisplayOptionPreset(
-      DefaultDialogDisplayOptions as unknown as DialogDisplayOption[]
-    );
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
   };
 
   const getTrustedSites = useCallback(() => {

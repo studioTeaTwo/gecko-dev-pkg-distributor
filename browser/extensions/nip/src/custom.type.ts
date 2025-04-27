@@ -1,12 +1,7 @@
 import { WindowSSI } from "./window.ssi.type";
 
 type ApplicationName = "ssb";
-export type ProtocolName =
-  | "bitcoin"
-  | "lightning"
-  | "ecash"
-  | "nostr"
-  | "did:dht";
+export type ProtocolName = "bitcoin" | "nostr";
 export const availableCallsBitcoin = [
   "bitcoin/generate",
   "bitcoin/shareWith",
