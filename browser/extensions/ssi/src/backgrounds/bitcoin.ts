@@ -31,7 +31,6 @@ export const doBitcoinAction = async (
 
   switch (action) {
     case "bitcoin/generate": {
-      console.log("bitcoin generate");
       if (
         args.type == null ||
         !["mnemonic", "derivation"].includes(args.type)

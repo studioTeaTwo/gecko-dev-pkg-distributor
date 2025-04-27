@@ -667,35 +667,6 @@ exports.sha512_224 = (0, utils_ts_1.createHasher)(() => new SHA512_224());
 
 /***/ }),
 
-/***/ 623:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.sha224 = exports.SHA224 = exports.sha256 = exports.SHA256 = void 0;
-/**
- * SHA2-256 a.k.a. sha256. In JS, it is the fastest hash, even faster than Blake3.
- *
- * To break sha256 using birthday attack, attackers need to try 2^128 hashes.
- * BTC network is doing 2^70 hashes/sec (2^95 hashes/year) as per 2025.
- *
- * Check out [FIPS 180-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf).
- * @module
- * @deprecated
- */
-const sha2_ts_1 = __webpack_require__(76);
-/** @deprecated Use import from `noble/hashes/sha2` module */
-exports.SHA256 = sha2_ts_1.SHA256;
-/** @deprecated Use import from `noble/hashes/sha2` module */
-exports.sha256 = sha2_ts_1.sha256;
-/** @deprecated Use import from `noble/hashes/sha2` module */
-exports.SHA224 = sha2_ts_1.SHA224;
-/** @deprecated Use import from `noble/hashes/sha2` module */
-exports.sha224 = sha2_ts_1.sha224;
-//# sourceMappingURL=sha256.js.map
-
-/***/ }),
-
 /***/ 175:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -1021,7 +992,7 @@ function randomBytes(bytesLength = 32) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handleAccountChanged = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.nip44Decrypt = exports.nip44Encrypt = exports.nip04Decrypt = exports.nip04Encrypt = exports.signEvent = exports.getPublicKey = void 0;
-const sha256_1 = __webpack_require__(623);
+const sha2_1 = __webpack_require__(76);
 const utils_1 = __webpack_require__(175);
 const logger_1 = __webpack_require__(874);
 /**
@@ -1036,20 +1007,27 @@ function getPublicKey() {
 }
 exports.getPublicKey = getPublicKey;
 function signEvent(event) {
-    const signedEvent = { ...event };
+    const signedEvent = sanitizeObject(event);
     let eventHash = "";
     return new window.Promise((resolve, reject) => {
         // Leave it to the app to verify it is the same as the current primary key.
-        eventHash = (0, utils_1.bytesToHex)((0, sha256_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
-        window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
+        window.wrappedJSObject.ssi.nostr.getPublicKeySync(exportFunction((error, pubkey) => {
             if (error) {
                 reject(error);
             }
-            signedEvent.id = eventHash;
-            signedEvent.sig = signature;
-            resolve(cloneInto(signedEvent, window));
-        }, window), cloneInto({
-            type: "signEvent",
+            signedEvent.pubkey = pubkey;
+            eventHash = (0, utils_1.bytesToHex)((0, sha2_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
+            window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
+                if (error) {
+                    reject(error);
+                }
+                signedEvent.id = eventHash;
+                signedEvent.sig = signature;
+                resolve(cloneInto(signedEvent, window));
+            }, window), cloneInto({
+                type: "signEvent",
+            }, window));
+            XPCNativeWrapper(window.wrappedJSObject.ssi);
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });
@@ -1120,7 +1098,7 @@ exports.nip44Decrypt = nip44Decrypt;
  */
 function _invoke(target) {
     return function (action, data) {
-        return target.dispatchEvent(new CustomEvent(action, {
+        return target.dispatchEvent(new window.CustomEvent(action, {
             detail: data,
             bubbles: true,
             composed: true,
@@ -1153,8 +1131,8 @@ exports.handleAccountChanged = handleAccountChanged;
  */
 // based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event) {
-    if (!(event instanceof Object))
-        return false; // Not `window.Object`
+    if (!(event instanceof window.Object))
+        return false;
     if (typeof event.kind !== "number")
         return false;
     if (typeof event.content !== "string")
@@ -1190,6 +1168,39 @@ function serializeEvent(event) {
         event.tags,
         event.content,
     ]);
+}
+function sanitizeObject(obj) {
+    const _obj = new window.Object();
+    if (obj == null) {
+        return _obj;
+    }
+    for (const entry of window.Object.entries(obj)) {
+        if (typeof entry[1] === "object" && !window.Array.isArray(entry[1])) {
+            _obj[entry[0]] = sanitizeObject(entry[1]);
+        }
+        else if (window.Array.isArray(entry[1])) {
+            _obj[entry[0]] = sanitizeArray(entry[1]);
+        }
+        else {
+            _obj[entry[0]] = entry[1];
+        }
+    }
+    return _obj;
+}
+function sanitizeArray(array) {
+    const _array = new window.Array(array.length);
+    array.forEach((item, i) => {
+        if (window.Array.isArray(item)) {
+            _array[i] = sanitizeArray(item);
+        }
+        else if (typeof item === "object") {
+            _array[i] = sanitizeObject(item);
+        }
+        else {
+            _array[i] = item;
+        }
+    });
+    return _array;
 }
 
 

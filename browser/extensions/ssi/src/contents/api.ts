@@ -18,10 +18,12 @@ import { type AvailableCalls, availableCalls } from "../custom.type";
 
 export const BitcoinApi = {
   generate(option) {
-    return _callRuntime<string>("bitcoin/generate", option);
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    return _callRuntime<string>("bitcoin/generate", cleanedObj);
   },
   generateSync(callback, option) {
-    _callRuntime<string>("bitcoin/generate", option)
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    _callRuntime<string>("bitcoin/generate", cleanedObj)
       .then(identifier => {
         callback(null, identifier);
       })
@@ -38,10 +40,9 @@ export const BitcoinApi = {
       path?: string; // m or m/*
     }
   ) {
-    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, {
-      pubkey,
-      ...option,
-    });
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.pubkey = pubkey;
+    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, cleanedObj);
   },
   shareWithSync(
     pubkey,
@@ -52,10 +53,9 @@ export const BitcoinApi = {
       path?: string; // m or m/*
     }
   ) {
-    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, {
-      pubkey,
-      ...option,
-    })
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.pubkey = pubkey;
+    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, cleanedObj)
       .then(sharedSecret => {
         callback(null, sharedSecret);
       })
@@ -75,10 +75,12 @@ export const NostrApi = {
   },
 
   getPublicKey(option) {
-    return _callRuntime<string>("nostr/getPublicKey", option);
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    return _callRuntime<string>("nostr/getPublicKey", cleanedObj);
   },
   getPublicKeySync(callback, option) {
-    _callRuntime<string>("nostr/getPublicKey", option)
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    _callRuntime<string>("nostr/getPublicKey", cleanedObj)
       .then(publicKey => {
         callback(null, publicKey);
       })
@@ -93,10 +95,9 @@ export const NostrApi = {
       type: NostrSignType;
     }
   ) {
-    return _callRuntime<string>(`nostr/${option.type}`, {
-      message,
-      ...option,
-    });
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.message = message;
+    return _callRuntime<string>(`nostr/${option.type}`, cleanedObj);
   },
   signSync(
     message,
@@ -105,10 +106,9 @@ export const NostrApi = {
       type: NostrSignType;
     }
   ) {
-    _callRuntime<string>(`nostr/${option.type}`, {
-      message,
-      ...option,
-    })
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.message = message;
+    _callRuntime<string>(`nostr/${option.type}`, cleanedObj)
       .then(signature => {
         callback(null, signature);
       })
@@ -125,10 +125,9 @@ export const NostrApi = {
       version?: string;
     }
   ) {
-    return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
-      plaintext,
-      ...option,
-    });
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.plaintext = plaintext;
+    return _callRuntime<string>(`nostr/${option.type}/encrypt`, cleanedObj);
   },
   encryptSync(
     plaintext,
@@ -139,10 +138,9 @@ export const NostrApi = {
       version?: string;
     }
   ) {
-    return _callRuntime<string>(`nostr/${option.type}/encrypt`, {
-      plaintext,
-      ...option,
-    })
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.plaintext = plaintext;
+    return _callRuntime<string>(`nostr/${option.type}/encrypt`, cleanedObj)
       .then(ciphertext => {
         callback(null, ciphertext);
       })
@@ -159,10 +157,9 @@ export const NostrApi = {
       version?: string;
     }
   ) {
-    return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
-      ciphertext,
-      ...option,
-    });
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.ciphertext = ciphertext;
+    return _callRuntime<string>(`nostr/${option.type}/decrypt`, cleanedObj);
   },
   decryptSync(
     ciphertext,
@@ -173,10 +170,9 @@ export const NostrApi = {
       version?: string;
     }
   ) {
-    return _callRuntime<string>(`nostr/${option.type}/decrypt`, {
-      ciphertext,
-      ...option,
-    })
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    cleanedObj.ciphertext = ciphertext;
+    return _callRuntime<string>(`nostr/${option.type}/decrypt`, cleanedObj)
       .then(plaintext => {
         callback(null, plaintext);
       })
@@ -193,7 +189,7 @@ export const NostrApi = {
 export function _invoke(target: EventTarget) {
   return function (action, data) {
     return target.dispatchEvent(
-      new CustomEvent(action, {
+      new window.CustomEvent(action, {
         detail: data,
         bubbles: true,
         composed: true,
@@ -296,4 +292,36 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
         reject(cloneInto(error, window));
       });
   });
+}
+
+function sanitizeObject(obj) {
+  const _obj = new window.Object();
+  if (obj == null) {
+    return _obj;
+  }
+
+  for (const entry of window.Object.entries(obj)) {
+    if (typeof entry[1] === "object" && !window.Array.isArray(entry[1])) {
+      _obj[entry[0]] = sanitizeObject(entry[1]);
+    } else if (window.Array.isArray(entry[1])) {
+      _obj[entry[0]] = sanitizeArray(entry[1]);
+    } else {
+      _obj[entry[0]] = entry[1];
+    }
+  }
+  return _obj;
+}
+
+function sanitizeArray(array) {
+  const _array = new window.Array(array.length);
+  array.forEach((item, i) => {
+    if (window.Array.isArray(item)) {
+      _array[i] = sanitizeArray(item);
+    } else if (typeof item === "object") {
+      _array[i] = sanitizeObject(item);
+    } else {
+      _array[i] = item;
+    }
+  });
+  return _array;
 }

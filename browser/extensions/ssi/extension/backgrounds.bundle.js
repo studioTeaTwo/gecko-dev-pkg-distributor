@@ -910,7 +910,6 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
     }
     switch (action) {
         case "bitcoin/generate": {
-            console.log("bitcoin generate");
             if (args.type == null ||
                 !["mnemonic", "derivation"].includes(args.type)) {
                 throw new Error(`Invalid type: ${args.type}`);
