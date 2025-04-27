@@ -368,7 +368,7 @@ def create_member_file_window(namespace, kind, data):
     output_text += '\n\n'
 
     if kind == 2097152:
-        output_text += f"```admonish attention\nThis is the definition on TypeScript, does not exist in the execution environment. It's just a documentation commentary.\n```\n\n"
+        output_text += f"```admonish attention\nThis is the definition on TypeScript, does not exist in the execution environment. It's just for a documentation commentary.\n```\n\n"
 
     if 'comment' in data:
         for node in data['comment']['summary']:

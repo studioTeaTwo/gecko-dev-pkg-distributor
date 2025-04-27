@@ -53,13 +53,13 @@
       {
         "name": "onPrimaryChanged",
         "type": "function",
-        "description": "Fire when primary key changed",
+        "description": "Fire when the primary key is changed",
         "parameters": []
       },
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignindividual.bitcoin.enabled` changed",
+        "description": "Fire when the preference value of `selfsovereignindividual.bitcoin.enabled` is changed",
         "parameters": []
       }
     ],
@@ -156,12 +156,12 @@
               },
               "xpub": {
                 "type": "string",
-                "description": "The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is xpriv key. This is required when `type` is \"xpriv\".",
+                "description": "The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is encrypted xpriv key. This is required when `type` is \"xpriv\".",
                 "optional": true
               },
               "path": {
                 "type": "string",
-                "description": "The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".",
+                "description": "The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".",
                 "optional": true
               }
             }

@@ -41,7 +41,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
             let nEvent = {}; // for type=signEvent
 
             try {
@@ -136,7 +136,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
 
             try {
               // Validate params
@@ -226,7 +226,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
 
             try {
               // Validate params

@@ -926,7 +926,7 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
         }
         case "bitcoin/shareWith": {
             if (args.pubkey == null || typeof args.pubkey !== "string") {
-                throw new window.Error("Invalid partner's pubkey");
+                throw new Error("Invalid partner's pubkey");
             }
             if (args.type == null ||
                 !["mnemonic", "derivation", "xpriv"].includes(args.type)) {
@@ -941,7 +941,7 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
             if (!encryptedSecret) {
                 throw new Error("Failed to shareWith");
             }
-            return encryptedSecret.secret;
+            return encryptedSecret;
         }
         default:
             throw new Error("Not implemented");
@@ -1283,7 +1283,7 @@ exports.log = void 0;
 // NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
 // TODO(ssb): review those on inpages and contents
 function log(...args) {
-    console.info("ssb:", args);
+    window.console.info("ssb:", args);
 }
 exports.log = log;
 

@@ -34,13 +34,13 @@
       {
         "name": "onPrimaryChanged",
         "type": "function",
-        "description": "Fire when primary key changed",
+        "description": "Fire when the primary key is changed",
         "parameters": []
       },
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignindividual.nostr.enabled` changed",
+        "description": "Fire when the preference value of `selfsovereignindividual.nostr.enabled` is changed",
         "parameters": []
       }
     ],
@@ -94,7 +94,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise\\<null\\> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise\\<undefined\\> if error.",
           "optional": true
         }
       },
@@ -146,7 +146,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise\\<null\\> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise\\<undefined\\> if error.",
           "optional": true
         }
       },
@@ -198,7 +198,7 @@
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise\\<null\\> if error.",
+          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise\\<undefined\\> if error.",
           "optional": true
         }
       }

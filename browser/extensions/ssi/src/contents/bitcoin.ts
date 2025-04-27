@@ -7,6 +7,11 @@ import {
   removeEventListener,
 } from "./api";
 
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+
 // Object shared with inpage scripts.
 const _bitcoin = new window.Object() as WindowSSI["bitcoin"];
 _bitcoin.generate = exportFunction(BitcoinApi.generate, window);

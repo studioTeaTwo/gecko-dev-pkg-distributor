@@ -41,7 +41,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
             { type, strength, passphrase, path },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
 
             try {
               // Validate params

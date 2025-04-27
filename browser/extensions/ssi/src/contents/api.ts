@@ -3,8 +3,14 @@ import {
   NostrEncryptType,
   NostrDecryptType,
   BitcoinShareType,
+  BitcoinSharedSecret,
 } from "../window.ssi.type";
 import { type AvailableCalls, availableCalls } from "../custom.type";
+
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
 
 /**
  * Bitcoin
@@ -20,7 +26,7 @@ export const BitcoinApi = {
         callback(null, identifier);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, undefined);
       });
   },
 
@@ -32,7 +38,7 @@ export const BitcoinApi = {
       path?: string; // m or m/*
     }
   ) {
-    return _callRuntime<string>(`bitcoin/shareWith`, {
+    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, {
       pubkey,
       ...option,
     });
@@ -46,15 +52,15 @@ export const BitcoinApi = {
       path?: string; // m or m/*
     }
   ) {
-    return _callRuntime<string>(`bitcoin/shareWith`, {
+    return _callRuntime<BitcoinSharedSecret>(`bitcoin/shareWith`, {
       pubkey,
       ...option,
     })
-      .then(ciphertext => {
-        callback(null, ciphertext);
+      .then(sharedSecret => {
+        callback(null, sharedSecret);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, null);
       });
   },
 };
@@ -77,7 +83,7 @@ export const NostrApi = {
         callback(null, publicKey);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, undefined);
       });
   },
 
@@ -107,7 +113,7 @@ export const NostrApi = {
         callback(null, signature);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, undefined);
       });
   },
 
@@ -141,7 +147,7 @@ export const NostrApi = {
         callback(null, ciphertext);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, undefined);
       });
   },
 
@@ -175,7 +181,7 @@ export const NostrApi = {
         callback(null, plaintext);
       })
       .catch(error => {
-        callback(error, "");
+        callback(error, undefined);
       });
   },
 };
@@ -274,7 +280,17 @@ export function _callRuntime<T>(action: AvailableCalls, option: FixMe) {
         args: option,
       })
       .then(response => {
-        resolve(response);
+        if (
+          ["string", "number", "bigint", "boolean", "undefined"].includes(
+            typeof response
+          )
+        ) {
+          resolve(response);
+        } else if (["object"].includes(typeof response)) {
+          resolve(cloneInto(response, window));
+        } else {
+          throw new window.Error("Not supported response type");
+        }
       })
       .catch(error => {
         reject(cloneInto(error, window));

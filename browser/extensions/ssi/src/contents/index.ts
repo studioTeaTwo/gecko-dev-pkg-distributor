@@ -11,6 +11,11 @@ import { bitcoin, init as bitcoinInit } from "./bitcoin";
 import { nostr, init as nostrInit } from "./nostr";
 import { _invoke, addEventListener, removeEventListener } from "./api";
 
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+
 log("content-script working", browser.runtime.getURL("contents.bundle.js"));
 
 // Object shared with inpage scripts.
@@ -40,14 +45,14 @@ if (shouldInject()) {
     window.wrappedJSObject.ssi.bitcoin,
     window.wrappedJSObject.ssi.nostr,
   ]) {
-    for (const property of Object.getOwnPropertyNames(api)) {
-      Object.defineProperty(api, property, {
+    for (const property of window.Object.getOwnPropertyNames(api)) {
+      window.Object.defineProperty(api, property, {
         writable: false,
         configurable: false,
       });
     }
   }
-  Object.defineProperty(window.wrappedJSObject, "ssi", {
+  window.Object.defineProperty(window.wrappedJSObject, "ssi", {
     writable: false,
     configurable: false,
   });

@@ -7,6 +7,11 @@ import {
   removeEventListener,
 } from "./api";
 
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+
 // Object shared with inpage scripts.
 const _nostr = new window.Object() as WindowSSI["nostr"];
 _nostr.generate = exportFunction(NostrApi.generate, window);

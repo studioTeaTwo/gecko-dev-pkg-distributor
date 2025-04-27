@@ -17,6 +17,12 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
 export type BitcoinGenerateType = "mnemonic" | "derivation";
 /** Implementation list of Bitcoin share spec. */
 export type BitcoinShareType = "mnemonic" | "derivation" | "xpriv";
+/** Return type of Bitcoin shared secret. */
+export interface BitcoinSharedSecret {
+  secret: string; // The secret encrypted by Nostr NIP-44
+  sender: string; // The Nostr public key of the person who encrypted the secret. It's the npub format.
+  receiver: string; // The Nostr public key of the person with whom the secret is shared. It's the npub format.
+}
 /** Implementation list of Nostr signature spec. */
 export type NostrSignType = "signEvent";
 /** Implementation list of Nostr encyption spec. */
@@ -41,7 +47,7 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    * @param options.strength - The strength when generating a mnemonic (and a master key). This is required when `type` is \"mnemonic\".
    * @param options.passphrase - The passphrase when generating a mnemonic (and a master key). This is optional when `type` is \"mnemonic\".
    * @param options.path - The Hierarchical Deterministic (HD) path: e.g. \"m/0'/1/2'\". If null (or \"m\") a master key will be generated. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".
-   * @returns A Promise that will be fulfilled with a `string` of xpub. Returns Promise\\<null\\> if error.
+   * @returns A Promise that will be fulfilled with a `string` of xpub..
    * @throws If failed
    */
   generate(options: {
@@ -78,7 +84,7 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    * @param options.type - The type that specifies the secret you want the user to share: e.g. \"mnemonic\", \"derivation\", \"xpriv\".
    * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is xpriv key. This is required when `type` is \"xpriv\".
    * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".
-   * @returns A Promise that will be fulfilled with `string` of the encrypted secret. Returns Promise\\<null\\> if error."
+   * @returns A Promise that will be fulfilled with `BitcoinSharedSecret`."
    * @throws If failed
    */
   shareWith(
@@ -88,7 +94,7 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
       xpub?: string;
       path?: string; // m or m/*
     }
-  ): Promise<string>;
+  ): Promise<BitcoinSharedSecret>;
   /**
    * Callback type of `shareWith`.
    *
@@ -96,12 +102,15 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting `ssi.bitcoin.SharedSecret`.
    * @param options - Direction about the secret you want the user to share. \"mnemonic\" and \"derivation\" use the seed specified by the user as the primary.
    * @param options.type - The type that specifies the secret you want the user to share: e.g. \"mnemonic\", \"derivation\", \"xpriv\".
-   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is xpriv key. This is required when `type` is \"xpriv\".
-   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".
+   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is encrypted xpriv key. This is required when `type` is \"xpriv\".
+   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".
    */
   shareWithSync(
     pubkey: string,
-    callback: (error: Error | null, signature: string) => unknown,
+    callback: (
+      error: Error | null,
+      sharedSecret: BitcoinSharedSecret
+    ) => unknown,
     options: {
       type: BitcoinShareType;
       xpub?: string;

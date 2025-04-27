@@ -10,6 +10,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports._callRuntime = exports.removeEventListener = exports.addEventListener = exports._invoke = exports.NostrApi = exports.BitcoinApi = void 0;
 const custom_type_1 = __webpack_require__(711);
 /**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+/**
  * Bitcoin
  */
 exports.BitcoinApi = {
@@ -22,7 +26,7 @@ exports.BitcoinApi = {
             callback(null, identifier);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, undefined);
         });
     },
     shareWith(pubkey, option) {
@@ -36,11 +40,11 @@ exports.BitcoinApi = {
             pubkey,
             ...option,
         })
-            .then(ciphertext => {
-            callback(null, ciphertext);
+            .then(sharedSecret => {
+            callback(null, sharedSecret);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, null);
         });
     },
 };
@@ -60,7 +64,7 @@ exports.NostrApi = {
             callback(null, publicKey);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, undefined);
         });
     },
     sign(message, option) {
@@ -78,7 +82,7 @@ exports.NostrApi = {
             callback(null, signature);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, undefined);
         });
     },
     encrypt(plaintext, option) {
@@ -96,7 +100,7 @@ exports.NostrApi = {
             callback(null, ciphertext);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, undefined);
         });
     },
     decrypt(ciphertext, option) {
@@ -114,7 +118,7 @@ exports.NostrApi = {
             callback(null, plaintext);
         })
             .catch(error => {
-            callback(error, "");
+            callback(error, undefined);
         });
     },
 };
@@ -202,7 +206,15 @@ function _callRuntime(action, option) {
             args: option,
         })
             .then(response => {
-            resolve(response);
+            if (["string", "number", "bigint", "boolean", "undefined"].includes(typeof response)) {
+                resolve(response);
+            }
+            else if (["object"].includes(typeof response)) {
+                resolve(cloneInto(response, window));
+            }
+            else {
+                throw new window.Error("Not supported response type");
+            }
         })
             .catch(error => {
             reject(cloneInto(error, window));
@@ -222,6 +234,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = exports.bitcoin = void 0;
 const logger_1 = __webpack_require__(874);
 const api_1 = __webpack_require__(71);
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
 // Object shared with inpage scripts.
 const _bitcoin = new window.Object();
 _bitcoin.generate = exportFunction(api_1.BitcoinApi.generate, window);
@@ -261,6 +277,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.init = exports.nostr = void 0;
 const logger_1 = __webpack_require__(874);
 const api_1 = __webpack_require__(71);
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
 // Object shared with inpage scripts.
 const _nostr = new window.Object();
 _nostr.generate = exportFunction(api_1.NostrApi.generate, window);
@@ -336,7 +356,7 @@ exports.log = void 0;
 // NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
 // TODO(ssb): review those on inpages and contents
 function log(...args) {
-    console.info("ssb:", args);
+    window.console.info("ssb:", args);
 }
 exports.log = log;
 
@@ -371,10 +391,10 @@ function suffixCheck() {
 // Checks the documentElement of the current document
 function documentElementCheck() {
     // todo: correct?
-    if (!document || !document.documentElement) {
+    if (!window.document || !window.document.documentElement) {
         return false;
     }
-    const docNode = document.documentElement.nodeName;
+    const docNode = window.document.documentElement.nodeName;
     if (docNode) {
         return docNode.toLowerCase() === "html";
     }
@@ -434,6 +454,10 @@ const logger_1 = __webpack_require__(874);
 const bitcoin_1 = __webpack_require__(653);
 const nostr_1 = __webpack_require__(45);
 const api_1 = __webpack_require__(71);
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
 (0, logger_1.log)("content-script working", browser.runtime.getURL("contents.bundle.js"));
 // Object shared with inpage scripts.
 const windowSSI = new window.Object();
@@ -453,14 +477,14 @@ if ((0, shouldInject_1.shouldInject)()) {
         window.wrappedJSObject.ssi.bitcoin,
         window.wrappedJSObject.ssi.nostr,
     ]) {
-        for (const property of Object.getOwnPropertyNames(api)) {
-            Object.defineProperty(api, property, {
+        for (const property of window.Object.getOwnPropertyNames(api)) {
+            window.Object.defineProperty(api, property, {
                 writable: false,
                 configurable: false,
             });
         }
     }
-    Object.defineProperty(window.wrappedJSObject, "ssi", {
+    window.Object.defineProperty(window.wrappedJSObject, "ssi", {
         writable: false,
         configurable: false,
     });

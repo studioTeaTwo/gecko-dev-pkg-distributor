@@ -4,6 +4,11 @@ import { log } from "../shared/logger";
 import { NostrEvent } from "../custom.type";
 
 /**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+
+/**
  * APIs to export to inpages
  */
 

@@ -51,7 +51,7 @@ export const doBitcoinAction = async (
     }
     case "bitcoin/shareWith": {
       if (args.pubkey == null || typeof args.pubkey !== "string") {
-        throw new window.Error("Invalid partner's pubkey");
+        throw new Error("Invalid partner's pubkey");
       }
       if (
         args.type == null ||
@@ -76,7 +76,7 @@ export const doBitcoinAction = async (
         throw new Error("Failed to shareWith");
       }
 
-      return encryptedSecret.secret;
+      return encryptedSecret;
     }
     default:
       throw new Error("Not implemented");

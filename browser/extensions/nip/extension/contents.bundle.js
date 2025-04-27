@@ -1025,6 +1025,10 @@ const sha256_1 = __webpack_require__(623);
 const utils_1 = __webpack_require__(175);
 const logger_1 = __webpack_require__(874);
 /**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+/**
  * APIs to export to inpages
  */
 function getPublicKey() {
