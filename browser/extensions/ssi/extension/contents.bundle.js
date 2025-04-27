@@ -21,7 +21,7 @@ exports.BitcoinApi = {
         const cleanedObj = sanitizeObject(option);
         return _callRuntime("bitcoin/generate", cleanedObj);
     },
-    generateSync(callback, option) {
+    generateSync(option, callback) {
         const cleanedObj = sanitizeObject(option);
         _callRuntime("bitcoin/generate", cleanedObj)
             .then(identifier => {
@@ -36,7 +36,7 @@ exports.BitcoinApi = {
         cleanedObj.pubkey = pubkey;
         return _callRuntime(`bitcoin/shareWith`, cleanedObj);
     },
-    shareWithSync(pubkey, callback, option) {
+    shareWithSync(pubkey, option, callback) {
         const cleanedObj = sanitizeObject(option);
         cleanedObj.pubkey = pubkey;
         return _callRuntime(`bitcoin/shareWith`, cleanedObj)
@@ -59,7 +59,7 @@ exports.NostrApi = {
         const cleanedObj = sanitizeObject(option);
         return _callRuntime("nostr/getPublicKey", cleanedObj);
     },
-    getPublicKeySync(callback, option) {
+    getPublicKeySync(option, callback) {
         const cleanedObj = sanitizeObject(option);
         _callRuntime("nostr/getPublicKey", cleanedObj)
             .then(publicKey => {
@@ -74,7 +74,7 @@ exports.NostrApi = {
         cleanedObj.message = message;
         return _callRuntime(`nostr/${option.type}`, cleanedObj);
     },
-    signSync(message, callback, option) {
+    signSync(message, option, callback) {
         const cleanedObj = sanitizeObject(option);
         cleanedObj.message = message;
         _callRuntime(`nostr/${option.type}`, cleanedObj)
@@ -90,7 +90,7 @@ exports.NostrApi = {
         cleanedObj.plaintext = plaintext;
         return _callRuntime(`nostr/${option.type}/encrypt`, cleanedObj);
     },
-    encryptSync(plaintext, callback, option) {
+    encryptSync(plaintext, option, callback) {
         const cleanedObj = sanitizeObject(option);
         cleanedObj.plaintext = plaintext;
         return _callRuntime(`nostr/${option.type}/encrypt`, cleanedObj)
@@ -106,7 +106,7 @@ exports.NostrApi = {
         cleanedObj.ciphertext = ciphertext;
         return _callRuntime(`nostr/${option.type}/decrypt`, cleanedObj);
     },
-    decryptSync(ciphertext, callback, option) {
+    decryptSync(ciphertext, option, callback) {
         const cleanedObj = sanitizeObject(option);
         cleanedObj.ciphertext = ciphertext;
         return _callRuntime(`nostr/${option.type}/decrypt`, cleanedObj)

@@ -34,19 +34,17 @@ declare global {
   /**
    * FireFox only methods
    */
-  function cloneInto(
+  function cloneInto<T>(
     obj: object,
     scope: Window,
     options?: { cloneFunctions?: boolean; wrapReflectors?: boolean }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any;
+  ): T;
   function exportFunction(
     // eslint-disable-next-line @typescript-eslint/ban-types
     func: Function,
     scope: Window,
     options?: { defineAs?: string; allowCrossOriginArguments?: boolean }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): (...args) => any;
+  ): (...args) => FixMe;
   function XPCNativeWrapper(obj: object): void;
   interface WrappedJSObject {
     ssi: WindowSSI;

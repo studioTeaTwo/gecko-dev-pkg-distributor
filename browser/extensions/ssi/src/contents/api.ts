@@ -21,7 +21,7 @@ export const BitcoinApi = {
     const cleanedObj = sanitizeObject(option) as FixMe;
     return _callRuntime<string>("bitcoin/generate", cleanedObj);
   },
-  generateSync(callback, option) {
+  generateSync(option, callback) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     _callRuntime<string>("bitcoin/generate", cleanedObj)
       .then(identifier => {
@@ -46,12 +46,12 @@ export const BitcoinApi = {
   },
   shareWithSync(
     pubkey,
-    callback,
     option: {
       type: BitcoinShareType;
       xpub?: string;
       path?: string; // m or m/*
-    }
+    },
+    callback
   ) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     cleanedObj.pubkey = pubkey;
@@ -78,7 +78,7 @@ export const NostrApi = {
     const cleanedObj = sanitizeObject(option) as FixMe;
     return _callRuntime<string>("nostr/getPublicKey", cleanedObj);
   },
-  getPublicKeySync(callback, option) {
+  getPublicKeySync(option, callback) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     _callRuntime<string>("nostr/getPublicKey", cleanedObj)
       .then(publicKey => {
@@ -101,10 +101,10 @@ export const NostrApi = {
   },
   signSync(
     message,
-    callback,
     option: {
       type: NostrSignType;
-    }
+    },
+    callback
   ) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     cleanedObj.message = message;
@@ -131,12 +131,12 @@ export const NostrApi = {
   },
   encryptSync(
     plaintext,
-    callback,
     option: {
       type: NostrEncryptType;
       pubkey?: string;
       version?: string;
-    }
+    },
+    callback
   ) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     cleanedObj.plaintext = plaintext;
@@ -163,12 +163,12 @@ export const NostrApi = {
   },
   decryptSync(
     ciphertext,
-    callback,
     option: {
       type: NostrDecryptType;
       pubkey?: string;
       version?: string;
-    }
+    },
+    callback
   ) {
     const cleanedObj = sanitizeObject(option) as FixMe;
     cleanedObj.ciphertext = ciphertext;

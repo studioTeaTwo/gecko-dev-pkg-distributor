@@ -1011,21 +1011,21 @@ function signEvent(event) {
     let eventHash = "";
     return new window.Promise((resolve, reject) => {
         // Leave it to the app to verify it is the same as the current primary key.
-        window.wrappedJSObject.ssi.nostr.getPublicKeySync(exportFunction((error, pubkey) => {
+        window.wrappedJSObject.ssi.nostr.getPublicKeySync(null, exportFunction((error, pubkey) => {
             if (error) {
                 reject(error);
             }
             signedEvent.pubkey = pubkey;
             eventHash = (0, utils_1.bytesToHex)((0, sha2_1.sha256)(new window.TextEncoder().encode(serializeEvent(signedEvent))));
-            window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), exportFunction((error, signature) => {
+            window.wrappedJSObject.ssi.nostr.signSync(window.JSON.stringify(signedEvent), cloneInto({
+                type: "signEvent",
+            }, window), exportFunction((error, signature) => {
                 if (error) {
                     reject(error);
                 }
                 signedEvent.id = eventHash;
                 signedEvent.sig = signature;
                 resolve(cloneInto(signedEvent, window));
-            }, window), cloneInto({
-                type: "signEvent",
             }, window));
             XPCNativeWrapper(window.wrappedJSObject.ssi);
         }, window));
@@ -1035,14 +1035,14 @@ function signEvent(event) {
 exports.signEvent = signEvent;
 function nip04Encrypt(pubkey, plaintext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, exportFunction((error, ciphertext) => {
+        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, cloneInto({
+            type: "nip04",
+            pubkey,
+        }, window), exportFunction((error, ciphertext) => {
             if (error) {
                 reject(error);
             }
             resolve(ciphertext);
-        }, window), cloneInto({
-            type: "nip04",
-            pubkey,
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });
@@ -1050,14 +1050,14 @@ function nip04Encrypt(pubkey, plaintext) {
 exports.nip04Encrypt = nip04Encrypt;
 function nip04Decrypt(pubkey, ciphertext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, exportFunction((error, plaintext) => {
+        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, cloneInto({
+            type: "nip04",
+            pubkey,
+        }, window), exportFunction((error, plaintext) => {
             if (error) {
                 reject(error);
             }
             resolve(plaintext);
-        }, window), cloneInto({
-            type: "nip04",
-            pubkey,
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });
@@ -1065,14 +1065,14 @@ function nip04Decrypt(pubkey, ciphertext) {
 exports.nip04Decrypt = nip04Decrypt;
 function nip44Encrypt(pubkey, plaintext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, exportFunction((error, ciphertext) => {
+        window.wrappedJSObject.ssi.nostr.encryptSync(plaintext, cloneInto({
+            type: "nip44",
+            pubkey,
+        }, window), exportFunction((error, ciphertext) => {
             if (error) {
                 reject(error);
             }
             resolve(ciphertext);
-        }, window), cloneInto({
-            type: "nip44",
-            pubkey,
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });
@@ -1080,14 +1080,14 @@ function nip44Encrypt(pubkey, plaintext) {
 exports.nip44Encrypt = nip44Encrypt;
 function nip44Decrypt(pubkey, ciphertext) {
     return new window.Promise((resolve, reject) => {
-        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, exportFunction((error, plaintext) => {
+        window.wrappedJSObject.ssi.nostr.decryptSync(ciphertext, cloneInto({
+            type: "nip44",
+            pubkey,
+        }, window), exportFunction((error, plaintext) => {
             if (error) {
                 reject(error);
             }
             resolve(plaintext);
-        }, window), cloneInto({
-            type: "nip44",
-            pubkey,
         }, window));
         XPCNativeWrapper(window.wrappedJSObject.ssi);
     });

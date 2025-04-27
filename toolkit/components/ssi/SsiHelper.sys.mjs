@@ -795,7 +795,7 @@ export const SsiHelper = {
       }
     }
 
-    await Services.ssi.modifyCredential(credentials[0], newCredential);
+    Services.ssi.modifyCredential(credentials[0], newCredential);
   },
 
   async removeCredentialWithoutSecret(matchData) {

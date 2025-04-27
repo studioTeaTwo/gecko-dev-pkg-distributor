@@ -85,7 +85,7 @@
             "name": "tabId",
             "type": "integer",
             "minimum": -1,
-            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+            "description": "This is `tabs.Tab.id`. See also [MDN Reference](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id)."
           },
           {
             "name": "options",
@@ -138,7 +138,7 @@
             "name": "tabId",
             "type": "integer",
             "minimum": -1,
-            "description": "This is `tabs.Tab.id`. See also https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id"
+            "description": "This is `tabs.Tab.id`. See also [MDN Reference](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id)."
           },
           {
             "name": "pubkey",
