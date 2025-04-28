@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { SelfSovereignIndividualDefaultProps } from "../../custom.type";
-import { Grid, GridItem, Button } from "@chakra-ui/react";
+import { Grid, GridItem, Button, Box } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
@@ -41,7 +41,7 @@ export default function Settings(props: SelfSovereignIndividualDefaultProps) {
   };
 
   return (
-    <div>
+    <Box height={"calc(100vh - 40px)"} mt={10} overflowY="auto">
       <Grid gridTemplateColumns={"100px 1fr"} gap={6} mb="2rem">
         <GridItem>
           <label htmlFor="setting-pref-reset">Delete All data</label>
@@ -61,6 +61,6 @@ export default function Settings(props: SelfSovereignIndividualDefaultProps) {
         onClose={onCloseDialog}
         cancelRef={cancelRef}
       />
-    </div>
+    </Box>
   );
 }

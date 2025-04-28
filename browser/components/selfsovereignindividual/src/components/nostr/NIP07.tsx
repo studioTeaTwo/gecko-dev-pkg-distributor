@@ -88,7 +88,9 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
   // const [error, setError] = useState("");
 
   useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    }
   }, [prefs.nostr.tabPinInNip07]);
   useEffect(() => {
     setNewNallowedMethodPreset(
@@ -724,14 +726,18 @@ export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
                 <Heading as="h5" size="md">
                   Trusted Sites
                 </Heading>
-                {tabPin(0)}
               </Tab>
+              <Box display="flex" alignItems="center" mr={1}>
+                {tabPin(0)}
+              </Box>
               <Tab>
                 <Heading as="h5" size="md">
                   Dialogic Authorization
                 </Heading>
-                {tabPin(1)}
               </Tab>
+              <Box display="flex" alignItems="center" mr={1}>
+                {tabPin(1)}
+              </Box>
             </TabList>
             <TabPanels>
               <TabPanel>

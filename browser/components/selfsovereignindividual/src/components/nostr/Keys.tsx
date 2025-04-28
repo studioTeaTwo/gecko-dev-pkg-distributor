@@ -371,6 +371,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             {item.identifier}
                           </Text>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.nseckey}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
@@ -385,6 +386,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             {item.rawPubkey}
                           </Text>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.secret}
                             onChangeVisibility={() => {}}
                             prefs={prefs}

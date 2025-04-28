@@ -3,9 +3,10 @@ import { HStack, IconButton, Text } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, MdOutlineContentCopy } from "./react-icons/Icons";
 import { authorizePrimaryPassword } from "./ipc";
 import AlertPrimaryPassword from "./AlertPrimaryPassword";
-import { SelfSovereignIndividualPrefs } from "../../custom.type";
+import { ProtocolName, SelfSovereignIndividualPrefs } from "../../custom.type";
 
 export default function Secret(props: {
+  protocolName: ProtocolName;
   value: string;
   onChangeVisibility;
   prefs: SelfSovereignIndividualPrefs;
@@ -13,14 +14,14 @@ export default function Secret(props: {
 }) {
   const [visible, setVisible] = useState(false);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const { value, textProps, onChangeVisibility, prefs } = props;
+  const { protocolName, value, textProps, onChangeVisibility, prefs } = props;
 
   const maskedValue = useCallback(() => "*".repeat(value.length), [value]);
 
   const handleToggole = async () => {
     if (!visible) {
       const isAuthorized = await authorizePrimaryPassword(
-        "nostr",
+        protocolName,
         prefs,
         setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
@@ -36,7 +37,7 @@ export default function Secret(props: {
   const handleCopy = async () => {
     if (!visible) {
       const isAuthorized = await authorizePrimaryPassword(
-        "nostr",
+        protocolName,
         prefs,
         setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"

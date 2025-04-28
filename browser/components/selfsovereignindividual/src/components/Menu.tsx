@@ -1,5 +1,13 @@
 import React, { useCallback } from "react";
-import { Box, Button, Divider, Flex, HStack, Spacer } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Divider,
+  Flex,
+  HStack,
+  Spacer,
+  VStack,
+} from "@chakra-ui/react";
 import { MenuItem, ProtocolName } from "../custom.type";
 import BitcoinIcon from "./shared/Logo";
 import { GiBirdTwitter } from "./shared/react-icons/Icons";
@@ -30,6 +38,7 @@ function Menu(props: Props) {
                 e.preventDefault();
                 setSelectedMenu(menu.name);
               }}
+              size={"lg"}
             >
               {menu.name.charAt(0).toUpperCase() + menu.name.slice(1)}
             </Button>
@@ -42,10 +51,21 @@ function Menu(props: Props) {
   }, [selectedMenu, menuPin]);
 
   return (
-    <Flex direction="column" gap="10">
-      <Box>{buildMenu()}</Box>
-      <Spacer />
-      <Box>
+    <Flex
+      direction={"column"}
+      width={"200px"}
+      height={"calc(100vh - 40px)"}
+      justify={"space-between"}
+      aria-label="Main Navigation"
+      as="nav"
+      pos={"sticky"}
+      top={0}
+      flexShrink={0}
+      p={10}
+      overflowY={"auto"}
+    >
+      <VStack gap={2}>{buildMenu()}</VStack>
+      <VStack>
         <Divider />
         <HStack>
           <Button
@@ -54,11 +74,12 @@ function Menu(props: Props) {
               e.preventDefault();
               setSelectedMenu("settings");
             }}
+            size={"lg"}
           >
             Settings
           </Button>
         </HStack>
-      </Box>
+      </VStack>
     </Flex>
   );
 }

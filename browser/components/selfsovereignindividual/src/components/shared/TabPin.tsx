@@ -1,5 +1,5 @@
 import React from "react";
-import { IconButton } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { LuPinOff, LuPin } from "./react-icons/Icons";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import { ProtocolName } from "../../custom.type";
@@ -14,15 +14,14 @@ export default function TabPin(
   const { onPrefChanged } = dispatchEvents;
 
   return (
-    <IconButton
-      variant="transparent"
-      aria-label="Toggle Pin"
+    <Box
       onClick={e => {
         e.preventDefault();
         onPrefChanged({ protocolName: prtocolName, [pref.key]: tabId });
       }}
+      ml={2}
     >
       {tabId === pref.value ? <LuPin /> : <LuPinOff />}
-    </IconButton>
+    </Box>
   );
 }

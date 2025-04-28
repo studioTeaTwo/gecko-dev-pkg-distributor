@@ -32377,14 +32377,6 @@ const NumberIncrementStepper = forwardRef(function NumberIncrementStepper2(props
   return /* @__PURE__ */ jsxRuntimeExports.jsx(StyledStepper, { ...increment, __css: styles2.stepper, children: props.children ?? /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleUpIcon, {}) });
 });
 NumberIncrementStepper.displayName = "NumberIncrementStepper";
-const Spacer = chakra("div", {
-  baseStyle: {
-    flex: 1,
-    justifySelf: "stretch",
-    alignSelf: "stretch"
-  }
-});
-Spacer.displayName = "Spacer";
 const StackItem = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   chakra.div,
   {
@@ -33689,9 +33681,9 @@ function genBech32(encoding) {
 }
 const bech32 = /* @__PURE__ */ genBech32("bech32");
 export {
-  CardFooter as $,
+  useEditableControls as $,
   AlertDialog as A,
-  Button as B,
+  Box as B,
   Card as C,
   Divider as D,
   Editable as E,
@@ -33708,33 +33700,32 @@ export {
   Tooltip as P,
   Menu as Q,
   React as R,
-  Spacer as S,
+  MenuButton as S,
   Text as T,
-  MenuButton as U,
+  MenuList as U,
   VStack as V,
-  MenuList as W,
-  MenuItem as X,
-  Checkbox as Y,
-  Switch as Z,
-  StackDivider as _,
-  Box as a,
-  useEditableControls as a0,
-  Tabs as a1,
-  TabList as a2,
-  Tab as a3,
-  TabPanels as a4,
-  TabPanel as a5,
-  Spinner as a6,
-  bech32 as a7,
-  bytesToHex as a8,
-  hexToBytes as a9,
-  NumberInput as aa,
-  NumberInputField as ab,
-  NumberInputStepper as ac,
-  NumberIncrementStepper as ad,
-  NumberDecrementStepper as ae,
-  clientExports as af,
-  ChakraProvider as ag,
+  MenuItem as W,
+  Checkbox as X,
+  Switch as Y,
+  StackDivider as Z,
+  CardFooter as _,
+  Button as a,
+  Tabs as a0,
+  TabList as a1,
+  Tab as a2,
+  TabPanels as a3,
+  TabPanel as a4,
+  Spinner as a5,
+  bech32 as a6,
+  bytesToHex as a7,
+  hexToBytes as a8,
+  NumberInput as a9,
+  NumberInputField as aa,
+  NumberInputStepper as ab,
+  NumberIncrementStepper as ac,
+  NumberDecrementStepper as ad,
+  clientExports as ae,
+  ChakraProvider as af,
   AlertDialogContent as b,
   ModalHeader as c,
   ModalCloseButton as d,

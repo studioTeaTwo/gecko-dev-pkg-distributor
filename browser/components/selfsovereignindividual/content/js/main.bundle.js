@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, F as Flex, a as Box, S as Spacer, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, V as VStack, T as Text, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, C as Card, v as CardHeader, w as Heading, E as Editable, x as EditablePreview, y as Input, z as EditableInput, G as CardBody, J as Textarea, K as Grid, N as GridItem, O as InputGroup, P as Tooltip, Q as Menu$1, U as MenuButton, W as MenuList, X as MenuItem, Y as Checkbox, Z as Switch, _ as StackDivider, $ as CardFooter, a0 as useEditableControls, a1 as Tabs, a2 as TabList, a3 as Tab, a4 as TabPanels, a5 as TabPanel, a6 as Spinner, a7 as bech32, a8 as bytesToHex, a9 as hexToBytes, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, C as Card, v as CardHeader, w as Heading, E as Editable, x as EditablePreview, y as Input, z as EditableInput, G as CardBody, J as Textarea, K as Grid, N as GridItem, O as InputGroup, P as Tooltip, Q as Menu$1, S as MenuButton, U as MenuList, W as MenuItem, X as Checkbox, Y as Switch, Z as StackDivider, _ as CardFooter, $ as useEditableControls, a0 as Tabs, a1 as TabList, a2 as Tab, a3 as TabPanels, a4 as TabPanel, a5 as Spinner, a6 as bech32, a7 as bytesToHex, a8 as hexToBytes, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as clientExports, af as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -672,14 +672,13 @@ function useChildActorEvent() {
 function TabPin(tabId, pref, prtocolName) {
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    IconButton,
+    Box,
     {
-      variant: "transparent",
-      "aria-label": "Toggle Pin",
       onClick: (e) => {
         e.preventDefault();
         onPrefChanged2({ protocolName: prtocolName, [pref.key]: tabId });
       },
+      ml: 2,
       children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {})
     }
   );
@@ -701,30 +700,47 @@ function Menu(props) {
             e.preventDefault();
             setSelectedMenu(menu.name);
           },
+          size: "lg",
           children: menu.name.charAt(0).toUpperCase() + menu.name.slice(1)
         }
       ),
       TabPin(menu.name, { key: "menuPin", value: menuPin }, "base")
     ] }, index)) });
   }, [selectedMenu, menuPin]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { direction: "column", gap: "10", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: buildMenu() }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Spacer, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button,
-        {
-          variant: selectedMenu === "settings" ? "solid" : "transparent",
-          onClick: (e) => {
-            e.preventDefault();
-            setSelectedMenu("settings");
-          },
-          children: "Settings"
-        }
-      ) })
-    ] })
-  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    Flex,
+    {
+      direction: "column",
+      width: "200px",
+      height: "calc(100vh - 40px)",
+      justify: "space-between",
+      "aria-label": "Main Navigation",
+      as: "nav",
+      pos: "sticky",
+      top: 0,
+      flexShrink: 0,
+      p: 10,
+      overflowY: "auto",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { gap: 2, children: buildMenu() }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: selectedMenu === "settings" ? "solid" : "transparent",
+              onClick: (e) => {
+                e.preventDefault();
+                setSelectedMenu("settings");
+              },
+              size: "lg",
+              children: "Settings"
+            }
+          ) })
+        ] })
+      ]
+    }
+  );
 }
 const StateContext = React.createContext(null);
 const DefaultState = {
@@ -824,12 +840,12 @@ function AlertPrimaryPassword(props) {
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  const { value, textProps, onChangeVisibility, prefs } = props;
+  const { protocolName, value, textProps, onChangeVisibility, prefs } = props;
   const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
   const handleToggole = async () => {
     if (!visible) {
       const isAuthorized = await authorizePrimaryPassword(
-        "nostr",
+        protocolName,
         prefs,
         setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
@@ -844,7 +860,7 @@ function Secret(props) {
   const handleCopy = async () => {
     if (!visible) {
       const isAuthorized = await authorizePrimaryPassword(
-        "nostr",
+        protocolName,
         prefs,
         setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
@@ -1981,6 +1997,7 @@ function Bitcoin$1(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.properties.xpriv,
                         onChangeVisibility: () => {
                         },
@@ -1994,6 +2011,7 @@ function Bitcoin$1(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.secret,
                         onChangeVisibility: () => {
                         },
@@ -2010,6 +2028,7 @@ function Bitcoin$1(props) {
                     item.properties.passphrase ? /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.properties.passphrase,
                         onChangeVisibility: () => {
                         },
@@ -2151,7 +2170,9 @@ function Bitcoin(props) {
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
-    setTabIndex(parseInt(prefs.bitcoin.tabPin));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.bitcoin.tabPin));
+    }
   }, [prefs.bitcoin.tabPin]);
   const tabPin = (tabId) => TabPin(
     tabId.toString(),
@@ -2167,7 +2188,7 @@ function Bitcoin(props) {
     const checked = e.target.checked;
     onPrefChanged2({ protocolName: "bitcoin", enabled: checked });
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "bitcoin-pref-enabled", children: "Enable" }) }),
@@ -2190,15 +2211,11 @@ function Bitcoin(props) {
           resetState();
         },
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "BIP-39" }),
-              tabPin(0)
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }),
-              tabPin(1)
-            ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { position: "sticky", top: "0", m: 2, zIndex: 1, bg: "white", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "BIP-39" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(0) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(1) })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin$1, { prefs, credentials: bitcoinKeys }) }),
@@ -3102,6 +3119,7 @@ function Nostr$1(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.nseckey,
                         onChangeVisibility: () => {
                         },
@@ -3116,6 +3134,7 @@ function Nostr$1(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.secret,
                         onChangeVisibility: () => {
                         },
@@ -3203,7 +3222,9 @@ function NIP07(props) {
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    }
   }, [prefs.nostr.tabPinInNip07]);
   reactExports.useEffect(() => {
     setNewNallowedMethodPreset(
@@ -3722,14 +3743,10 @@ function NIP07(props) {
                 },
                 children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }),
-                      tabPin(0)
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }),
-                      tabPin(1)
-                    ] })
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 1, children: tabPin(0) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 1, children: tabPin(1) })
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
@@ -4055,7 +4072,9 @@ function Nostr(props) {
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPin));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPin));
+    }
   }, [prefs.nostr.tabPin]);
   const nostrKeys = reactExports.useMemo(
     () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
@@ -4071,7 +4090,7 @@ function Nostr(props) {
     { key: "tabPin", value: prefs.nostr.tabPin },
     "nostr"
   );
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-enabled", children: "Enable" }) }),
@@ -4094,19 +4113,13 @@ function Nostr(props) {
           resetState();
         },
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "Keys" }),
-              tabPin(0)
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "NIP-07" }),
-              tabPin(1)
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }),
-              tabPin(2)
-            ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { position: "sticky", top: "0", zIndex: 1, m: 2, bg: "white", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "Keys" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(0) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "NIP-07" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(1) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(2) })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials: nostrKeys }) }),
@@ -4144,7 +4157,7 @@ function Settings(props) {
   const onCloseDialog = () => {
     setIsOpenDialog(false);
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "setting-pref-reset", children: "Delete All data" }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -4175,7 +4188,9 @@ function SelfSovereignIndividual() {
     initStore2();
   }, []);
   reactExports.useEffect(() => {
-    setSelectedMenu(prefs.base.menuPin);
+    if (!selectedMenu) {
+      setSelectedMenu(prefs.base.menuPin);
+    }
   }, [prefs.base.menuPin]);
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
@@ -4186,17 +4201,27 @@ function SelfSovereignIndividual() {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Settings, { prefs, credentials });
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { m: 10, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { w: "100%", h: "100%", templateColumns: "200px auto", gap: 4, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Menu,
-      {
-        selectedMenu,
-        setSelectedMenu,
-        menuPin: prefs.base.menuPin
-      }
-    ) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: prefs.base.menuPin ? switchContent() : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {}) })
-  ] }) });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    HStack,
+    {
+      width: "100%",
+      height: "100vh",
+      alignItems: "flex-start",
+      justifyContent: "flex-start",
+      overflow: "auto",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Menu,
+          {
+            selectedMenu,
+            setSelectedMenu,
+            menuPin: prefs.base.menuPin
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { flex: "1", children: prefs.base.menuPin ? switchContent() : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {}) })
+      ]
+    }
+  );
 }
 var HomeOverlay = function() {
   this.inited = false;

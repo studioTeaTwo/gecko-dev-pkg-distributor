@@ -3,7 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useState, useEffect } from "react";
-import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
+import { Box, HStack, Spinner } from "@chakra-ui/react";
 import Menu from "./Menu";
 import Bitcoin from "./bitcoin";
 import Nostr from "./nostr";
@@ -25,8 +25,9 @@ function SelfSovereignIndividual() {
   }, []);
 
   useEffect(() => {
-    // FIXME(ssb): Actually, I want to update only at first time for initial pref value.
-    setSelectedMenu(prefs.base.menuPin);
+    if (!selectedMenu) {
+      setSelectedMenu(prefs.base.menuPin);
+    }
   }, [prefs.base.menuPin]);
 
   const switchContent = () => {
@@ -40,20 +41,20 @@ function SelfSovereignIndividual() {
   };
 
   return (
-    <Box m={10}>
-      <Grid w="100%" h="100%" templateColumns="200px auto" gap={4}>
-        <GridItem colSpan={1}>
-          <Menu
-            selectedMenu={selectedMenu}
-            setSelectedMenu={setSelectedMenu}
-            menuPin={prefs.base.menuPin}
-          />
-        </GridItem>
-        <GridItem colSpan={1}>
-          {prefs.base.menuPin ? switchContent() : <Spinner />}
-        </GridItem>
-      </Grid>
-    </Box>
+    <HStack
+      width={"100%"}
+      height={"100vh"}
+      alignItems="flex-start"
+      justifyContent="flex-start"
+      overflow="auto"
+    >
+      <Menu
+        selectedMenu={selectedMenu}
+        setSelectedMenu={setSelectedMenu}
+        menuPin={prefs.base.menuPin}
+      />
+      <Box flex="1">{prefs.base.menuPin ? switchContent() : <Spinner />}</Box>
+    </HStack>
   );
 }
 

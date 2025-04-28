@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
+  Box,
   Grid,
   GridItem,
   Heading,
@@ -31,7 +32,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   const [tabIndex, setTabIndex] = useState(-1);
 
   useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPin));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPin));
+    }
   }, [prefs.nostr.tabPin]);
 
   const nostrKeys = useMemo(
@@ -57,7 +60,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     );
 
   return (
-    <div>
+    <Box height={"calc(100vh - 40px)"} mt={10} overflowY="auto">
       <Text size="md" mb="10px">
         Your keys are stored locally, isolated from and inaccessible to the web
         app.
@@ -74,6 +77,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
           />
         </GridItem>
       </Grid>
+
       {prefs.nostr.tabPin ? (
         <Tabs
           variant="enclosed"
@@ -83,25 +87,31 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
             resetState();
           }}
         >
-          <TabList>
+          <TabList position="sticky" top="0" zIndex={1} m={2} bg="white">
             <Tab>
               <Heading as="h3" size="lg">
                 Keys
               </Heading>
-              {tabPin(0)}
             </Tab>
+            <Box display="flex" alignItems="center" mr={3}>
+              {tabPin(0)}
+            </Box>
             <Tab>
               <Heading as="h3" size="lg">
                 NIP-07
               </Heading>
-              {tabPin(1)}
             </Tab>
+            <Box display="flex" alignItems="center" mr={3}>
+              {tabPin(1)}
+            </Box>
             <Tab>
               <Heading as="h3" size="lg">
                 More
               </Heading>
-              {tabPin(2)}
             </Tab>
+            <Box display="flex" alignItems="center" mr={3}>
+              {tabPin(2)}
+            </Box>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -118,6 +128,6 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       ) : (
         <Spinner />
       )}
-    </div>
+    </Box>
   );
 }

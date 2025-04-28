@@ -12,6 +12,7 @@ import {
   Grid,
   GridItem,
   Switch,
+  Box,
 } from "@chakra-ui/react";
 import { StateContext } from "../../contexts/StatesProvider";
 import BIP39 from "./BIP39";
@@ -27,7 +28,9 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
   const [tabIndex, setTabIndex] = useState(-1);
 
   useEffect(() => {
-    setTabIndex(parseInt(prefs.bitcoin.tabPin));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.bitcoin.tabPin));
+    }
   }, [prefs.bitcoin.tabPin]);
 
   const tabPin = (tabId: number) =>
@@ -53,7 +56,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
   };
 
   return (
-    <div>
+    <Box height={"calc(100vh - 40px)"} mt={10} overflowY="auto">
       <Text size="md" mb="10px">
         Your keys are stored locally, isolated from and inaccessible to the web
         app.
@@ -70,6 +73,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
           />
         </GridItem>
       </Grid>
+
       {prefs.bitcoin.tabPin ? (
         <Tabs
           variant="enclosed"
@@ -79,19 +83,23 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
             resetState();
           }}
         >
-          <TabList>
+          <TabList position="sticky" top="0" m={2} zIndex={1} bg="white">
             <Tab>
               <Heading as="h3" size="lg">
                 BIP-39
               </Heading>
-              {tabPin(0)}
             </Tab>
+            <Box display="flex" alignItems="center" mr={3}>
+              {tabPin(0)}
+            </Box>
             <Tab>
               <Heading as="h3" size="lg">
                 More
               </Heading>
-              {tabPin(1)}
             </Tab>
+            <Box display="flex" alignItems="center" mr={3}>
+              {tabPin(1)}
+            </Box>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -105,6 +113,6 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       ) : (
         <Spinner />
       )}
-    </div>
+    </Box>
   );
 }

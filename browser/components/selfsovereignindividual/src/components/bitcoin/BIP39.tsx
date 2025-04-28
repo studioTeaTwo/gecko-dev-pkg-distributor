@@ -376,6 +376,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                             {item.identifier}
                           </Text>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.properties.xpriv}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
@@ -387,6 +388,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                             mnemonic
                           </Heading>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.secret}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
@@ -402,6 +404,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                           </Heading>
                           {item.properties.passphrase ? (
                             <Secret
+                              protocolName={item.protocolName}
                               value={item.properties.passphrase}
                               onChangeVisibility={() => {}}
                               prefs={prefs}
