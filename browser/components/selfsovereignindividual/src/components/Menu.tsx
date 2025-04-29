@@ -1,16 +1,7 @@
 import React, { useCallback } from "react";
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  HStack,
-  Spacer,
-  VStack,
-} from "@chakra-ui/react";
+import { Button, Divider, Flex, HStack, VStack } from "@chakra-ui/react";
 import { MenuItem, ProtocolName } from "../custom.type";
-import BitcoinIcon from "./shared/Logo";
-import { GiBirdTwitter } from "./shared/react-icons/Icons";
+import { BitcoinLogo, NostrLogo } from "./shared/Logo";
 import TabPin from "./shared/TabPin";
 
 interface Props {
@@ -24,13 +15,13 @@ function Menu(props: Props) {
 
   const buildMenu = useCallback(() => {
     const list: { name: ProtocolName; icon: JSX.Element }[] = [
-      { name: "bitcoin", icon: <BitcoinIcon /> },
-      { name: "nostr", icon: <GiBirdTwitter /> },
+      { name: "bitcoin", icon: <BitcoinLogo /> },
+      { name: "nostr", icon: <NostrLogo /> },
     ];
     return (
       <>
         {list.map((menu, index) => (
-          <HStack key={index}>
+          <HStack key={index} width={"150px"}>
             <Button
               variant={selectedMenu === menu.name ? "solid" : "transparent"}
               leftIcon={menu.icon}
