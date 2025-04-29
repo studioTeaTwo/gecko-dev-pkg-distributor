@@ -10,6 +10,15 @@
             "enum": ["ssi", "ssi.bitcoin"]
           }
         ]
+      },
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi.nostr"]
+          }
+        ]
       }
     ]
   },
@@ -130,6 +139,7 @@
       },
       {
         "name": "shareWith",
+        "permissions": ["ssi.nostr"],
         "type": "function",
         "description": "Requesting the encrypted secret you want the user to share by Nostr NIP-44. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
