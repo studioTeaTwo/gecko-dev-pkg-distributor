@@ -33,9 +33,9 @@ declare namespace browser.ssi {
   const askConsentChild: (protocolName: ProtocolName) => Promise<boolean>;
 
   type commonApis = {
-    getPrefs: () => Promise<{
+    getPrefs: () => {
       enabled: boolean;
-    } | null>;
+    } | null;
     onPrimaryChanged: {
       addListener: (listener: () => void) => void;
       rmoveListener: (listener: () => void) => void;
@@ -58,7 +58,7 @@ declare namespace browser.ssi {
         path?: string; // m or m/*
       },
       dialogOption?: dialogOption
-    ) => Promise<string | null>; // xpub
+    ) => Promise<string | undefined>; // xpub
     shareWith: (
       tabId: number,
       pubkey: string, // Either npub or hex format.
@@ -68,7 +68,7 @@ declare namespace browser.ssi {
         path?: string; // m or m/*
       },
       dialogOption?: dialogOption
-    ) => Promise<{ secret: string; sender: string; receiver: string }>;
+    ) => Promise<{ secret: string; sender: string; receiver: string } | null>;
   } & commonApis;
 
   const nostr: {
@@ -79,7 +79,7 @@ declare namespace browser.ssi {
         type: "signEvent";
       },
       dialogOption?: dialogOption
-    ) => Promise<string | null>;
+    ) => Promise<string | undefined>;
     encrypt: (
       tabId: number,
       plaintext: string,
@@ -89,7 +89,7 @@ declare namespace browser.ssi {
         version?: string;
       },
       dialogOption?: dialogOption
-    ) => Promise<string | null>;
+    ) => Promise<string | undefined>;
     decrypt: (
       tabId: number,
       ciphertext: string,
@@ -99,6 +99,6 @@ declare namespace browser.ssi {
         version?: string;
       },
       dialogOption?: dialogOption
-    ) => Promise<string | null>;
+    ) => Promise<string | undefined>;
   } & commonApis;
 }

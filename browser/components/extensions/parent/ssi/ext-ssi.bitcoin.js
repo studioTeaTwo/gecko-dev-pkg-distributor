@@ -33,7 +33,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
             register:
               lazy.browserSsiHelper.onPrefEnabledChangedRegister("bitcoin"),
           }).api(),
-          async getPrefs() {
+          getPrefs() {
             return lazy.browserSsiHelper.getPrefs("bitcoin");
           },
           async generate(

@@ -82,13 +82,13 @@ export const doBitcoinAction = async (
   }
 };
 
-export async function init() {
+export function init() {
   log("bitcoin start...");
 
   state.bitcoin.credentialName = "bip39";
 
   // Get setting values from the prefs.
-  const results = await browser.ssi.bitcoin.getPrefs();
+  const results = browser.ssi.bitcoin.getPrefs();
   const prefs = {} as FixMe;
   Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
     prefs[_state] =
@@ -119,7 +119,7 @@ browser.ssi.bitcoin.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 
 const onPrefChangedCallback = async (prefKey: string) => {
   // Update new value
-  const results = await browser.ssi.bitcoin.getPrefs();
+  const results = browser.ssi.bitcoin.getPrefs();
   const stateName = MapBetweenPrefAndState[prefKey];
   const newVal = results[stateName];
   state.bitcoin.prefs[stateName] = newVal;

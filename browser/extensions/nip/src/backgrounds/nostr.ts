@@ -10,13 +10,13 @@ const MapBetweenPrefAndState = {
   usedBuiltinNip07: "builtinNip07.enabled",
 };
 
-export async function init() {
+export function init() {
   log("experimental-api start...");
 
   // Get setting values from the prefs.
   const results = {
-    ...(await browser.ssi.nostr.getPrefs()),
-    ...(await browser.builtinNip.getPrefs()),
+    ...browser.ssi.nostr.getPrefs(),
+    ...browser.builtinNip.getPrefs(),
   };
   const prefs = {} as FixMe;
   Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
@@ -52,8 +52,8 @@ browser.webNavigation.onDOMContentLoaded.addListener(
 const onPrefChangedCallback = async (prefKey: string) => {
   // Update new value
   const results = {
-    ...(await browser.ssi.nostr.getPrefs()),
-    ...(await browser.builtinNip.getPrefs()),
+    ...browser.ssi.nostr.getPrefs(),
+    ...browser.builtinNip.getPrefs(),
   };
   const stateName = Object.entries(MapBetweenPrefAndState)
     .filter(([, _pref]) => _pref === prefKey)

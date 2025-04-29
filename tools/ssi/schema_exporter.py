@@ -8,7 +8,7 @@
 # typedoc spec: https://typedoc.org/documents/Tags.html
 # xpidl spec: https://firefox-source-docs.mozilla.org/xpcom/xpidl.html
 #
-# The markdown design is based on MDN: https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/action
+# The markdown design is based on MDN: https://developer.mozilla.org/docs/MDN/Writing_guidelines/Page_structures/Page_types/API_method_subpage_template
 
 import json
 import os
@@ -158,6 +158,12 @@ def create_member_file(namespace, type, data):
 
     if 'async' in data:
         output_text += "This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
+
+    if 'permissions' in data:
+        output_text += 'This interface requires the '
+        for item in data['permissions']:
+            output_text += f"`{item}` "
+        output_text += '[permission](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).\n\n'
 
     if type in ['functions', 'events'] :
         output_text += '## Syntax\n\n'
@@ -379,16 +385,23 @@ def create_member_file_window(namespace, kind, data):
     if kind == 2097152:
         output_text += '## Type\n\n'
         output_text += f"`{data['type']['type']}`\n\n"
-
         output_text += '## Values\n\n'
         if 'value' in data['type']:
             output_text += f"### {data['type']['value']}\n\n"
-            output_text += f"`{data['type']['type']}`.\n\n"
+            output_text += f"`{data['type']['type']}`\n\n"
         elif 'types' in data['type']:
             for type in data['type']['types']:
                 output_text += f"### {type['value']}\n\n"
-                output_text += f"`{type['type']}`.\n\n"
+                output_text += f"`{type['type']}`\n\n"
+    elif kind == 256:
+        output_text += '## Type\n\n'
+        output_text += f"`{data['groups'][0]['title']}`\n\n"
+        output_text += '## Values\n\n'
+        for child in data['children']:
+            output_text += f"### {child['name']}\n\n"
+            output_text += f"`{child['type']['name']}`\n\n"
 
+    # Function
     elif kind == 2048:
         if data['name'] not in ['addEventListener', 'removeEventListener']:
 

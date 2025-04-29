@@ -21,7 +21,7 @@
       {
         "id": "Preference",
         "type": "object",
-        "description": "The preference values set by the user in `about:selfsovereignindividual`",
+        "description": "The preference values set by the user in `about:selfsovereignindividual`.",
         "properties": {
           "enabled": {
             "type": "boolean",
@@ -34,13 +34,13 @@
       {
         "name": "onPrimaryChanged",
         "type": "function",
-        "description": "Fire when the primary key is changed",
+        "description": "Fires when the primary key is changed.",
         "parameters": []
       },
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignindividual.nostr.enabled` is changed",
+        "description": "Fires when the preference value of `selfsovereignindividual.nostr.enabled` is changed.",
         "parameters": []
       }
     ],
@@ -48,19 +48,17 @@
       {
         "name": "getPrefs",
         "type": "function",
-        "description": "Get preference's values",
+        "description": "Get the user's preference values. Since this is obtained passively and is not something that the user explicitly takes action on, `ssi.askConsent` is not called. The user controls whether or not to disclose it in the settings. Here, only values that are based on such assumptions would be returned.",
         "parameters": [],
-        "async": true,
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `object` of `ssi.nostr.Preference`. Returns Promise\\<null\\> if error.",
-          "optional": true
+          "description": "A `ssi.nostr.Preference` object. Returns `null` if error."
         }
       },
       {
         "name": "sign",
         "type": "function",
-        "description": "Pass message and return the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the message and get back the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -77,11 +75,11 @@
           {
             "name": "options",
             "type": "object",
-            "description": "Direction about sign detail",
+            "description": "Direction about sign detail.",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The signature spec. e.g., 'signEvent'"
+                "description": "The signature spec. e.g., 'signEvent'."
               }
             }
           },
@@ -89,19 +87,18 @@
             "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
-            "description": "Parameters to build Auth dialog"
+            "description": "Parameters to build Auth dialog."
           }
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns Promise\\<undefined\\> if error.",
-          "optional": true
+          "description": "A Promise that will be fulfilled with a `string` of resulting signature. Returns `Promise<undefined>` if error."
         }
       },
       {
         "name": "encrypt",
         "type": "function",
-        "description": "Pass plain text and return the cipher text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the plain text and get back the cipher text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -113,16 +110,16 @@
           {
             "name": "plaintext",
             "type": "string",
-            "description": "The plain text to encrypt"
+            "description": "The plain text to encrypt."
           },
           {
             "name": "options",
             "type": "object",
-            "description": "Direction about encryption detail",
+            "description": "Direction about encryption detail.",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The encryption spec. e.g., 'nip04', 'nip44'"
+                "description": "The encryption spec. e.g., 'nip04', 'nip44'."
               },
               "pubkey": {
                 "type": "string",
@@ -141,19 +138,18 @@
             "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
-            "description": "Parameters to build Auth dialog"
+            "description": "Parameters to build Auth dialog."
           }
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns Promise\\<undefined\\> if error.",
-          "optional": true
+          "description": "A Promise that will be fulfilled with a `string` of the encrypted cipher text. Returns `Promise<undefined>` if error."
         }
       },
       {
         "name": "decrypt",
         "type": "function",
-        "description": "Pass cipher text and return the plain text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the cipher text and get back the plain text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -165,16 +161,16 @@
           {
             "name": "ciphertext",
             "type": "string",
-            "description": "The cipher text to decrypt"
+            "description": "The cipher text to decrypt."
           },
           {
             "name": "options",
             "type": "object",
-            "description": "Direction about decryption detail",
+            "description": "Direction about decryption detail.",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The encryption spec. e.g., 'nip04', 'nip44'"
+                "description": "The encryption spec. e.g., 'nip04', 'nip44'."
               },
               "pubkey": {
                 "type": "string",
@@ -193,13 +189,12 @@
             "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
-            "description": "Parameters to build Auth dialog"
+            "description": "Parameters to build Auth dialog."
           }
         ],
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns Promise\\<undefined\\> if error.",
-          "optional": true
+          "description": "A Promise that will be fulfilled with a `string` of the decrypted plain text. Returns `Promise<undefined>` if error."
         }
       }
     ]

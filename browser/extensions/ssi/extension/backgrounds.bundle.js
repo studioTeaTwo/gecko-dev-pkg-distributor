@@ -947,11 +947,11 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
     }
 };
 exports.doBitcoinAction = doBitcoinAction;
-async function init() {
+function init() {
     (0, logger_1.log)("bitcoin start...");
     state_1.state.bitcoin.credentialName = "bip39";
     // Get setting values from the prefs.
-    const results = await browser.ssi.bitcoin.getPrefs();
+    const results = browser.ssi.bitcoin.getPrefs();
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
         prefs[_state] =
@@ -978,7 +978,7 @@ const onPrimaryChangedCallback = async () => {
 browser.ssi.bitcoin.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
     // Update new value
-    const results = await browser.ssi.bitcoin.getPrefs();
+    const results = browser.ssi.bitcoin.getPrefs();
     const stateName = MapBetweenPrefAndState[prefKey];
     const newVal = results[stateName];
     state_1.state.bitcoin.prefs[stateName] = newVal;
@@ -1116,11 +1116,11 @@ const doNostrAction = async (tabId, origin, action, args) => {
     }
 };
 exports.doNostrAction = doNostrAction;
-async function init() {
+function init() {
     (0, logger_1.log)("nostr start...");
     state_1.state.nostr.credentialName = "nsec";
     // Get setting values from the prefs.
-    const results = await browser.ssi.nostr.getPrefs();
+    const results = browser.ssi.nostr.getPrefs();
     const prefs = {};
     Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
         prefs[_state] =
@@ -1166,7 +1166,7 @@ const onPrimaryChangedCallback = async () => {
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 const onPrefChangedCallback = async (prefKey) => {
     // Update new value
-    const results = await browser.ssi.nostr.getPrefs();
+    const results = browser.ssi.nostr.getPrefs();
     const stateName = MapBetweenPrefAndState[prefKey];
     const newVal = results[stateName];
     state_1.state.nostr.prefs[stateName] = newVal;

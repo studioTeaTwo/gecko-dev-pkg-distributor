@@ -30,7 +30,7 @@
       {
         "id": "Preference",
         "type": "object",
-        "description": "The preference values set by the user in `about:selfsovereignindividual`",
+        "description": "The preference values set by the user in `about:selfsovereignindividual`.",
         "properties": {
           "enabled": {
             "type": "boolean",
@@ -41,11 +41,11 @@
       {
         "id": "SharedSecret",
         "type": "object",
-        "description": "Secrets encrypted and shared by Nostr NIP-44",
+        "description": "Secrets encrypted and shared by Nostr NIP-44.",
         "properties": {
           "secret": {
             "type": "string",
-            "description": "The secret encrypted by Nostr NIP-44"
+            "description": "The secret encrypted by Nostr NIP-44."
           },
           "sender": {
             "type": "string",
@@ -62,13 +62,13 @@
       {
         "name": "onPrimaryChanged",
         "type": "function",
-        "description": "Fire when the primary key is changed",
+        "description": "Fires when the primary key is changed.",
         "parameters": []
       },
       {
         "name": "onPrefEnabledChanged",
         "type": "function",
-        "description": "Fire when the preference value of `selfsovereignindividual.bitcoin.enabled` is changed",
+        "description": "Fires when the preference value of `selfsovereignindividual.bitcoin.enabled` is changed.",
         "parameters": []
       }
     ],
@@ -76,12 +76,11 @@
       {
         "name": "getPrefs",
         "type": "function",
-        "description": "Get preference's values",
+        "description": "Get the user's preference values. Since this is obtained passively and is not something that the user explicitly takes action on, `ssi.askConsent` is not called. The user controls whether or not to disclose it in the settings. Here, only values that are based on such assumptions would be returned.",
         "parameters": [],
-        "async": true,
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `object` of `ssi.bitcoin.Preference`. Returns Promise\\<null\\> if error.",
+          "description": "A `ssi.bitcoin.Preference` object. Returns `null` if error.",
           "optional": true
         }
       },
@@ -99,7 +98,7 @@
           {
             "name": "options",
             "type": "object",
-            "description": "Direction about the key you want the user to generate",
+            "description": "Direction about the key you want the user to generate.",
             "properties": {
               "type": {
                 "type": "string",
@@ -128,20 +127,20 @@
             "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
-            "description": "Parameters to build Auth dialog"
+            "description": "Parameters to build Auth dialog."
           }
         ],
         "async": true,
         "returns": {
           "type": "string",
-          "description": "A Promise that will be fulfilled with a `string` of xpub. Returns Promise\\<null\\> if error."
+          "description": "A Promise that will be fulfilled with a `string` of xpub. Returns `Promise<undefined>` if error."
         }
       },
       {
         "name": "shareWith",
         "permissions": ["ssi.nostr"],
         "type": "function",
-        "description": "Requesting the encrypted secret you want the user to share by Nostr NIP-44. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Request the secret you want the user to share, and get back the encrypted secret by Nostr NIP-44. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -180,12 +179,12 @@
             "name": "dialogOption",
             "$ref": "ssi.DialogInfo",
             "optional": true,
-            "description": "Parameters to build Auth dialog"
+            "description": "Parameters to build Auth dialog."
           }
         ],
         "returns": {
           "$ref": "SharedSecret",
-          "description": "A Promise that will be fulfilled with a `object` of `ssi.bitcoin.SharedSecret`. Returns Promise\\<null\\> if error."
+          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.SharedSecret` object. Returns `Promise<null>` if error."
         }
       }
     ]

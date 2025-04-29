@@ -140,13 +140,13 @@ export const doNostrAction = async (
   }
 };
 
-export async function init() {
+export function init() {
   log("nostr start...");
 
   state.nostr.credentialName = "nsec";
 
   // Get setting values from the prefs.
-  const results = await browser.ssi.nostr.getPrefs();
+  const results = browser.ssi.nostr.getPrefs();
   const prefs = {} as FixMe;
   Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
     prefs[_state] =
@@ -200,7 +200,7 @@ browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
 
 const onPrefChangedCallback = async (prefKey: string) => {
   // Update new value
-  const results = await browser.ssi.nostr.getPrefs();
+  const results = browser.ssi.nostr.getPrefs();
   const stateName = MapBetweenPrefAndState[prefKey];
   const newVal = results[stateName];
   state.nostr.prefs[stateName] = newVal;
