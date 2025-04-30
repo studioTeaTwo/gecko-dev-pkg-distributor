@@ -133,16 +133,15 @@ export const browserSsiHelper = {
     // Since this is obtained passively and is not something that the user explicitly takes action on,
     // askConsent is not called. The user controls whether or not to disclose it in the settings.
     // Here, only values that are based on such assumptions should be returned.
-
-    // Check permission
-    const enabled = Services.prefs.getBoolPref(
-      `selfsovereignindividual.${protocolName}.enabled`
-    );
-    if (!enabled) {
-      return null;
-    }
-
     try {
+      // Check permission
+      const enabled = Services.prefs.getBoolPref(
+        `selfsovereignindividual.${protocolName}.enabled`
+      );
+      if (!enabled) {
+        return null;
+      }
+
       const prefs = {
         enabled,
       };

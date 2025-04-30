@@ -33,7 +33,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               lazy.browserSsiHelper.onPrefEnabledChangedRegister("nostr"),
           }).api(),
           getPrefs() {
-            return lazy.browserSsiHelper.getPrefs("nostr");
+            return Promise.resolve(lazy.browserSsiHelper.getPrefs("nostr"));
           },
           async sign(
             tabId,

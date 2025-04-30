@@ -34,7 +34,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               lazy.browserSsiHelper.onPrefEnabledChangedRegister("bitcoin"),
           }).api(),
           getPrefs() {
-            return lazy.browserSsiHelper.getPrefs("bitcoin");
+            return Promise.resolve(lazy.browserSsiHelper.getPrefs("bitcoin"));
           },
           async generate(
             tabId,

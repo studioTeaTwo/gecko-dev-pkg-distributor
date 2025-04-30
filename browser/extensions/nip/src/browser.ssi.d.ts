@@ -33,9 +33,9 @@ declare namespace browser.ssi {
   const askConsentChild: (protocolName: ProtocolName) => Promise<boolean>;
 
   type commonApis = {
-    getPrefs: () => {
+    getPrefs: () => Promise<{
       enabled: boolean;
-    } | null;
+    } | null>;
     onPrimaryChanged: {
       addListener: (listener: () => void) => void;
       rmoveListener: (listener: () => void) => void;
