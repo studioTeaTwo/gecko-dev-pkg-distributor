@@ -2057,11 +2057,9 @@ function Bitcoin$1(props) {
                     "on ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
-                    new Date(
-                      item.timeCreated
-                    ).toLocaleTimeString(),
-                    " at",
-                    " ",
+                    new Date(item.timeCreated).toLocaleTimeString(),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "at ",
                     item.properties.generationFrom
                   ] }) })
                 ] }),
@@ -3154,13 +3152,16 @@ function Nostr$1(props) {
                       }
                     )
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", children: [
                     item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
                     "on ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
-                    new Date(item.timeCreated).toLocaleTimeString()
+                    new Date(item.timeCreated).toLocaleTimeString(),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "at ",
+                    item.properties.generationFrom
                   ] }) })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [

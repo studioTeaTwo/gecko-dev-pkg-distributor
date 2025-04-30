@@ -394,13 +394,15 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                           />
                         </Box>
                         <Box>
-                          <Text fontSize="sm" isTruncated>
+                          <Text fontSize="sm">
                             {item.properties.generationMethod === "import"
                               ? "Imported"
                               : "Generated"}{" "}
                             on {new Date(item.timeCreated).toLocaleDateString()}
                             &nbsp;
                             {new Date(item.timeCreated).toLocaleTimeString()}
+                            <br />
+                            at {item.properties.generationFrom}
                           </Text>
                         </Box>
                       </CardBody>

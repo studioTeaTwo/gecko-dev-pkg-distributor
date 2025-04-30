@@ -424,10 +424,9 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                               : "Generated"}{" "}
                             on {new Date(item.timeCreated).toLocaleDateString()}
                             &nbsp;
-                            {new Date(
-                              item.timeCreated
-                            ).toLocaleTimeString()} at{" "}
-                            {item.properties.generationFrom}
+                            {new Date(item.timeCreated).toLocaleTimeString()}
+                            <br />
+                            at {item.properties.generationFrom}
                           </Text>
                         </Box>
                       </CardBody>
