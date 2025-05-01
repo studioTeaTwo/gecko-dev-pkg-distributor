@@ -7447,10 +7447,21 @@ function getScrollParent$1(el) {
   }
   return getScrollParent$1(getParent(el));
 }
+function split(object, keys2) {
+  const picked = {};
+  const omitted2 = {};
+  for (const [key, value] of Object.entries(object)) {
+    if (keys2.includes(key))
+      picked[key] = value;
+    else
+      omitted2[key] = value;
+  }
+  return [picked, omitted2];
+}
 function splitProps(props, ...keys2) {
   const descriptors = Object.getOwnPropertyDescriptors(props);
   const dKeys = Object.keys(descriptors);
-  const split = (k) => {
+  const split2 = (k) => {
     const clone = {};
     for (let i = 0; i < k.length; i++) {
       const key = k[i];
@@ -7461,8 +7472,8 @@ function splitProps(props, ...keys2) {
     }
     return clone;
   };
-  const fn2 = (key) => split(Array.isArray(key) ? key : dKeys.filter(key));
-  return keys2.map(fn2).concat(split(dKeys));
+  const fn2 = (key) => split2(Array.isArray(key) ? key : dKeys.filter(key));
+  return keys2.map(fn2).concat(split2(dKeys));
 }
 function walkObject(target, predicate, options = {}) {
   const { stop, getKey } = options;
@@ -9895,7 +9906,10 @@ const systemProps = mergeWith(
   list,
   transition$1
 );
-Object.assign({}, space, layout$1, flexbox, grid, position$1);
+const layoutSystem = Object.assign({}, space, layout$1, flexbox, grid, position$1);
+const layoutPropNames = Object.keys(
+  layoutSystem
+);
 const getPropNames = (theme2) => [
   ...Object.keys(systemProps),
   ...getPseudoPropNames(theme2)
@@ -32377,6 +32391,126 @@ const NumberIncrementStepper = forwardRef(function NumberIncrementStepper2(props
   return /* @__PURE__ */ jsxRuntimeExports.jsx(StyledStepper, { ...increment, __css: styles2.stepper, children: props.children ?? /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleUpIcon, {}) });
 });
 NumberIncrementStepper.displayName = "NumberIncrementStepper";
+const SelectField = forwardRef(
+  function SelectField2(props, ref) {
+    const { children, placeholder, className, ...rest } = props;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      chakra.select,
+      {
+        ...rest,
+        ref,
+        className: cx("chakra-select", className),
+        children: [
+          placeholder && /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: placeholder }),
+          children
+        ]
+      }
+    );
+  }
+);
+SelectField.displayName = "SelectField";
+const Select = forwardRef((props, ref) => {
+  var _a2;
+  const styles2 = useMultiStyleConfig("Select", props);
+  const {
+    rootProps,
+    placeholder,
+    icon,
+    color: color2,
+    height,
+    h,
+    minH,
+    minHeight,
+    iconColor,
+    iconSize,
+    ...rest
+  } = omitThemingProps(props);
+  const [layoutProps, otherProps] = split(rest, layoutPropNames);
+  const ownProps = useFormControl(otherProps);
+  const rootStyles2 = {
+    width: "100%",
+    height: "fit-content",
+    position: "relative",
+    color: color2
+  };
+  const fieldStyles = {
+    paddingEnd: "2rem",
+    ...styles2.field,
+    _focus: {
+      zIndex: "unset",
+      ...(_a2 = styles2.field) == null ? void 0 : _a2["_focus"]
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    chakra.div,
+    {
+      className: "chakra-select__wrapper",
+      __css: rootStyles2,
+      ...layoutProps,
+      ...rootProps,
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          SelectField,
+          {
+            ref,
+            height: h ?? height,
+            minH: minH ?? minHeight,
+            placeholder,
+            ...ownProps,
+            __css: fieldStyles,
+            children: props.children
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          SelectIcon,
+          {
+            "data-disabled": dataAttr(ownProps.disabled),
+            ...(iconColor || color2) && { color: iconColor || color2 },
+            __css: styles2.icon,
+            ...iconSize && { fontSize: iconSize },
+            children: icon
+          }
+        )
+      ]
+    }
+  );
+});
+Select.displayName = "Select";
+const DefaultIcon = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", ...props, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  "path",
+  {
+    fill: "currentColor",
+    d: "M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+  }
+) });
+const IconWrapper = chakra("div", {
+  baseStyle: {
+    position: "absolute",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    pointerEvents: "none",
+    top: "50%",
+    transform: "translateY(-50%)"
+  }
+});
+const SelectIcon = (props) => {
+  const { children = /* @__PURE__ */ jsxRuntimeExports.jsx(DefaultIcon, {}), ...rest } = props;
+  const clone = reactExports.cloneElement(children, {
+    role: "presentation",
+    className: "chakra-select__icon",
+    focusable: false,
+    "aria-hidden": true,
+    // force icon to adhere to `IconWrapper` styles
+    style: {
+      width: "1em",
+      height: "1em",
+      color: "currentColor"
+    }
+  });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(IconWrapper, { ...rest, className: "chakra-select__icon-wrapper", children: reactExports.isValidElement(children) ? clone : null });
+};
+SelectIcon.displayName = "SelectIcon";
 const StackItem = (props) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   chakra.div,
   {
@@ -33710,22 +33844,23 @@ export {
   StackDivider as Z,
   CardFooter as _,
   Button as a,
-  Tabs as a0,
-  TabList as a1,
-  Tab as a2,
-  TabPanels as a3,
-  TabPanel as a4,
-  Spinner as a5,
-  bech32 as a6,
-  bytesToHex as a7,
-  hexToBytes as a8,
-  NumberInput as a9,
-  NumberInputField as aa,
-  NumberInputStepper as ab,
-  NumberIncrementStepper as ac,
-  NumberDecrementStepper as ad,
-  clientExports as ae,
-  ChakraProvider as af,
+  Select as a0,
+  Tabs as a1,
+  TabList as a2,
+  Tab as a3,
+  TabPanels as a4,
+  TabPanel as a5,
+  Spinner as a6,
+  bech32 as a7,
+  bytesToHex as a8,
+  hexToBytes as a9,
+  NumberInput as aa,
+  NumberInputField as ab,
+  NumberInputStepper as ac,
+  NumberIncrementStepper as ad,
+  NumberDecrementStepper as ae,
+  clientExports as af,
+  ChakraProvider as ag,
   AlertDialogContent as b,
   ModalHeader as c,
   ModalCloseButton as d,

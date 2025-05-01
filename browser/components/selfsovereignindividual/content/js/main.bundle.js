@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, C as Card, v as CardHeader, w as Heading, E as Editable, x as EditablePreview, y as Input, z as EditableInput, G as CardBody, J as Textarea, K as Grid, N as GridItem, O as InputGroup, P as Tooltip, Q as Menu$1, S as MenuButton, U as MenuList, W as MenuItem, X as Checkbox, Y as Switch, Z as StackDivider, _ as CardFooter, $ as useEditableControls, a0 as Tabs, a1 as TabList, a2 as Tab, a3 as TabPanels, a4 as TabPanel, a5 as Spinner, a6 as bech32, a7 as bytesToHex, a8 as hexToBytes, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as clientExports, af as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, C as Card, v as CardHeader, w as Heading, E as Editable, x as EditablePreview, y as Input, z as EditableInput, G as CardBody, J as Textarea, K as Grid, N as GridItem, O as InputGroup, P as Tooltip, Q as Menu$1, S as MenuButton, U as MenuList, W as MenuItem, X as Checkbox, Y as Switch, Z as StackDivider, _ as CardFooter, $ as useEditableControls, a0 as Select, a1 as Tabs, a2 as TabList, a3 as Tab, a4 as TabPanels, a5 as TabPanel, a6 as Spinner, a7 as bech32, a8 as bytesToHex, a9 as hexToBytes, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -851,8 +851,11 @@ function AlertPrimaryPassword(props) {
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  const { protocolName, value, textProps, onChangeVisibility, prefs } = props;
-  const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
+  const { protocolName, value, onChangeVisibility, prefs, count, textProps } = props;
+  const maskedValue = reactExports.useCallback(
+    () => "*".repeat(count ? 40 : value.length),
+    [value]
+  );
   const handleToggole = async () => {
     if (!visible) {
       const isAuthorized = await authorizePrimaryPassword(
@@ -893,7 +896,7 @@ function Secret(props) {
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-      visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: value }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: maskedValue() }),
+      visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: value }) : count ? /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { spacing: 0, pt: "8px", pb: "8px", children: Array(count).fill(0).map((_, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { m: 0, ...textProps, children: maskedValue() }, index)) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: maskedValue() }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         IconButton,
         {
@@ -1745,6 +1748,7 @@ function Bitcoin$1(props) {
   } = dispatchEvents;
   const [importedKey, setImportedSeed] = reactExports.useState("");
   const [newSeed, setNewSeed] = reactExports.useState("");
+  const [wordCount, setWordCount] = reactExports.useState(0);
   const [passphrase, setPassphrase] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   const mnemonics = reactExports.useMemo(
@@ -1769,8 +1773,11 @@ function Bitcoin$1(props) {
   const handleGenNewSeed = async (e) => {
     e.preventDefault();
     const origin = location.href;
+    console.log("result", wordCount ?? "24");
     const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
+      strength: wordCount === 12 ? 128 : 256,
+      // default is 256
       passphrase
     });
     if (!result[0]) {
@@ -1909,6 +1916,19 @@ function Bitcoin$1(props) {
                     maxW: "200px"
                   }
                 ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  Select,
+                  {
+                    placeholder: "Word count",
+                    value: wordCount,
+                    onChange: (e) => setWordCount(parseInt(e.target.value)),
+                    width: "120px",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "12", children: "12" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "24", children: "24" })
+                    ]
+                  }
+                ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Button,
                   {
@@ -2027,6 +2047,7 @@ function Bitcoin$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
+                        count: 2,
                         textProps: {
                           fontSize: "md",
                           overflowWrap: "anywhere"

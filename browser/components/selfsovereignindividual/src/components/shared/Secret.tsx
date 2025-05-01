@@ -1,22 +1,29 @@
 import React, { useCallback, useState } from "react";
-import { HStack, IconButton, Text } from "@chakra-ui/react";
+import { HStack, VStack, IconButton, Text } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, MdOutlineContentCopy } from "./react-icons/Icons";
 import { authorizePrimaryPassword } from "./ipc";
 import AlertPrimaryPassword from "./AlertPrimaryPassword";
 import { ProtocolName, SelfSovereignIndividualPrefs } from "../../custom.type";
 
-export default function Secret(props: {
+interface Props {
   protocolName: ProtocolName;
   value: string;
   onChangeVisibility;
   prefs: SelfSovereignIndividualPrefs;
+  count?: number; // Make row count fixed by this value
   textProps?;
-}) {
+}
+
+export default function Secret(props: Props) {
   const [visible, setVisible] = useState(false);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const { protocolName, value, textProps, onChangeVisibility, prefs } = props;
+  const { protocolName, value, onChangeVisibility, prefs, count, textProps } =
+    props;
 
-  const maskedValue = useCallback(() => "*".repeat(value.length), [value]);
+  const maskedValue = useCallback(
+    () => "*".repeat(count ? 40 : value.length),
+    [value]
+  );
 
   const handleToggole = async () => {
     if (!visible) {
@@ -68,6 +75,16 @@ export default function Secret(props: {
       <HStack>
         {visible ? (
           <Text {...textProps}>{value}</Text>
+        ) : count ? (
+          <VStack spacing={0} pt={"8px"} pb={"8px"}>
+            {Array(count)
+              .fill(0)
+              .map((_, index) => (
+                <Text key={index} m={0} {...textProps}>
+                  {maskedValue()}
+                </Text>
+              ))}
+          </VStack>
         ) : (
           <Text {...textProps}>{maskedValue()}</Text>
         )}

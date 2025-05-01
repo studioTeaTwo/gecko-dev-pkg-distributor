@@ -14,6 +14,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  Select,
   StackDivider,
   Switch,
   Text,
@@ -58,6 +59,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
 
   const [importedKey, setImportedSeed] = useState("");
   const [newSeed, setNewSeed] = useState("");
+  const [wordCount, setWordCount] = useState(0);
   const [passphrase, setPassphrase] = useState("");
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   // const [error, setError] = useState("");
@@ -89,8 +91,10 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     e.preventDefault();
 
     const origin = location.href;
+    console.log("result", wordCount ?? "24");
     const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
+      strength: wordCount === 12 ? 128 : 256, // default is 256
       passphrase: passphrase,
     });
     if (!result[0]) {
@@ -264,6 +268,15 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                   onChange={handlePassphraseChange}
                   maxW="200px"
                 />
+                <Select
+                  placeholder="Word count"
+                  value={wordCount}
+                  onChange={e => setWordCount(parseInt(e.target.value))}
+                  width="120px"
+                >
+                  <option value="12">12</option>
+                  <option value="24">24</option>
+                </Select>
                 <Button
                   variant="outline"
                   colorScheme="blue"
@@ -392,6 +405,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                             value={item.secret}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
+                            count={2}
                             textProps={{
                               fontSize: "md",
                               overflowWrap: "anywhere",
