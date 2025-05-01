@@ -81,7 +81,7 @@
         "parameters": [],
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.Preference` object. Returns Promise\\<null\\> if error.",
+          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.Preference` object. Returns `Promise<null>` if error.",
           "optional": true
         }
       },
@@ -103,23 +103,23 @@
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The type that specifies the secret you want the user to share: e.g. \"mnemonic\", \"derivation\"."
+                "description": "The type that specifies the secret you want the user to generate: e.g. `\"mnemonic\"`, `\"derivation\"`."
               },
               "strength": {
                 "type": "integer",
                 "maxmum": 256,
                 "minimum": 128,
-                "description": "The strength when generating a mnemonic (and a master key). This is required when `type` is \"mnemonic\".",
+                "description": "The strength when generating a mnemonic (and a master key). This is required when `type` is `\"mnemonic\"`.",
                 "optional": true
               },
               "passphrase": {
                 "type": "string",
-                "description": "The passphrase when generating a mnemonic (and a master key). This is optional when `type` is \"mnemonic\".",
+                "description": "The passphrase when generating a mnemonic (and a master key). This is optional when `type` is `\"mnemonic\"`.",
                 "optional": true
               },
               "path": {
                 "type": "string",
-                "description": "The Hierarchical Deterministic (HD) path: e.g. \"m/0'/1/2'\". If null (or \"m\") a master key will be generated. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".",
+                "description": "The Hierarchical Deterministic (HD) path: e.g. `\"m/0'/1/2'\"`. If null (or `\"m\"`) a master key will be generated. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.",
                 "optional": true
               }
             }
@@ -158,20 +158,20 @@
           {
             "name": "options",
             "type": "object",
-            "description": "Direction about the secret you want the user to share. \"mnemonic\" and \"derivation\" use the seed specified by the user as the primary.",
+            "description": "Direction about the secret you want the user to share. `\"mnemonic\"` and `\"derivation\"` use the seed specified by the user as the primary.",
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The type that specifies the secret you want the user to share: e.g. \"mnemonic\", \"derivation\", \"xpriv\"."
+                "description": "The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xpriv\"`."
               },
               "xpub": {
                 "type": "string",
-                "description": "The Bitcoin public key that specifies the secret you want the user to share: e.g. \"xpub123...\". The return value is encrypted xpriv key. This is required when `type` is \"xpriv\".",
+                "description": "The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xpriv key. This is required when `type` is `\"xpriv\"`.",
                 "optional": true
               },
               "path": {
                 "type": "string",
-                "description": "The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. \"m/0'/1/2'\". The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is \"derivation\".",
+                "description": "The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.",
                 "optional": true
               }
             }

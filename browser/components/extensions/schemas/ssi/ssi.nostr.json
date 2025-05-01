@@ -53,7 +53,7 @@
         "parameters": [],
         "returns": {
           "$ref": "Preference",
-          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.Preference` object. Returns Promise\\<null\\> if error."
+          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.Preference` object. Returns `Promise<null>` if error."
         }
       },
       {
@@ -80,7 +80,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The signature spec. e.g., 'signEvent'."
+                "description": "The signature spec. e.g., `\"signEvent\"`."
               }
             }
           },
@@ -120,16 +120,16 @@
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The encryption spec. e.g., 'nip04', 'nip44'."
+                "description": "The encryption spec. e.g., `\"nip04\"`, `\"nip44\"`."
               },
               "pubkey": {
                 "type": "string",
-                "description": "The conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.",
+                "description": "The conversation partner's public key. If type is `\"nip04\"` or `\"nip44\"`, then this is required.",
                 "optional": true
               },
               "version": {
                 "type": "string",
-                "description": "The version to define encryption algorithms if the type is 'nip44'.",
+                "description": "The version to define encryption algorithms if the type is `\"nip44\"`.",
                 "optional": true,
                 "default": "0x02"
               }
@@ -171,16 +171,16 @@
             "properties": {
               "type": {
                 "type": "string",
-                "description": "The encryption spec. e.g., 'nip04', 'nip44'."
+                "description": "The encryption spec. e.g., `\"nip04\"`, `\"nip44\"`."
               },
               "pubkey": {
                 "type": "string",
-                "description": "The conversation partner's public key. If type is 'nip04' or 'nip44', then this is required.",
+                "description": "The conversation partner's public key. If type is `\"nip04\"` or `\"nip44\"`, then this is required.",
                 "optional": true
               },
               "version": {
                 "type": "string",
-                "description": "The version to define encryption algorithms if the type is 'nip44'.",
+                "description": "The version to define encryption algorithms if the type is `\"nip44\"`.",
                 "optional": true,
                 "default": "0x02"
               }
