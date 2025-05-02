@@ -59,11 +59,11 @@ export const Bitcoin = {
       );
       const hdkey = Bitcoin.BIP32.getHDKeyFromMnemonic(mnemonic, passphrase);
       const xpub = hdkey.publicExtendedKey;
-      const xpriv = hdkey.privateExtendedKey;
+      const xprv = hdkey.privateExtendedKey;
 
       if (origin.startsWith("about:")) {
         // Call `Services.ssi.searchCredentialsAsync` from settings
-        return { mnemonic, xpub, xpriv };
+        return { mnemonic, xpub, xprv };
       }
 
       // In browser.ssi, Firstly make credential so that the user can authorize. If the user rejects, delete it.
@@ -93,7 +93,7 @@ export const Bitcoin = {
         dialogicAuthorizedSites: JSON.stringify([]),
         properties: JSON.stringify({
           passphrase,
-          xpriv,
+          xprv,
           generationMethod: "new",
           generationFrom: origin,
           sharing: [],

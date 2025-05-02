@@ -16,7 +16,7 @@ export interface WindowSSI extends Omit<EventTarget, "dispatchEvent"> {
 /** Implementation list of Bitcoin generation spec. */
 export type BitcoinGenerateType = "mnemonic" | "derivation";
 /** Implementation list of Bitcoin share spec. */
-export type BitcoinShareType = "mnemonic" | "derivation" | "xpriv";
+export type BitcoinShareType = "mnemonic" | "derivation" | "xprv";
 /** Return type of Bitcoin shared secret. */
 export interface BitcoinSharedSecret {
   secret: string; // The secret encrypted by Nostr NIP-44
@@ -64,7 +64,7 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    * @param options.strength - The strength when generating a mnemonic (and a master key). This is required when `type` is `\"mnemonic\"`.
    * @param options.passphrase - The passphrase when generating a mnemonic (and a master key). This is optional when `type` is `\"mnemonic\"`.
    * @param options.path - The Hierarchical Deterministic (HD) path: e.g. `\"m/0'/1/2'\"`. If null (or `\"m\"`) a master key will be generated. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting identifier.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting identifier.
    */
   generateSync(
     options: {
@@ -81,9 +81,9 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    *
    * @param pubkey - Your Nostr public key for encrypting the shared secret. Either npub or hex format.
    * @param options - Direction about the secret you want the user to share. `\"mnemonic\"` and `\"derivation\"` use the seed specified by the user as the primary.
-   * @param options.type - The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xpriv\"`.
-   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xpriv key. This is required when `type` is `\"xpriv\"`.
-   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.
+   * @param options.type - The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xprv\"`.
+   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xprv key. This is required when `type` is `\"xprv\"`.
+   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xprv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.
    * @returns A Promise that will be fulfilled with a `ssi.bitcoin.SharedSecret` object.
    * @throws If failed
    */
@@ -100,10 +100,10 @@ export interface WindowSSIBitcoin extends Omit<EventTarget, "dispatchEvent"> {
    *
    * @param pubkey - Your Nostr public key for encrypting the shared secret. Either npub or hex format.
    * @param options - Direction about the secret you want the user to share. `\"mnemonic\"` and `\"derivation\"` use the seed specified by the user as the primary.
-   * @param options.type - The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xpriv\"`.
-   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xpriv key. This is required when `type` is `\"xpriv\"`.
-   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting `ssi.bitcoin.SharedSecret` object.
+   * @param options.type - The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xprv\"`.
+   * @param options.xpub - The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xprv key. This is required when `type` is `\"xprv\"`.
+   * @param options.path - The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xprv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting `ssi.bitcoin.SharedSecret` object.
    */
   shareWithSync(
     pubkey: string,
@@ -143,7 +143,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * Callback type of `getPublicKey`.
    *
    * @param options - Not implemented
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting hex-format public key.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting hex-format public key.
    */
   getPublicKeySync(
     options: object,
@@ -171,7 +171,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * @param message - The message to sign. If it's not a string it must be stringified.
    * @param options - Direction about sign detail.
    * @param options.type - The signature spec. e.g., `\"signEvent\"`.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting signature.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting signature.
    */
   signSync(
     message: string,
@@ -208,7 +208,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * @param options.type - The encryption spec. e.g., `\"nip04\"`, `\"nip44\"`.
    * @param options.pubkey - The conversation partner's public key. If type is `\"nip04\"` or `\"nip44\"`, then this is required.
    * @param options.version - The version to define encryption algorithms if the type is `\"nip44\"`.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting ciphertext.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting ciphertext.
    */
   encryptSync(
     plaintext: string,
@@ -247,7 +247,7 @@ export interface WindowSSINostr extends Omit<EventTarget, "dispatchEvent"> {
    * @param options.type - The encryption spec. e.g., `\"nip04\"`, `\"nip44\"`.
    * @param options.pubkey - The conversation partner's public key. If type is `\"nip04\"` or `\"nip44\"`, then this is required.
    * @param options.version - The version to define encryption algorithms if the type is `\"nip44\"`.
-   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments - 1. Error object if failed otherwise null, 2. The resulting plaintext.
+   * @param callback - A reference to a function that should be called in the near future, when the result is returned. The callback function is passed two arguments — 1. Error object if failed otherwise null, 2. The resulting plaintext.
    */
   decryptSync(
     ciphertext: string,

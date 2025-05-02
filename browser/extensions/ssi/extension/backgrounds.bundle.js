@@ -928,7 +928,7 @@ const doBitcoinAction = async (tabId, origin, action, args) => {
                 throw new Error("Invalid partner's pubkey");
             }
             if (args.type == null ||
-                !["mnemonic", "derivation", "xpriv"].includes(args.type)) {
+                !["mnemonic", "derivation", "xprv"].includes(args.type)) {
                 throw new Error(`Invalid type: ${args.type}`);
             }
             const pubkey = args.pubkey;

@@ -17,7 +17,7 @@ export const BitcoinTemplate: Omit<BitcoinCredential, "guid" | "timeCreated"> =
     dialogicAuthorizedSites: [],
     properties: {
       passphrase: "",
-      xpriv: "",
+      xprv: "",
       generationMethod: "new",
       generationFrom: "",
       sharing: [],

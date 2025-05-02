@@ -150,7 +150,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
                     return errorValue;
                   }
                   break;
-                case "xpriv":
+                case "xprv":
                   if (!xpub) {
                     return errorValue;
                   }
@@ -199,7 +199,7 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               if (type === "mnemonic") {
                 pointing.credentialName = "bip39";
                 pointing.primary = true;
-              } else if (type === "xpriv") {
+              } else if (type === "xprv") {
                 pointing.identifier = xpub;
               } else if (type === "derivation") {
                 // Not implemented

@@ -63,7 +63,7 @@ declare namespace browser.ssi {
       tabId: number,
       pubkey: string, // Either npub or hex format.
       options: {
-        type: "mnemonic" | "derivation" | "xpriv";
+        type: "mnemonic" | "derivation" | "xprv";
         xpub?: string;
         path?: string; // m or m/*
       },

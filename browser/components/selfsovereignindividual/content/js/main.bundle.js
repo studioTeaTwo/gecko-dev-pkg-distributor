@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, C as Card, v as CardHeader, w as Heading, E as Editable, x as EditablePreview, y as Input, z as EditableInput, G as CardBody, J as Textarea, K as Grid, N as GridItem, O as InputGroup, P as Tooltip, Q as Menu$1, S as MenuButton, U as MenuList, W as MenuItem, X as Checkbox, Y as Switch, Z as StackDivider, _ as CardFooter, $ as useEditableControls, a0 as Select, a1 as Tabs, a2 as TabList, a3 as Tab, a4 as TabPanels, a5 as TabPanel, a6 as Spinner, a7 as bech32, a8 as bytesToHex, a9 as hexToBytes, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, v as bech32, w as bytesToHex, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, G as Input, J as EditableInput, K as CardBody, N as Textarea, O as Grid, P as GridItem, Q as hexToBytes, S as InputGroup, U as Tooltip, W as Menu$1, X as MenuButton, Y as MenuList, Z as MenuItem, _ as Checkbox, $ as Switch, a0 as StackDivider, a1 as CardFooter, a2 as useEditableControls, a3 as Select, a4 as Tabs, a5 as TabList, a6 as Tab, a7 as TabPanels, a8 as TabPanel, a9 as Spinner, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -1098,6 +1098,28 @@ function changePrimary(guid, checked, keys) {
   });
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
+const NostrTypeGuard = {
+  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
+};
+const Bech32MaxSize = 5e3;
+const encodeToNostrKey = (prefix, bytes) => {
+  const words = bech32.toWords(bytes);
+  return bech32.encode(
+    prefix,
+    words,
+    Bech32MaxSize
+  );
+};
+const decodeFromNostrKey = (nip19) => {
+  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
+  const data = new Uint8Array(bech32.fromWords(words));
+  switch (prefix) {
+    case "nsec":
+      return { type: prefix, data };
+    case "npub":
+      return { type: prefix, data: bytesToHex(data) };
+  }
+};
 function BIP39Editor(props) {
   const { credential, mnemonics, prefs } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
@@ -1349,11 +1371,19 @@ function BIP39Editor(props) {
                         textOverflow: "ellipsis",
                         mt: 1,
                         children: [
-                          "  partner: ",
-                          site.receiver,
+                          "  partner:",
+                          " ",
+                          encodeToNostrKey(
+                            "npub",
+                            hexToBytes(site.receiver)
+                          ),
                           /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-                          "  you: ",
-                          site.sender
+                          "  you:",
+                          " ",
+                          encodeToNostrKey(
+                            "npub",
+                            hexToBytes(site.sender)
+                          )
                         ]
                       }
                     )
@@ -1729,7 +1759,7 @@ const BitcoinTemplate = {
   dialogicAuthorizedSites: [],
   properties: {
     passphrase: "",
-    xpriv: "",
+    xprv: "",
     generationMethod: "new",
     generationFrom: "",
     sharing: [],
@@ -1773,7 +1803,6 @@ function Bitcoin$1(props) {
   const handleGenNewSeed = async (e) => {
     e.preventDefault();
     const origin = location.href;
-    console.log("result", wordCount ?? "24");
     const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
       strength: wordCount === 12 ? 128 : 256,
@@ -1784,7 +1813,7 @@ function Bitcoin$1(props) {
       alert("Invalid!");
       return;
     }
-    const { mnemonic, xpub, xpriv } = await result[1];
+    const { mnemonic, xpub, xprv } = await result[1];
     addCredentialToStore2({
       ...BitcoinTemplate,
       identifier: xpub,
@@ -1794,7 +1823,7 @@ function Bitcoin$1(props) {
       properties: {
         ...BitcoinTemplate.properties,
         passphrase,
-        xpriv,
+        xprv,
         displayName: xpub,
         generationMethod: "new",
         generationFrom: origin
@@ -1826,7 +1855,7 @@ function Bitcoin$1(props) {
       properties: {
         ...BitcoinTemplate.properties,
         passphrase,
-        xpriv: result[1].xpriv,
+        xprv: result[1].xprv,
         displayName: result[1].xpub,
         generationMethod: "import",
         generationFrom: origin
@@ -2029,7 +2058,7 @@ function Bitcoin$1(props) {
                       Secret,
                       {
                         protocolName: item.protocolName,
-                        value: item.properties.xpriv,
+                        value: item.properties.xprv,
                         onChangeVisibility: () => {
                         },
                         prefs,
@@ -2256,28 +2285,6 @@ function Bitcoin(props) {
     ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
   ] });
 }
-const NostrTypeGuard = {
-  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
-};
-const Bech32MaxSize = 5e3;
-const encodeToNostrKey = (prefix, bytes) => {
-  const words = bech32.toWords(bytes);
-  return bech32.encode(
-    prefix,
-    words,
-    Bech32MaxSize
-  );
-};
-const decodeFromNostrKey = (nip19) => {
-  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
-  const data = new Uint8Array(bech32.fromWords(words));
-  switch (prefix) {
-    case "nsec":
-      return { type: prefix, data };
-    case "npub":
-      return { type: prefix, data: bytesToHex(data) };
-  }
-};
 function KeyEditor(props) {
   const { credential, nostrKeys, prefs } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;

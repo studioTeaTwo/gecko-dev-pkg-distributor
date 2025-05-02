@@ -91,7 +91,6 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
     e.preventDefault();
 
     const origin = location.href;
-    console.log("result", wordCount ?? "24");
     const result = generateSecretOnToolkit("bitcoin", "bip39", {
       origin,
       strength: wordCount === 12 ? 128 : 256, // default is 256
@@ -101,7 +100,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       alert("Invalid!");
       return;
     }
-    const { mnemonic, xpub, xpriv } = await result[1];
+    const { mnemonic, xpub, xprv } = await result[1];
 
     addCredentialToStore({
       ...BitcoinTemplate,
@@ -112,7 +111,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       properties: {
         ...BitcoinTemplate.properties,
         passphrase: passphrase,
-        xpriv,
+        xprv,
         displayName: xpub,
         generationMethod: "new",
         generationFrom: origin,
@@ -155,7 +154,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
       properties: {
         ...BitcoinTemplate.properties,
         passphrase: passphrase,
-        xpriv: result[1].xpriv,
+        xprv: result[1].xprv,
         displayName: result[1].xpub,
         generationMethod: "import",
         generationFrom: origin,
@@ -390,7 +389,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                           </Text>
                           <Secret
                             protocolName={item.protocolName}
-                            value={item.properties.xpriv}
+                            value={item.properties.xprv}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
                             textProps={{ fontSize: "md", isTruncated: true }}

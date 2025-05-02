@@ -132,7 +132,7 @@ export interface BaseCredential
 export interface BitcoinCredential extends BaseCredential {
   properties: {
     passphrase: string;
-    xpriv: string;
+    xprv: string;
     generationMethod: "new" | "import";
   } & BaseCredential["properties"];
 }

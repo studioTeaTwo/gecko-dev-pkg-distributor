@@ -129,12 +129,12 @@ export class AboutSelfSovereignIndividualChild extends JSWindowActorChild {
                   true,
                   {
                     xpub: hdkey.publicExtendedKey,
-                    xpriv: hdkey.privateExtendedKey,
+                    xprv: hdkey.privateExtendedKey,
                   },
                 ];
               }
 
-              // the return is `Promise<{ mnemonic, xpub, xpriv }>`
+              // the return is `Promise<{ mnemonic, xpub, xprv }>`
               return [
                 true,
                 Bitcoin.BIP39.generateMnemonic(

@@ -54,7 +54,7 @@ export const doBitcoinAction = async (
       }
       if (
         args.type == null ||
-        !["mnemonic", "derivation", "xpriv"].includes(args.type)
+        !["mnemonic", "derivation", "xprv"].includes(args.type)
       ) {
         throw new Error(`Invalid type: ${args.type}`);
       }

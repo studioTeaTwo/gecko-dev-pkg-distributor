@@ -59,6 +59,8 @@ import {
   ExplainNallowedMethod,
 } from "../shared/Examples";
 import { changePrimary } from "../shared/functions";
+import { hexToBytes } from "@noble/hashes/utils";
+import { encodeToNostrKey } from "../shared/keys";
 
 interface Props {
   credential: BitcoinCredential;
@@ -372,9 +374,17 @@ export default function BIP39Editor(props: Props) {
                               textOverflow="ellipsis"
                               mt={1}
                             >
-                              &nbsp;&nbsp;partner: {site.receiver}
+                              &nbsp;&nbsp;partner:{" "}
+                              {encodeToNostrKey(
+                                "npub",
+                                hexToBytes(site.receiver)
+                              )}
                               <br />
-                              &nbsp;&nbsp;you: {site.sender}
+                              &nbsp;&nbsp;you:{" "}
+                              {encodeToNostrKey(
+                                "npub",
+                                hexToBytes(site.sender)
+                              )}
                             </Text>
                           </VStack>
                         </GridItem>
