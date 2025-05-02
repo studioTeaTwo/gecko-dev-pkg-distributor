@@ -28,9 +28,11 @@
  */
 
 /**
- * @typedef {object} Credential
+ * @typedef {object} SearchCriteria
  * @property {string} protocolName
- * @property {string} credentialName
+ * @property {string=} credentialName
+ * @property {string=} identifier
+ * @property {boolean=} primary
  */
 
 /**
@@ -247,14 +249,14 @@ export const browserSsiHelper = {
    *
    * @param {Context} context
    * @param {number} tabId
-   * @param {Credential} credential
+   * @param {SearchCriteria} searchCriteria
    * @param {DialogInfo} dialogInfo
    * @param {boolean} onlyExtension
    * @returns {Promise<boolean>}
    */
-  async authorize(context, tabId, credential, dialogInfo, onlyExtension) {
+  async authorize(context, tabId, searchCriteria, dialogInfo, onlyExtension) {
     // Prepare stuff
-    const { protocolName, credentialName } = credential;
+    const { protocolName } = searchCriteria;
     const { type, evidence, caption, submission, enforce } = dialogInfo;
     const { site, extension, browsingContext, window } =
       browserSsiHelper.getOrigin(context, tabId);
@@ -276,11 +278,9 @@ export const browserSsiHelper = {
     if ((!onlyExtension && !site.origin) || !extension.origin) {
       return false;
     }
-    const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret({
-      protocolName,
-      credentialName,
-      primary: true,
-    });
+    const credentials = await lazy.SsiHelper.searchCredentialsWithoutSecret(
+      searchCriteria
+    );
     if (credentials.length === 0) {
       return false;
     }
@@ -317,7 +317,7 @@ export const browserSsiHelper = {
         ? internalPrefs["primarypassword.toApps.excludedKindsPreset"].split(",")
         : [];
     }
-    const cacheKey = `${protocolName}:${credentialName}:${credentials[0].identifier}`;
+    const cacheKey = `${protocolName}:${credentials[0].credentialName}:${credentials[0].identifier}`;
     const auth = Services.ssi.authCache.get(cacheKey);
     const cache = {
       cacheKey,

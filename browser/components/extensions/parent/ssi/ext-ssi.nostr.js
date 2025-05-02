@@ -80,12 +80,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }
@@ -182,12 +180,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }
@@ -275,12 +271,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }

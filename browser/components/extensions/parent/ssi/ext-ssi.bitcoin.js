@@ -93,10 +93,10 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
               }
 
               // Authorize
-              const credentialName = type === "mnemonic" ? "bip39" : "bip32";
               const pointing = {
                 protocolName: "bitcoin",
-                credentialName,
+                credentialName: credential.credentialName,
+                identifier: credential.identifier,
               };
               const isAuthorized = await lazy.browserSsiHelper.authorize(
                 context,

@@ -200,7 +200,7 @@ this.ssi = class extends ExtensionAPI {
             const isAuthorized = await lazy.browserSsiHelper.authorize(
               context,
               tabId,
-              { protocolName, credentialName },
+              { protocolName, credentialName, primary: true },
               { type: "custom", caption, submission, enforce },
               false
             );
