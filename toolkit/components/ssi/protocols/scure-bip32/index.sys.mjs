@@ -1,9 +1,23 @@
-/*! scure-bip32 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
-
 /**
- * See: https://github.com/paulmillr/scure-bip32
+ * @module BIP32 hierarchical deterministic (HD) wallets over secp256k1.
+ * @example
+ * ```js
+ * import { HDKey } from "@scure/bip32";
+ * const hdkey1 = HDKey.fromMasterSeed(seed);
+ * const hdkey2 = HDKey.fromExtendedKey(base58key);
+ * const hdkey3 = HDKey.fromJSON({ xpriv: string });
+ *
+ * // props
+ * [hdkey1.depth, hdkey1.index, hdkey1.chainCode];
+ * console.log(hdkey2.privateKey, hdkey2.publicKey);
+ * console.log(hdkey3.derive("m/0/2147483647'/1"));
+ * const sig = hdkey3.sign(hash);
+ * hdkey3.verify(hash, sig);
+ * ```
  */
-
+/*! scure-bip32 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
+import { mod } from "resource://ssi/protocols/curves/modular.sys.mjs";
+import { secp256k1 as secp } from "resource://ssi/protocols/curves/secp256k1.sys.mjs";
 import { hmac } from "resource://ssi/protocols/hashes/hmac.sys.mjs";
 import { ripemd160 } from "resource://ssi/protocols/hashes/legacy.sys.mjs";
 import { sha256, sha512 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
@@ -15,30 +29,22 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from "resource://ssi/protocols/hashes/utils.sys.mjs";
-import { secp256k1 as secp } from "resource://ssi/protocols/curves/secp256k1.sys.mjs";
-import { mod } from "resource://ssi/protocols/curves/modular.sys.mjs";
 import { createBase58check } from "resource://ssi/protocols/scure-base.sys.mjs";
-
 const Point = secp.ProjectivePoint;
 const base58check = createBase58check(sha256);
-
 function bytesToNumber(bytes) {
   abytes(bytes);
   const h = bytes.length === 0 ? "0" : bytesToHex(bytes);
   return BigInt("0x" + h);
 }
 function numberToBytes(num) {
-  if (typeof num !== "bigint") {
-    throw new Error("bigint expected");
-  }
+  if (typeof num !== "bigint") throw new Error("bigint expected");
   return hexToBytes(num.toString(16).padStart(64, "0"));
 }
-
 const MASTER_SECRET = utf8ToBytes("Bitcoin seed");
 // Bitcoin hardcoded by default
 const BITCOIN_VERSIONS = { private: 0x0488ade4, public: 0x0488b21e };
 export const HARDENED_OFFSET = 0x80000000;
-
 const hash160 = data => ripemd160(sha256(data));
 const fromU32 = data => createView(data).getUint32(0, false);
 const toU32 = n => {
@@ -49,7 +55,6 @@ const toU32 = n => {
   createView(buf).setUint32(0, n, false);
   return buf;
 };
-
 export class HDKey {
   get fingerprint() {
     if (!this.pubHash) {
@@ -89,7 +94,6 @@ export class HDKey {
       this.serialize(this.versions.public, this.pubKey)
     );
   }
-
   static fromMasterSeed(seed, versions = BITCOIN_VERSIONS) {
     abytes(seed);
     if (8 * seed.length < 128 || 8 * seed.length > 512) {
@@ -105,7 +109,6 @@ export class HDKey {
       privateKey: I.slice(0, 32),
     });
   }
-
   static fromExtendedKey(base58key, versions = BITCOIN_VERSIONS) {
     // => version(4) || depth(1) || fingerprint(4) || index(4) || chain(32) || key(33)
     const keyBuffer = base58check.decode(base58key);
@@ -125,35 +128,13 @@ export class HDKey {
     }
     if (isPriv) {
       return new HDKey({ ...opt, privateKey: key.slice(1) });
+    } else {
+      return new HDKey({ ...opt, publicKey: key });
     }
-    return new HDKey({ ...opt, publicKey: key });
   }
-
   static fromJSON(json) {
     return HDKey.fromExtendedKey(json.xpriv);
   }
-
-  /**
-   * @typedef {Object} Versions
-   * @property {number} private
-   * @property {number} public
-   */
-
-  /**
-   * @typedef {Object} HDKeyOpt
-   * @property {versions=} Versions
-   * @property {number=} depth
-   * @property {number=} index
-   * @property {number=} parentFingerprint
-   * @property {Uint8Array=} chainCode
-   * @property {Uint8Array=} publicKey
-   * @property {(Uint8Array | bigint)=} privateKey
-   */
-
-  /**
-   *
-   * @param {HDKeyOpt} opt
-   */
   constructor(opt) {
     this.depth = 0;
     this.index = 0;
@@ -207,9 +188,8 @@ export class HDKey {
     for (const c of parts) {
       const m = /^(\d+)('?)$/.exec(c);
       const m1 = m && m[1];
-      if (!m || m.length !== 3 || typeof m1 !== "string") {
+      if (!m || m.length !== 3 || typeof m1 !== "string")
         throw new Error("invalid child index: " + c);
-      }
       let idx = +m1;
       if (!Number.isSafeInteger(idx) || idx >= HARDENED_OFFSET) {
         throw new Error("Invalid index");
@@ -330,3 +310,4 @@ export class HDKey {
     );
   }
 }
+//# sourceMappingURL=index.js.map

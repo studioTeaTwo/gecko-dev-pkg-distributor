@@ -17,7 +17,6 @@ toolkit.jar:
 #endif
   ssi/protocols/Bitcoin.sys.mjs (./protocols/Bitcoin.sys.mjs)
   ssi/protocols/Nostr.sys.mjs (./protocols/Nostr.sys.mjs)
-  ssi/protocols/utils/hdkey.sys.mjs (./protocols/utils/hdkey.sys.mjs)
   ssi/protocols/utils/wordlists.mjs (./protocols/utils/wordlists.mjs)
   ssi/protocols/ciphers/_arx.sys.mjs (./protocols/noble-ciphers/_arx.sys.mjs)
   ssi/protocols/ciphers/_assert.sys.mjs (./protocols/noble-ciphers/_assert.sys.mjs)
@@ -43,3 +42,4 @@ toolkit.jar:
   ssi/protocols/hashes/sha2.sys.mjs (./protocols/noble-hashes/sha2.sys.mjs)
   ssi/protocols/hashes/utils.sys.mjs (./protocols/noble-hashes/utils.sys.mjs)
   ssi/protocols/scure-base.sys.mjs (./protocols/scure-base/index.sys.mjs)
+  ssi/protocols/scure-bip32.sys.mjs (./protocols/scure-bip32/index.sys.mjs)

@@ -12,8 +12,8 @@ import {
 import { sha256, sha512 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
 import { pbkdf2 } from "resource://ssi/protocols/hashes/pbkdf2.sys.mjs";
 import { utils as baseUtils } from "resource://ssi/protocols/scure-base.sys.mjs";
+import { HDKey } from "resource://ssi/protocols/scure-bip32.sys.mjs";
 import { wordlists } from "resource://ssi/protocols/utils/wordlists.mjs";
-import { HDKey } from "resource://ssi/protocols/utils/hdkey.sys.mjs";
 import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs";
 
 // see: browser/components/selfsovereignindividual/src/components/bitcoin/constants.ts
