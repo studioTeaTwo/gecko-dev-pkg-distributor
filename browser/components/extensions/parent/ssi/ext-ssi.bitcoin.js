@@ -255,8 +255,10 @@ this["ssi.bitcoin"] = class extends ExtensionAPI {
 
               // Record the share
               const { site } = lazy.browserSsiHelper.getOrigin(context, tabId);
-              const sender = nostrKeys[0].identifier;
-              const receiver = npub;
+              const sender = lazy.Nostr.convertPublicKey(
+                nostrKeys[0].identifier
+              );
+              const receiver = pubkey;
               const history = {
                 url: site.origin,
                 guid: credentials[0].guid,

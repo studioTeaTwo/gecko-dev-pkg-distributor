@@ -49,11 +49,11 @@
           },
           "sender": {
             "type": "string",
-            "description": "The Nostr public key of the person who encrypted the secret. It's the npub format."
+            "description": "The Nostr public key of the person who encrypted the secret. It's in hex format."
           },
           "receiver": {
             "type": "string",
-            "description": "The Nostr public key of the person with whom the secret is shared. It's the npub format."
+            "description": "The Nostr public key of the person with whom the secret is shared. It's in hex format."
           }
         }
       }

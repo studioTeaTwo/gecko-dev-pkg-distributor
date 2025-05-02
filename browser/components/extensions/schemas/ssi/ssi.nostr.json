@@ -59,7 +59,7 @@
       {
         "name": "sign",
         "type": "function",
-        "description": "Pass in the message and get back the signature by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the message and get back the signature by Nostr secret key. You should always read the public key without using cache just before signing/encrypting/decrypting, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -99,7 +99,7 @@
       {
         "name": "encrypt",
         "type": "function",
-        "description": "Pass in the plain text and get back the cipher text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the plain text and get back the cipher text by Nostr secret key. You should always read the public key without using cache just before signing/encrypting/decrypting, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
@@ -111,7 +111,7 @@
           {
             "name": "plaintext",
             "type": "string",
-            "description": "The plain text to encrypt."
+            "description": "The plain text to encrypt. If it's not a string it must be stringified."
           },
           {
             "name": "options",
@@ -150,7 +150,7 @@
       {
         "name": "decrypt",
         "type": "function",
-        "description": "Pass in the cipher text and get back the plain text by Nostr secret key. You should always read the public key without using cache just before sign/encrypt/decrypt, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "description": "Pass in the cipher text and get back the plain text by Nostr secret key. You should always read the public key without using cache just before signing/encrypting/decrypting, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
         "async": true,
         "parameters": [
           {
