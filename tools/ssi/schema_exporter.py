@@ -121,7 +121,7 @@ def build_browser(data):
         output_text += f"# {item['namespace']}\n\n"
 
         if 'description' in item:
-            output_text += f"{item['description']}\n\n"
+            output_text += f"{replace_json_escape(item['description'])}\n\n"
 
         if 'permissions' in item:
             output_text += "## Required Permissions\n\n"
@@ -138,7 +138,7 @@ def build_browser(data):
                     output_text += f"### [{sub_item[name]}]({sub_item[name]}.md)\n\n"
 
                     if 'description' in sub_item:
-                        output_text += f"{sub_item['description']}\n\n"
+                        output_text += f"{replace_json_escape(sub_item['description'])}\n\n"
 
                     create_member_file(item['namespace'], key, sub_item)
 
@@ -154,7 +154,7 @@ def create_member_file(namespace, type, data):
     output_text = f"# {namespace}.{data[key]}{'()' if type == 'functions' else ''}\n\n"
 
     if 'description' in data:
-        output_text += f"{data['description']}\n\n"
+        output_text += f"{replace_json_escape(data['description'])}\n\n"
 
     if 'async' in data:
         output_text += "This is an asynchronous function that returns a [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).\n\n"
@@ -181,7 +181,7 @@ def create_member_file(namespace, type, data):
 
     if 'returns' in data:
         output_text += "### Return value\n\n"
-        output_text += f"{data['returns']['description']}\n\n"
+        output_text += f"{replace_json_escape(data['returns']['description'])}\n\n"
 
     if type in ['functions', 'events'] :
         output_text += f"## Examples\n\n{{{{#include fragments/examples_{data[key]}.md }}}}\n\n"
@@ -202,7 +202,7 @@ def build_parameters(data):
         output_text += '\n\n'
 
         type = item['$ref'] if '$ref' in item else item['type']
-        output_text += f"`{type}`. {item['description']}\n\n"
+        output_text += f"`{type}`. {replace_json_escape(item['description'])}\n\n"
 
         if 'type' in item and item['type'] == 'object':
             property = item['properties']
@@ -212,7 +212,7 @@ def build_parameters(data):
                     output_text += ' (optional)'
                 output_text += '\n>\n'
 
-                output_text += f"> `{property[key]['type']}`. {property[key]['description']}\n>\n"
+                output_text += f"> `{property[key]['type']}`. {replace_json_escape(property[key]['description'])}\n>\n"
             output_text += '\n'
 
     if len(data) == 0:
@@ -231,7 +231,7 @@ def build_types(data):
             output_text += ' (optional)'
         output_text += '\n\n'
 
-        output_text += f"`{value['type']}`. {value['description']}\n\n"
+        output_text += f"`{value['type']}`. {replace_json_escape(value['description'])}\n\n"
 
     return output_text
 
@@ -317,7 +317,7 @@ def build_window(file_name, jsondata):
 
         output_text += f"# {namespace}\n\n"
         for node in data['comment']['summary']:
-            output_text += node["text"]
+            output_text += replace_json_escape(node["text"])
         output_text += "\n\n"
 
         types_data = []
@@ -331,7 +331,7 @@ def build_window(file_name, jsondata):
                 output_text += f"### [{node['name']}]({node['name']}.md)\n\n"
                 if 'comment' in node:
                     for node2 in node['comment']['summary']:
-                        output_text += node2["text"]
+                        output_text += replace_json_escape(node2["text"])
                     output_text += "\n\n"
                 create_member_file_window(namespace, node['kind'], node)
 
@@ -349,7 +349,7 @@ def build_window(file_name, jsondata):
                 signature = node['signatures'][0]
                 if node['name'] not in ['addEventListener', 'removeEventListener']:
                     for node2 in signature['comment']['summary']:
-                        output_text += node2["text"]
+                        output_text += replace_json_escape(node2["text"])
                     output_text += "\n\n"
                 create_member_file_window(namespace, node['kind'], signature)
 
@@ -378,7 +378,7 @@ def create_member_file_window(namespace, kind, data):
 
     if 'comment' in data:
         for node in data['comment']['summary']:
-            output_text += node["text"]
+            output_text += replace_json_escape(node["text"])
         output_text += "\n\n"
 
     # Type
@@ -435,12 +435,12 @@ def create_member_file_window(namespace, kind, data):
                 if 'name' in node['type']:
                     output_text += f"`{node['type']['name']}`. "
                     for node2 in node['comment']['summary']:
-                        output_text += node2["text"]
+                        output_text += replace_json_escape(node2["text"])
                     output_text += '\n'
                 elif 'declaration' in node['type']:
                     output_text += "`object`. "
                     for node2 in node['comment']['summary']:
-                        output_text += node2["text"]
+                        output_text += replace_json_escape(node2["text"])
                     output_text += '\n\n'
 
                     parameters = []
@@ -459,7 +459,7 @@ def create_member_file_window(namespace, kind, data):
                             output_text += f"> `{node2['type']['value']}`. "
                         if 'comment' in node2:
                             for node3 in node2['comment']['summary']:
-                                output_text += node3['text']
+                                output_text += replace_json_escape(node3['text'])
                         output_text += '\n>\n'
 
                 output_text += '\n'
@@ -468,7 +468,7 @@ def create_member_file_window(namespace, kind, data):
             returns = [node for node in data['comment'].get('blockTags', []) if node['tag'] == '@returns']
             if len(returns) > 0:
                 for node in returns[0]['content']:
-                    output_text += node['text']
+                    output_text += replace_json_escape(node['text'])
             else:
                 output_text += 'None ([undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined)).'
             output_text += "\n\n"
@@ -523,6 +523,9 @@ def remove_empty_lines(lines):
         end -= 1
 
     return lines[start:end + 1]
+
+def replace_json_escape(text: str):
+    return text.replace('\\', '')
 
 
 def main():
