@@ -53,6 +53,13 @@ jobs:
       with:
         token: ${{ secrets.PAT }}
         submodules: 'recursive'
+    - name: Apply patch
+      run: |
+        for patch in tools/ssi/build/*.patch; do
+          echo "Applying $patch"
+          git apply "$patch"
+        done
+        git add .
 
     - name: Change PPA mirror servers
       run: |

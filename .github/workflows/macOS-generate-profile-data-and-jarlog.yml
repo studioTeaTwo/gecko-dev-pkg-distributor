@@ -32,6 +32,13 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.PAT }}
+      - name: Apply patch
+        run: |
+          for patch in tools/ssi/build/*.patch; do
+            echo "Applying $patch"
+            git apply "$patch"
+          done
+          git add .
 
       - name: Check Arch type
         shell: bash
