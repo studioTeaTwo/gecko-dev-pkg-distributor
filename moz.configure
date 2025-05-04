@@ -953,17 +953,6 @@ set_config("ZLIB_IN_MOZGLUE", zlib_in_mozglue)
 set_define("ZLIB_IN_MOZGLUE", zlib_in_mozglue)
 
 
-# ssb: additions
-
-option(
-    "--with-ssb-version",
-    nargs=1,
-    help="Set the Self-Sovereign Browser version, e.g., 0.1.0mvp",
-)
-
-set_config("SSB_VERSION", depends("--with-ssb-version")(lambda x: x[0]))
-
-
 # Please do not add configure checks from here on.
 
 # Fallthrough to autoconf-based configure
