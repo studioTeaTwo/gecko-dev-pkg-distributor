@@ -42,11 +42,12 @@ jobs:
           path: C:\artifact
 
       - name:  Unpack artifact
+        shell: bash
         run: |
-          cd C:\artifact
-          ren ssb-*.tar.zst ssb.tar.zst
+          cd /c/artifact
+          mv ssb-*.tar.zst ssb.tar.zst
           zstd -d ssb.tar.zst
-          7z x ssb.tar
+          tar -xf ssb.tar
 
       - uses: actions/checkout@v4
         name: Clone 🧬
@@ -54,6 +55,7 @@ jobs:
           submodules: 'recursive'
           token: ${{ secrets.PAT }}
       - name: Apply patch
+        shell: bash
         run: |
           for patch in tools/ssi/build/*.patch; do
             echo "Applying $patch"
@@ -62,21 +64,23 @@ jobs:
           git add .
 
       - name: Setup 🪛
+        shell: powershell
         run: |
           (New-Object System.Net.WebClient).DownloadFile("https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe","C:\MozillaBuildSetup-Latest.exe")
           C:\MozillaBuildSetup-Latest.exe /S | out-null
 
       - name: Generate 🔄
+        shell: bash
         run: |
-          $Env:USE_MINTTY = "0"
+          export USE_MINTTY=0
+          workspace_dir=$(cygpath -u "$GITHUB_WORKSPACE")
+          
+          echo "cd $workspace_dir" >> mozilla-build-run.sh
+          echo 'export PATH=/c/mozilla-build/msys2/usr/bin:$PATH' >> mozilla-build-run.sh
+          echo './mach --no-interactive bootstrap --application-choice browser' >> mozilla-build-run.sh
+          echo 'LLVM_PROFDATA=/c/Users/runneradmin/.mozbuild/clang/bin/llvm-profdata.exe JARLOG_FILE=en-US.log ./mach python build/pgo/profileserver.py --binary /c/artifact/ssb/ssb.exe' >> mozilla-build-run.sh
 
-          $workspace_dir = [regex]::replace($env:GITHUB_WORKSPACE, "^([A-Z]):", { "/" + $args.value.Substring(0, 1).toLower() }) -replace "\\","/"
-
-          echo "cd $workspace_dir" '' >> mozilla-build-run.sh
-          echo 'export PATH=/c/mozilla-build/msys2/usr/bin:$PATH' '' >> mozilla-build-run.sh
-          echo './mach --no-interactive bootstrap --application-choice browser' '' >> mozilla-build-run.sh
-          echo 'LLVM_PROFDATA=/c/Users/runneradmin/.mozbuild/clang/bin/llvm-profdata.exe JARLOG_FILE=en-US.log ./mach python build/pgo/profileserver.py --binary /c/artifact/ssb/ssb.exe' '' >> mozilla-build-run.sh
-          C:\mozilla-build\start-shell.bat $workspace_dir\mozilla-build-run.sh
+          C:/mozilla-build/start-shell.bat "$(cygpath -w mozilla-build-run.sh)"
 
       - name: Publish 🎁
         uses: actions/upload-artifact@v4
