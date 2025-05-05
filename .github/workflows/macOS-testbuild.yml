@@ -20,11 +20,11 @@ jobs:
     outputs:
       buildids: ${{ steps.get.outputs.bid }}
     steps:
-    - id: get
-      shell: bash -xe {0}
-      run: |
-        bdat=$(date +"%Y%m%d%I%M%S")
-        echo "bid=${bdat}" >> "$GITHUB_OUTPUT"
+      - id: get
+        shell: bash -xe {0}
+        run: |
+          bdat=$(date +"%Y%m%d%I%M%S")
+          echo "bid=${bdat}" >> "$GITHUB_OUTPUT"
 
   mac-build:
     needs: get-buildid
