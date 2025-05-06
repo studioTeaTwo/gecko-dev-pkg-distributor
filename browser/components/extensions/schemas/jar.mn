@@ -20,6 +20,7 @@ browser.jar:
     content/browser/schemas/search.json
     content/browser/schemas/sessions.json
     content/browser/schemas/sidebar_action.json
+    content/browser/schemas/ssi.bitcoin.json (ssi/ssi.bitcoin.json)
     content/browser/schemas/ssi.json (ssi/ssi.json)
     content/browser/schemas/ssi.nostr.json (ssi/ssi.nostr.json)
     content/browser/schemas/tabs.json

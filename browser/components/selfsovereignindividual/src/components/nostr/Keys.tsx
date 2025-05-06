@@ -20,30 +20,32 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 import {
   NostrCredential,
   SelfSovereignIndividualDefaultProps,
 } from "../../custom.type";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import {
-  BIP340,
   decodeFromNostrKey,
   encodeToNostrKey,
   NostrTypeGuard,
 } from "../shared/keys";
 import Secret from "../shared/Secret";
+import { NostrTemplate } from "./constants";
 import {
-  DefaultNallowedMethods,
-  DefaultTrustedSites,
-  NostrTemplate,
-} from "./contants";
-import { authorizePrimaryPassword } from "../shared/utils";
+  authorizePrimaryPassword,
+  generateSecretOnToolkit,
+} from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { MdDeleteForever, MdEdit } from "../shared/react-icons/Icons";
 import KeyEditor from "./KeyEditor";
 import { changePrimary } from "../shared/functions";
 import { StateContext } from "../../contexts/StatesProvider";
+import {
+  DefaultNallowedMethods,
+  DefaultTrustedSites,
+} from "../shared/constants";
 
 interface NostrDisplayedCredential extends NostrCredential {
   nseckey: string;
@@ -57,9 +59,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     addCredentialToStore,
     modifyCredentialToStore,
     deleteCredentialToStore,
-    removeAllCredentialsToStore,
     onPrimaryChanged,
-    onPrefChanged,
   } = dispatchEvents;
 
   const [importedKey, setImportedKey] = useState("");
@@ -68,11 +68,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   // const [error, setError] = useState("");
 
   const nostrKeys = useMemo(
-    () =>
-      credentials
-        .filter(credential => credential.protocolName === "nostr")
-        .map(addInterpretedKeys)
-        .sort((a, b) => (b.primary ? 1 : 0)) as NostrDisplayedCredential[],
+    () => credentials.map(addInterpretedKeys) as NostrDisplayedCredential[],
     [credentials]
   );
   const defaultTrustedSites = useMemo(
@@ -88,20 +84,15 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
     [prefs.base.addons]
   );
 
-  const handleEnable = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-
-    const checked = e.target.checked;
-    onPrefChanged({ protocolName: "nostr", enabled: checked });
-  };
-
-  const handleGenNewKey = (
+  const handleGenNewKey = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
 
-    const seckey = BIP340.generateSecretKey();
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const [, seckey] = generateSecretOnToolkit("nostr", "nsec");
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey,
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
@@ -111,8 +102,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "bip340",
+        generationFrom: location.href,
       },
     });
 
@@ -123,7 +116,11 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   };
 
   const handleImportedKeyChange = e => setImportedKey(e.target.value);
-  const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSave = async (
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.KeyboardEvent<HTMLInputElement>
+  ) => {
     e.preventDefault();
 
     let nseckey = importedKey;
@@ -148,7 +145,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey,
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
 
     addCredentialToStore({
@@ -158,8 +157,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "import",
+        generationFrom: location.href,
       },
     });
 
@@ -211,7 +212,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       onPrimaryChanged({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
 
-    deleteCredentialToStore(item, nostrKeys);
+    deleteCredentialToStore(item);
   };
 
   const handleAllRemove = async (
@@ -230,10 +231,15 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       return;
     }
 
-    removeAllCredentialsToStore();
+    for (const credential of nostrKeys) {
+      deleteCredentialToStore(credential);
+    }
 
     // Notify to the buit-in extension
     onPrimaryChanged({ protocolName: "nostr", guid: "" });
+
+    // FIXME(ssb)
+    location.reload();
   };
 
   const cancelRef = React.useRef();
@@ -244,7 +250,9 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   function addInterpretedKeys(item: NostrCredential): NostrDisplayedCredential {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    const [, rawPubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: rawSeckey,
+    });
     return { ...item, nseckey, rawPubkey };
   }
 
@@ -257,16 +265,6 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
       >
         <Box>
           <Grid gridTemplateColumns={"100px 1fr"} gap={6}>
-            <GridItem>
-              <label htmlFor="nostr-pref-enabled">Enable</label>
-            </GridItem>
-            <GridItem>
-              <Switch
-                id="nostr-pref-enabled"
-                isChecked={prefs.nostr.enabled}
-                onChange={handleEnable}
-              />
-            </GridItem>
             <GridItem>
               <label>New Key</label>
             </GridItem>
@@ -373,15 +371,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             {item.identifier}
                           </Text>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.nseckey}
                             onChangeVisibility={() => {}}
-                            usedPrimarypasswordToSettings={
-                              prefs.nostr.usedPrimarypasswordToSettings
-                            }
-                            primaryPasswordEnabled={
-                              prefs.base.primaryPasswordEnabled
-                            }
-                            platform={prefs.base.platform}
+                            prefs={prefs}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
@@ -393,26 +386,23 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             {item.rawPubkey}
                           </Text>
                           <Secret
+                            protocolName={item.protocolName}
                             value={item.secret}
                             onChangeVisibility={() => {}}
-                            usedPrimarypasswordToSettings={
-                              prefs.nostr.usedPrimarypasswordToSettings
-                            }
-                            primaryPasswordEnabled={
-                              prefs.base.primaryPasswordEnabled
-                            }
-                            platform={prefs.base.platform}
+                            prefs={prefs}
                             textProps={{ fontSize: "md", isTruncated: true }}
                           />
                         </Box>
                         <Box>
-                          <Text fontSize="sm" isTruncated>
+                          <Text fontSize="sm">
                             {item.properties.generationMethod === "import"
                               ? "Imported"
                               : "Generated"}{" "}
-                            at {new Date(item.timeCreated).toLocaleDateString()}
+                            on {new Date(item.timeCreated).toLocaleDateString()}
                             &nbsp;
                             {new Date(item.timeCreated).toLocaleTimeString()}
+                            <br />
+                            at {item.properties.generationFrom}
                           </Text>
                         </Box>
                       </CardBody>

@@ -5,11 +5,11 @@ import {
   ProtocolName,
   SelfSovereignIndividualPrefs,
 } from "../custom.type";
+import { DefaultExcludedKinds } from "../components/nostr/constants";
 import {
   DefaultDialogDisplayOptions,
-  DefaultExcludedKinds,
   DefaultNallowedMethods,
-} from "../components/nostr/contants";
+} from "../components/shared/constants";
 
 /**
  * Send to child actor
@@ -17,7 +17,7 @@ import {
  */
 
 function initStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
       bubbles: true,
     })
@@ -25,7 +25,7 @@ function initStore() {
 }
 
 function getAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualGetAllCredentials", {
       bubbles: true,
     })
@@ -33,7 +33,7 @@ function getAllCredentialsToStore() {
 }
 
 function addCredentialToStore(credential: Credential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential),
@@ -45,7 +45,7 @@ function modifyCredentialToStore(
   credential: Partial<Credential>,
   options?: { newExtensionForTrustedSite: string[] }
 ) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualUpdateCredential", {
       bubbles: true,
       detail: { credential: transformToPayload(credential), options },
@@ -53,20 +53,8 @@ function modifyCredentialToStore(
   );
 }
 
-function deleteCredentialToStore(
-  deletedCredential: Credential,
-  credentials: Credential[]
-) {
-  if (credentials.length <= 2) {
-    if (credentials.length === 2) {
-      const leftCredential = credentials.find(
-        credential => credential.guid !== deletedCredential.guid
-      );
-      leftCredential.primary = true;
-      modifyCredentialToStore(leftCredential);
-    }
-  }
-  window.dispatchEvent(
+function deleteCredentialToStore(deletedCredential: Credential) {
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential),
@@ -75,7 +63,7 @@ function deleteCredentialToStore(
 }
 
 function removeAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualRemoveAllCredentials", {
       bubbles: true,
     })
@@ -86,7 +74,7 @@ function onPrimaryChanged(changeSet: {
   protocolName: ProtocolName;
   guid: string;
 }) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrimaryChanged", {
       bubbles: true,
       detail: changeSet,
@@ -99,7 +87,7 @@ function onPrefChanged(
     protocolName: ProtocolName | "base";
   } & Partial<SelfSovereignIndividualPrefs[keyof SelfSovereignIndividualPrefs]>
 ) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrefChanged", {
       bubbles: true,
       detail: changeSet,
@@ -170,6 +158,19 @@ export default function useChildActorEvent() {
       passwordRevealVisible: false,
       platform: "",
     },
+    bitcoin: {
+      enabled: true,
+      tabPin: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 300000,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 86400000,
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      usedAccountChanged: true,
+    },
     nostr: {
       enabled: true,
       tabPin: "",
@@ -194,12 +195,12 @@ export default function useChildActorEvent() {
 
   // Only do once
   useEffect(() => {
-    window.addEventListener(
+    addEventListener(
       "AboutSelfSovereignIndividualChromeToContent",
       receiveFromChildActor
     );
     return () => {
-      window.removeEventListener(
+      removeEventListener(
         "AboutSelfSovereignIndividualChromeToContent",
         receiveFromChildActor
       );

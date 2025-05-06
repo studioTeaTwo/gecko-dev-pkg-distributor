@@ -9,12 +9,12 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 import { shake256 } from '@noble/hashes/sha3';
 import { concatBytes, randomBytes, utf8ToBytes, wrapConstructor } from '@noble/hashes/utils';
-import { twistedEdwards } from './abstract/edwards.js';
-import { createHasher, expand_message_xof, } from './abstract/hash-to-curve.js';
-import { Field, isNegativeLE, mod, pow2 } from './abstract/modular.js';
-import { montgomery } from './abstract/montgomery.js';
-import { pippenger } from './abstract/curve.js';
-import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from './abstract/utils.js';
+import { pippenger } from "./abstract/curve.js";
+import { twistedEdwards } from "./abstract/edwards.js";
+import { createHasher, expand_message_xof, } from "./abstract/hash-to-curve.js";
+import { Field, FpInvertBatch, isNegativeLE, mod, pow2 } from "./abstract/modular.js";
+import { montgomery } from "./abstract/montgomery.js";
+import { bytesToHex, bytesToNumberLE, ensureBytes, equalBytes, numberToBytesLE, } from "./abstract/utils.js";
 const shake256_114 = wrapConstructor(() => shake256.create({ dkLen: 114 }));
 const shake256_64 = wrapConstructor(() => shake256.create({ dkLen: 64 }));
 const ed448P = BigInt('726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439');
@@ -76,18 +76,16 @@ const Fp = Field(ed448P, 456, true);
 const ED448_DEF = {
     // Param: a
     a: BigInt(1),
-    // -39081. Negative number is P - number
+    // -39081 a.k.a. Fp.neg(39081)
     d: BigInt('726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018326358'),
-    // Finite field 𝔽p over which we'll do calculations; 2n**448n - 2n**224n - 1n
+    // Finite field 2n**448n - 2n**224n - 1n
     Fp,
-    // Subgroup order: how many points curve has;
+    // Subgroup order
     // 2n**446n - 13818066809895115352007386748515426880336692474882178609894547503885n
     n: BigInt('181709681073901722637330951972001133588410340171829515070372549795146003961539585716195755291692375963310293709091662304773755859649779'),
     // RFC 7748 has 56-byte keys, RFC 8032 has 57-byte keys
     nBitLength: 456,
-    // Cofactor
     h: BigInt(4),
-    // Base point (x, y) aka generator point
     Gx: BigInt('224580040295924300187604334099896036246789641632564134246125461686950415467406032909029192869357953282578032075146446173674602635247710'),
     Gy: BigInt('298819210078481492676017930443930673437544040154080242095928241372331506189835876003536878655418784733982303233503462500531545062832660'),
     // SHAKE256(dom4(phflag,context)||x, 114)
@@ -222,10 +220,10 @@ function map_to_curve_elligator2_edwards448(u) {
     xEd = Fp.cmov(xEd, Fp.ONE, e); // 35. xEd = CMOV(xEd, 1, e)
     yEn = Fp.cmov(yEn, Fp.ONE, e); // 36. yEn = CMOV(yEn, 1, e)
     yEd = Fp.cmov(yEd, Fp.ONE, e); // 37. yEd = CMOV(yEd, 1, e)
-    const inv = Fp.invertBatch([xEd, yEd]); // batch division
+    const inv = FpInvertBatch(Fp, [xEd, yEd], true); // batch division
     return { x: Fp.mul(xEn, inv[0]), y: Fp.mul(yEn, inv[1]) }; // 38. return (xEn, xEd, yEn, yEd)
 }
-const htf = /* @__PURE__ */ (() => createHasher(ed448.ExtendedPoint, (scalars) => map_to_curve_elligator2_edwards448(scalars[0]), {
+export const ed448_hasher = /* @__PURE__ */ (() => createHasher(ed448.ExtendedPoint, (scalars) => map_to_curve_elligator2_edwards448(scalars[0]), {
     DST: 'edwards448_XOF:SHAKE256_ELL2_RO_',
     encodeDST: 'edwards448_XOF:SHAKE256_ELL2_NU_',
     p: Fp.ORDER,
@@ -234,9 +232,9 @@ const htf = /* @__PURE__ */ (() => createHasher(ed448.ExtendedPoint, (scalars) =
     expand: 'xof',
     hash: shake256,
 }))();
-export const hashToCurve = /* @__PURE__ */ (() => htf.hashToCurve)();
-export const encodeToCurve = /* @__PURE__ */ (() => htf.encodeToCurve)();
-function assertDcfPoint(other) {
+export const hashToCurve = /* @__PURE__ */ (() => ed448_hasher.hashToCurve)();
+export const encodeToCurve = /* @__PURE__ */ (() => ed448_hasher.encodeToCurve)();
+function adecafp(other) {
     if (!(other instanceof DcfPoint))
         throw new Error('DecafPoint expected');
 }
@@ -374,7 +372,7 @@ class DcfPoint {
     // Compare one point to another.
     // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-07#name-equals-2
     equals(other) {
-        assertDcfPoint(other);
+        adecafp(other);
         const { ex: X1, ey: Y1 } = this.ep;
         const { ex: X2, ey: Y2 } = other.ep;
         const mod = ed448.CURVE.Fp.create;
@@ -382,11 +380,11 @@ class DcfPoint {
         return mod(X1 * Y2) === mod(Y1 * X2);
     }
     add(other) {
-        assertDcfPoint(other);
+        adecafp(other);
         return new DcfPoint(this.ep.add(other.ep));
     }
     subtract(other) {
-        assertDcfPoint(other);
+        adecafp(other);
         return new DcfPoint(this.ep.subtract(other.ep));
     }
     multiply(scalar) {

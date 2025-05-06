@@ -41,18 +41,18 @@ import {
   NostrCredential,
   SelfSovereignIndividualPrefs,
 } from "../../custom.type";
-import { authorizePrimaryPassword } from "../shared/utils";
+import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import { DefaultExcludedKinds } from "./constants";
 import {
-  DefaultExcludedKinds,
-  DefaultNallowedMethods,
   SafeProtocols,
   SpecialCards,
-  DialogDisplayOptions,
+  DefaultNallowedMethods,
   DefaultDialogDisplayOptions,
   NallowedMethods,
   EveryTimeAuthorizedMethods,
-} from "./contants";
+  DialogDisplayOptions,
+} from "../shared/constants";
 import {
   ExampleNostrKind,
   ExampleUrlMatch,
@@ -105,9 +105,7 @@ export default function KeyEditor(props: Props) {
   };
   const handleGoBack = async () => {
     if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
-      const result = window.confirm(
-        "Not yet saved. Do you really want to leave?"
-      );
+      const result = confirm("Not yet saved. Do you really want to leave?");
       if (!result) {
         return;
       }

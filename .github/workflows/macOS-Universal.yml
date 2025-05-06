@@ -55,210 +55,218 @@ jobs:
         arch: [x86_64, aarch64]
     runs-on: ${{ github.ref == 'refs/heads/mvp' && 'buildjet-8vcpu-ubuntu-2204' || 'ubuntu-latest' }}
     steps:
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: "latest"
-    - name: Check Argument Compatibility
-      shell: node {0}
-      run: |
-        if (
-          process.env.GHA_profgen == "true"
-          && process.env.GHA_profdata_jarlog_artifact_name == "true"
-        ) {process.exit(-1); console.log("profgen and use-profdata is not compatible")}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "latest"
+      - name: Check Argument Compatibility
+        shell: node {0}
+        run: |
+          if (
+            process.env.GHA_profgen == "true"
+            && process.env.GHA_profdata_jarlog_artifact_name == "true"
+          ) {process.exit(-1); console.log("profgen and use-profdata is not compatible")}
 
-      env:
-        GHA_profgen: ${{inputs.profgen}}
-        GHA_profdata_jarlog_artifact_name: ${{inputs.build-with-profdata-and-jarlog}}
-        GHA_out-artifact-name: ${{inputs.out_artifact_name}}
+        env:
+          GHA_profgen: ${{inputs.profgen}}
+          GHA_profdata_jarlog_artifact_name: ${{inputs.build-with-profdata-and-jarlog}}
+          GHA_out-artifact-name: ${{inputs.out_artifact_name}}
 
-    - name: Change PPA mirror servers
-      run: |
-        sudo perl -p -i -e 's%(deb(?:-src|)\s+)https?://(?!archive\.canonical\.com|security\.ubuntu\.com)[^\s]+%$1http://archive.ubuntu.com/ubuntu/%' /etc/apt/sources.list
-        sudo apt update
-        echo "$GHA_aarch64"
+      - name: Change PPA mirror servers
+        run: |
+          sudo perl -p -i -e 's%(deb(?:-src|)\s+)https?://(?!archive\.canonical\.com|security\.ubuntu\.com)[^\s]+%$1http://archive.ubuntu.com/ubuntu/%' /etc/apt/sources.list
+          sudo apt update
+          echo "$GHA_aarch64"
 
-    - uses: actions/checkout@v4
-      name: Clone 🧬
-      with:
-        submodules: 'recursive'
-        token: ${{ secrets.PAT }}
+      - uses: actions/checkout@v4
+        name: Clone 🧬
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.PAT }}
+      - name: Apply patch
+        run: |
+          for patch in tools/ssi/build/*.patch; do
+            echo "Applying $patch"
+            git apply "$patch"
+          done
+          git add .
 
-    - name: Configure sccache
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+      - name: Configure sccache
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    - name: setup Rust 🦀
-      run: |
-        # Install Rust if pgo_artifact_name is not empty
-        if [[ -n $GHA_pgo_artifact_name ]]; then
-          rustup toolchain install 1.81.0
-          rustup default 1.81.0
-        fi
+      - name: setup Rust 🦀
+        run: |
+          # Install Rust if pgo_artifact_name is not empty
+          if [[ -n $GHA_pgo_artifact_name ]]; then
+            rustup toolchain install 1.81.0
+            rustup default 1.81.0
+          fi
 
-        if [[ $GHA_ARCH == 'x86_64' ]];then
-          rustup target add x86_64-apple-darwin
-        else
-          rustup target add aarch64-apple-darwin
-        fi
+          if [[ $GHA_ARCH == 'x86_64' ]];then
+            rustup target add x86_64-apple-darwin
+          else
+            rustup target add aarch64-apple-darwin
+          fi
 
-        #? https://github.com/mozilla/sccache#known-caveats
-        export CARGO_INCREMENTAL=0
-      env:
-        GHA_ARCH: ${{matrix.arch}}
-        GHA_pgo_artifact_name: ${{inputs.build-with-profdata-and-jarlog}}
+          #? https://github.com/mozilla/sccache#known-caveats
+          export CARGO_INCREMENTAL=0
+        env:
+          GHA_ARCH: ${{matrix.arch}}
+          GHA_pgo_artifact_name: ${{inputs.build-with-profdata-and-jarlog}}
 
-    - name: Setup Disk & Swap Space 💿
-      run: |
-        chmod +x .github/workflows/src/disk_swap_for_github_runner.sh
-        .github/workflows/src/disk_swap_for_github_runner.sh
+      - name: Setup Disk & Swap Space 💿
+        run: |
+          chmod +x .github/workflows/src/disk_swap_for_github_runner.sh
+          .github/workflows/src/disk_swap_for_github_runner.sh
 
-    - uses: actions/download-artifact@v4
-      name: Download artifact if use profdata📥
-      if: inputs.build-with-profdata-and-jarlog
-      with:
-        name: ssb-${{ matrix.arch }}-apple-darwin-profdata-and-jarlog
-        path: ~/artifact
+      - uses: actions/download-artifact@v4
+        name: Download artifact if use profdata📥
+        if: inputs.build-with-profdata-and-jarlog
+        with:
+          name: ssb-${{ matrix.arch }}-apple-darwin-profdata-and-jarlog
+          path: ~/artifact
 
-    ## TODO: move mozconfig_darwin_pgo_base to src/macOS
-    - name: Create config for "${{ matrix.arch }}" 📦
-      run: |
-        sudo apt update
-        sudo apt upgrade -y
+      ## TODO: move mozconfig_darwin_pgo_base to src/macOS
+      - name: Create config for "${{ matrix.arch }}" 📦
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
 
-        cp ./.github/workflows/src/mac/shared/mozconfig_darwin_pgo_base mozconfig
+          cp ./.github/workflows/src/mac/shared/mozconfig_darwin_pgo_base mozconfig
 
-        if [[ $GHA_ARCH == 'x86_64' ]];then
-          cat ./.github/workflows/src/mac/x86_64/x86_64-optimize-base >> mozconfig
-        else
-          cat ./.github/workflows/src/mac/aarch64/aarch64-optimize-base >> mozconfig
-        fi
+          if [[ $GHA_ARCH == 'x86_64' ]];then
+            cat ./.github/workflows/src/mac/x86_64/x86_64-optimize-base >> mozconfig
+          else
+            cat ./.github/workflows/src/mac/aarch64/aarch64-optimize-base >> mozconfig
+          fi
 
-        echo 'mozconfig: **********************'
-        cat ./mozconfig
-        echo '*********************************'
+          echo 'mozconfig: **********************'
+          cat ./mozconfig
+          echo '*********************************'
 
-        ./mach --no-interactive bootstrap --application-choice browser
-        sudo apt install -y p7zip-full zip tar
-      env:
-        GHA_ARCH: ${{matrix.arch}}
+          ./mach --no-interactive bootstrap --application-choice browser
+          sudo apt install -y p7zip-full zip tar
+        env:
+          GHA_ARCH: ${{matrix.arch}}
 
-    - name: Bootstrap 🥾
-      run: |
+      - name: Bootstrap 🥾
+        run: |
 
-        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
-          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
-        fi
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
 
-        echo 'ac_add_options --with-branding=browser/branding/unofficial' >> mozconfig
+          echo 'ac_add_options --with-branding=browser/branding/unofficial' >> mozconfig
+          echo "ac_add_options --with-ssb-version=$(cat browser/config/version_forked.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> mozconfig
 
-        if [[ $GHA_profgen == 'true' ]]; then
-          echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
-        elif [[ $GHA_profdata_jarlog_artifact_name == 'true' ]]; then
-          {
-            echo 'export MOZ_LTO=cross'
-            echo 'ac_add_options --enable-profile-use=cross'
-            echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
-            echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
-          } >> mozconfig
-        fi
+          if [[ $GHA_profgen == 'true' ]]; then
+            echo 'ac_add_options --enable-profile-generate=cross' >> mozconfig
+          elif [[ $GHA_profdata_jarlog_artifact_name == 'true' ]]; then
+            {
+              echo 'export MOZ_LTO=cross'
+              echo 'ac_add_options --enable-profile-use=cross'
+              echo "ac_add_options --with-pgo-profile-path=$HOME/artifact/merged.profdata"
+              echo "ac_add_options --with-pgo-jarlog=$HOME/artifact/en-US.log"
+            } >> mozconfig
+          fi
 
-        # SCCACHE START
-        # {
-        #   echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
-        #   echo "mk_add_options 'export CCACHE_CPP2=yes'"
-        #   echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
-        #   echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
-        # } >> mozconfig
-        # SCCACHE END
+          # SCCACHE START
+          # {
+          #   echo "mk_add_options 'export RUSTC_WRAPPER=/home/runner/.mozbuild/sccache/sccache'"
+          #   echo "mk_add_options 'export CCACHE_CPP2=yes'"
+          #   echo 'ac_add_options --with-ccache=/home/runner/.mozbuild/sccache/sccache'
+          #   echo "mk_add_options 'export SCCACHE_GHA_ENABLED=on'"
+          # } >> mozconfig
+          # SCCACHE END
 
-        ./mach --no-interactive bootstrap --application-choice browser
+          ./mach --no-interactive bootstrap --application-choice browser
 
-        echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> "$GITHUB_ENV"
-        echo "UPDATE_CHANNEL=release" >> "$GITHUB_ENV"
-      env:
-        GHA_profgen: ${{inputs.profgen}}
-        GHA_profdata_jarlog_artifact_name : ${{inputs.build-with-profdata-and-jarlog}}
-        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+          echo "DISPLAY_VERSION=$(cat ./browser/config/version_display.txt)" >> "$GITHUB_ENV"
+          echo "UPDATE_CHANNEL=release" >> "$GITHUB_ENV"
+        env:
+          GHA_profgen: ${{inputs.profgen}}
+          GHA_profdata_jarlog_artifact_name : ${{inputs.build-with-profdata-and-jarlog}}
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: Mach Configure
-      run: |
-        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
-          export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
-        fi
+      - name: Mach Configure
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
+          fi
 
-        ./mach configure
-      env:
-        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+          ./mach configure
+        env:
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: Build 🔨
-      run: |
-        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
-          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
-        fi
+      - name: Build 🔨
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
 
-        ./mach build
-      env:
-        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+          ./mach build
+        env:
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: Retry Build if 1st build is failed 🔨
-      if: failure()
-      run: |
-        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
-          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
-        fi
+      - name: Retry Build if 1st build is failed 🔨
+        if: failure()
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
 
-        ./mach build
-      env:
-        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+          ./mach build
+        env:
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: Package 📦
-      run: |
-        if [[ -n $GHA_MOZ_BUILD_DATE ]];then
-          export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
-        fi
-        ./mach package
-      env:
-        GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
+      - name: Package 📦
+        run: |
+          if [[ -n $GHA_MOZ_BUILD_DATE ]];then
+            export MOZ_BUILD_DATE=$GHA_MOZ_BUILD_DATE
+          fi
+          ./mach package
+        env:
+          GHA_MOZ_BUILD_DATE: ${{inputs.MOZ_BUILD_DATE}}
 
-    - name: Copy & Compress Artifacts 📁
-      run: |
-        mkdir ~/output
-        if [[ $GHA_ARCH == 'aarch64' ]];then
-          arch='aarch64'
-        else
-          arch='x86_64'
-        fi
+      - name: Copy & Compress Artifacts 📁
+        run: |
+          mkdir ~/output
+          if [[ $GHA_ARCH == 'aarch64' ]];then
+            arch='aarch64'
+          else
+            arch='x86_64'
+          fi
 
-        if [[ $GHA_profgen = 'true' ]];then
-          tar zcvf ${arch}-apple-darwin-output.tar.xz ./obj-${arch}-apple-darwin/dist/ssb
-          mv ${arch}-apple-darwin-output.tar.xz ~/output/
-        else
-          tar -czf ssb-${arch}-apple-darwin-with-pgo.tar.gz ./obj-${arch}-apple-darwin/dist/
-          mv ssb-${arch}-apple-darwin-with-pgo.tar.gz ~/output/
-        fi
+          if [[ $GHA_profgen = 'true' ]];then
+            tar zcvf ${arch}-apple-darwin-output.tar.xz ./obj-${arch}-apple-darwin/dist/ssb
+            mv ${arch}-apple-darwin-output.tar.xz ~/output/
+          else
+            tar -czf ssb-${arch}-apple-darwin-with-pgo.tar.gz ./obj-${arch}-apple-darwin/dist/
+            mv ssb-${arch}-apple-darwin-with-pgo.tar.gz ~/output/
+          fi
 
-      env:
-        GHA_profgen: ${{inputs.profgen}}
-        GHA_ARCH: ${{matrix.arch}}
+        env:
+          GHA_profgen: ${{inputs.profgen}}
+          GHA_ARCH: ${{matrix.arch}}
 
-    # Publish START
-    - name: make name of publish archive
-      shell: node {0}
-      run: |
-        const fs = require('fs');
-        let name = process.env.GHA_out_artifact_name ? process.env.GHA_out_artifact_name : process.env.GHA_default_name
-        fs.appendFileSync(process.env.GITHUB_ENV, `ARTIFACT_NAME=${name}`);
-      env:
-        GHA_out_artifact_name : ${{inputs.out_artifact_name}}
-        GHA_default_name: ssb-mac-${{ matrix.arch }}-${{fromJson('["package","build-with-profgen"]')[inputs.profgen]}}
+      # Publish START
+      - name: make name of publish archive
+        shell: node {0}
+        run: |
+          const fs = require('fs');
+          let name = process.env.GHA_out_artifact_name ? process.env.GHA_out_artifact_name : process.env.GHA_default_name
+          fs.appendFileSync(process.env.GITHUB_ENV, `ARTIFACT_NAME=${name}`);
+        env:
+          GHA_out_artifact_name : ${{inputs.out_artifact_name}}
+          GHA_default_name: ssb-mac-${{ matrix.arch }}-${{fromJson('["package","build-with-profgen"]')[inputs.profgen]}}
 
-    - name: Publish Package🎁
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{env.ARTIFACT_NAME}}
-        path: ~/output
-    # Publish END
+      - name: Publish Package🎁
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.ARTIFACT_NAME}}
+          path: ~/output
+      # Publish END

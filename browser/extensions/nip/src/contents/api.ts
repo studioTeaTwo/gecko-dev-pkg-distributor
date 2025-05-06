@@ -1,7 +1,12 @@
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex } from "@noble/hashes/utils";
 import { log } from "../shared/logger";
 import { NostrEvent } from "../custom.type";
+
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
 
 /**
  * APIs to export to inpages
@@ -11,11 +16,12 @@ export function getPublicKey() {
   return window.wrappedJSObject.ssi.nostr.getPublicKey();
 }
 export function signEvent(event) {
-  const signedEvent = { ...event };
+  const signedEvent = sanitizeObject(event) as FixMe;
   let eventHash = "";
   return new window.Promise((resolve, reject) => {
-    // Attach your holding public key to verify it is the same as the current primary key.
-    window.wrappedJSObject.ssi.nostr.getPublicKeyWithCallback(
+    // Leave it to the app to verify it is the same as the current primary key.
+    window.wrappedJSObject.ssi.nostr.getPublicKeySync(
+      null,
       exportFunction((error, pubkey) => {
         if (error) {
           reject(error);
@@ -24,8 +30,14 @@ export function signEvent(event) {
         eventHash = bytesToHex(
           sha256(new window.TextEncoder().encode(serializeEvent(signedEvent)))
         );
-        window.wrappedJSObject.ssi.nostr.signWithCallback(
+        window.wrappedJSObject.ssi.nostr.signSync(
           window.JSON.stringify(signedEvent),
+          cloneInto(
+            {
+              type: "signEvent",
+            },
+            window
+          ),
           exportFunction((error, signature) => {
             if (error) {
               reject(error);
@@ -33,13 +45,7 @@ export function signEvent(event) {
             signedEvent.id = eventHash;
             signedEvent.sig = signature;
             resolve(cloneInto(signedEvent, window));
-          }, window),
-          cloneInto(
-            {
-              type: "signEvent",
-            },
-            window
-          )
+          }, window)
         );
         XPCNativeWrapper(window.wrappedJSObject.ssi);
       }, window)
@@ -49,84 +55,84 @@ export function signEvent(event) {
 }
 export function nip04Encrypt(pubkey, plaintext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.encryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.encryptSync(
       plaintext,
-      exportFunction((error, ciphertext) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(ciphertext);
-      }, window),
       cloneInto(
         {
           type: "nip04",
           pubkey,
         },
         window
-      )
+      ),
+      exportFunction((error, ciphertext) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(ciphertext);
+      }, window)
     );
     XPCNativeWrapper(window.wrappedJSObject.ssi);
   });
 }
 export function nip04Decrypt(pubkey, ciphertext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.decryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.decryptSync(
       ciphertext,
-      exportFunction((error, plaintext) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(plaintext);
-      }, window),
       cloneInto(
         {
           type: "nip04",
           pubkey,
         },
         window
-      )
+      ),
+      exportFunction((error, plaintext) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(plaintext);
+      }, window)
     );
     XPCNativeWrapper(window.wrappedJSObject.ssi);
   });
 }
 export function nip44Encrypt(pubkey, plaintext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.encryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.encryptSync(
       plaintext,
-      exportFunction((error, ciphertext) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(ciphertext);
-      }, window),
       cloneInto(
         {
           type: "nip44",
           pubkey,
         },
         window
-      )
+      ),
+      exportFunction((error, ciphertext) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(ciphertext);
+      }, window)
     );
     XPCNativeWrapper(window.wrappedJSObject.ssi);
   });
 }
 export function nip44Decrypt(pubkey, ciphertext) {
   return new window.Promise((resolve, reject) => {
-    window.wrappedJSObject.ssi.nostr.decryptWithCallback(
+    window.wrappedJSObject.ssi.nostr.decryptSync(
       ciphertext,
-      exportFunction((error, plaintext) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(plaintext);
-      }, window),
       cloneInto(
         {
           type: "nip44",
           pubkey,
         },
         window
-      )
+      ),
+      exportFunction((error, plaintext) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(plaintext);
+      }, window)
     );
     XPCNativeWrapper(window.wrappedJSObject.ssi);
   });
@@ -139,7 +145,7 @@ export function nip44Decrypt(pubkey, ciphertext) {
 export function _invoke(target: EventTarget) {
   return function (action, data) {
     return target.dispatchEvent(
-      new CustomEvent(action, {
+      new window.CustomEvent(action, {
         detail: data,
         bubbles: true,
         composed: true,
@@ -181,7 +187,7 @@ export function handleAccountChanged(event: CustomEvent<string>) {
 
 // based upon : https://github.com/nbd-wtf/nostr-tools/blob/master/core.ts#L33
 function validateEvent(event: NostrEvent): boolean {
-  if (!(event instanceof Object)) return false; // Not `window.Object`
+  if (!(event instanceof window.Object)) return false;
   if (typeof event.kind !== "number") return false;
   if (typeof event.content !== "string") return false;
   if (typeof event.created_at !== "number") return false;
@@ -215,4 +221,36 @@ function serializeEvent(event: NostrEvent): string {
     event.tags,
     event.content,
   ]);
+}
+
+function sanitizeObject(obj) {
+  const _obj = new window.Object();
+  if (obj == null) {
+    return _obj;
+  }
+
+  for (const entry of window.Object.entries(obj)) {
+    if (typeof entry[1] === "object" && !window.Array.isArray(entry[1])) {
+      _obj[entry[0]] = sanitizeObject(entry[1]);
+    } else if (window.Array.isArray(entry[1])) {
+      _obj[entry[0]] = sanitizeArray(entry[1]);
+    } else {
+      _obj[entry[0]] = entry[1];
+    }
+  }
+  return _obj;
+}
+
+function sanitizeArray(array) {
+  const _array = new window.Array(array.length);
+  array.forEach((item, i) => {
+    if (window.Array.isArray(item)) {
+      _array[i] = sanitizeArray(item);
+    } else if (typeof item === "object") {
+      _array[i] = sanitizeObject(item);
+    } else {
+      _array[i] = item;
+    }
+  });
+  return _array;
 }

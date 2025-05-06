@@ -21,7 +21,7 @@ this.ssi = class extends ExtensionAPI {
 
     return {
       ssi: {
-        async searchCredentialsWithoutSecret(
+        async searchCredentials(
           tabId,
           { protocolName = "", credentialName = "", primary = true },
           { caption = "", submission = "", enforce = false }
@@ -74,22 +74,50 @@ this.ssi = class extends ExtensionAPI {
             // NOTE(ssb): Needed per credential?
             // FIXME(ssb): tabId is unreliable. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
             // FIXME(ssb): OS auth dialog is buggy. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/3
-            if (tabId > -1) {
-              // TODO(ssb): Make combinations of protocolName and credentialName
-              const credential = {
-                protocolName: "nostr",
-                credentialName: "nsec",
-              };
-              const isAuthorized = await lazy.browserSsiHelper.authorize(
-                context,
-                tabId,
-                credential,
-                { type: "read", caption, submission, enforce },
-                false
-              );
-              if (!isAuthorized) {
-                return errorValue;
+            let authorizationMap = {};
+            Object.keys(lazy.browserSsiHelper.CREDENTIAL_MAP).forEach(
+              _protocolName => {
+                authorizationMap[_protocolName] = {};
               }
+            );
+            if (tabId > -1) {
+              await Promise.all(
+                Object.entries(lazy.browserSsiHelper.CREDENTIAL_MAP).map(
+                  async ([_protocolName, _credentialNames]) => {
+                    // Match search criteria
+                    if (
+                      params.protocolName &&
+                      params.protocolName !== _protocolName
+                    ) {
+                      return;
+                    }
+
+                    for (const _credentialName of _credentialNames) {
+                      // Match search criteria
+                      if (
+                        params.credentialName &&
+                        params.credentialName !== _credentialName
+                      ) {
+                        continue;
+                      }
+
+                      const isAuthorized =
+                        await lazy.browserSsiHelper.authorize(
+                          context,
+                          tabId,
+                          {
+                            protocolName: _protocolName,
+                            credentialName: _credentialName,
+                          },
+                          { type: "read", caption, submission, enforce },
+                          false
+                        );
+                      authorizationMap[_protocolName][_credentialName] =
+                        isAuthorized;
+                    }
+                  }
+                )
+              );
             }
 
             const credentials =
@@ -98,6 +126,14 @@ this.ssi = class extends ExtensionAPI {
               .filter(async credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
+                  return false;
+                }
+                if (
+                  tabId > -1 &&
+                  !authorizationMap[credential.protocolName][
+                    credential.credentialName
+                  ]
+                ) {
                   return false;
                 }
 
@@ -118,14 +154,7 @@ this.ssi = class extends ExtensionAPI {
                   credentialName: credential.credentialName,
                   primary: credential.primary,
                 };
-                if (
-                  !(
-                    credential.protocolName === "bitcoin" &&
-                    credential.credentialName === "bip39"
-                  )
-                ) {
-                  filteredVal.identifier = credential.identifier;
-                }
+                filteredVal.identifier = credential.identifier;
                 return filteredVal;
               });
             return filteredCredentials;
@@ -171,7 +200,7 @@ this.ssi = class extends ExtensionAPI {
             const isAuthorized = await lazy.browserSsiHelper.authorize(
               context,
               tabId,
-              { protocolName, credentialName },
+              { protocolName, credentialName, primary: true },
               { type: "custom", caption, submission, enforce },
               false
             );

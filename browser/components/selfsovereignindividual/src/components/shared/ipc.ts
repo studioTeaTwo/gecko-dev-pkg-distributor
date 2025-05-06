@@ -1,4 +1,24 @@
-import { ProtocolName, SelfSovereignIndividualPrefs } from "src/custom.type";
+/**
+ * Communicate with another process, `browser/components/selfsovereignindividual/actors`.
+ */
+
+import {
+  CredentialName,
+  ProtocolName,
+  SelfSovereignIndividualPrefs,
+} from "../../custom.type";
+
+export function generateSecretOnToolkit(
+  protocolName: ProtocolName,
+  credentialName: CredentialName | "xpub" | "npub",
+  option?
+) {
+  return window.AboutSelfSovereignIndividualUtils.generate(
+    protocolName,
+    credentialName,
+    option
+  );
+}
 
 export function promptForPrimaryPassword(messageId) {
   return new Promise(resolve => {

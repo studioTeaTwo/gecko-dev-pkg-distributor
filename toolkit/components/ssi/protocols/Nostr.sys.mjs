@@ -2,11 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { sha256 } from "resource://ssi/protocols/hashes/sha256.sys.mjs";
+import { sha256 } from "resource://ssi/protocols/hashes/sha2.sys.mjs";
 import {
   bytesToHex,
   concatBytes,
   randomBytes,
+  hexToBytes,
 } from "resource://ssi/protocols/hashes/utils.sys.mjs";
 import { base64, bech32 } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { secp256k1 } from "resource://ssi/protocols/curves/secp256k1.sys.mjs";
@@ -22,8 +23,41 @@ import { Bitcoin } from "resource://ssi/protocols/Bitcoin.sys.mjs";
 
 const utf8Decoder = new TextDecoder("utf-8");
 const utf8Encoder = new TextEncoder();
+const Bech32MaxSize = 5000;
 
 export const Nostr = {
+  /**
+   *
+   * @returns {string}
+   */
+  generateSecretKey() {
+    return Bitcoin.BIP340.generatePrivateKey();
+  },
+
+  /**
+   *
+   * @param {string | Uint8Array<ArrayBufferLike>} secretKey
+   * @returns {string}
+   */
+  generatePublicKey(secretKey) {
+    return Bitcoin.BIP340.generatePublicKey(secretKey);
+  },
+
+  /**
+   *
+   * @param {string} pubkey - npub or hex type
+   */
+  convertPublicKey(pubkey) {
+    if (pubkey.startsWith("npub")) {
+      const { words } = bech32.decode(pubkey, Bech32MaxSize);
+      const data = new Uint8Array(bech32.fromWords(words));
+      return bytesToHex(data);
+    }
+    const bytes = hexToBytes(pubkey);
+    const words = bech32.toWords(bytes);
+    return bech32.encode("npub", words, Bech32MaxSize);
+  },
+
   /**
    *
    * @param {string} message
@@ -34,11 +68,14 @@ export const Nostr = {
     const signature = await Bitcoin.BIP340.sign(message, guid);
     return signature;
   },
+
   /**
    *
    * @param {string} plaintext
-   * @param {string} guid
+   * @param {string} guid - guid pointing out the user's nostr key
    * @param {object} option
+   * @param {string} option.type - "nip04" | "nip44"
+   * @param {string} option.pubkey - the partner's nostr key. HEX type
    * @returns {string}
    */
   async encrypt(plaintext, guid, { type, pubkey }) {
@@ -57,11 +94,34 @@ export const Nostr = {
 
     return "";
   },
+
+  /**
+   *
+   * @param {string} guid - guid pointing out the shared secret
+   * @param {string} sender - guid pointing out the user's nostr key
+   * @param {string} pubkey - the partner's nostr key. HEX type
+   * @returns
+   */
+  async encryptSecret(guid, sender, pubkey) {
+    const credentials = await Services.ssi.searchCredentialsAsync({ guid });
+    if (credentials.length === 0) {
+      return "";
+    }
+
+    const cipertext = await Nostr.encrypt(credentials[0].secret, sender, {
+      type: "nip44",
+      pubkey,
+    });
+    return cipertext;
+  },
+
   /**
    *
    * @param {string} ciphertext
    * @param {string} guid
    * @param {object} option
+   * @param {string} option.type - "nip04" | "nip44"
+   * @param {string} option.pubkey - HEX type
    * @returns {string}
    */
   async decrypt(ciphertext, guid, { type, pubkey }) {
@@ -80,6 +140,7 @@ export const Nostr = {
 
     return "";
   },
+
   /**
    *
    * @param {object} event Nostr Event
@@ -91,6 +152,7 @@ export const Nostr = {
     );
     return eventHash;
   },
+
   /**
    *
    * @param {object} event Nostr Event
@@ -99,6 +161,7 @@ export const Nostr = {
   validateEvent(event) {
     return _validateEvent(event);
   },
+
   /**
    *
    * @param {string} npub "npub1abc..."
@@ -279,7 +342,6 @@ function decryptNip44(payload, conversationKey) {
 }
 
 function _decodeNpub(npub) {
-  const Bech32MaxSize = 5000;
   const { prefix, words } = bech32.decode(npub, Bech32MaxSize);
   if (prefix !== "npub") {
     throw new Error("Not npub!");

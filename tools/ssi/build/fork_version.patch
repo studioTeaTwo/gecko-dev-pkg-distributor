@@ -1,0 +1,60 @@
+diff --git a/browser/base/content/aboutDialog.js b/browser/base/content/aboutDialog.js
+index fc0252ad1bd1c..ab7ffdc3d2561 100644
+--- a/browser/base/content/aboutDialog.js
++++ b/browser/base/content/aboutDialog.js
+@@ -45,7 +45,7 @@ function init() {
+   // Include the build ID and display warning if this is an "a#" (nightly or aurora) build
+   let versionId = "aboutDialog-version";
+   let versionAttributes = {
+-    version: AppConstants.MOZ_APP_VERSION_DISPLAY,
++    version: `${AppConstants.SSB_VERSION}-${AppConstants.MOZ_APP_VERSION_DISPLAY}`,
+     bits: Services.appinfo.is64Bit ? 64 : 32,
+   };
+ 
+diff --git a/moz.configure b/moz.configure
+index 804b9a375a919..13c1c6146bf6c 100755
+--- a/moz.configure
++++ b/moz.configure
+@@ -953,6 +953,17 @@ set_config("ZLIB_IN_MOZGLUE", zlib_in_mozglue)
+ set_define("ZLIB_IN_MOZGLUE", zlib_in_mozglue)
+ 
+ 
++# ssb: additions
++
++option(
++    "--with-ssb-version",
++    nargs=1,
++    help="Set the Self-Sovereign Browser version, e.g., 0.1.0mvp",
++)
++
++set_config("SSB_VERSION", depends("--with-ssb-version")(lambda x: x[0]))
++
++
+ # Please do not add configure checks from here on.
+ 
+ # Fallthrough to autoconf-based configure
+diff --git a/toolkit/modules/AppConstants.sys.mjs b/toolkit/modules/AppConstants.sys.mjs
+index 467883519bc37..14b50e2cfeb9f 100644
+--- a/toolkit/modules/AppConstants.sys.mjs
++++ b/toolkit/modules/AppConstants.sys.mjs
+@@ -360,6 +360,8 @@ export var AppConstants = Object.freeze({
+   MOZ_WIDGET_TOOLKIT: "@MOZ_WIDGET_TOOLKIT@",
+   ANDROID_PACKAGE_NAME: "@ANDROID_PACKAGE_NAME@",
+ 
++  SSB_VERSION: "@SSB_VERSION@",
++
+   DEBUG_JS_MODULES: "@DEBUG_JS_MODULES@",
+ 
+   MOZ_BING_API_CLIENTID: "@MOZ_BING_API_CLIENTID@",
+diff --git a/toolkit/modules/moz.build b/toolkit/modules/moz.build
+index 880436b3b4d1b..d481cc5618975 100644
+--- a/toolkit/modules/moz.build
++++ b/toolkit/modules/moz.build
+@@ -281,6 +281,7 @@ for var in (
+     "DLL_SUFFIX",
+     "DEBUG_JS_MODULES",
+     "OMNIJAR_NAME",
++    "SSB_VERSION",
+ ):
+     DEFINES[var] = CONFIG[var] or ""
+ 

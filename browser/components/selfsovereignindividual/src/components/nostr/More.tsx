@@ -8,11 +8,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
-import { authorizePrimaryPassword } from "../shared/utils";
+import { authorizePrimaryPassword } from "../shared/ipc";
 import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
 import { SelfSovereignIndividualDefaultProps } from "../../custom.type";
 
-export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
+export default function More(props: SelfSovereignIndividualDefaultProps) {
   const { prefs } = props;
   const { onPrefChanged } = dispatchEvents;
 

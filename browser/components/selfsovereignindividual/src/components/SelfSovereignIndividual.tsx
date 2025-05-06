@@ -3,12 +3,11 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React, { useState, useEffect } from "react";
-import { Box, Grid, GridItem, Spinner } from "@chakra-ui/react";
+import { Box, HStack, Spinner } from "@chakra-ui/react";
 import Menu from "./Menu";
 import Bitcoin from "./bitcoin";
-import Lightning from "./lightning";
 import Nostr from "./nostr";
-import ECash from "./ecash";
+import Settings from "./settings";
 import { MenuItem } from "../custom.type";
 import useChildActorEvent, {
   dispatchEvents,
@@ -26,37 +25,36 @@ function SelfSovereignIndividual() {
   }, []);
 
   useEffect(() => {
-    // FIXME(ssb): Actually, I want to update only at first time for initial pref value.
-    setSelectedMenu(prefs.base.menuPin);
+    if (!selectedMenu) {
+      setSelectedMenu(prefs.base.menuPin);
+    }
   }, [prefs.base.menuPin]);
 
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
-      return <Bitcoin />;
-    } else if (selectedMenu === "lightning") {
-      return <Lightning />;
-    } else if (selectedMenu === "ecash") {
-      return <ECash />;
+      return <Bitcoin prefs={prefs} credentials={credentials} />;
     } else if (selectedMenu === "nostr") {
       return <Nostr prefs={prefs} credentials={credentials} />;
+    } else if (selectedMenu === "settings") {
+      return <Settings prefs={prefs} credentials={credentials} />;
     }
   };
 
   return (
-    <Box m={10}>
-      <Grid w="100%" h="100%" templateColumns="200px auto" gap={4}>
-        <GridItem colSpan={1}>
-          <Menu
-            selectedMenu={selectedMenu}
-            setSelectedMenu={setSelectedMenu}
-            menuPin={prefs.base.menuPin}
-          />
-        </GridItem>
-        <GridItem colSpan={1}>
-          {prefs.base.menuPin ? switchContent() : <Spinner />}
-        </GridItem>
-      </Grid>
-    </Box>
+    <HStack
+      width={"100%"}
+      height={"100vh"}
+      alignItems="flex-start"
+      justifyContent="flex-start"
+      overflow="auto"
+    >
+      <Menu
+        selectedMenu={selectedMenu}
+        setSelectedMenu={setSelectedMenu}
+        menuPin={prefs.base.menuPin}
+      />
+      <Box flex="1">{prefs.base.menuPin ? switchContent() : <Spinner />}</Box>
+    </HStack>
   );
 }
 

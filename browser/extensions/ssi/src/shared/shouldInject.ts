@@ -23,10 +23,10 @@ function suffixCheck() {
 // Checks the documentElement of the current document
 function documentElementCheck() {
   // todo: correct?
-  if (!document || !document.documentElement) {
+  if (!window.document || !window.document.documentElement) {
     return false;
   }
-  const docNode = document.documentElement.nodeName;
+  const docNode = window.document.documentElement.nodeName;
   if (docNode) {
     return docNode.toLowerCase() === "html";
   }

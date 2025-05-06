@@ -19,6 +19,11 @@ import {
   handleAccountChanged,
 } from "./api";
 
+/**
+ * We waive Xray, so we prepend the global window object with `window.`.
+ * ref: https://firefox-source-docs.mozilla.org/dom/scriptSecurity/xray_vision.html
+ */
+
 declare global {
   interface WrappedJSObject {
     nostr: FixMe;

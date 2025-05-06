@@ -32,8 +32,8 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             register:
               lazy.browserSsiHelper.onPrefEnabledChangedRegister("nostr"),
           }).api(),
-          async getPrefs() {
-            return lazy.browserSsiHelper.getPrefs("nostr");
+          getPrefs() {
+            return Promise.resolve(lazy.browserSsiHelper.getPrefs("nostr"));
           },
           async sign(
             tabId,
@@ -41,7 +41,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
             let nEvent = {}; // for type=signEvent
 
             try {
@@ -80,12 +80,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }
@@ -136,7 +134,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
 
             try {
               // Validate params
@@ -182,12 +180,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }
@@ -226,7 +222,7 @@ this["ssi.nostr"] = class extends ExtensionAPI {
             { type, pubkey, version = "0x02" },
             { caption = "", submission = "", enforce = false }
           ) {
-            const errorValue = null;
+            const errorValue = undefined;
 
             try {
               // Validate params
@@ -275,12 +271,10 @@ this["ssi.nostr"] = class extends ExtensionAPI {
               const pointing = {
                 protocolName: "nostr",
                 credentialName: "nsec",
+                primary: true,
               };
               const credentials =
-                await lazy.SsiHelper.searchCredentialsWithoutSecret({
-                  ...pointing,
-                  primary: true,
-                });
+                await lazy.SsiHelper.searchCredentialsWithoutSecret(pointing);
               if (credentials.length === 0) {
                 return errorValue;
               }

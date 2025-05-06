@@ -6,7 +6,9 @@
 
 import { type MessageBetweenBackAndContent } from "../custom.type";
 import { log } from "../shared/logger";
+import { init as bitcoinInit, doBitcoinAction } from "./bitcoin";
 import { init as nostrInit, doNostrAction } from "./nostr";
+import "./bitcoin";
 import "./nostr";
 
 log("background-script working");
@@ -16,7 +18,14 @@ log("background-script working");
 browser.runtime.onMessage.addListener(
   (message: MessageBetweenBackAndContent, sender) => {
     log("background received from content", message, sender);
-    if (message.action.includes("nostr/")) {
+    if (message.action.includes("bitcoin/")) {
+      return doBitcoinAction(
+        sender.tab.id,
+        message.origin,
+        message.action,
+        message.args
+      );
+    } else if (message.action.includes("nostr/")) {
       return doNostrAction(
         sender.tab.id,
         message.origin,
@@ -29,4 +38,5 @@ browser.runtime.onMessage.addListener(
   }
 );
 
+bitcoinInit();
 nostrInit();

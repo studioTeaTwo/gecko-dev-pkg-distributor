@@ -13,6 +13,15 @@ There are huge compatibility issues in the ecosystem:
    https://github.com/scipr-lab/libff/blob/a44f482e18b8ac04d034c193bd9d7df7817ad73f/libff/algebra/curves/bn128/bn128_init.cpp#L166-L169
 3. halo2curves bn256 is also incompatible and returns different outputs
 
+We don't implement Point methods toHex / toRawBytes.
+To work around this limitation, has to initialize points on their own from BigInts.
+Reason it's not implemented is because [there is no standard](https://github.com/privacy-scaling-explorations/halo2curves/issues/109).
+Points of divergence:
+
+- Endianness: LE vs BE (byte-swapped)
+- Flags as first hex bits (similar to BLS) vs no-flags
+- Imaginary part last in G2 vs first (c0, c1 vs c1, c0)
+
 The goal of our implementation is to support "Ethereum" variant of the curve,
 because it at least has specs:
 
@@ -45,17 +54,16 @@ Ate loop size: 6x+2
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha256 } from '@noble/hashes/sha256';
-import { getHash } from './_shortw_utils.js';
-import { weierstrass } from './abstract/weierstrass.js';
+import { sha256 } from '@noble/hashes/sha2';
 import { randomBytes } from '@noble/hashes/utils';
-import { bls, } from './abstract/bls.js';
-import { Field } from './abstract/modular.js';
-import { bitGet, bitLen, notImplemented } from './abstract/utils.js';
-import { tower12, psiFrobenius } from './abstract/tower.js';
+import { getHash } from "./_shortw_utils.js";
+import { bls, } from "./abstract/bls.js";
+import { Field } from "./abstract/modular.js";
+import { psiFrobenius, tower12 } from "./abstract/tower.js";
+import { bitGet, bitLen, notImplemented } from "./abstract/utils.js";
+import { weierstrass } from "./abstract/weierstrass.js";
 // prettier-ignore
 const _1n = BigInt(1), _2n = BigInt(2), _3n = BigInt(3);
-// prettier-ignore
 const _6n = BigInt(6);
 const BN_X = BigInt('4965661367192848881');
 const BN_X_LEN = bitLen(BN_X);
@@ -211,6 +219,7 @@ export const bn254 = bls({
  * bn254 weierstrass curve with ECDSA.
  * This is very rare and probably not used anywhere.
  * Instead, you should use G1 / G2, defined above.
+ * @deprecated
  */
 export const bn254_weierstrass = weierstrass({
     a: BigInt(0),

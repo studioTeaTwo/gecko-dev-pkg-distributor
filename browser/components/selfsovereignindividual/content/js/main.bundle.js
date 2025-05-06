@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack, B as Button, V as VStack, b as bytesToHex, s as schnorr, a as bech32, A as AlertDialog, M as ModalOverlay, c as AlertDialogContent, d as ModalHeader, e as ModalCloseButton, f as ModalBody, L as Link, g as ModalFooter, R as React, T as Text, h as Accordion, i as AccordionItem, k as AccordionButton, l as Icon, m as AccordionIcon, n as AccordionPanel, o as TableContainer, p as Table, q as Thead, t as Tr, u as Th, v as Tbody, w as Td, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, D as Input, F as EditableInput, G as CardBody, J as Box, K as Textarea, N as Grid, O as GridItem, P as InputGroup, Q as Tooltip, S as Menu$1, U as MenuButton, W as MenuList, X as MenuItem, Y as Checkbox, Z as Switch, _ as StackDivider, $ as CardFooter, a0 as useEditableControls, a1 as hexToBytes, a2 as Flex, a3 as Tabs, a4 as TabList, a5 as Tab, a6 as TabPanels, a7 as TabPanel, a8 as Divider, a9 as NumberInput, aa as NumberInputField, ab as NumberInputStepper, ac as NumberIncrementStepper, ad as NumberDecrementStepper, ae as Spinner, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
+import { j as jsxRuntimeExports, r as reactExports, B as Box, H as HStack, a as Button, F as Flex, V as VStack, D as Divider, R as React, A as AlertDialog, M as ModalOverlay, b as AlertDialogContent, c as ModalHeader, d as ModalCloseButton, e as ModalBody, L as Link, f as ModalFooter, T as Text, I as IconButton, g as Accordion, h as AccordionItem, i as AccordionButton, k as Icon, l as AccordionIcon, m as AccordionPanel, n as TableContainer, o as Table, p as Thead, q as Tr, s as Th, t as Tbody, u as Td, v as bech32, w as bytesToHex, C as Card, x as CardHeader, y as Heading, E as Editable, z as EditablePreview, G as Input, J as EditableInput, K as CardBody, N as Textarea, O as Grid, P as GridItem, Q as hexToBytes, S as InputGroup, U as Tooltip, W as Menu$1, X as MenuButton, Y as MenuList, Z as MenuItem, _ as Checkbox, $ as Switch, a0 as StackDivider, a1 as CardFooter, a2 as useEditableControls, a3 as Select, a4 as Tabs, a5 as TabList, a6 as Tab, a7 as TabPanels, a8 as TabPanel, a9 as Spinner, aa as NumberInput, ab as NumberInputField, ac as NumberInputStepper, ad as NumberIncrementStepper, ae as NumberDecrementStepper, af as clientExports, ag as ChakraProvider } from "./vendor.bundle.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -37,26 +37,51 @@ import { j as jsxRuntimeExports, r as reactExports, I as IconButton, H as HStack
   }
 })();
 const BitcoinLogo = (props) => {
-  const { color, size, ...otherProps } = props;
+  const { size, ...otherProps } = props;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "svg",
     {
       xmlns: "http://www.w3.org/2000/svg",
       width: size,
       height: size,
-      viewBox: "0 0 226.777 226.777",
-      fill: color,
+      viewBox: "0 0 24 24",
+      fill: "black",
+      stroke: "white",
       ...otherProps,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M135.715 122.244c-2.614-1.31-8.437-3.074-15.368-3.533-6.934-.458-15.828 0-15.828 0v30.02s9.287.198 15.503-.26c6.21-.458 12.621-2.027 15.826-3.795 3.203-1.766 7.063-4.513 7.063-11.379 0-6.869-4.579-9.745-7.196-11.053zm-19.555-17.465c5.104-.197 10.532-1.373 14.453-3.532 3.925-2.158 6.148-5.557 6.02-10.66-.134-5.102-3.532-9.418-9.287-11.186-5.757-1.766-9.613-1.897-13.998-1.962-4.382-.064-8.83.328-8.83.328v27.012c.001 0 6.541.197 11.642 0z" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M113.413 0C50.777 0 0 50.776 0 113.413c0 62.636 50.777 113.413 113.413 113.413s113.411-50.777 113.411-113.413C226.824 50.776 176.049 0 113.413 0zm46.178 156.777c-8.44 5.887-17.465 6.935-21.455 7.456-1.969.259-5.342.532-8.959.744v22.738h-13.998v-22.37h-10.66v22.37H90.522v-22.37H62.987l2.877-16.812h8.371c2.814 0 3.989-.261 5.166-1.372 1.177-1.113 1.439-2.812 1.439-4.188V85.057c0-3.628-.295-4.61-1.963-6.473-1.668-1.867-5.591-2.112-7.8-2.112h-8.091V61.939h27.535V39.505h13.996v22.434h10.66V39.505h13.998v22.703c10.435.647 18.203 2.635 24.983 7.645 8.766 6.475 8.306 17.724 8.11 20.406-.195 2.682-1.372 7.85-3.729 11.183-2.352 3.337-8.108 6.673-8.108 6.673s6.801 1.438 11.578 5.036c4.771 3.598 8.307 9.941 8.106 19.229-.192 9.288-2.088 18.511-10.524 24.397z" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M20.247 14.052a8.502 8.502 0 01-10.302 6.194C5.394 19.11 2.62 14.5 3.754 9.95c1.134-4.551 5.74-7.33 10.288-6.195 4.562 1.12 7.337 5.744 6.205 10.298z" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "path",
+          {
+            strokeLinecap: "square",
+            strokeLinejoin: "round",
+            d: "M9.4 14.912l1.693-6.792M9.637 7.757L13.818 8.8c2.728.68 2.12 3.877-.786 3.153 3.184.794 2.86 4.578-.907 3.639-1.841-.46-3.813-.95-3.813-.95M10.306 11.274l2.669.665M11.578 8.241l.363-1.455M9.521 16.489l.363-1.456M13.518 8.725l.363-1.455M11.462 16.973l.363-1.456"
+          }
+        )
       ]
     }
   );
 };
 BitcoinLogo.defaultProps = {
-  color: "currentColor",
-  size: "13"
+  size: "24"
+};
+const NostrLogo = (props) => {
+  const { size, ...otherProps } = props;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: size,
+      height: size,
+      viewBox: "0 0 256 256",
+      fill: "black",
+      ...otherProps,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M210.8 199.4c0 3.1-2.5 5.7-5.7 5.7h-68c-3.1 0-5.7-2.5-5.7-5.7v-15.5c.3-19 2.3-37.2 6.5-45.5 2.5-5 6.7-7.7 11.5-9.1 9.1-2.7 24.9-.9 31.7-1.2 0 0 20.4.8 20.4-10.7s-9.1-8.6-9.1-8.6c-10 .3-17.7-.4-22.6-2.4-8.3-3.3-8.6-9.2-8.6-11.2-.4-23.1-34.5-25.9-64.5-20.1-32.8 6.2.4 53.3.4 116.1v8.4c0 3.1-2.6 5.6-5.7 5.6H57.7c-3.1 0-5.7-2.5-5.7-5.7v-144c0-3.1 2.5-5.7 5.7-5.7h31.7c3.1 0 5.7 2.5 5.7 5.7 0 4.7 5.2 7.2 9 4.5 11.4-8.2 26-12.5 42.4-12.5 36.6 0 64.4 21.4 64.4 68.7v83.2ZM150 99.3c0-6.7-5.4-12.1-12.1-12.1s-12.1 5.4-12.1 12.1 5.4 12.1 12.1 12.1S150 106 150 99.3Z" })
+    }
+  );
+};
+NostrLogo.defaultProps = {
+  size: "24"
 };
 const DefaultContext = {
   color: void 0,
@@ -229,20 +254,6 @@ function LuPin(props) {
     ]
   })(props);
 }
-function GiBirdTwitter(props) {
-  return GenIcon({
-    attr: { viewBox: "0 0 512 512" },
-    child: [
-      {
-        tag: "path",
-        attr: {
-          d: "M77.313 28.438l36.406 51.25L44.874 98.25l34.688 18.53c-37.62 38-62.482 102.735-57.532 198.94V493h147.314v-.188H269.75c-13.74-59.032-15.368-110.625-5.563-149.875-16.954-7.98-25.126-17.362-32.75-30.375 51.348 21.135 127.618 35.582 200.47 18.594-23.227-10.096-47.07-22.578-70.094-37.156-.013-.007-.02-.024-.032-.03-17.996-10.514-34.942-22.247-49.967-36.376-9.385-7.88-18.41-16.142-26.907-24.78 36.074-25.505 77.297-40.297 118.656-46.876-7.72 5.104-15.336 10.82-22.687 16.937-18.272 15.207-34.737 32.736-45.313 50.656 4.9 3.986 10.02 7.785 15.313 11.44 9.017-15.524 24.43-33.122 41.97-47.72 24.26-20.193 52.937-34.698 70.06-35.375h.126c10.89.214 21.608.935 32.064 2.125-10.838-7.647-21.748-14.487-32.72-20.563v-.25c-.145.006-.29.025-.437.032-54.844-30.266-111.23-41.295-168.03-36.72-21.272-24.23-49.025-40.62-78.657-47.875L77.312 28.437zm74.343 107.312c4.67 0 9.16.754 13.375 2.125-8.493 2.716-14.655 10.667-14.655 20.063 0 11.634 9.428 21.062 21.063 21.062 9.84 0 18.122-6.754 20.437-15.875 1.934 4.905 3 10.252 3 15.844 0 23.867-19.35 43.218-43.22 43.218-23.867 0-43.218-19.35-43.218-43.22 0-23.867 19.35-43.218 43.22-43.218z"
-        },
-        child: []
-      }
-    ]
-  })(props);
-}
 function MdEdit(props) {
   return GenIcon({
     attr: { viewBox: "0 0 24 24" },
@@ -360,49 +371,11 @@ function MdOutlineContentCopy(props) {
     ]
   })(props);
 }
-const SafeProtocols = ["http", "https", "moz-extension"];
-const SpecialCards = ["*", "<all_urls>"];
 const DefaultExcludedKindList = {
   13194: { nip: 47, name: "NWC Wallet Info" },
   23194: { nip: 47, name: "NWC Wallet Request" }
 };
 const DefaultExcludedKinds = Object.keys(DefaultExcludedKindList);
-const NallowedMethods = ["read", "sign", "encrypt", "decrypt", "custom"];
-const DefaultNallowedMethods = [];
-const EveryTimeAuthorizedMethods = [
-  "read",
-  "sign",
-  "encrypt",
-  "decrypt",
-  "custom"
-];
-const DialogDisplayOptions = [
-  "read-confirmOnly",
-  "read-passwordOnly",
-  "sign-confirmOnly",
-  "sign-passwordOnly",
-  "encrypt-confirmOnly",
-  "encrypt-passwordOnly",
-  "decrypt-confirmOnly",
-  "decrypt-passwordOnly",
-  "custom-confirmOnly",
-  "custom-passwordOnly"
-];
-const DefaultDialogDisplayOptions = [
-  "read-confirmOnly",
-  "sign-confirmOnly",
-  "encrypt-confirmOnly",
-  "decrypt-confirmOnly",
-  "custom-confirmOnly"
-];
-const DefaultTrustedSites = [
-  {
-    url: "http://localhost",
-    name: "",
-    enabled: true,
-    permissions: { nallowedMethod: DefaultNallowedMethods }
-  }
-];
 const NostrTemplate = {
   protocolName: "nostr",
   credentialName: "nsec",
@@ -414,20 +387,71 @@ const NostrTemplate = {
   trustedSites: [],
   dialogicAuthorizedSites: [],
   properties: {
-    displayName: "",
     generationMethod: "import",
+    generationFrom: "",
+    sharing: [],
+    displayName: "",
     memo: ""
   }
 };
+const SafeProtocols = ["http", "https", "moz-extension"];
+const SpecialCards = ["*", "<all_urls>"];
+const NallowedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "generate",
+  "custom"
+];
+const DefaultNallowedMethods = [];
+const EveryTimeAuthorizedMethods = [
+  "read",
+  "sign",
+  "encrypt",
+  "decrypt",
+  "generate",
+  "custom"
+];
+const DialogDisplayOptions = [
+  "read-confirmOnly",
+  "read-passwordOnly",
+  "sign-confirmOnly",
+  "sign-passwordOnly",
+  "encrypt-confirmOnly",
+  "encrypt-passwordOnly",
+  "decrypt-confirmOnly",
+  "decrypt-passwordOnly",
+  "generate-confirmOnly",
+  "generate-passwordOnly",
+  "custom-confirmOnly",
+  "custom-passwordOnly"
+];
+const DefaultDialogDisplayOptions = [
+  "read-confirmOnly",
+  "sign-confirmOnly",
+  "encrypt-confirmOnly",
+  "decrypt-confirmOnly",
+  "generate-confirmOnly",
+  "custom-confirmOnly"
+];
+const DefaultTrustedSites = [
+  {
+    url: "http://localhost",
+    name: "",
+    enabled: true,
+    permissions: { nallowedMethod: DefaultNallowedMethods }
+  }
+];
 function initStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualInit", {
       bubbles: true
     })
   );
 }
 function addCredentialToStore(credential) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
       bubbles: true,
       detail: transformToPayload(credential)
@@ -435,24 +459,15 @@ function addCredentialToStore(credential) {
   );
 }
 function modifyCredentialToStore$1(credential, options) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualUpdateCredential", {
       bubbles: true,
       detail: { credential: transformToPayload(credential), options }
     })
   );
 }
-function deleteCredentialToStore(deletedCredential, credentials) {
-  if (credentials.length <= 2) {
-    if (credentials.length === 2) {
-      const leftCredential = credentials.find(
-        (credential) => credential.guid !== deletedCredential.guid
-      );
-      leftCredential.primary = true;
-      modifyCredentialToStore$1(leftCredential);
-    }
-  }
-  window.dispatchEvent(
+function deleteCredentialToStore(deletedCredential) {
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
       bubbles: true,
       detail: transformToPayload(deletedCredential)
@@ -460,14 +475,14 @@ function deleteCredentialToStore(deletedCredential, credentials) {
   );
 }
 function removeAllCredentialsToStore() {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualRemoveAllCredentials", {
       bubbles: true
     })
   );
 }
 function onPrimaryChanged$1(changeSet) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrimaryChanged", {
       bubbles: true,
       detail: changeSet
@@ -475,7 +490,7 @@ function onPrimaryChanged$1(changeSet) {
   );
 }
 function onPrefChanged(changeSet) {
-  window.dispatchEvent(
+  dispatchEvent(
     new CustomEvent("AboutSelfSovereignIndividualPrefChanged", {
       bubbles: true,
       detail: changeSet
@@ -534,6 +549,18 @@ function useChildActorEvent() {
       passwordRevealVisible: false,
       platform: ""
     },
+    bitcoin: {
+      enabled: true,
+      tabPin: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 3e5,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 864e5,
+      dialogDisplayOptionPreset: DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      usedAccountChanged: true
+    },
     nostr: {
       enabled: true,
       tabPin: "",
@@ -553,12 +580,12 @@ function useChildActorEvent() {
   const [credentials, setCredentials] = reactExports.useState([]);
   const [credentialsFromStore, setCredentialsFromStore] = reactExports.useState([null, []]);
   reactExports.useEffect(() => {
-    window.addEventListener(
+    addEventListener(
       "AboutSelfSovereignIndividualChromeToContent",
       receiveFromChildActor
     );
     return () => {
-      window.removeEventListener(
+      removeEventListener(
         "AboutSelfSovereignIndividualChromeToContent",
         receiveFromChildActor
       );
@@ -656,14 +683,13 @@ function useChildActorEvent() {
 function TabPin(tabId, pref, prtocolName) {
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    IconButton,
+    Box,
     {
-      variant: "transparent",
-      "aria-label": "Toggle Pin",
       onClick: (e) => {
         e.preventDefault();
         onPrefChanged2({ protocolName: prtocolName, [pref.key]: tabId });
       },
+      ml: 2,
       children: tabId === pref.value ? /* @__PURE__ */ jsxRuntimeExports.jsx(LuPin, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(LuPinOff, {})
     }
   );
@@ -673,11 +699,9 @@ function Menu(props) {
   const buildMenu = reactExports.useCallback(() => {
     const list = [
       { name: "bitcoin", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(BitcoinLogo, {}) },
-      { name: "nostr", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(GiBirdTwitter, {}) }
-      // { name: 'lightning', icon: <MdElectricBolt />},
-      // { name: 'ecash', icon: null},
+      { name: "nostr", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(NostrLogo, {}) }
     ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: list.map((menu, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: list.map((menu, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { width: "150px", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         Button,
         {
@@ -687,46 +711,82 @@ function Menu(props) {
             e.preventDefault();
             setSelectedMenu(menu.name);
           },
+          size: "lg",
           children: menu.name.charAt(0).toUpperCase() + menu.name.slice(1)
         }
       ),
       TabPin(menu.name, { key: "menuPin", value: menuPin }, "base")
     ] }, index)) });
   }, [selectedMenu, menuPin]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { children: buildMenu() });
-}
-function Bitcoin(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"' });
-}
-function Lightning(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Lightning Is the Common Language of the Bitcoin Economy"' });
-}
-const BIP340 = {
-  generateSecretKey: () => schnorr.utils.randomPrivateKey(),
-  generatePublicKey: (secretKey) => bytesToHex(schnorr.getPublicKey(secretKey))
-};
-const NostrTypeGuard = {
-  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
-};
-const Bech32MaxSize = 5e3;
-const encodeToNostrKey = (prefix, bytes) => {
-  const words = bech32.toWords(bytes);
-  return bech32.encode(
-    prefix,
-    words,
-    Bech32MaxSize
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    Flex,
+    {
+      direction: "column",
+      width: "200px",
+      height: "calc(100vh - 40px)",
+      justify: "space-between",
+      "aria-label": "Main Navigation",
+      as: "nav",
+      pos: "sticky",
+      top: 0,
+      flexShrink: 0,
+      p: 10,
+      overflowY: "auto",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { gap: 2, children: buildMenu() }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Divider, {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: selectedMenu === "settings" ? "solid" : "transparent",
+              onClick: (e) => {
+                e.preventDefault();
+                setSelectedMenu("settings");
+              },
+              size: "lg",
+              children: "Settings"
+            }
+          ) })
+        ] })
+      ]
+    }
   );
-};
-const decodeFromNostrKey = (nip19) => {
-  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
-  const data = new Uint8Array(bech32.fromWords(words));
-  switch (prefix) {
-    case "nsec":
-      return { type: prefix, data };
-    case "npub":
-      return { type: prefix, data: bytesToHex(data) };
+}
+const StateContext = React.createContext(null);
+const DefaultState = {
+  bitcoin: {
+    editingNo: -1,
+    editingUrl: ""
+  },
+  nostr: {
+    editingNo: -1,
+    editingUrl: ""
   }
 };
+const StateProvider = ({ children }) => {
+  const [states, setStates] = reactExports.useState({
+    ...DefaultState
+  });
+  function updateState(protocolName, value) {
+    setStates((prev) => {
+      const current = { ...prev[protocolName] };
+      prev[protocolName] = { ...current, ...value };
+      return { ...prev };
+    });
+  }
+  function resetState() {
+    setStates({ ...DefaultState });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(StateContext.Provider, { value: { states, resetState, updateState }, children });
+};
+function generateSecretOnToolkit(protocolName, credentialName, option) {
+  return window.AboutSelfSovereignIndividualUtils.generate(
+    protocolName,
+    credentialName,
+    option
+  );
+}
 function promptForPrimaryPassword(messageId) {
   return new Promise((resolve) => {
     window.AboutSelfSovereignIndividualUtils.promptForPrimaryPassword(
@@ -738,7 +798,7 @@ function promptForPrimaryPassword(messageId) {
 async function authorizePrimaryPassword(protocolName, prefs, setIsOpenDialog, messageId) {
   if (prefs[protocolName].usedPrimarypasswordToSettings) {
     const primaryPasswordAuth = await promptForPrimaryPassword(
-      "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
+      messageId ?? "about-selfsovereignindividual-access-authlocked-os-auth-dialog-message"
     );
     if (!primaryPasswordAuth) {
       if (!prefs.base.primaryPasswordEnabled && prefs.base.platform === "linux") {
@@ -791,24 +851,20 @@ function AlertPrimaryPassword(props) {
 function Secret(props) {
   const [visible, setVisible] = reactExports.useState(false);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
-  const {
-    value,
-    textProps,
-    onChangeVisibility,
-    usedPrimarypasswordToSettings,
-    primaryPasswordEnabled,
-    platform
-  } = props;
-  const maskedValue = reactExports.useCallback(() => "*".repeat(value.length), [value]);
+  const { protocolName, value, onChangeVisibility, prefs, count, textProps } = props;
+  const maskedValue = reactExports.useCallback(
+    () => "*".repeat(count ? 40 : value.length),
+    [value]
+  );
   const handleToggole = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        protocolName,
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }
@@ -816,14 +872,14 @@ function Secret(props) {
     onChangeVisibility();
   };
   const handleCopy = async () => {
-    if (visible === false && usedPrimarypasswordToSettings) {
-      const primaryPasswordAuth = await promptForPrimaryPassword(
+    if (!visible) {
+      const isAuthorized = await authorizePrimaryPassword(
+        protocolName,
+        prefs,
+        setIsOpenDialog,
         "about-selfsovereignindividual-access-secrets-os-auth-dialog-message"
       );
-      if (!primaryPasswordAuth) {
-        if (!primaryPasswordEnabled && platform === "linux") {
-          setIsOpenDialog(true);
-        }
+      if (!isAuthorized) {
         return;
       }
     }
@@ -840,7 +896,7 @@ function Secret(props) {
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-      visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: value }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: maskedValue() }),
+      visible ? /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: value }) : count ? /* @__PURE__ */ jsxRuntimeExports.jsx(VStack, { spacing: 0, pt: "8px", pb: "8px", children: Array(count).fill(0).map((_, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { m: 0, ...textProps, children: maskedValue() }, index)) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { ...textProps, children: maskedValue() }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         IconButton,
         {
@@ -959,7 +1015,7 @@ function ExplainDialogDisplayOption(props) {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
         "Authorization dialogs consist of two dialogs. The confirmation dialog is there to verify the app's request, and the password dialog, by the OS account password or the Firefox primary password, is there to prevent someone other than you from authorizing.",
         /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-        "The expiration is counting up in the background and dialog will reappear once it has expired."
+        "The authorization will have an expiration date, and when it expires dialogs will reappear again."
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { size: "sm", children: [
         "- Checking “[method]-confirmOnly“ is skipping the password dialog and prompting the confirm dialog alone.",
@@ -1042,6 +1098,1193 @@ function changePrimary(guid, checked, keys) {
   });
   onPrimaryChanged({ protocolName: "nostr", guid: newPrimaryGuid });
 }
+const NostrTypeGuard = {
+  isNSec: (value) => /^nsec1[a-z\d]{58}$/.test(value || "")
+};
+const Bech32MaxSize = 5e3;
+const encodeToNostrKey = (prefix, bytes) => {
+  const words = bech32.toWords(bytes);
+  return bech32.encode(
+    prefix,
+    words,
+    Bech32MaxSize
+  );
+};
+const decodeFromNostrKey = (nip19) => {
+  const { prefix, words } = bech32.decode(nip19, Bech32MaxSize);
+  const data = new Uint8Array(bech32.fromWords(words));
+  switch (prefix) {
+    case "nsec":
+      return { type: prefix, data };
+    case "npub":
+      return { type: prefix, data: bytesToHex(data) };
+  }
+};
+function BIP39Editor(props) {
+  const { credential, mnemonics, prefs } = props;
+  const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
+  const [editingKey, setEditingKey] = reactExports.useState(null);
+  const [newSite, setNewSite] = reactExports.useState("");
+  const [newExtensions, setNewExtensions] = reactExports.useState([]);
+  const [editingNumForTrusted, setEditingNumForTrusted] = reactExports.useState(-1);
+  const [editingNumForPassword, setEditingNumForPassword] = reactExports.useState(-1);
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    setEditingKey(JSON.parse(JSON.stringify(credential)));
+  }, []);
+  const handleSave = async () => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    modifyCredentialToStore2(editingKey, {
+      newExtensionForTrustedSite: newExtensions
+    });
+    if (credential.primary !== editingKey.primary) {
+      changePrimary(editingKey.guid, editingKey.primary, mnemonics);
+    }
+    props.goBack();
+  };
+  const handleGoBack = async () => {
+    if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
+      const result = confirm("Not yet saved. Do you really want to leave?");
+      if (!result) {
+        return;
+      }
+    }
+    setEditingKey(credential);
+    props.goBack();
+  };
+  const HandleChangeValue = (newKV) => {
+    setEditingKey((prev) => ({ ...prev, ...newKV }));
+  };
+  const handleNewSiteChange = (e) => setNewSite(e.target.value);
+  const handleRegisterSite = async (e) => {
+    e.preventDefault();
+    handleReRegister(newSite);
+  };
+  const handleReRegister = (url) => {
+    if (!SafeProtocols.some((protocol) => url.startsWith(protocol)) && !SpecialCards.includes(url)) {
+      alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
+      return;
+    }
+    const existing = editingKey.trustedSites.some(
+      (site) => site.url === url && site.enabled
+    );
+    if (existing) {
+      alert("The url exists already.");
+      return;
+    }
+    const value = editingKey.trustedSites.some((site) => site.url === url) ? editingKey.trustedSites.map((site) => {
+      if (site.url === url) {
+        site.enabled = true;
+      }
+      return site;
+    }) : editingKey.trustedSites.concat([
+      {
+        url,
+        name: url !== "*" ? "" : "<all_urls>",
+        enabled: true,
+        permissions: { nallowedMethod: DefaultNallowedMethods }
+      }
+    ]);
+    HandleChangeValue({ trustedSites: value });
+    if (url.startsWith("moz-extension")) {
+      setNewExtensions((prev) => prev.concat([url]));
+    }
+  };
+  const handleRemoveSite = (removedSite) => {
+    const value = {
+      trustedSites: editingKey.trustedSites.map((site) => {
+        if (site.url === removedSite.url) {
+          site.enabled = false;
+        }
+        return site;
+      })
+    };
+    HandleChangeValue(value);
+  };
+  const handleRevokeSite = (revokedSite) => {
+    const value = {
+      dialogicAuthorizedSites: editingKey.dialogicAuthorizedSites.map((site) => {
+        if (site.url === revokedSite.url) {
+          site.expirationTime = 0;
+        }
+        return site;
+      })
+    };
+    HandleChangeValue(value);
+  };
+  const handleSaveEveryTimeAuthorizedMethods = (siteNo, value) => {
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
+    );
+    if (dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods = dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.filter(
+        (method) => method !== value
+      );
+    } else {
+      dialogicAuthorizedSites[siteNo].permissions.everyTimeAuthorizedMethods.push(value);
+    }
+    HandleChangeValue({ dialogicAuthorizedSites });
+  };
+  const handleSaveNallowedMethod = (siteNo, value) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    if (trustedSites[siteNo].permissions.nallowedMethod.includes(value)) {
+      trustedSites[siteNo].permissions.nallowedMethod = trustedSites[siteNo].permissions.nallowedMethod.filter((method) => method !== value);
+    } else {
+      trustedSites[siteNo].permissions.nallowedMethod.push(value);
+    }
+    HandleChangeValue({ trustedSites });
+  };
+  const handleResetNallowedMethod = (siteNo) => {
+    const trustedSites = JSON.parse(JSON.stringify(editingKey.trustedSites));
+    trustedSites[siteNo].permissions.nallowedMethod = DefaultNallowedMethods;
+    HandleChangeValue({ trustedSites });
+  };
+  const handleSaveSkippedDialog = (siteNo, value) => {
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
+    );
+    if (dialogicAuthorizedSites[siteNo].permissions.skippedDialog.includes(value)) {
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog = dialogicAuthorizedSites[siteNo].permissions.skippedDialog.filter(
+        (method) => method !== value
+      );
+    } else {
+      dialogicAuthorizedSites[siteNo].permissions.skippedDialog.push(value);
+    }
+    HandleChangeValue({ dialogicAuthorizedSites });
+  };
+  const handleResetSkippedDialog = (siteNo) => {
+    const dialogicAuthorizedSites = JSON.parse(
+      JSON.stringify(editingKey.dialogicAuthorizedSites)
+    );
+    dialogicAuthorizedSites[siteNo].permissions.skippedDialog = DefaultDialogDisplayOptions;
+    HandleChangeValue({ dialogicAuthorizedSites });
+  };
+  function EditableControls() {
+    const { isEditing, getEditButtonProps } = useEditableControls();
+    return !isEditing && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      IconButton,
+      {
+        size: "md",
+        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+        "aria-label": "Edit Key",
+        ml: "2",
+        ...getEditButtonProps()
+      }
+    );
+  }
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    editingKey ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: 700, overflow: "hidden", variant: "filled", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: 0, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Editable,
+          {
+            defaultValue: editingKey.properties.displayName,
+            onSubmit: (value) => HandleChangeValue({
+              properties: {
+                ...editingKey.properties,
+                displayName: value
+              }
+            }),
+            fontSize: "xl",
+            isPreviewFocusable: true,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(EditablePreview, { overflowWrap: "anywhere" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Input, { as: EditableInput }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(EditableControls, {})
+            ]
+          }
+        ) }),
+        editingKey.properties.displayName !== editingKey.identifier && /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "md", children: [
+          "(",
+          editingKey.identifier,
+          ")"
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardBody, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        VStack,
+        {
+          divider: /* @__PURE__ */ jsxRuntimeExports.jsx(StackDivider, { borderColor: "gray.200" }),
+          spacing: 2,
+          align: "stretch",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Memo" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  size: "sm",
+                  value: editingKey.properties.memo,
+                  onChange: (e) => HandleChangeValue({
+                    properties: {
+                      ...editingKey.properties,
+                      memo: e.target.value
+                    }
+                  }),
+                  placeholder: "Here is a sample placeholder",
+                  backgroundColor: "white",
+                  maxW: "400px"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Sharing History" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
+                !editingKey.properties.sharing.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No shared" }),
+                editingKey.properties.sharing.map((site) => {
+                  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(VStack, { align: "stretch", spacing: 0, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      Text,
+                      {
+                        fontSize: "md",
+                        whiteSpace: "normal",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        fontWeight: "bold",
+                        m: 0,
+                        children: [
+                          site.url,
+                          " -",
+                          " ",
+                          new Date(site.date).toLocaleDateString(),
+                          " ",
+                          new Date(site.date).toLocaleTimeString()
+                        ]
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      Text,
+                      {
+                        fontSize: "sm",
+                        whiteSpace: "normal",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        mt: 1,
+                        children: [
+                          "  partner:",
+                          " ",
+                          encodeToNostrKey(
+                            "npub",
+                            hexToBytes(site.receiver)
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                          "  you:",
+                          " ",
+                          encodeToNostrKey(
+                            "npub",
+                            hexToBytes(site.sender)
+                          )
+                        ]
+                      }
+                    )
+                  ] }) }) });
+                })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Trusted Sites" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { colSpan: 2, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        placeholder: "https://example",
+                        value: newSite,
+                        onChange: handleNewSiteChange,
+                        onKeyPress: (e) => {
+                          if (e.key === "Enter") {
+                            handleRegisterSite(e);
+                          }
+                        },
+                        maxW: "400px",
+                        backgroundColor: "white"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Button,
+                      {
+                        variant: "outline",
+                        colorScheme: "blue",
+                        onClick: handleRegisterSite,
+                        children: "Register"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExampleUrlMatch, { width: "100%" })
+                ] }),
+                !editingKey.trustedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.trustedSites.map((site, i) => {
+                  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                      !site.enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] })
+                          ]
+                        }
+                      )
+                    ] }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => {
+                            setEditingNumForTrusted(
+                              i !== editingNumForTrusted ? i : -1
+                            );
+                          },
+                          mr: "2",
+                          children: "Permission"
+                        }
+                      ),
+                      site.enabled ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => handleRemoveSite(site),
+                          children: "Remove"
+                        }
+                      ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => handleReRegister(site.url),
+                          children: "Re-register"
+                        }
+                      )
+                    ] }),
+                    editingNumForTrusted === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      VStack,
+                      {
+                        backgroundColor: "white",
+                        p: "2",
+                        alignItems: "flex-start",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Narrow the trust scope" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuButton,
+                                {
+                                  as: Button,
+                                  variant: "outline",
+                                  colorScheme: "blue",
+                                  children: "Select Options"
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: NallowedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuItem,
+                                {
+                                  closeOnSelect: false,
+                                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                    Checkbox,
+                                    {
+                                      isChecked: site.permissions.nallowedMethod.includes(
+                                        option
+                                      ),
+                                      onChange: () => handleSaveNallowedMethod(i, option),
+                                      children: option
+                                    }
+                                  )
+                                },
+                                option
+                              )) })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Button,
+                              {
+                                variant: "outline",
+                                colorScheme: "blue",
+                                onClick: () => handleResetNallowedMethod(i),
+                                width: "150px",
+                                children: "Revert to preset"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainNallowedMethod,
+                            {
+                              width: "100%",
+                              protocolName: "bitcoin"
+                            }
+                          )
+                        ]
+                      }
+                    ) })
+                  ] });
+                })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Dialogic Authorization" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 2, children: [
+                !editingKey.dialogicAuthorizedSites.length && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No registered" }),
+                editingKey.dialogicAuthorizedSites.map((site, i) => {
+                  const expirationTime = new Date(site.expirationTime);
+                  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                      site.expirationTime <= Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Expired", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "baseline", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { as: MdOutlineTimerOff }) }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Text,
+                        {
+                          fontSize: "md",
+                          whiteSpace: "normal",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          children: [
+                            site.url,
+                            site.name && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " (",
+                              site.name,
+                              ")"
+                            ] }),
+                            site.expirationTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                              " - until ",
+                              expirationTime.toLocaleDateString(),
+                              " ",
+                              expirationTime.toLocaleTimeString()
+                            ] })
+                          ]
+                        }
+                      )
+                    ] }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => {
+                            setEditingNumForPassword(
+                              i !== editingNumForPassword ? i : -1
+                            );
+                          },
+                          mr: "2",
+                          children: "Permission"
+                        }
+                      ),
+                      site.expirationTime > Date.now() && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Button,
+                        {
+                          variant: "outline",
+                          colorScheme: "blue",
+                          onClick: () => handleRevokeSite(site),
+                          children: "Revoke"
+                        }
+                      )
+                    ] }),
+                    editingNumForPassword === i && /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 2, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      VStack,
+                      {
+                        backgroundColor: "white",
+                        p: "2",
+                        alignItems: "flex-start",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "The Method authorized every time" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuButton,
+                              {
+                                as: Button,
+                                variant: "outline",
+                                colorScheme: "blue",
+                                children: "Select Options"
+                              }
+                            ),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: EveryTimeAuthorizedMethods.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              MenuItem,
+                              {
+                                closeOnSelect: false,
+                                children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  Checkbox,
+                                  {
+                                    isChecked: site.permissions.everyTimeAuthorizedMethods.includes(
+                                      option
+                                    ),
+                                    onChange: () => handleSaveEveryTimeAuthorizedMethods(
+                                      i,
+                                      option
+                                    ),
+                                    children: option
+                                  }
+                                )
+                              },
+                              option
+                            )) })
+                          ] }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainEveryTimeAuthorizedMethod,
+                            {
+                              width: "100%",
+                              protocolName: "bitcoin"
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "sm", children: "Dialog dispaly settings" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuButton,
+                                {
+                                  as: Button,
+                                  variant: "outline",
+                                  colorScheme: "blue",
+                                  children: "Select Options"
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(MenuList, { children: DialogDisplayOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                MenuItem,
+                                {
+                                  closeOnSelect: false,
+                                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                    Checkbox,
+                                    {
+                                      isChecked: site.permissions.skippedDialog.includes(
+                                        option
+                                      ),
+                                      onChange: () => handleSaveSkippedDialog(i, option),
+                                      children: option
+                                    }
+                                  )
+                                },
+                                option
+                              )) })
+                            ] }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              Button,
+                              {
+                                variant: "outline",
+                                colorScheme: "blue",
+                                onClick: () => handleResetSkippedDialog(i),
+                                width: "150px",
+                                children: "Revert to preset"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            ExplainDialogDisplayOption,
+                            {
+                              width: "100%",
+                              protocolName: "bitcoin"
+                            }
+                          )
+                        ]
+                      }
+                    ) })
+                  ] });
+                })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", my: 4, children: "Primary" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Switch,
+                {
+                  isChecked: editingKey.primary,
+                  onChange: (e) => HandleChangeValue({ primary: e.target.checked }),
+                  alignSelf: "center"
+                }
+              )
+            ] })
+          ]
+        }
+      ) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          IconButton,
+          {
+            icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdOutlineCancel, {}),
+            variant: "transparent",
+            fontSize: "20px",
+            "aria-label": "Cancel",
+            onClick: handleGoBack
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          IconButton,
+          {
+            icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdSaveAlt, {}),
+            variant: "filled",
+            fontSize: "24px",
+            "aria-label": "Save",
+            onClick: handleSave
+          }
+        )
+      ] })
+    ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, {}),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
+const BitcoinTemplate = {
+  protocolName: "bitcoin",
+  credentialName: "bip39",
+  identifier: "",
+  // xpub
+  secret: "",
+  // mnemonic
+  primary: false,
+  trustedSites: [],
+  dialogicAuthorizedSites: [],
+  properties: {
+    passphrase: "",
+    xprv: "",
+    generationMethod: "new",
+    generationFrom: "",
+    sharing: [],
+    displayName: "",
+    memo: ""
+  }
+};
+function Bitcoin$1(props) {
+  const { prefs, credentials } = props;
+  const { states, resetState, updateState } = reactExports.useContext(StateContext);
+  const {
+    addCredentialToStore: addCredentialToStore2,
+    modifyCredentialToStore: modifyCredentialToStore2,
+    deleteCredentialToStore: deleteCredentialToStore2,
+    onPrimaryChanged: onPrimaryChanged2
+  } = dispatchEvents;
+  const [importedKey, setImportedSeed] = reactExports.useState("");
+  const [newSeed, setNewSeed] = reactExports.useState("");
+  const [wordCount, setWordCount] = reactExports.useState(0);
+  const [passphrase, setPassphrase] = reactExports.useState("");
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const mnemonics = reactExports.useMemo(
+    () => credentials.filter(
+      (credential) => credential.credentialName === "bip39"
+    ),
+    [credentials]
+  );
+  const defaultTrustedSites = reactExports.useMemo(
+    () => [
+      ...DefaultTrustedSites,
+      ...prefs.base.addons.map((addon) => ({
+        url: addon.url,
+        name: addon.name,
+        enabled: true,
+        permissions: { nallowedMethod: DefaultNallowedMethods }
+      }))
+    ],
+    [prefs.base.addons]
+  );
+  const handlePassphraseChange = (e) => setPassphrase(e.target.value);
+  const handleGenNewSeed = async (e) => {
+    e.preventDefault();
+    const origin = location.href;
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
+      strength: wordCount === 12 ? 128 : 256,
+      // default is 256
+      passphrase
+    });
+    if (!result[0]) {
+      alert("Invalid!");
+      return;
+    }
+    const { mnemonic, xpub, xprv } = await result[1];
+    addCredentialToStore2({
+      ...BitcoinTemplate,
+      identifier: xpub,
+      secret: mnemonic,
+      primary: mnemonics.length === 0,
+      trustedSites: defaultTrustedSites,
+      properties: {
+        ...BitcoinTemplate.properties,
+        passphrase,
+        xprv,
+        displayName: xpub,
+        generationMethod: "new",
+        generationFrom: origin
+      }
+    });
+    setNewSeed(xpub);
+  };
+  const handleImportedKeyChange = (e) => setImportedSeed(e.target.value);
+  const handleImportedKeySave = async (e) => {
+    e.preventDefault();
+    const mnemonic = importedKey;
+    const origin = location.href;
+    const result = generateSecretOnToolkit("bitcoin", "bip39", {
+      origin,
+      import: true,
+      mnemonic,
+      passphrase
+    });
+    if (!result[0]) {
+      alert("Invalid!");
+      return;
+    }
+    addCredentialToStore2({
+      ...BitcoinTemplate,
+      identifier: result[1].xpub,
+      secret: mnemonic,
+      primary: mnemonics.length === 0,
+      trustedSites: defaultTrustedSites,
+      properties: {
+        ...BitcoinTemplate.properties,
+        passphrase,
+        xprv: result[1].xprv,
+        displayName: result[1].xpub,
+        generationMethod: "import",
+        generationFrom: origin
+      }
+    });
+    setImportedSeed("");
+  };
+  const handleChangePrimary = async (checked, item) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    changePrimary(item.guid, checked, mnemonics);
+  };
+  const handleDeleteCredential = async (item) => {
+    if (!confirm("The key can't be restored if no backup. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    if (item.primary === true) {
+      const prev = mnemonics.find((key) => !key.primary);
+      if (prev) {
+        modifyCredentialToStore2({
+          guid: prev.guid,
+          primary: true
+        });
+      }
+      onPrimaryChanged2({
+        protocolName: "bitcoin",
+        guid: prev ? prev.guid : ""
+      });
+    }
+    deleteCredentialToStore2(item);
+  };
+  const handleAllRemove = async (e) => {
+    e.preventDefault();
+    if (!confirm("All data will be deleted. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    for (const credential of mnemonics) {
+      deleteCredentialToStore2(credential);
+    }
+    onPrimaryChanged2({ protocolName: "bitcoin", guid: "" });
+    location.reload();
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      VStack,
+      {
+        divider: /* @__PURE__ */ jsxRuntimeExports.jsx(StackDivider, { borderColor: "gray.200" }),
+        spacing: 4,
+        align: "stretch",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "New Seed" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    placeholder: "optional passphrase",
+                    value: passphrase,
+                    onChange: handlePassphraseChange,
+                    maxW: "200px"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  Select,
+                  {
+                    placeholder: "Word count",
+                    value: wordCount,
+                    onChange: (e) => setWordCount(parseInt(e.target.value)),
+                    width: "120px",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "12", children: "12" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "24", children: "24" })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    variant: "outline",
+                    colorScheme: "blue",
+                    onClick: handleGenNewSeed,
+                    children: "Generate"
+                  }
+                )
+              ] }),
+              newSeed && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { as: "mark", ml: "10px", children: newSeed })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "Import" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(InputGroup, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  placeholder: "mnemonic words",
+                  value: importedKey,
+                  onChange: handleImportedKeyChange,
+                  onKeyPress: (e) => {
+                    if (e.key === "Enter") {
+                      handleImportedKeySave(e);
+                    }
+                  },
+                  maxW: "500px"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  placeholder: "optional passphrase",
+                  value: passphrase,
+                  onChange: handlePassphraseChange,
+                  maxW: "200px"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  variant: "outline",
+                  colorScheme: "blue",
+                  onClick: handleImportedKeySave,
+                  children: "Save"
+                }
+              )
+            ] }) })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { children: [
+            mnemonics.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "sm", children: "No key registered" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Flex, { gap: 6, wrap: "wrap", children: mnemonics.map((item, i) => {
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: states.bitcoin.editingNo !== i ? /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { maxW: "md", overflow: "hidden", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { pb: "0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            displayName: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.displayName
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                    item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }),
+                    item.properties.sharing.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Sharing", children: "🛜" })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      contentEditable: true,
+                      onBlur: (e) => {
+                        e.preventDefault();
+                        modifyCredentialToStore2({
+                          guid: item.guid,
+                          properties: {
+                            ...item.properties,
+                            memo: e.target.textContent
+                          }
+                        });
+                      },
+                      children: item.properties.memo
+                    }
+                  ) }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "X Format" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: item.identifier }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        protocolName: item.protocolName,
+                        value: item.properties.xprv,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        textProps: { fontSize: "md", isTruncated: true }
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "mnemonic" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        protocolName: item.protocolName,
+                        value: item.secret,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        count: 2,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { mt: 2, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { size: "xs", textTransform: "uppercase", children: "passphrase" }),
+                    item.properties.passphrase ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Secret,
+                      {
+                        protocolName: item.protocolName,
+                        value: item.properties.passphrase,
+                        onChangeVisibility: () => {
+                        },
+                        prefs,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
+                      }
+                    ) : "none"
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", children: [
+                    item.properties.generationMethod === "import" ? "Imported" : "Generated",
+                    " ",
+                    "on ",
+                    new Date(item.timeCreated).toLocaleDateString(),
+                    " ",
+                    new Date(item.timeCreated).toLocaleTimeString(),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "at ",
+                    item.properties.generationFrom
+                  ] }) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
+                  mnemonics.length > 1 && /* @__PURE__ */ jsxRuntimeExports.jsxs(Flex, { gap: "2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Switch,
+                      {
+                        isChecked: item.primary,
+                        onChange: (e) => handleChangePrimary(e.target.checked, item),
+                        alignSelf: "center"
+                      }
+                    ),
+                    item.primary && /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "primary now" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdEdit, {}),
+                      variant: "transparent",
+                      fontSize: "20px",
+                      "aria-label": "Edit Key",
+                      onClick: () => updateState("bitcoin", { editingNo: i })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IconButton,
+                    {
+                      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(MdDeleteForever, {}),
+                      variant: "transparent",
+                      fontSize: "20px",
+                      "aria-label": "Delete Key",
+                      onClick: () => handleDeleteCredential(item)
+                    }
+                  )
+                ] })
+              ] }, i) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+                BIP39Editor,
+                {
+                  credential: mnemonics[states.bitcoin.editingNo],
+                  mnemonics,
+                  prefs,
+                  goBack: () => resetState()
+                }
+              ) });
+            }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "ghost", colorScheme: "blue", onClick: handleAllRemove, children: "Reset" }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
+function More$1(props) {
+  const { prefs } = props;
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const handleUsedPrimarypasswordToSettings = async (checked) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "bitcoin",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    onPrefChanged2({
+      protocolName: "bitcoin",
+      usedPrimarypasswordToSettings: checked
+    });
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      VStack,
+      {
+        divider: /* @__PURE__ */ jsxRuntimeExports.jsx(StackDivider, { borderColor: "gray.200" }),
+        spacing: 4,
+        align: "stretch",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "400px 1fr", gap: 6, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "bitcoin-pref-usedPrimarypasswordToSettings", children: "Use primary password to setting page" }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Switch,
+            {
+              id: "bitcoin-pref-usedPrimarypasswordToSettings",
+              isChecked: prefs.bitcoin.usedPrimarypasswordToSettings,
+              onChange: (e) => handleUsedPrimarypasswordToSettings(e.target.checked)
+            }
+          ) })
+        ] }) })
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
+}
+function Bitcoin(props) {
+  const { prefs, credentials } = props;
+  const { resetState } = reactExports.useContext(StateContext);
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
+  const [tabIndex, setTabIndex] = reactExports.useState(-1);
+  reactExports.useEffect(() => {
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.bitcoin.tabPin));
+    }
+  }, [prefs.bitcoin.tabPin]);
+  const tabPin = (tabId) => TabPin(
+    tabId.toString(),
+    { key: "tabPin", value: prefs.bitcoin.tabPin },
+    "bitcoin"
+  );
+  const bitcoinKeys = reactExports.useMemo(
+    () => credentials.filter((credential) => credential.protocolName === "bitcoin").sort((a, b) => b.primary ? 1 : 0),
+    [credentials]
+  );
+  const handleEnable = (e) => {
+    e.preventDefault();
+    const checked = e.target.checked;
+    onPrefChanged2({ protocolName: "bitcoin", enabled: checked });
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "bitcoin-pref-enabled", children: "Enable" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Switch,
+        {
+          id: "bitcoin-pref-enabled",
+          isChecked: prefs.bitcoin.enabled,
+          onChange: handleEnable
+        }
+      ) })
+    ] }),
+    prefs.bitcoin.tabPin ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Tabs,
+      {
+        variant: "enclosed",
+        index: tabIndex,
+        onChange: (index) => {
+          setTabIndex(index);
+          resetState();
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { position: "sticky", top: "0", m: 2, zIndex: 1, bg: "white", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "BIP-39" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(0) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(1) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin$1, { prefs, credentials: bitcoinKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(More$1, { prefs, credentials: bitcoinKeys }) })
+          ] })
+        ]
+      }
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
+  ] });
+}
 function KeyEditor(props) {
   const { credential, nostrKeys, prefs } = props;
   const { modifyCredentialToStore: modifyCredentialToStore2 } = dispatchEvents;
@@ -1073,9 +2316,7 @@ function KeyEditor(props) {
   };
   const handleGoBack = async () => {
     if (JSON.stringify(editingKey) !== JSON.stringify(credential)) {
-      const result = window.confirm(
-        "Not yet saved. Do you really want to leave?"
-      );
+      const result = confirm("Not yet saved. Do you really want to leave?");
       if (!result) {
         return;
       }
@@ -1660,45 +2901,20 @@ function KeyEditor(props) {
     )
   ] });
 }
-const StateContext = React.createContext(null);
-const DefaultState = {
-  nostr: {
-    editingNo: -1,
-    editingUrl: ""
-  }
-};
-const StateProvider = ({ children }) => {
-  const [states, setStates] = reactExports.useState({
-    ...DefaultState
-  });
-  function updateState(protocolName, value) {
-    setStates((prev) => {
-      const current = { ...prev[protocolName] };
-      prev[protocolName] = { ...current, ...value };
-      return { ...prev };
-    });
-  }
-  function resetState() {
-    setStates({ ...DefaultState });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(StateContext.Provider, { value: { states, resetState, updateState }, children });
-};
-function Nostr$2(props) {
+function Nostr$1(props) {
   const { prefs, credentials } = props;
   const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const {
     addCredentialToStore: addCredentialToStore2,
     modifyCredentialToStore: modifyCredentialToStore2,
     deleteCredentialToStore: deleteCredentialToStore2,
-    removeAllCredentialsToStore: removeAllCredentialsToStore2,
-    onPrimaryChanged: onPrimaryChanged2,
-    onPrefChanged: onPrefChanged2
+    onPrimaryChanged: onPrimaryChanged2
   } = dispatchEvents;
   const [importedKey, setImportedKey] = reactExports.useState("");
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   const nostrKeys = reactExports.useMemo(
-    () => credentials.filter((credential) => credential.protocolName === "nostr").map(addInterpretedKeys).sort((a, b) => b.primary ? 1 : 0),
+    () => credentials.map(addInterpretedKeys),
     [credentials]
   );
   const defaultTrustedSites = reactExports.useMemo(
@@ -1713,15 +2929,12 @@ function Nostr$2(props) {
     ],
     [prefs.base.addons]
   );
-  const handleEnable = (e) => {
+  const handleGenNewKey = async (e) => {
     e.preventDefault();
-    const checked = e.target.checked;
-    onPrefChanged2({ protocolName: "nostr", enabled: checked });
-  };
-  const handleGenNewKey = (e) => {
-    e.preventDefault();
-    const seckey = BIP340.generateSecretKey();
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const [, seckey] = generateSecretOnToolkit("nostr", "nsec");
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
@@ -1730,14 +2943,16 @@ function Nostr$2(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
-        generationMethod: "bip340"
+        generationMethod: "bip340",
+        generationFrom: location.href
       }
     });
     setNewKey(npubkey);
   };
   const handleImportedKeyChange = (e) => setImportedKey(e.target.value);
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     let nseckey = importedKey;
     if (!NostrTypeGuard.isNSec(nseckey)) {
@@ -1759,7 +2974,9 @@ function Nostr$2(props) {
       alert("The typed key is existing!");
       return;
     }
-    const pubkey = BIP340.generatePublicKey(seckey);
+    const [, pubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: seckey
+    });
     const npubkey = encodeToNostrKey("npub", hexToBytes(pubkey));
     addCredentialToStore2({
       ...NostrTemplate,
@@ -1768,8 +2985,10 @@ function Nostr$2(props) {
       primary: nostrKeys.length === 0,
       trustedSites: defaultTrustedSites,
       properties: {
+        ...NostrTemplate.properties,
         displayName: npubkey,
-        generationMethod: "import"
+        generationMethod: "import",
+        generationFrom: location.href
       }
     });
     setImportedKey("");
@@ -1807,7 +3026,7 @@ function Nostr$2(props) {
       }
       onPrimaryChanged2({ protocolName: "nostr", guid: prev ? prev.guid : "" });
     }
-    deleteCredentialToStore2(item, nostrKeys);
+    deleteCredentialToStore2(item);
   };
   const handleAllRemove = async (e) => {
     e.preventDefault();
@@ -1822,8 +3041,11 @@ function Nostr$2(props) {
     if (!isAuthorized) {
       return;
     }
-    removeAllCredentialsToStore2();
+    for (const credential of nostrKeys) {
+      deleteCredentialToStore2(credential);
+    }
     onPrimaryChanged2({ protocolName: "nostr", guid: "" });
+    location.reload();
   };
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
@@ -1832,7 +3054,9 @@ function Nostr$2(props) {
   function addInterpretedKeys(item) {
     const rawSeckey = hexToBytes(item.secret);
     const nseckey = encodeToNostrKey("nsec", rawSeckey);
-    const rawPubkey = BIP340.generatePublicKey(rawSeckey);
+    const [, rawPubkey] = generateSecretOnToolkit("nostr", "npub", {
+      secretKey: rawSeckey
+    });
     return { ...item, nseckey, rawPubkey };
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -1844,15 +3068,6 @@ function Nostr$2(props) {
         align: "stretch",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-enabled", children: "Enable" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Switch,
-              {
-                id: "nostr-pref-enabled",
-                isChecked: prefs.nostr.enabled,
-                onChange: handleEnable
-              }
-            ) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { children: "New Key" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(GridItem, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1941,12 +3156,11 @@ function Nostr$2(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.nseckey,
                         onChangeVisibility: () => {
                         },
-                        usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-                        platform: prefs.base.platform,
+                        prefs,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
@@ -1957,23 +3171,25 @@ function Nostr$2(props) {
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Secret,
                       {
+                        protocolName: item.protocolName,
                         value: item.secret,
                         onChangeVisibility: () => {
                         },
-                        usedPrimarypasswordToSettings: prefs.nostr.usedPrimarypasswordToSettings,
-                        primaryPasswordEnabled: prefs.base.primaryPasswordEnabled,
-                        platform: prefs.base.platform,
+                        prefs,
                         textProps: { fontSize: "md", isTruncated: true }
                       }
                     )
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", isTruncated: true, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { fontSize: "sm", children: [
                     item.properties.generationMethod === "import" ? "Imported" : "Generated",
                     " ",
-                    "at ",
+                    "on ",
                     new Date(item.timeCreated).toLocaleDateString(),
                     " ",
-                    new Date(item.timeCreated).toLocaleTimeString()
+                    new Date(item.timeCreated).toLocaleTimeString(),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "at ",
+                    item.properties.generationFrom
                   ] }) })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardFooter, { pt: "0", justify: "space-evenly", children: [
@@ -2036,7 +3252,7 @@ function Nostr$2(props) {
 }
 const OneHour = 60 * 60 * 1e3;
 function NIP07(props) {
-  const { prefs, credentials } = props;
+  const { prefs, credentials: nostrKeys } = props;
   const { states, resetState, updateState } = reactExports.useContext(StateContext);
   const { modifyCredentialToStore: modifyCredentialToStore2, onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [newSite, setNewSite] = reactExports.useState("");
@@ -2046,10 +3262,14 @@ function NIP07(props) {
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   reactExports.useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    }
   }, [prefs.nostr.tabPinInNip07]);
   reactExports.useEffect(() => {
-    setNewNallowedMethodPreset(prefs.nostr.nallowedMethodPreset.split(","));
+    setNewNallowedMethodPreset(
+      prefs.nostr.nallowedMethodPreset.split(",")
+    );
   }, [prefs.nostr.nallowedMethodPreset]);
   reactExports.useEffect(() => {
     setNewDialogDisplayOptionPreset(
@@ -2060,10 +3280,6 @@ function NIP07(props) {
     tabId.toString(),
     { key: "tabPinInNip07", value: prefs.nostr.tabPinInNip07 },
     "nostr"
-  );
-  const nostrkeys = reactExports.useMemo(
-    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
-    [credentials]
   );
   const handleUsedTrustedSites = async (checked) => {
     const isAuthorized = await authorizePrimaryPassword(
@@ -2083,10 +3299,10 @@ function NIP07(props) {
       alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
       return;
     }
-    const existings = nostrkeys.filter(
+    const existings = nostrKeys.filter(
       (key) => key.trustedSites.some((site) => site.url === newSite && site.enabled)
     );
-    if (nostrkeys.length === existings.length) {
+    if (nostrKeys.length === existings.length) {
       alert("The url exists already.");
       return;
     }
@@ -2098,7 +3314,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const key of nostrkeys) {
+    for (const key of nostrKeys) {
       const idx = key.trustedSites.findIndex((site) => site.url === newSite);
       if (idx >= 0) {
         if (key.trustedSites[idx].enabled) {
@@ -2131,7 +3347,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    const item = nostrkeys.find((key) => key.identifier === identifier);
+    const item = nostrKeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
       trustedSites: item.trustedSites.map((site) => {
@@ -2151,7 +3367,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore2({
         guid: item.guid,
         trustedSites: item.trustedSites.map((site) => {
@@ -2205,7 +3421,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    const item = nostrkeys.find((key) => key.identifier === identifier);
+    const item = nostrKeys.find((key) => key.identifier === identifier);
     modifyCredentialToStore2({
       guid: item.guid,
       dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
@@ -2225,7 +3441,7 @@ function NIP07(props) {
     if (!isAuthorized) {
       return;
     }
-    for (const item of nostrkeys) {
+    for (const item of nostrKeys) {
       modifyCredentialToStore2({
         guid: item.guid,
         dialogicAuthorizedSites: item.dialogicAuthorizedSites.map((site) => {
@@ -2327,7 +3543,7 @@ function NIP07(props) {
   const getTrustedSites = reactExports.useCallback(() => {
     const trustedSites = Array.from(
       new Set(
-        nostrkeys.map(
+        nostrKeys.map(
           (key) => key.trustedSites.filter((site) => site.enabled).map((site) => {
             const { permissions, ...rest } = site;
             return rest;
@@ -2355,7 +3571,7 @@ function NIP07(props) {
             ]
           }
         ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrkeys.filter(
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AccordionPanel, { pb: 4, children: nostrKeys.filter(
           (key) => key.trustedSites.some(
             (_site) => _site.enabled && _site.url === site.url
           )
@@ -2400,8 +3616,8 @@ function NIP07(props) {
           ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
             KeyEditor,
             {
-              credential: nostrkeys[states.nostr.editingNo],
-              nostrKeys: nostrkeys,
+              credential: nostrKeys[states.nostr.editingNo],
+              nostrKeys,
               prefs,
               goBack: () => resetState()
             }
@@ -2418,9 +3634,9 @@ function NIP07(props) {
         }
       ) })
     ] })) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
   const getDialogicAuthorizedSites = reactExports.useCallback(() => {
-    const dialogicAuthorizedSites = nostrkeys.reduce((acc, key, i) => {
+    const dialogicAuthorizedSites = nostrKeys.reduce((acc, key, i) => {
       key.dialogicAuthorizedSites.filter((site) => site.expirationTime > Date.now()).forEach((site) => {
         const found = Object.keys(acc).find((url) => site.url === url);
         if (found) {
@@ -2498,8 +3714,8 @@ function NIP07(props) {
             ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
               KeyEditor,
               {
-                credential: nostrkeys[states.nostr.editingNo],
-                nostrKeys: nostrkeys,
+                credential: nostrKeys[states.nostr.editingNo],
+                nostrKeys,
                 prefs,
                 goBack: () => resetState()
               }
@@ -2517,7 +3733,7 @@ function NIP07(props) {
         ) })
       ] });
     }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { children: "No site enabled" });
-  }, [nostrkeys, states.nostr]);
+  }, [nostrKeys, states.nostr]);
   const cancelRef = React.useRef();
   const onCloseDialog = () => {
     setIsOpenDialog(false);
@@ -2567,14 +3783,10 @@ function NIP07(props) {
                 },
                 children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }),
-                      tabPin(0)
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }),
-                      tabPin(1)
-                    ] })
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Trusted Sites" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 1, children: tabPin(0) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h5", size: "md", children: "Dialogic Authorization" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 1, children: tabPin(1) })
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanel, { children: [
@@ -2842,7 +4054,7 @@ function NIP07(props) {
     )
   ] });
 }
-function Nostr$1(props) {
+function More(props) {
   const { prefs } = props;
   const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
@@ -2897,17 +4109,40 @@ function Nostr$1(props) {
 function Nostr(props) {
   const { prefs, credentials } = props;
   const { resetState } = reactExports.useContext(StateContext);
+  const { onPrefChanged: onPrefChanged2 } = dispatchEvents;
   const [tabIndex, setTabIndex] = reactExports.useState(-1);
   reactExports.useEffect(() => {
-    setTabIndex(parseInt(prefs.nostr.tabPin));
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPin));
+    }
   }, [prefs.nostr.tabPin]);
+  const nostrKeys = reactExports.useMemo(
+    () => credentials.filter((credential) => credential.protocolName === "nostr").sort((a, b) => b.primary ? 1 : 0),
+    [credentials]
+  );
+  const handleEnable = (e) => {
+    e.preventDefault();
+    const checked = e.target.checked;
+    onPrefChanged2({ protocolName: "nostr", enabled: checked });
+  };
   const tabPin = (tabId) => TabPin(
     tabId.toString(),
     { key: "tabPin", value: prefs.nostr.tabPin },
     "nostr"
   );
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { size: "md", mb: "10px", children: "Your keys are stored locally, isolated from and inaccessible to the web app." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "nostr-pref-enabled", children: "Enable" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Switch,
+        {
+          id: "nostr-pref-enabled",
+          isChecked: prefs.nostr.enabled,
+          onChange: handleEnable
+        }
+      ) })
+    ] }),
     prefs.nostr.tabPin ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Tabs,
       {
@@ -2918,32 +4153,72 @@ function Nostr(props) {
           resetState();
         },
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "Keys" }),
-              tabPin(0)
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "NIP-07" }),
-              tabPin(1)
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Tab, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }),
-              tabPin(2)
-            ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(TabList, { position: "sticky", top: "0", zIndex: 1, m: 2, bg: "white", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "Keys" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(0) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "NIP-07" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(1) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Tab, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heading, { as: "h3", size: "lg", children: "More" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { display: "flex", alignItems: "center", mr: 3, children: tabPin(2) })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(TabPanels, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$2, { prefs, credentials }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, { prefs, credentials }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr$1, { prefs, credentials: nostrKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NIP07, { prefs, credentials: nostrKeys }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(TabPanel, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(More, { prefs, credentials: nostrKeys }) })
           ] })
         ]
       }
     ) : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {})
   ] });
 }
-function ECash(props) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: '"Automation of the way we pay for goods and services is already underway, as can be seen by the variety and growth of electronic banking services available to consumers."' });
+function Settings(props) {
+  const { prefs, credentials } = props;
+  const { onPrimaryChanged: onPrimaryChanged2, removeAllCredentialsToStore: removeAllCredentialsToStore2 } = dispatchEvents;
+  const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
+  const handleAllRemove = async (e) => {
+    e.preventDefault();
+    if (!confirm("All data will be deleted. Okay?")) {
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+    removeAllCredentialsToStore2();
+    for (const protocolName of ["bitcoin", "nostr"]) {
+      onPrimaryChanged2({ protocolName, guid: "" });
+    }
+  };
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Box, { height: "calc(100vh - 40px)", mt: 10, overflowY: "auto", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { gridTemplateColumns: "100px 1fr", gap: 6, mb: "2rem", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "setting-pref-reset", children: "Delete All data" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: "outline",
+          colorScheme: "blue",
+          onClick: handleAllRemove,
+          children: "Reset"
+        }
+      ) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      AlertPrimaryPassword,
+      {
+        isOpen: isOpenDialog,
+        onClose: onCloseDialog,
+        cancelRef
+      }
+    )
+  ] });
 }
 function SelfSovereignIndividual() {
   const { prefs, credentials } = useChildActorEvent();
@@ -2953,30 +4228,40 @@ function SelfSovereignIndividual() {
     initStore2();
   }, []);
   reactExports.useEffect(() => {
-    setSelectedMenu(prefs.base.menuPin);
+    if (!selectedMenu) {
+      setSelectedMenu(prefs.base.menuPin);
+    }
   }, [prefs.base.menuPin]);
   const switchContent = () => {
     if (selectedMenu === "bitcoin") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin, {});
-    } else if (selectedMenu === "lightning") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Lightning, {});
-    } else if (selectedMenu === "ecash") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(ECash, {});
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Bitcoin, { prefs, credentials });
     } else if (selectedMenu === "nostr") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Nostr, { prefs, credentials });
+    } else if (selectedMenu === "settings") {
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Settings, { prefs, credentials });
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { m: 10, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Grid, { w: "100%", h: "100%", templateColumns: "200px auto", gap: 4, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Menu,
-      {
-        selectedMenu,
-        setSelectedMenu,
-        menuPin: prefs.base.menuPin
-      }
-    ) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(GridItem, { colSpan: 1, children: prefs.base.menuPin ? switchContent() : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {}) })
-  ] }) });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    HStack,
+    {
+      width: "100%",
+      height: "100vh",
+      alignItems: "flex-start",
+      justifyContent: "flex-start",
+      overflow: "auto",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Menu,
+          {
+            selectedMenu,
+            setSelectedMenu,
+            menuPin: prefs.base.menuPin
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { flex: "1", children: prefs.base.menuPin ? switchContent() : /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, {}) })
+      ]
+    }
+  );
 }
 var HomeOverlay = function() {
   this.inited = false;

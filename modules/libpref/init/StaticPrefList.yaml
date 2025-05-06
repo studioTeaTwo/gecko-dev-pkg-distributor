@@ -15387,6 +15387,74 @@
   value: "nostr"
   mirror: never
 
+#---------------------------------------------------------------------------
+# "selfsovereignindividual.bitcoin"
+#---------------------------------------------------------------------------
+
+# Enabling to use keys of Bitcoin
+- name: selfsovereignindividual.bitcoin.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Trusting only registered sites
+- name: selfsovereignindividual.bitcoin.trustedSites.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Preset for the nallowed Method for Trusted Site.
+- name: selfsovereignindividual.bitcoin.trustedSites.nallowedMethodPreset
+  type: String
+  value: ""
+  mirror: never
+
+# Whether to use primary password when managing secrets in setting page.
+- name: selfsovereignindividual.bitcoin.primarypassword.toSettings.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Expiration time for primary password when managing secrets in setting page.
+- name: selfsovereignindividual.bitcoin.primarypassword.toSettings.expirationTime
+  type: uint32_t
+  value: 300000 # 5 minutes
+  mirror: always
+
+# Whether to use primary password to calls from webapps.
+- name: selfsovereignindividual.bitcoin.primarypassword.toApps.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Expiration time for primary password to calls from webapps.
+- name: selfsovereignindividual.bitcoin.primarypassword.toApps.expirationTime
+  type: uint32_t
+  value: 86400000 # 1 day
+  mirror: always
+
+# Preset for the dialog Display Option to calls from webapps.
+- name: selfsovereignindividual.bitcoin.primarypassword.toApps.dialogDisplayOptionPreset
+  type: String
+  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,generate-confirmOnly,custom-confirmOnly"
+  mirror: never
+
+# Permitting to emit `accountChanged` event
+- name: selfsovereignindividual.bitcoin.event.accountChanged.enabled
+  type: bool
+  value: true
+  mirror: always
+
+# Tab pin in bitcoin
+- name: selfsovereignindividual.bitcoin.ui.tabPin
+  type: String
+  value: "0"
+  mirror: never
+
+#---------------------------------------------------------------------------
+# "selfsovereignindividual.nostr"
+#---------------------------------------------------------------------------
+
 # Enabling to use keys of Nostr
 - name: selfsovereignindividual.nostr.enabled
   type: bool
@@ -15432,7 +15500,7 @@
 # Preset for the dialog Display Option to calls from webapps.
 - name: selfsovereignindividual.nostr.primarypassword.toApps.dialogDisplayOptionPreset
   type: String
-  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,custom-confirmOnly"
+  value: "read-confirmOnly,sign-confirmOnly,encrypt-confirmOnly,decrypt-confirmOnly,generate-confirmOnly,custom-confirmOnly"
   mirror: never
 
 # Preset for the Event Kind authorized every time to calls from webapps.

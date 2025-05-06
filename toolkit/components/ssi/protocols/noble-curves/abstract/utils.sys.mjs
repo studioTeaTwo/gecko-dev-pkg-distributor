@@ -9,7 +9,6 @@
 // won't be included into their bundle.
 const _0n = /* @__PURE__ */ BigInt(0);
 const _1n = /* @__PURE__ */ BigInt(1);
-const _2n = /* @__PURE__ */ BigInt(2);
 export function isBytes(a) {
     return a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === 'Uint8Array');
 }
@@ -21,20 +20,7 @@ export function abool(title, value) {
     if (typeof value !== 'boolean')
         throw new Error(title + ' boolean expected, got ' + value);
 }
-// Array where index 0xf0 (240) is mapped to string 'f0'
-const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
-/**
- * @example bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
- */
-export function bytesToHex(bytes) {
-    abytes(bytes);
-    // pre-caching improves the speed 6x
-    let hex = '';
-    for (let i = 0; i < bytes.length; i++) {
-        hex += hexes[bytes[i]];
-    }
-    return hex;
-}
+// Used in weierstrass, der
 export function numberToHexUnpadded(num) {
     const hex = num.toString(16);
     return hex.length & 1 ? '0' + hex : hex;
@@ -43,6 +29,28 @@ export function hexToNumber(hex) {
     if (typeof hex !== 'string')
         throw new Error('hex string expected, got ' + typeof hex);
     return hex === '' ? _0n : BigInt('0x' + hex); // Big Endian
+}
+// Built-in hex conversion https://caniuse.com/mdn-javascript_builtins_uint8array_fromhex
+const hasHexBuiltin = 
+// @ts-ignore
+typeof Uint8Array.from([]).toHex === 'function' && typeof Uint8Array.fromHex === 'function';
+// Array where index 0xf0 (240) is mapped to string 'f0'
+const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+/**
+ * Convert byte array to hex string. Uses built-in function, when available.
+ * @example bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
+ */
+export function bytesToHex(bytes) {
+    abytes(bytes);
+    // @ts-ignore
+    if (hasHexBuiltin)
+        return bytes.toHex();
+    // pre-caching improves the speed 6x
+    let hex = '';
+    for (let i = 0; i < bytes.length; i++) {
+        hex += hexes[bytes[i]];
+    }
+    return hex;
 }
 // We use optimized technique to convert hex string to byte array
 const asciis = { _0: 48, _9: 57, A: 65, F: 70, a: 97, f: 102 };
@@ -56,11 +64,15 @@ function asciiToBase16(ch) {
     return;
 }
 /**
+ * Convert hex string to byte array. Uses built-in function, when available.
  * @example hexToBytes('cafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
  */
 export function hexToBytes(hex) {
     if (typeof hex !== 'string')
         throw new Error('hex string expected, got ' + typeof hex);
+    // @ts-ignore
+    if (hasHexBuiltin)
+        return Uint8Array.fromHex(hex);
     const hl = hex.length;
     const al = hl / 2;
     if (hl % 2)
@@ -185,6 +197,7 @@ export function aInRange(title, n, min, max) {
 /**
  * Calculates amount of bits in a bigint.
  * Same as `n.toString(2).length`
+ * TODO: merge with nLength in modular
  */
 export function bitLen(n) {
     let len;
@@ -210,9 +223,9 @@ export function bitSet(n, pos, value) {
  * Calculate mask for N bits. Not using ** operator with bigints because of old engines.
  * Same as BigInt(`0b${Array(i).fill('1').join('')}`)
  */
-export const bitMask = (n) => (_2n << BigInt(n - 1)) - _1n;
+export const bitMask = (n) => (_1n << BigInt(n)) - _1n;
 // DRBG
-const u8n = (data) => new Uint8Array(data); // creates Uint8Array
+const u8n = (len) => new Uint8Array(len); // creates Uint8Array
 const u8fr = (arr) => Uint8Array.from(arr); // another shortcut
 /**
  * Minimal HMAC-DRBG from NIST 800-90 for RFC6979 sigs.
@@ -238,7 +251,7 @@ export function createHmacDrbg(hashLen, qByteLen, hmacFn) {
         i = 0;
     };
     const h = (...b) => hmacFn(k, v, ...b); // hmac(k)(v, ...values)
-    const reseed = (seed = u8n()) => {
+    const reseed = (seed = u8n(0)) => {
         // HMAC-DRBG reseed() function. Steps D-G
         k = h(u8fr([0x00]), seed); // k = hmac(k || v || 0x00 || seed)
         v = h(); // v = hmac(k || v)

@@ -2,7 +2,7 @@
  * SelfSovereignIndividual prefs
  * ref: modules/libpref/init/StaticPrefList.yaml
  */
-export type MenuItem = ProtocolName | "";
+export type MenuItem = ProtocolName | "settings" | "";
 export interface ProtocolDefaultPrefs {
   enabled: boolean; // selfsovereignindividual.[protocolName].enabled
   usedTrustedSites: boolean; // selfsovereignindividual.[protocolName].trustedSites.enabled
@@ -22,6 +22,9 @@ export interface SelfSovereignIndividualPrefs {
     platform: string; // AppConstants.platform
     addons: { id: string; name: string; url: string }[]; // built-in addons list
   };
+  bitcoin: {
+    tabPin: string; // selfsovereignindividual.bitcoin.ui.tabPin
+  } & ProtocolDefaultPrefs;
   nostr: {
     tabPin: string; // selfsovereignindividual.nostr.ui.tabPin
     tabPinInNip07: string; // selfsovereignindividual.nostr.ui.nip07.tabPin
@@ -37,6 +40,10 @@ export interface SelfSovereignIndividualDefaultProps {
 }
 // States only in about:selfsovereignindividual
 export interface AboutSelfSovereignIndividualStates {
+  bitcoin: {
+    editingNo: number; // Key number being edited
+    editingUrl: string; // TrustedSite URL being edited
+  };
   nostr: {
     editingNo: number; // Key number being edited
     editingUrl: string; // TrustedSite URL being edited
@@ -54,27 +61,45 @@ type OnlyUsedNsICredentialInfo = Omit<
   Pick<nsICredentialMetaInfo, "guid" | "timeCreated">;
 
 // ViewEntity in about:selfsovereignindividual
-export type ProtocolName =
-  | "bitcoin"
-  | "lightning"
-  | "ecash"
-  | "nostr"
-  | "did:dht";
-export type CredentialName = "bip39" | "lnc" | "nsec";
-export type GenerationMethod = "bip340" | "import";
+export type ProtocolName = "bitcoin" | "nostr";
+export type CredentialName = "bip39" | "nsec";
+export type NallowedMethod =
+  | "read"
+  | "sign"
+  | "encrypt"
+  | "decrypt"
+  | "generate"
+  | "custom";
+export type EveryTimeAuthorizedMethod = NallowedMethod;
+export type DialogDisplayOption =
+  | "read-confirmOnly"
+  | "read-passwordOnly"
+  | "sign-confirmOnly"
+  | "sign-passwordOnly"
+  | "encrypt-confirmOnly"
+  | "encrypt-passwordOnly"
+  | "decrypt-confirmOnly"
+  | "decrypt-passwordOnly"
+  | "generate-confirmOnly"
+  | "generate-passwordOnly"
+  | "custom-confirmOnly"
+  | "custom-passwordOnly";
 interface TrustedSites {
   url: string;
   name: string;
   enabled: boolean;
-  permissions: { nallowedMethod: string[] };
+  permissions: { nallowedMethod: NallowedMethod[] };
 }
 interface DialogicAuthorizedSites {
   url: string;
   name: string;
   expirationTime: number;
-  permissions: Record<string, unknown>;
+  permissions: {
+    everyTimeAuthorizedMethods: EveryTimeAuthorizedMethod[];
+    skippedDialog: DialogDisplayOption[];
+  };
 }
-export interface Credential
+export interface BaseCredential
   extends Omit<
     OnlyUsedNsICredentialInfo,
     | "trustedSites"
@@ -89,23 +114,43 @@ export interface Credential
   dialogicAuthorizedSites: DialogicAuthorizedSites[];
   properties: {
     displayName: string;
-    generationMethod: GenerationMethod;
     memo?: string;
+    generationFrom: string; // generated `location.href.origin`
+    sharing: {
+      url: string;
+      guid: string;
+      identifier: string; // xpub
+      sender: string; // npub
+      receiver: string; // npub
+      date: number;
+    }[];
   };
   guid?: string;
   timeCreated?: number;
 }
+
+export interface BitcoinCredential extends BaseCredential {
+  properties: {
+    passphrase: string;
+    xprv: string;
+    generationMethod: "new" | "import";
+  } & BaseCredential["properties"];
+}
+
 export interface DialogicAuthorizedSitesForNostr
   extends DialogicAuthorizedSites {
-  permissions: {
-    everyTimeAuthorizedMethods: string[];
-    skippedDialog: string[];
+  permissions: DialogicAuthorizedSites["permissions"] & {
     excludedKinds: string[];
   };
 }
-export interface NostrCredential extends Credential {
+export interface NostrCredential extends BaseCredential {
   dialogicAuthorizedSites: DialogicAuthorizedSitesForNostr[];
+  properties: {
+    generationMethod: "bip340" | "import";
+  } & BaseCredential["properties"];
 }
+
+export type Credential = BitcoinCredential | NostrCredential;
 
 // Pass object type through JSON.stringify for IPC & JSONstorage
 export interface CredentialForPayload extends OnlyUsedNsICredentialInfo {

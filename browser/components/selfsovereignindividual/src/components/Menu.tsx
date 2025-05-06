@@ -1,8 +1,7 @@
 import React, { useCallback } from "react";
-import { VStack, Button, HStack } from "@chakra-ui/react";
+import { Button, Divider, Flex, HStack, VStack } from "@chakra-ui/react";
 import { MenuItem, ProtocolName } from "../custom.type";
-import BitcoinIcon from "./shared/Logo";
-import { GiBirdTwitter } from "./shared/react-icons/Icons";
+import { BitcoinLogo, NostrLogo } from "./shared/Logo";
 import TabPin from "./shared/TabPin";
 
 interface Props {
@@ -16,15 +15,13 @@ function Menu(props: Props) {
 
   const buildMenu = useCallback(() => {
     const list: { name: ProtocolName; icon: JSX.Element }[] = [
-      { name: "bitcoin", icon: <BitcoinIcon /> },
-      { name: "nostr", icon: <GiBirdTwitter /> },
-      // { name: 'lightning', icon: <MdElectricBolt />},
-      // { name: 'ecash', icon: null},
+      { name: "bitcoin", icon: <BitcoinLogo /> },
+      { name: "nostr", icon: <NostrLogo /> },
     ];
     return (
       <>
         {list.map((menu, index) => (
-          <HStack key={index}>
+          <HStack key={index} width={"150px"}>
             <Button
               variant={selectedMenu === menu.name ? "solid" : "transparent"}
               leftIcon={menu.icon}
@@ -32,6 +29,7 @@ function Menu(props: Props) {
                 e.preventDefault();
                 setSelectedMenu(menu.name);
               }}
+              size={"lg"}
             >
               {menu.name.charAt(0).toUpperCase() + menu.name.slice(1)}
             </Button>
@@ -43,7 +41,38 @@ function Menu(props: Props) {
     );
   }, [selectedMenu, menuPin]);
 
-  return <VStack>{buildMenu()}</VStack>;
+  return (
+    <Flex
+      direction={"column"}
+      width={"200px"}
+      height={"calc(100vh - 40px)"}
+      justify={"space-between"}
+      aria-label="Main Navigation"
+      as="nav"
+      pos={"sticky"}
+      top={0}
+      flexShrink={0}
+      p={10}
+      overflowY={"auto"}
+    >
+      <VStack gap={2}>{buildMenu()}</VStack>
+      <VStack>
+        <Divider />
+        <HStack>
+          <Button
+            variant={selectedMenu === "settings" ? "solid" : "transparent"}
+            onClick={e => {
+              e.preventDefault();
+              setSelectedMenu("settings");
+            }}
+            size={"lg"}
+          >
+            Settings
+          </Button>
+        </HStack>
+      </VStack>
+    </Flex>
+  );
 }
 
 export default Menu;

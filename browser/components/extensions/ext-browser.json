@@ -156,6 +156,13 @@
     "scopes": ["addon_parent"],
     "paths": [["ssi"]]
   },
+  "ssi.bitcoin": {
+    "url": "chrome://browser/content/parent/ext-ssi.bitcoin.js",
+    "schema": "chrome://browser/content/schemas/ssi.bitcoin.json",
+    "scopes": ["addon_parent"],
+    "permissions": ["ssi"],
+    "paths": [["ssi", "bitcoin"]]
+  },
   "ssi.nostr": {
     "url": "chrome://browser/content/parent/ext-ssi.nostr.js",
     "schema": "chrome://browser/content/schemas/ssi.nostr.json",

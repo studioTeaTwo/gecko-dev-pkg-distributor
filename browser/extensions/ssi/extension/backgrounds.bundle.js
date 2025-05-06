@@ -2,62 +2,6 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 557:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-/**
- * Internal assertion helpers.
- * @module
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.anumber = anumber;
-exports.abytes = abytes;
-exports.ahash = ahash;
-exports.aexists = aexists;
-exports.aoutput = aoutput;
-/** Asserts something is positive integer. */
-function anumber(n) {
-    if (!Number.isSafeInteger(n) || n < 0)
-        throw new Error('positive integer expected, got ' + n);
-}
-/** Is number an Uint8Array? Copied from utils for perf. */
-function isBytes(a) {
-    return a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === 'Uint8Array');
-}
-/** Asserts something is Uint8Array. */
-function abytes(b, ...lengths) {
-    if (!isBytes(b))
-        throw new Error('Uint8Array expected');
-    if (lengths.length > 0 && !lengths.includes(b.length))
-        throw new Error('Uint8Array expected of length ' + lengths + ', got length=' + b.length);
-}
-/** Asserts something is hash */
-function ahash(h) {
-    if (typeof h !== 'function' || typeof h.create !== 'function')
-        throw new Error('Hash should be wrapped by utils.wrapConstructor');
-    anumber(h.outputLen);
-    anumber(h.blockLen);
-}
-/** Asserts a hash instance has not been destroyed / finished */
-function aexists(instance, checkFinished = true) {
-    if (instance.destroyed)
-        throw new Error('Hash instance has been destroyed');
-    if (checkFinished && instance.finished)
-        throw new Error('Hash#digest() has already been called');
-}
-/** Asserts output is properly-sized byte array */
-function aoutput(out, instance) {
-    abytes(out);
-    const min = instance.outputLen;
-    if (out.length < min) {
-        throw new Error('digestInto() expects output buffer of length at least ' + min);
-    }
-}
-//# sourceMappingURL=_assert.js.map
-
-/***/ }),
-
 /***/ 145:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -79,10 +23,16 @@ exports.crypto = typeof globalThis === 'object' && 'crypto' in globalThis ? glob
  */
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Hash = exports.nextTick = exports.byteSwapIfBE = exports.isLE = void 0;
+exports.wrapXOFConstructorWithOpts = exports.wrapConstructorWithOpts = exports.wrapConstructor = exports.Hash = exports.nextTick = exports.swap32IfBE = exports.byteSwapIfBE = exports.swap8IfBE = exports.isLE = void 0;
 exports.isBytes = isBytes;
+exports.anumber = anumber;
+exports.abytes = abytes;
+exports.ahash = ahash;
+exports.aexists = aexists;
+exports.aoutput = aoutput;
 exports.u8 = u8;
 exports.u32 = u32;
+exports.clean = clean;
 exports.createView = createView;
 exports.rotr = rotr;
 exports.rotl = rotl;
@@ -92,12 +42,14 @@ exports.bytesToHex = bytesToHex;
 exports.hexToBytes = hexToBytes;
 exports.asyncLoop = asyncLoop;
 exports.utf8ToBytes = utf8ToBytes;
+exports.bytesToUtf8 = bytesToUtf8;
 exports.toBytes = toBytes;
+exports.kdfInputToBytes = kdfInputToBytes;
 exports.concatBytes = concatBytes;
 exports.checkOpts = checkOpts;
-exports.wrapConstructor = wrapConstructor;
-exports.wrapConstructorWithOpts = wrapConstructorWithOpts;
-exports.wrapXOFConstructorWithOpts = wrapXOFConstructorWithOpts;
+exports.createHasher = createHasher;
+exports.createOptHasher = createOptHasher;
+exports.createXOFer = createXOFer;
 exports.randomBytes = randomBytes;
 // We use WebCrypto aka globalThis.crypto, which exists in browsers and node.js 16+.
 // node.js versions earlier than v19 don't declare it in global scope.
@@ -106,20 +58,59 @@ exports.randomBytes = randomBytes;
 // Makes the utils un-importable in browsers without a bundler.
 // Once node.js 18 is deprecated (2025-04-30), we can just drop the import.
 const crypto_1 = __webpack_require__(145);
-const _assert_js_1 = __webpack_require__(557);
-// export { isBytes } from './_assert.js';
-// We can't reuse isBytes from _assert, because somehow this causes huge perf issues
+/** Checks if something is Uint8Array. Be careful: nodejs Buffer will return true. */
 function isBytes(a) {
     return a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === 'Uint8Array');
 }
-// Cast array to different type
+/** Asserts something is positive integer. */
+function anumber(n) {
+    if (!Number.isSafeInteger(n) || n < 0)
+        throw new Error('positive integer expected, got ' + n);
+}
+/** Asserts something is Uint8Array. */
+function abytes(b, ...lengths) {
+    if (!isBytes(b))
+        throw new Error('Uint8Array expected');
+    if (lengths.length > 0 && !lengths.includes(b.length))
+        throw new Error('Uint8Array expected of length ' + lengths + ', got length=' + b.length);
+}
+/** Asserts something is hash */
+function ahash(h) {
+    if (typeof h !== 'function' || typeof h.create !== 'function')
+        throw new Error('Hash should be wrapped by utils.createHasher');
+    anumber(h.outputLen);
+    anumber(h.blockLen);
+}
+/** Asserts a hash instance has not been destroyed / finished */
+function aexists(instance, checkFinished = true) {
+    if (instance.destroyed)
+        throw new Error('Hash instance has been destroyed');
+    if (checkFinished && instance.finished)
+        throw new Error('Hash#digest() has already been called');
+}
+/** Asserts output is properly-sized byte array */
+function aoutput(out, instance) {
+    abytes(out);
+    const min = instance.outputLen;
+    if (out.length < min) {
+        throw new Error('digestInto() expects output buffer of length at least ' + min);
+    }
+}
+/** Cast u8 / u16 / u32 to u8. */
 function u8(arr) {
     return new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
 }
+/** Cast u8 / u16 / u32 to u32. */
 function u32(arr) {
     return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 }
-// Cast array to view
+/** Zeroize a byte array. Warning: JS provides no guarantees. */
+function clean(...arrays) {
+    for (let i = 0; i < arrays.length; i++) {
+        arrays[i].fill(0);
+    }
+}
+/** Create DataView of an array for easy byte-level manipulation. */
 function createView(arr) {
     return new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
 }
@@ -133,7 +124,7 @@ function rotl(word, shift) {
 }
 /** Is current platform little-endian? Most are. Big-Endian platform: IBM */
 exports.isLE = (() => new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44)();
-// The byte swap operation for uint32
+/** The byte swap operation for uint32 */
 function byteSwap(word) {
     return (((word << 24) & 0xff000000) |
         ((word << 8) & 0xff0000) |
@@ -141,23 +132,36 @@ function byteSwap(word) {
         ((word >>> 24) & 0xff));
 }
 /** Conditionally byte swap if on a big-endian platform */
-exports.byteSwapIfBE = exports.isLE
+exports.swap8IfBE = exports.isLE
     ? (n) => n
     : (n) => byteSwap(n);
+/** @deprecated */
+exports.byteSwapIfBE = exports.swap8IfBE;
 /** In place byte swap for Uint32Array */
 function byteSwap32(arr) {
     for (let i = 0; i < arr.length; i++) {
         arr[i] = byteSwap(arr[i]);
     }
+    return arr;
 }
+exports.swap32IfBE = exports.isLE
+    ? (u) => u
+    : byteSwap32;
+// Built-in hex conversion https://caniuse.com/mdn-javascript_builtins_uint8array_fromhex
+const hasHexBuiltin = /* @__PURE__ */ (() => 
+// @ts-ignore
+typeof Uint8Array.from([]).toHex === 'function' && typeof Uint8Array.fromHex === 'function')();
 // Array where index 0xf0 (240) is mapped to string 'f0'
 const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
 /**
- * Convert byte array to hex string.
+ * Convert byte array to hex string. Uses built-in function, when available.
  * @example bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
  */
 function bytesToHex(bytes) {
-    (0, _assert_js_1.abytes)(bytes);
+    abytes(bytes);
+    // @ts-ignore
+    if (hasHexBuiltin)
+        return bytes.toHex();
     // pre-caching improves the speed 6x
     let hex = '';
     for (let i = 0; i < bytes.length; i++) {
@@ -177,12 +181,15 @@ function asciiToBase16(ch) {
     return;
 }
 /**
- * Convert hex string to byte array.
+ * Convert hex string to byte array. Uses built-in function, when available.
  * @example hexToBytes('cafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
  */
 function hexToBytes(hex) {
     if (typeof hex !== 'string')
         throw new Error('hex string expected, got ' + typeof hex);
+    // @ts-ignore
+    if (hasHexBuiltin)
+        return Uint8Array.fromHex(hex);
     const hl = hex.length;
     const al = hl / 2;
     if (hl % 2)
@@ -220,13 +227,20 @@ async function asyncLoop(iters, tick, cb) {
     }
 }
 /**
- * Convert JS string to byte array.
- * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
+ * Converts string to bytes using UTF8 encoding.
+ * @example utf8ToBytes('abc') // Uint8Array.from([97, 98, 99])
  */
 function utf8ToBytes(str) {
     if (typeof str !== 'string')
-        throw new Error('utf8ToBytes expected string, got ' + typeof str);
+        throw new Error('string expected');
     return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
+}
+/**
+ * Converts bytes to string using UTF8 encoding.
+ * @example bytesToUtf8(Uint8Array.from([97, 98, 99])) // 'abc'
+ */
+function bytesToUtf8(bytes) {
+    return new TextDecoder().decode(bytes);
 }
 /**
  * Normalizes (non-hex) string or Uint8Array to Uint8Array.
@@ -236,17 +250,25 @@ function utf8ToBytes(str) {
 function toBytes(data) {
     if (typeof data === 'string')
         data = utf8ToBytes(data);
-    (0, _assert_js_1.abytes)(data);
+    abytes(data);
     return data;
 }
 /**
- * Copies several Uint8Arrays into one.
+ * Helper for KDFs: consumes uint8array or string.
+ * When string is passed, does utf8 decoding, using TextDecoder.
  */
+function kdfInputToBytes(data) {
+    if (typeof data === 'string')
+        data = utf8ToBytes(data);
+    abytes(data);
+    return data;
+}
+/** Copies several Uint8Arrays into one. */
 function concatBytes(...arrays) {
     let sum = 0;
     for (let i = 0; i < arrays.length; i++) {
         const a = arrays[i];
-        (0, _assert_js_1.abytes)(a);
+        abytes(a);
         sum += a.length;
     }
     const res = new Uint8Array(sum);
@@ -257,22 +279,18 @@ function concatBytes(...arrays) {
     }
     return res;
 }
-/** For runtime check if class implements interface */
-class Hash {
-    // Safe version that clones internal state
-    clone() {
-        return this._cloneInto();
-    }
-}
-exports.Hash = Hash;
 function checkOpts(defaults, opts) {
     if (opts !== undefined && {}.toString.call(opts) !== '[object Object]')
-        throw new Error('Options should be object or undefined');
+        throw new Error('options should be object or undefined');
     const merged = Object.assign(defaults, opts);
     return merged;
 }
+/** For runtime check if class implements interface */
+class Hash {
+}
+exports.Hash = Hash;
 /** Wraps hash function, creating an interface on top of it */
-function wrapConstructor(hashCons) {
+function createHasher(hashCons) {
     const hashC = (msg) => hashCons().update(toBytes(msg)).digest();
     const tmp = hashCons();
     hashC.outputLen = tmp.outputLen;
@@ -280,7 +298,7 @@ function wrapConstructor(hashCons) {
     hashC.create = () => hashCons();
     return hashC;
 }
-function wrapConstructorWithOpts(hashCons) {
+function createOptHasher(hashCons) {
     const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
     const tmp = hashCons({});
     hashC.outputLen = tmp.outputLen;
@@ -288,7 +306,7 @@ function wrapConstructorWithOpts(hashCons) {
     hashC.create = (opts) => hashCons(opts);
     return hashC;
 }
-function wrapXOFConstructorWithOpts(hashCons) {
+function createXOFer(hashCons) {
     const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
     const tmp = hashCons({});
     hashC.outputLen = tmp.outputLen;
@@ -296,6 +314,9 @@ function wrapXOFConstructorWithOpts(hashCons) {
     hashC.create = (opts) => hashCons(opts);
     return hashC;
 }
+exports.wrapConstructor = createHasher;
+exports.wrapConstructorWithOpts = createOptHasher;
+exports.wrapXOFConstructorWithOpts = createXOFer;
 /** Cryptographically secure PRNG. Uses internal OS-level `crypto.getRandomValues`. */
 function randomBytes(bytesLength = 32) {
     if (crypto_1.crypto && typeof crypto_1.crypto.getRandomValues === 'function') {
@@ -303,7 +324,7 @@ function randomBytes(bytesLength = 32) {
     }
     // Legacy Node.js compatibility
     if (crypto_1.crypto && typeof crypto_1.crypto.randomBytes === 'function') {
-        return crypto_1.crypto.randomBytes(bytesLength);
+        return Uint8Array.from(crypto_1.crypto.randomBytes(bytesLength));
     }
     throw new Error('crypto.getRandomValues must be defined');
 }
@@ -862,6 +883,128 @@ exports.bytes = exports.stringToBytes;
 
 /***/ }),
 
+/***/ 772:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.init = exports.doBitcoinAction = void 0;
+const logger_1 = __webpack_require__(874);
+const state_1 = __webpack_require__(975);
+const constants_1 = __webpack_require__(709);
+const utils_1 = __webpack_require__(135);
+const MapBetweenPrefAndState = {
+    enabled: "enabled",
+};
+const DialogMessage = {
+    "bitcoin/generate": "App is requesting you.",
+    "bitcoin/shareWith": 'App is requesting you to share your "SECRET".',
+};
+// Proceed calls from contents
+const doBitcoinAction = async (tabId, origin, action, args) => {
+    if (!state_1.state.bitcoin.prefs.enabled) {
+        throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("bitcoin"));
+    }
+    if (!(0, utils_1.supported)(origin)) {
+        throw new Error(constants_1.ERR_MSG_NOT_SUPPORTED);
+    }
+    switch (action) {
+        case "bitcoin/generate": {
+            if (args.type == null ||
+                !["mnemonic", "derivation"].includes(args.type)) {
+                throw new Error(`Invalid type: ${args.type}`);
+            }
+            const identifier = await browser.ssi.bitcoin.generate(tabId, args, {
+                caption: DialogMessage[action],
+                submission: "",
+            });
+            if (!identifier) {
+                throw new Error("Failed to generate");
+            }
+            return identifier;
+        }
+        case "bitcoin/shareWith": {
+            if (args.pubkey == null || typeof args.pubkey !== "string") {
+                throw new Error("Invalid partner's pubkey");
+            }
+            if (args.type == null ||
+                !["mnemonic", "derivation", "xprv"].includes(args.type)) {
+                throw new Error(`Invalid type: ${args.type}`);
+            }
+            const pubkey = args.pubkey;
+            delete args.pubkey; // Delete to pass schema check of built-in API
+            const encryptedSecret = await browser.ssi.bitcoin.shareWith(tabId, pubkey, args, {
+                caption: DialogMessage[action],
+                submission: "Once you share, you can't take it back. Please check carefully!",
+            });
+            if (!encryptedSecret) {
+                throw new Error("Failed to shareWith");
+            }
+            return encryptedSecret;
+        }
+        default:
+            throw new Error("Not implemented");
+    }
+};
+exports.doBitcoinAction = doBitcoinAction;
+async function init() {
+    (0, logger_1.log)("bitcoin start...");
+    state_1.state.bitcoin.credentialName = "bip39";
+    // Get setting values from the prefs.
+    const results = await browser.ssi.bitcoin.getPrefs();
+    const prefs = {};
+    Object.entries(MapBetweenPrefAndState).map(([_state, _pref]) => {
+        prefs[_state] =
+            results && results[_pref] ? results[_pref] : state_1.state.bitcoin.prefs[_pref];
+    });
+    state_1.state.bitcoin = {
+        ...state_1.state.bitcoin,
+        prefs: prefs,
+    };
+    (0, logger_1.log)("bitcoin inited in background", state_1.state.bitcoin);
+}
+exports.init = init;
+// The message listener to listen to experimental-apis calls
+// After, those calls get passed on to the content scripts.
+const onPrimaryChangedCallback = async () => {
+    const credentials = await browser.ssi.searchCredentials(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+    {
+        protocolName: "bitcoin",
+        credentialName: state_1.state.bitcoin.credentialName,
+        primary: true,
+    });
+    (0, logger_1.log)("primary changed!", credentials);
+};
+browser.ssi.bitcoin.onPrimaryChanged.addListener(onPrimaryChangedCallback);
+const onPrefChangedCallback = async (prefKey) => {
+    // Update new value
+    const results = await browser.ssi.bitcoin.getPrefs();
+    const stateName = MapBetweenPrefAndState[prefKey];
+    const newVal = results[stateName];
+    state_1.state.bitcoin.prefs[stateName] = newVal;
+    (0, logger_1.log)("pref changed!", prefKey, newVal, state_1.state.bitcoin);
+    // Send the message to the contents
+    // AccountChanged should only be held in the background.
+    if (["enabled"].includes(prefKey)) {
+        const tabs = await browser.tabs.query({
+            status: "complete",
+            discarded: false,
+        });
+        for (const tab of tabs) {
+            (0, logger_1.log)("send to tab", tab);
+            (0, utils_1.sendTab)(tab, "bitcoin/providerChanged", state_1.state.bitcoin.prefs[stateName]);
+        }
+    }
+};
+browser.ssi.bitcoin.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("enabled"));
+/**
+ * Internal Utils
+ *
+ */
+
+
+/***/ }),
+
 /***/ 684:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -872,9 +1015,8 @@ const utils_1 = __webpack_require__(175);
 const base_1 = __webpack_require__(203);
 const logger_1 = __webpack_require__(874);
 const state_1 = __webpack_require__(975);
-// NOTE(ssb): Currently firefox does not support externally_connectable.
-// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
-const SafeProtocols = ["http", "https", "moz-extension"];
+const constants_1 = __webpack_require__(709);
+const utils_2 = __webpack_require__(135);
 const MapBetweenPrefAndState = {
     enabled: "enabled",
 };
@@ -886,25 +1028,23 @@ const DialogMessage = {
     "nostr/nip44/encrypt": "App is requesting you.",
     "nostr/nip44/decrypt": "App is requesting you.",
 };
-const ERR_MSG_NOT_ENABLED = "window.ssi.nostr is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.";
-const ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${SafeProtocols.join(",")}.`;
 // Proceed calls from contents
 const doNostrAction = async (tabId, origin, action, args) => {
     if (!state_1.state.nostr.prefs.enabled) {
-        throw new Error(ERR_MSG_NOT_ENABLED);
+        throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("nostr"));
     }
-    if (!supported(origin)) {
-        throw new Error(ERR_MSG_NOT_SUPPORTED);
+    if (!(0, utils_2.supported)(origin)) {
+        throw new Error(constants_1.ERR_MSG_NOT_SUPPORTED);
     }
     switch (action) {
         case "nostr/getPublicKey": {
-            const credentials = await browser.ssi.searchCredentialsWithoutSecret(tabId, {
+            const credentials = await browser.ssi.searchCredentials(tabId, {
                 protocolName: "nostr",
                 credentialName: state_1.state.nostr.credentialName,
                 primary: true,
             }, { caption: DialogMessage[action], submission: "" });
             if (credentials.length === 0) {
-                throw new Error(ERR_MSG_NOT_ENABLED);
+                throw new Error((0, constants_1.ERR_MSG_NOT_ENABLED)("nostr"));
             }
             state_1.state.nostr = {
                 ...state_1.state.nostr,
@@ -977,7 +1117,7 @@ const doNostrAction = async (tabId, origin, action, args) => {
 };
 exports.doNostrAction = doNostrAction;
 async function init() {
-    (0, logger_1.log)("experimental-api start...");
+    (0, logger_1.log)("nostr start...");
     state_1.state.nostr.credentialName = "nsec";
     // Get setting values from the prefs.
     const results = await browser.ssi.nostr.getPrefs();
@@ -996,7 +1136,7 @@ exports.init = init;
 // The message listener to listen to experimental-apis calls
 // After, those calls get passed on to the content scripts.
 const onPrimaryChangedCallback = async () => {
-    const credentials = await browser.ssi.searchCredentialsWithoutSecret(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
+    const credentials = await browser.ssi.searchCredentials(-1, // FIXME(ssb): Tab context doesn't exist. See also https://gitlab.com/studioteatwo/gecko-dev-for-ssi/-/issues/2
     {
         protocolName: "nostr",
         credentialName: state_1.state.nostr.credentialName,
@@ -1020,7 +1160,7 @@ const onPrimaryChangedCallback = async () => {
     const pubkey = decodeNpub(state_1.state.nostr.npub);
     for (const tab of tabs) {
         (0, logger_1.log)("send to tab", tab);
-        sendTab(tab, "nostr/accountChanged", pubkey);
+        (0, utils_2.sendTab)(tab, "nostr/accountChanged", pubkey);
     }
 };
 browser.ssi.nostr.onPrimaryChanged.addListener(onPrimaryChangedCallback);
@@ -1040,7 +1180,7 @@ const onPrefChangedCallback = async (prefKey) => {
         });
         for (const tab of tabs) {
             (0, logger_1.log)("send to tab", tab);
-            sendTab(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
+            (0, utils_2.sendTab)(tab, "nostr/providerChanged", state_1.state.nostr.prefs[stateName]);
         }
     }
 };
@@ -1049,21 +1189,6 @@ browser.ssi.nostr.onPrefEnabledChanged.addListener(() => onPrefChangedCallback("
  * Internal Utils
  *
  */
-async function sendTab(tab, action, data) {
-    if (!supported(tab.url)) {
-        // browser origin event is not sent anything
-        return;
-    }
-    browser.tabs
-        .sendMessage(tab.id, {
-        action,
-        args: data,
-    })
-        .catch();
-}
-function supported(tabUrl) {
-    return SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
-}
 function decodeNpub(npub) {
     const Bech32MaxSize = 5000;
     const { prefix, words } = base_1.bech32.decode(npub, Bech32MaxSize);
@@ -1085,14 +1210,65 @@ exports.state = void 0;
 // NOTE(ssb): We can hold multiple selfsovereignidentities here, just within background.
 // But don't expose them to the contents, so that Peter Todd is not suspected of being Satoshi Nakamoto.
 exports.state = {
+    bitcoin: {
+        credentialName: "",
+        xpub: "",
+        prefs: {
+            enabled: false,
+        },
+    },
     nostr: {
         credentialName: "",
         npub: "",
         prefs: {
-            enabled: true,
+            enabled: false,
         },
     },
 };
+
+
+/***/ }),
+
+/***/ 135:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.supported = exports.sendTab = void 0;
+const constants_1 = __webpack_require__(709);
+async function sendTab(tab, action, data) {
+    if (!supported(tab.url)) {
+        // browser origin event is not sent anything
+        return;
+    }
+    browser.tabs
+        .sendMessage(tab.id, {
+        action,
+        args: data,
+    })
+        .catch();
+}
+exports.sendTab = sendTab;
+function supported(tabUrl) {
+    return constants_1.SafeProtocols.some(protocol => tabUrl.startsWith(protocol));
+}
+exports.supported = supported;
+
+
+/***/ }),
+
+/***/ 709:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ERR_MSG_NOT_SUPPORTED = exports.ERR_MSG_NOT_ENABLED = exports.SafeProtocols = void 0;
+// NOTE(ssb): Currently firefox does not support externally_connectable.
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/externally_connectable
+exports.SafeProtocols = ["http", "https", "moz-extension"];
+const ERR_MSG_NOT_ENABLED = (protocolName) => `window.ssi.${protocolName} is not enabled or no key is registered. The user can confirm and edit it in 'about:selfsovereignindividual'.`;
+exports.ERR_MSG_NOT_ENABLED = ERR_MSG_NOT_ENABLED;
+exports.ERR_MSG_NOT_SUPPORTED = `This protocol is not spported. Currently, only supports ${exports.SafeProtocols.join(",")}.`;
 
 
 /***/ }),
@@ -1106,7 +1282,7 @@ exports.log = void 0;
 // NOTE(ssb): avoid placing on inpages and contents exposed in tabs as much as possible
 // TODO(ssb): review those on inpages and contents
 function log(...args) {
-    console.info("ssb:", args);
+    window.console.info("ssb:", args);
 }
 exports.log = log;
 
@@ -1151,18 +1327,24 @@ var __webpack_unused_export__;
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 __webpack_unused_export__ = ({ value: true });
 const logger_1 = __webpack_require__(874);
+const bitcoin_1 = __webpack_require__(772);
 const nostr_1 = __webpack_require__(684);
+__webpack_require__(772);
 __webpack_require__(684);
 (0, logger_1.log)("background-script working");
 // The message listener to listen to content calls
 // After, return the result to the contents.
 browser.runtime.onMessage.addListener((message, sender) => {
     (0, logger_1.log)("background received from content", message, sender);
-    if (message.action.includes("nostr/")) {
+    if (message.action.includes("bitcoin/")) {
+        return (0, bitcoin_1.doBitcoinAction)(sender.tab.id, message.origin, message.action, message.args);
+    }
+    else if (message.action.includes("nostr/")) {
         return (0, nostr_1.doNostrAction)(sender.tab.id, message.origin, message.action, message.args);
     }
     return false;
 });
+(0, bitcoin_1.init)();
 (0, nostr_1.init)();
 
 })();

@@ -16,7 +16,7 @@ import {
   Icon,
   HStack,
 } from "@chakra-ui/react";
-import { DefaultExcludedKindList } from "../nostr/contants";
+import { DefaultExcludedKindList } from "../nostr/constants";
 import { MdHelp } from "./react-icons/Icons";
 import { ProtocolName } from "src/custom.type";
 
@@ -167,8 +167,8 @@ export function ExplainDialogDisplayOption(props: {
             dialog, by the OS account password or the Firefox primary password,
             is there to prevent someone other than you from authorizing.
             <br />
-            The expiration is counting up in the background and dialog will
-            reappear once it has expired.
+            The authorization will have an expiration date, and when it expires
+            dialogs will reappear again.
           </Text>
           <Text size="sm">
             - Checking &ldquo;[method]-confirmOnly&ldquo; is skipping the

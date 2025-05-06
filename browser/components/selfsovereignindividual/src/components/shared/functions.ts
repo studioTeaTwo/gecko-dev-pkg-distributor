@@ -1,4 +1,4 @@
-import { type Credential } from "../../custom.type";
+import { type BaseCredential } from "../../custom.type";
 import { dispatchEvents } from "../../hooks/useChildActorEvent";
 
 const { modifyCredentialToStore, onPrimaryChanged } = dispatchEvents;
@@ -6,7 +6,7 @@ const { modifyCredentialToStore, onPrimaryChanged } = dispatchEvents;
 export function changePrimary(
   guid: string,
   checked: boolean,
-  keys: Credential[]
+  keys: BaseCredential[]
 ) {
   let newPrimaryGuid = "";
 

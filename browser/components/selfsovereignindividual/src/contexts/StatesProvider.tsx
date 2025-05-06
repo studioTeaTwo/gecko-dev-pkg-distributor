@@ -16,6 +16,10 @@ export const StateContext = React.createContext<{
 }>(null);
 
 const DefaultState = {
+  bitcoin: {
+    editingNo: -1,
+    editingUrl: "",
+  },
   nostr: {
     editingNo: -1,
     editingUrl: "",
