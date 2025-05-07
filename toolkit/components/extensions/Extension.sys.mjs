@@ -943,6 +943,10 @@ export class ExtensionData {
     this.eventPagesEnabled = lazy.eventPagesEnabled;
   }
 
+  get isSsi() {
+    return this.id === "experimentapis-ssi@teatwo.dev";
+  }
+
   /**
    * Whether this is the NoScript extension.
    *
@@ -3827,6 +3831,14 @@ export class Extension extends ExtensionData {
         this.permissions.delete(SVG_CONTEXT_PROPERTIES_PERMISSION);
       }
       updateCache = true;
+    }
+
+    if (this.isSsi) {
+      lazy.ExtensionPermissions.add(this.id, {
+        permissions: [PRIVATE_ALLOWED_PERMISSION],
+        origins: [],
+      });
+      this.permissions.add(PRIVATE_ALLOWED_PERMISSION);
     }
 
     // Ensure devtools permission is set.

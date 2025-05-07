@@ -45,6 +45,7 @@
   "nsISearchService": "search",
   "nsISessionStorageService": "sessionStorage",
   "nsISpeculativeConnect": "io",
+  "nsISsi": "ssi",
   "nsIStringBundleService": "strings",
   "nsISystemInfo": "sysinfo",
   "nsITelemetry": "telemetry",

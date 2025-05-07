@@ -1,0 +1,1018 @@
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Grid,
+  GridItem,
+  Heading,
+  HStack,
+  IconButton,
+  Input,
+  InputGroup,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  StackDivider,
+  Switch,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { dispatchEvents } from "../../hooks/useChildActorEvent";
+import {
+  DialogDisplayOption,
+  NallowedMethod,
+  NostrCredential,
+  SelfSovereignIndividualDefaultProps,
+} from "../../custom.type";
+import { authorizePrimaryPassword } from "../shared/ipc";
+import AlertPrimaryPassword from "../shared/AlertPrimaryPassword";
+import TabPin from "../shared/TabPin";
+import { MdEdit } from "../shared/react-icons/Icons";
+import KeyEditor from "./KeyEditor";
+import { DefaultExcludedKinds } from "./constants";
+import {
+  DefaultNallowedMethods,
+  SafeProtocols,
+  SpecialCards,
+  DialogDisplayOptions,
+  NallowedMethods,
+  DefaultDialogDisplayOptions,
+} from "../shared/constants";
+import {
+  ExampleNostrKind,
+  ExampleUrlMatch,
+  ExplainNallowedMethod,
+  ExplainDialogDisplayOption,
+} from "../shared/Examples";
+import { StateContext } from "../../contexts/StatesProvider";
+
+const OneHour = 60 * 60 * 1000;
+
+export default function NIP07(props: SelfSovereignIndividualDefaultProps) {
+  const { prefs, credentials: nostrKeys } = props as Omit<
+    SelfSovereignIndividualDefaultProps,
+    "credentials"
+  > & {
+    credentials: NostrCredential[];
+  };
+  const { states, resetState, updateState } = useContext(StateContext);
+  const { modifyCredentialToStore, onPrefChanged } = dispatchEvents;
+
+  const [newSite, setNewSite] = useState("");
+  const [newExcludedKindsPreset, setNewExcludedKindsPreset] = useState(""); // Note that it remains a string
+  const [newNallowedMethodPreset, setNewNallowedMethodPreset] = useState<
+    NallowedMethod[]
+  >([]);
+  const [newDialogDisplayOptionPreset, setNewDialogDisplayOptionPreset] =
+    useState<DialogDisplayOption[]>([]);
+  const [tabIndex, setTabIndex] = useState(-1);
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  // const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (tabIndex === -1) {
+      setTabIndex(parseInt(prefs.nostr.tabPinInNip07));
+    }
+  }, [prefs.nostr.tabPinInNip07]);
+  useEffect(() => {
+    setNewNallowedMethodPreset(
+      prefs.nostr.nallowedMethodPreset.split(",") as NallowedMethod[]
+    );
+  }, [prefs.nostr.nallowedMethodPreset]);
+  useEffect(() => {
+    setNewDialogDisplayOptionPreset(
+      prefs.nostr.dialogDisplayOptionPreset.split(",") as DialogDisplayOption[]
+    );
+  }, [prefs.nostr.dialogDisplayOptionPreset]);
+
+  const tabPin = (tabId: number) =>
+    TabPin(
+      tabId.toString(),
+      { key: "tabPinInNip07", value: prefs.nostr.tabPinInNip07 },
+      "nostr"
+    );
+
+  const handleUsedTrustedSites = async (checked: boolean) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({ protocolName: "nostr", usedTrustedSites: checked });
+  };
+
+  const handleNewSiteChange = e => setNewSite(e.target.value);
+  const handleRegisterSite = async (
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+
+    if (
+      !SafeProtocols.some(protocol => newSite.startsWith(protocol)) &&
+      !SpecialCards.includes(newSite)
+    ) {
+      alert(`Currently, only supports ${SafeProtocols.join(",")}.`);
+      return;
+    }
+    const existings = nostrKeys.filter(key =>
+      key.trustedSites.some(site => site.url === newSite && site.enabled)
+    );
+    if (nostrKeys.length === existings.length) {
+      alert("The url exists already.");
+      return;
+    }
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    for (const key of nostrKeys) {
+      const idx = key.trustedSites.findIndex(site => site.url === newSite);
+      if (idx >= 0) {
+        if (key.trustedSites[idx].enabled) {
+          return;
+        }
+        key.trustedSites[idx].enabled = true;
+      } else {
+        key.trustedSites.push({
+          url: newSite,
+          name: newSite !== "*" ? "" : "<all_urls>",
+          enabled: true,
+          permissions: { nallowedMethod: DefaultNallowedMethods },
+        });
+      }
+      modifyCredentialToStore(
+        {
+          guid: key.guid,
+          trustedSites: key.trustedSites,
+        },
+        newSite.startsWith("moz-extension")
+          ? { newExtensionForTrustedSite: [newSite] }
+          : undefined
+      );
+    }
+  };
+
+  const handleRemoveTrustedSite = async (
+    identifier: string,
+    removedSite: NostrCredential["trustedSites"][number]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    const item = nostrKeys.find(key => key.identifier === identifier);
+    modifyCredentialToStore({
+      guid: item.guid,
+      trustedSites: item.trustedSites.map(site => {
+        if (site.url === removedSite.url) {
+          site.enabled = false;
+        }
+        return site;
+      }),
+    });
+  };
+
+  const handleRemoveAllTrustedSites = async (
+    removedSite: NostrCredential["trustedSites"][number]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    for (const item of nostrKeys) {
+      modifyCredentialToStore({
+        guid: item.guid,
+        trustedSites: item.trustedSites.map(site => {
+          if (site.url === removedSite.url) {
+            site.enabled = false;
+          }
+          return site;
+        }),
+      });
+    }
+  };
+
+  const handleUsedBuiltinNip07 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", usedBuiltinNip07: checked });
+  };
+
+  const handleUsedPrimarypasswordToApps = async (checked: boolean) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      usedPrimarypasswordToApps: checked,
+    });
+  };
+
+  const handleExpirationTimeForPrimarypasswordToApps = async (
+    valueAsString: string,
+    valueAsNumber: number
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      expirationTimeForPrimarypasswordToApps: valueAsNumber * OneHour,
+    });
+  };
+
+  const handleRevokeAuthorizedSite = async (
+    identifier: string,
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    const item = nostrKeys.find(key => key.identifier === identifier);
+    modifyCredentialToStore({
+      guid: item.guid,
+      dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
+        if (site.url === revokedSite.url) {
+          site.expirationTime = 0;
+        }
+        return site;
+      }),
+    });
+  };
+
+  const handleRevokeAllAuthorizedSites = async (
+    revokedSite: NostrCredential["dialogicAuthorizedSites"][number]["url"]
+  ) => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    for (const item of nostrKeys) {
+      modifyCredentialToStore({
+        guid: item.guid,
+        dialogicAuthorizedSites: item.dialogicAuthorizedSites.map(site => {
+          if (site.url === revokedSite) {
+            site.expirationTime = 0;
+          }
+          return site;
+        }),
+      });
+    }
+  };
+
+  const handleUsedAccountChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const checked = e.target.checked;
+    onPrefChanged({ protocolName: "nostr", usedAccountChanged: checked });
+  };
+
+  const handleChangeExcludedKinds = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+    const value = e.target.value;
+    if (!/^[1-9][0-9,]*$/.test(value) && value !== "") {
+      alert("Input must be Kind number or ','.");
+      return;
+    }
+
+    setNewExcludedKindsPreset(value);
+  };
+  const handleResetExcludedKinds = async (sort: "edit" | "default") => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      excludedKindsPreset:
+        sort === "edit"
+          ? newExcludedKindsPreset
+          : DefaultExcludedKinds.join(","),
+    });
+    if (sort === "default") {
+      setNewExcludedKindsPreset(DefaultExcludedKinds.filter(Boolean).join(","));
+    }
+  };
+
+  const handleChangeNallowedMethod = (value: NallowedMethod) => {
+    let newVal = [];
+    if (newNallowedMethodPreset.includes(value)) {
+      newVal = newNallowedMethodPreset.filter(method => method !== value);
+    } else {
+      newVal = newNallowedMethodPreset.concat([value]);
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      nallowedMethodPreset: newVal.filter(Boolean).join(","),
+    });
+    setNewNallowedMethodPreset(newVal);
+  };
+  const handleResetNallowedMethod = async () => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+    });
+    setNewNallowedMethodPreset(DefaultNallowedMethods);
+  };
+
+  const handleChangeDialogDisplayOption = (value: DialogDisplayOption) => {
+    let newVal = [];
+    if (newDialogDisplayOptionPreset.includes(value)) {
+      newVal = newDialogDisplayOptionPreset.filter(method => method !== value);
+    } else {
+      newVal = newDialogDisplayOptionPreset.concat([value]);
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset: newVal.filter(Boolean).join(","),
+    });
+    setNewDialogDisplayOptionPreset(newVal);
+  };
+  const handleResetDialogDisplayOption = async () => {
+    const isAuthorized = await authorizePrimaryPassword(
+      "nostr",
+      prefs,
+      setIsOpenDialog
+    );
+    if (!isAuthorized) {
+      return;
+    }
+
+    onPrefChanged({
+      protocolName: "nostr",
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
+    });
+    setNewDialogDisplayOptionPreset(DefaultDialogDisplayOptions);
+  };
+
+  const getTrustedSites = useCallback(() => {
+    const trustedSites = Array.from(
+      new Set(
+        nostrKeys
+          .map(key =>
+            key.trustedSites
+              .filter(site => site.enabled)
+              .map(site => {
+                // Remove permissions, because it's distinct per key to group by site.url.
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { permissions, ...rest } = site;
+                return rest;
+              })
+          )
+          .flat()
+          .map(site => JSON.stringify(site))
+      )
+    ).map(site => JSON.parse(site)) as NostrCredential["trustedSites"];
+    return trustedSites.length > 0 ? (
+      trustedSites.map(site => (
+        <>
+          <GridItem>
+            <Accordion allowToggle>
+              <AccordionItem css={{ border: "none" }}>
+                <AccordionButton
+                  textAlign="left"
+                  css={{ padding: 0, lineBreak: "anywhere" }}
+                >
+                  <Heading as="h5" size="sm">
+                    {site.url}
+                    {site.name && <>&nbsp;&#40;{site.name}&#41;</>}
+                  </Heading>
+                  <AccordionIcon />
+                </AccordionButton>
+                <AccordionPanel pb={4}>
+                  {nostrKeys
+                    .filter(key =>
+                      key.trustedSites.some(
+                        _site => _site.enabled && _site.url === site.url
+                      )
+                    )
+                    .map((key, i) => {
+                      return (
+                        <>
+                          {!(
+                            states.nostr.editingNo === i &&
+                            states.nostr.editingUrl === site.url
+                          ) ? (
+                            <Grid
+                              gridTemplateColumns={"550px 1fr"}
+                              gap={6}
+                              alignItems="start"
+                            >
+                              <GridItem>
+                                <label>{key.properties.displayName}</label>{" "}
+                                <IconButton
+                                  icon={<MdEdit />}
+                                  variant="transparent"
+                                  aria-label="Edit Key"
+                                  onClick={() =>
+                                    updateState("nostr", {
+                                      editingNo: i,
+                                      editingUrl: site.url,
+                                    })
+                                  }
+                                />
+                              </GridItem>
+                              <GridItem>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() =>
+                                    handleRemoveTrustedSite(
+                                      key.identifier,
+                                      site
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </Button>
+                              </GridItem>
+                            </Grid>
+                          ) : (
+                            <KeyEditor
+                              credential={nostrKeys[states.nostr.editingNo]}
+                              nostrKeys={nostrKeys}
+                              prefs={prefs}
+                              goBack={() => resetState()}
+                            ></KeyEditor>
+                          )}
+                        </>
+                      );
+                    })}
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
+          </GridItem>
+          <GridItem>
+            <Button
+              variant="outline"
+              colorScheme="blue"
+              onClick={() => handleRemoveAllTrustedSites(site)}
+            >
+              Remove from All keys
+            </Button>
+          </GridItem>
+        </>
+      ))
+    ) : (
+      <Text>No site enabled</Text>
+    );
+  }, [nostrKeys, states.nostr]);
+
+  const getDialogicAuthorizedSites = useCallback(() => {
+    const dialogicAuthorizedSites = nostrKeys.reduce<{
+      [url: string]: {
+        key: NostrCredential;
+        site: NostrCredential["dialogicAuthorizedSites"][number];
+        keyNo: number;
+      }[];
+    }>((acc, key, i) => {
+      key.dialogicAuthorizedSites
+        .filter(site => site.expirationTime > Date.now())
+        .forEach(site => {
+          const found = Object.keys(acc).find(url => site.url === url);
+          if (found) {
+            acc[found].push({ key, site, keyNo: i });
+            return;
+          }
+          acc[site.url] = [{ key, site, keyNo: i }];
+        });
+      return acc;
+    }, {});
+    return Object.keys(dialogicAuthorizedSites).length > 0 ? (
+      Object.entries(dialogicAuthorizedSites).map(([url, keys]) => {
+        return (
+          <>
+            <GridItem>
+              <Accordion allowToggle>
+                <AccordionItem css={{ border: "none" }}>
+                  <AccordionButton
+                    textAlign="left"
+                    css={{ padding: 0, lineBreak: "anywhere" }}
+                  >
+                    <Heading as="h5" size="sm">
+                      {url}
+                      {keys[0].site.name && (
+                        <>&nbsp;&#40;{keys[0].site.name}&#41;</>
+                      )}
+                    </Heading>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    {keys.map(item => {
+                      const expirationTime = new Date(item.site.expirationTime);
+                      return (
+                        <>
+                          {!(
+                            states.nostr.editingNo === item.keyNo &&
+                            states.nostr.editingUrl === url
+                          ) ? (
+                            <Grid
+                              gridTemplateColumns={"550px 1fr"}
+                              gap={6}
+                              alignItems="start"
+                            >
+                              <GridItem>
+                                <label>{item.key.properties.displayName}</label>{" "}
+                                &nbsp;-&nbsp;until&nbsp;
+                                {expirationTime.toLocaleDateString()}
+                                &nbsp;{expirationTime.toLocaleTimeString()}
+                                <IconButton
+                                  icon={<MdEdit />}
+                                  variant="transparent"
+                                  aria-label="Edit Key"
+                                  onClick={() =>
+                                    updateState("nostr", {
+                                      editingNo: item.keyNo,
+                                      editingUrl: url,
+                                    })
+                                  }
+                                />
+                              </GridItem>
+                              <GridItem>
+                                <Button
+                                  variant="outline"
+                                  colorScheme="blue"
+                                  onClick={() =>
+                                    handleRevokeAuthorizedSite(
+                                      item.key.identifier,
+                                      item.site
+                                    )
+                                  }
+                                >
+                                  Revoke
+                                </Button>
+                              </GridItem>
+                            </Grid>
+                          ) : (
+                            <KeyEditor
+                              credential={nostrKeys[states.nostr.editingNo]}
+                              nostrKeys={nostrKeys}
+                              prefs={prefs}
+                              goBack={() => resetState()}
+                            ></KeyEditor>
+                          )}
+                        </>
+                      );
+                    })}
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </GridItem>
+            <GridItem>
+              <Button
+                variant="outline"
+                colorScheme="blue"
+                onClick={() => handleRevokeAllAuthorizedSites(url)}
+              >
+                Revoke All keys
+              </Button>
+            </GridItem>
+          </>
+        );
+      })
+    ) : (
+      <Text>No site enabled</Text>
+    );
+  }, [nostrKeys, states.nostr]);
+
+  const cancelRef = React.useRef();
+  const onCloseDialog = () => {
+    setIsOpenDialog(false);
+  };
+
+  return (
+    <>
+      <VStack
+        divider={<StackDivider borderColor="gray.200" />}
+        spacing={4}
+        align="stretch"
+      >
+        <Box>
+          <Grid gridTemplateColumns={"300px 1fr"} gap={6} alignItems={"center"}>
+            <GridItem colSpan={2}>
+              <Text fontSize="sm">
+                You can still use these features realated to your keys on
+                extensions/apps compatible with this browser, even if turning
+                off &quot;Use built-in NIP-07&quot;.
+              </Text>
+            </GridItem>
+            <GridItem>
+              <label htmlFor="nostr-pref-usedBuiltinNip07">
+                Use built-in NIP-07
+              </label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedBuiltinNip07"
+                isChecked={prefs.nostr.usedBuiltinNip07}
+                onChange={handleUsedBuiltinNip07}
+              />
+            </GridItem>
+            <GridItem>
+              <label htmlFor="nostr-pref-usedAccountChanged">
+                Notify &quot;Account Changed&quot; to Web apps
+              </label>
+            </GridItem>
+            <GridItem>
+              <Switch
+                id="nostr-pref-usedAccountChanged"
+                isChecked={prefs.nostr.usedAccountChanged}
+                onChange={handleUsedAccountChanged}
+              />
+            </GridItem>
+          </Grid>
+        </Box>
+        <Box>
+          <Box>
+            <Heading as="h4" size="md">
+              Protect Options
+            </Heading>
+            <Text fontSize="sm">
+              The following helps save you against theft:
+            </Text>
+          </Box>
+          <Tabs
+            variant="enclosed"
+            index={tabIndex}
+            onChange={index => {
+              setTabIndex(index);
+              resetState();
+            }}
+          >
+            <TabList>
+              <Tab>
+                <Heading as="h5" size="md">
+                  Trusted Sites
+                </Heading>
+              </Tab>
+              <Box display="flex" alignItems="center" mr={1}>
+                {tabPin(0)}
+              </Box>
+              <Tab>
+                <Heading as="h5" size="md">
+                  Dialogic Authorization
+                </Heading>
+              </Tab>
+              <Box display="flex" alignItems="center" mr={1}>
+                {tabPin(1)}
+              </Box>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Grid
+                  gridTemplateColumns={"300px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Any URL registered here will be allowed for your key
+                      indefinitely.
+                    </Text>
+                  </GridItem>
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedTrustedSites">Enable</label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedTrustedSites"
+                      isChecked={prefs.nostr.usedTrustedSites}
+                      onChange={e => handleUsedTrustedSites(e.target.checked)}
+                    />
+                  </GridItem>
+                  <GridItem>
+                    <label>Register</label>
+                  </GridItem>
+                  <GridItem>
+                    <InputGroup>
+                      <Input
+                        placeholder="https://example"
+                        value={newSite}
+                        onChange={handleNewSiteChange}
+                        onKeyPress={e => {
+                          if (e.key === "Enter") {
+                            handleRegisterSite(e);
+                          }
+                        }}
+                        maxW="300px"
+                      />
+                      <Button
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={handleRegisterSite}
+                      >
+                        Register to All keys
+                      </Button>
+                    </InputGroup>
+                    <ExampleUrlMatch width="600px" />
+                  </GridItem>
+                  <GridItem>
+                    <label>Presets to narrow down to specific methods</label>
+                  </GridItem>
+                  <GridItem>
+                    <HStack>
+                      <Menu closeOnSelect={false}>
+                        <MenuButton
+                          as={Button}
+                          variant="outline"
+                          colorScheme="blue"
+                        >
+                          Select Options
+                        </MenuButton>
+                        <MenuList>
+                          {NallowedMethods.map(option => (
+                            <MenuItem key={option}>
+                              <Checkbox
+                                isChecked={newNallowedMethodPreset.includes(
+                                  option
+                                )}
+                                onChange={() =>
+                                  handleChangeNallowedMethod(option)
+                                }
+                              >
+                                {option}
+                              </Checkbox>
+                            </MenuItem>
+                          ))}
+                        </MenuList>
+                      </Menu>
+                      <Button
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={e => {
+                          e.preventDefault();
+                          handleResetNallowedMethod();
+                        }}
+                      >
+                        Reset to default
+                      </Button>
+                    </HStack>
+                    <ExplainNallowedMethod width="600px" protocolName="nostr" />
+                  </GridItem>
+                  <GridItem>
+                    <Divider />
+                  </GridItem>
+                  <GridItem></GridItem>
+                </Grid>
+                <Grid
+                  gridTemplateColumns={"700px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
+                  {getTrustedSites()}
+                </Grid>
+              </TabPanel>
+              <TabPanel>
+                <Grid
+                  gridTemplateColumns={"300px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
+                  <GridItem colSpan={2}>
+                    <Text fontSize="sm">
+                      Authorize interactively when the app requests you, having
+                      an expiration.
+                    </Text>
+                  </GridItem>
+                  <GridItem>
+                    <label htmlFor="nostr-pref-usedPrimarypasswordToApps">
+                      Enable
+                    </label>
+                  </GridItem>
+                  <GridItem>
+                    <Switch
+                      id="nostr-pref-usedPrimarypasswordToApps"
+                      isChecked={prefs.nostr.usedPrimarypasswordToApps}
+                      onChange={e =>
+                        handleUsedPrimarypasswordToApps(e.target.checked)
+                      }
+                    />
+                  </GridItem>
+                  {prefs.nostr.usedPrimarypasswordToApps && (
+                    <>
+                      <GridItem>
+                        <label htmlFor="nostr-pref-expirationTimeForPrimarypasswordToApps">
+                          Expiration Hour
+                        </label>
+                      </GridItem>
+                      <GridItem>
+                        <NumberInput
+                          id="nostr-pref-expirationTimeForPrimarypasswordToApps"
+                          value={
+                            prefs.nostr.expirationTimeForPrimarypasswordToApps /
+                            OneHour
+                          }
+                          onChange={
+                            handleExpirationTimeForPrimarypasswordToApps
+                          }
+                          min={0}
+                          size="sm"
+                          maxW={20}
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </GridItem>
+                      <GridItem>
+                        <label>
+                          Preset for the Event Kind authorized every time
+                        </label>
+                      </GridItem>
+                      <GridItem>
+                        <VStack
+                          backgroundColor="white"
+                          p="2"
+                          alignItems="flex-start"
+                        >
+                          <InputGroup>
+                            <Input
+                              placeholder="Input kind number"
+                              value={
+                                newExcludedKindsPreset ||
+                                prefs.nostr.excludedKindsPreset
+                              }
+                              onChange={handleChangeExcludedKinds}
+                              maxW="300px"
+                            />
+                            <Button
+                              variant="outline"
+                              colorScheme="blue"
+                              onClick={e => {
+                                e.preventDefault();
+                                handleResetExcludedKinds("edit");
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              colorScheme="blue"
+                              onClick={e => {
+                                e.preventDefault();
+                                handleResetExcludedKinds("default");
+                              }}
+                            >
+                              Reset to default
+                            </Button>
+                          </InputGroup>
+                          <ExampleNostrKind width="600px" />
+                        </VStack>
+                      </GridItem>
+                      <GridItem>
+                        <label>Preset for dialog dispaly settings</label>
+                      </GridItem>
+                      <GridItem>
+                        <HStack>
+                          <Menu closeOnSelect={false}>
+                            <MenuButton
+                              as={Button}
+                              variant="outline"
+                              colorScheme="blue"
+                            >
+                              Select Options
+                            </MenuButton>
+                            <MenuList>
+                              {DialogDisplayOptions.map(option => (
+                                <MenuItem key={option}>
+                                  <Checkbox
+                                    isChecked={newDialogDisplayOptionPreset.includes(
+                                      option
+                                    )}
+                                    onChange={() =>
+                                      handleChangeDialogDisplayOption(option)
+                                    }
+                                  >
+                                    {option}
+                                  </Checkbox>
+                                </MenuItem>
+                              ))}
+                            </MenuList>
+                          </Menu>
+                          <Button
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={e => {
+                              e.preventDefault();
+                              handleResetDialogDisplayOption();
+                            }}
+                          >
+                            Reset to default
+                          </Button>
+                        </HStack>
+                        <ExplainDialogDisplayOption
+                          width="600px"
+                          protocolName="nostr"
+                        />
+                      </GridItem>
+                    </>
+                  )}
+                  <GridItem>
+                    <Divider />
+                  </GridItem>
+                  <GridItem></GridItem>
+                </Grid>
+                <Grid
+                  gridTemplateColumns={"700px 1fr"}
+                  gap={6}
+                  alignItems="start"
+                >
+                  {getDialogicAuthorizedSites()}
+                </Grid>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </Box>
+      </VStack>
+      <AlertPrimaryPassword
+        isOpen={isOpenDialog}
+        onClose={onCloseDialog}
+        cancelRef={cancelRef}
+      />
+    </>
+  );
+}

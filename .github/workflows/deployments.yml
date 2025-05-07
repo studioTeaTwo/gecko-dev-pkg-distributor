@@ -1,0 +1,308 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Please write our copyright if you use this file.
+# © 2023 Floorp Projects & Contributors
+
+name: "Deployments"
+
+on:
+  push:
+    branches-ignore:
+      - '**-tor**' # another workflow
+  workflow_dispatch:
+    inputs:
+      base-browser-symbol:
+        description: symbol name of base browser
+        type: string
+        default: "esr"
+  workflow_call:
+    inputs:
+      daily-build:
+        description: is daily build
+        type: boolean
+        default: false
+
+env:
+  base-browser-symbol: ${{ inputs.base-browser-symbol || 'esr' }}
+
+
+jobs:
+  get-display-version:
+    runs-on: ubuntu-latest
+    outputs:
+      display-version: ${{ steps.get.outputs.display-version }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+        sparse-checkout: 'browser/config'
+    - name: Get Display Version
+      id: get
+      shell: bash -xe {0}
+      run: |
+        display_version=$(cat browser/config/version_forked.txt)${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-$(cat browser/config/version.txt)${{ env.base-browser-symbol }}
+        echo "display-version=${display_version}" >> "$GITHUB_OUTPUT"
+
+  get-buildid:
+    runs-on: ubuntu-latest
+    outputs:
+      buildids: ${{ steps.get.outputs.bid }}
+    steps:
+    - id: get
+      shell: bash -xe {0}
+      run: |
+        bdat=$(date +"%Y%m%d%I%M%S")
+        echo "bid=${bdat}" >> "$GITHUB_OUTPUT"
+
+################################################################ ↑ Preparation ####################################################################################
+
+#? Original branding of the code is official
+#? It seems in PGO build, branding is not important in NOT deploying binary
+
+  Part1-win-x86_64-build-with-profgen-zstd:
+    needs: [get-display-version]
+    uses: ./.github/workflows/windows-build.yml
+    with:
+      profgen: true
+      aarch64: false
+      zstd: true
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part2-win-x86_64-gen-profdata-and-jarlog:
+    needs: Part1-win-x86_64-build-with-profgen-zstd
+    uses: ./.github/workflows/window-generate-profile-data-and-jarlog.yml
+    with:
+      browser-artifact-name: ssb-windows-x86_64-build-with-profgen-zstd
+      arch: x86_64
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part3-win-x86_64-build-with-profdata-and-jarlog:
+    needs: [Part2-win-x86_64-gen-profdata-and-jarlog, get-buildid, get-display-version]
+    uses: ./.github/workflows/windows-build.yml
+    with:
+      aarch64: false
+      mar: true
+      profdata_jarlog_artifact_name: "ssb-windows-x86_64-profdata-and-jarlog"
+      out_artifact_name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+################################################################ ↑ Windows x86_64 Build ###################################################################################
+
+  Part1-linux-x86_64-build-with-PGO:
+    uses: ./.github/workflows/linux-build.yml
+    needs: [get-buildid, get-display-version]
+    with:
+      aarch64: false
+      mar: true
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+################################################################ ↑ Linux x86_64 Build ####################################################################################
+
+  Part1-linux-aarch64-build:
+    uses: ./.github/workflows/linux-build.yml
+    needs: [get-buildid, get-display-version]
+    with:
+      aarch64: true
+      mar: true
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+################################################ ↑ Linux AArch64 Build ################################################
+
+  Part1-macOS-Universal-build-with-profgen:
+    uses: ./.github/workflows/macOS-Universal.yml
+    with:
+      profgen: true
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part2-macOS-Universal-gen-profdata-and-jarlog:
+    needs: Part1-macOS-Universal-build-with-profgen
+    uses: ./.github/workflows/macOS-generate-profile-data-and-jarlog.yml
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part3-macOS-Universal-build-with-profdata-and-jarlog:
+    uses: ./.github/workflows/macOS-Universal.yml
+    needs: [get-buildid, Part2-macOS-Universal-gen-profdata-and-jarlog]
+    with:
+      build-with-profdata-and-jarlog: true
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  Part4-macOS-Universal-package-and-sign:
+    uses: ./.github/workflows/macOS-integration.yml
+    needs: [get-buildid, get-display-version, Part3-macOS-Universal-build-with-profdata-and-jarlog]
+    with:
+      mar: true
+      x86_64_artifact_name: ssb-mac-x86_64-package
+      aarch64_artifact_name: ssb-mac-aarch64-package
+      display_version: ${{ needs.get-display-version.outputs.display-version }}
+      MOZ_BUILD_DATE: ${{needs.get-buildid.outputs.buildids}}
+    secrets:
+      # macOS_CERTIFICATES_P12_For_App_BASE64: ${{ secrets.macOS_CERTIFICATES_P12_For_App_BASE64 }}
+      # macOS_CERTIFICATES_P12_PASSWORD: ${{ secrets.macOS_CERTIFICATES_P12_PASSWORD }}
+      # macOS_AppleDeveloperId: ${{ secrets.macOS_AppleDeveloperId }}
+      # macOS_AppleAccountId: ${{ secrets.macOS_AppleAccountId }}
+      # macOS_AppleTeamId: ${{ secrets.macOS_AppleTeamId }}
+      # macOS_AppleAccountAppSpecificPassword: ${{ secrets.macOS_AppleAccountAppSpecificPassword }}
+      PAT: ${{ secrets.PAT }}
+
+################################################ ↑ Mac OS Build ################################################
+
+  Deploy-to-installer:
+    needs: [Part1-linux-x86_64-build-with-PGO, Part1-linux-aarch64-build, Part4-macOS-Universal-package-and-sign, Part3-win-x86_64-build-with-profdata-and-jarlog, get-display-version]
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.daily-build }}
+    steps:
+      - name: Release version 📦
+        run: |
+          echo "version=${{ needs.get-display-version.outputs.display-version }}"
+
+      - name: make directory 📁
+        run: |
+          mkdir -p ~/downloads/artifacts
+
+      - name: download Linux x86_64 build artifact 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: ssb-linux-x64
+          path: ~/downloads/artifacts
+
+      - name: download Linux aarch64 build artifact 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: ssb-linux-aarch64
+          path: ~/downloads/artifacts
+
+      - name: download Windows x86_64 build artifact📥
+        uses: actions/download-artifact@v4
+        with:
+          name: please-use-this-ssb-windows-x86_64-package-build-with-profdata-and-jarlog
+          path: ~/downloads/artifacts
+
+      - name: download macOS Universal build artifact📥
+        uses: actions/download-artifact@v4
+        with:
+          name: Universal-Artifact
+          path: ~/downloads/artifacts
+
+      - name: check file structure 🗃
+        run: |
+          cd ~/downloads/artifacts
+          echo "current directory: $PWD"
+          echo '****************************************************************************************************'
+          find . -print | sed -e "s;[^/]*/;|____;g;s;____|; |;g"
+          echo '****************************************************************************************************'
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 100
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
+          git_user_signingkey: true
+          trust_level: 5
+      - name: Get previous tag
+        run: |
+          git fetch origin 'refs/tags/*:refs/tags/*'
+          criteria=v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}
+          previous_tag=$(git ls-remote --tags --sort=v:refname origin "$criteria" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
+          echo "previous_tag=$previous_tag" | tee "$GITHUB_ENV"
+      - name: Create a tag with signature
+        run: |
+          git tag -s v${{ needs.get-display-version.outputs.display-version }} -m "v${{ needs.get-display-version.outputs.display-version }}"
+          git push origin v${{ needs.get-display-version.outputs.display-version }}
+
+      - name: Create verification log
+        working-directory: /home/runner/downloads/artifacts
+        run: |
+          VERIFICATION_LOG=verification.txt
+
+          exec 1> >(tee -a $VERIFICATION_LOG)
+          exec 2>&1
+
+          echo 'Distributer: GitHub Releases'
+          echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${{ needs.get-display-version.outputs.display-version }}"
+          echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Workflow Log Archive: ${{ github.server_url }}/Browser-for-SSI/log-archive/tree/main/releases/${{ github.run_id }}"
+
+          echo
+
+          sha256sum ssb-*.linux-x86_64.tar.bz2
+          sha256sum ssb-*.linux-aarch64.tar.bz2
+          sha256sum ssb-*.linux-x86_64.AppImage
+          sha256sum ssb-*.linux-aarch64.AppImage
+          sha256sum ssb-*.linux-x86_64.AppImage.zsync
+          sha256sum ssb-*.linux-aarch64.AppImage.zsync
+          sha256sum ssb-*.win64.installer.exe
+          sha256sum ssb-*.macOS-universal.dmg
+          sha256sum LINUX-x86_64.mar
+          sha256sum LINUX-aarch64.mar
+          sha256sum WINNT-x86_64.mar
+          sha256sum DARWIN-Universal.mar
+
+          echo
+
+          (cd ${{ github.workspace }} && git tag -v v${{ needs.get-display-version.outputs.display-version }})
+
+          echo
+      - name: Sign verification log
+        working-directory: /home/runner/downloads/artifacts
+        run: |
+          gpg --clear-sign verification.txt
+          cat verification.txt.asc
+
+      - name: Create release note draft
+        run: |
+          dest=/home/runner/downloads/artifacts/
+          commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
+          git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > ${dest}release_note_draft.txt
+          echo -e "\n<details close>\n" >> ${dest}release_note_draft.txt
+          cat ${dest}verification.txt.asc >> ${dest}release_note_draft.txt
+          cat ${dest}release_note_draft.txt
+      - name: Deploy to GitHub Releases for Stable Version 🚀
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            /home/runner/downloads/artifacts/ssb-*.linux-x86_64.tar.bz2
+            /home/runner/downloads/artifacts/ssb-*.linux-aarch64.tar.bz2
+            /home/runner/downloads/artifacts/ssb-*.linux-x86_64.AppImage
+            /home/runner/downloads/artifacts/ssb-*.linux-aarch64.AppImage
+            /home/runner/downloads/artifacts/ssb-*.linux-x86_64.AppImage.zsync
+            /home/runner/downloads/artifacts/ssb-*.linux-aarch64.AppImage.zsync
+            /home/runner/downloads/artifacts/ssb-*.win64.installer.exe
+            /home/runner/downloads/artifacts/ssb-*.macOS-universal.dmg
+            /home/runner/downloads/artifacts/LINUX-x86_64.mar
+            /home/runner/downloads/artifacts/LINUX-aarch64.mar
+            /home/runner/downloads/artifacts/WINNT-x86_64.mar
+            /home/runner/downloads/artifacts/DARWIN-Universal.mar
+            /home/runner/downloads/artifacts/verification.txt.asc
+          body_path: /home/runner/downloads/artifacts/release_note_draft.txt
+          tag_name: "v${{ needs.get-display-version.outputs.display-version }}"
+          name: "v${{ needs.get-display-version.outputs.display-version }}"
+          draft: true
+          prerelease: true
+          token: ${{ secrets.PAT }}
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}

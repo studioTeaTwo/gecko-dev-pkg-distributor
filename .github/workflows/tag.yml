@@ -1,0 +1,76 @@
+name: "create tag test"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'tag name to create. ex: 0.0.0mvp-128.5.0esr'
+        type: string
+      base-browser-symbol:
+        description: symbol name of base browser
+        type: string
+        default: "esr"
+
+env:
+  base-browser-symbol: ${{ inputs.base-browser-symbol || 'esr' }}
+
+jobs:
+  tag-creation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          fingerprint: "D048EF6737B02B7CD291E5B3A807514E59C0B7C2"
+          git_user_signingkey: true
+          trust_level: 5
+      - name: List keys
+        run: |
+          gpg -K
+      - name: Get previous tag
+        run: |
+          git fetch origin 'refs/tags/*:refs/tags/*'
+          criteria=v*.*.*${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}-*${{ env.base-browser-symbol }}
+          previous_tag=$(git ls-remote --tags --sort=v:refname origin "$criteria" | tail -n 1 | head -n 1 | cut -f 2 | cut -d '/' -f 3)
+          echo "previous_tag=$previous_tag" | tee "$GITHUB_ENV"
+      - name: Create a tag with signature
+        run: |
+          if [ -z ${{ inputs.tag-name}} ]; then
+            version=$RANDOM
+          else
+            version=${{ inputs.tag-name}}
+          fi
+          echo "version=$version" >> "$GITHUB_ENV"
+
+          git tag -s "v${version}" -m "v${version}"
+          git tag
+          git push origin "v${version}"
+
+      - name: Create verification log
+        run: |
+          VERIFICATION_LOG=verification.txt
+
+          exec 1> >(tee -a $VERIFICATION_LOG)
+          exec 2>&1
+
+          echo 'Distributer: GitHub'
+          echo "Full Changelog: ${{ github.server_url }}/${{ github.repository }}/compare/${previous_tag}...v${version}"
+          echo "Workflow Run (90-day retention): ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          echo
+
+          git tag -v v${version}
+      - name: Sign verification log
+        run: |
+          gpg --clear-sign verification.txt
+          cat verification.txt.asc
+      - name: Create release note draft
+        run: |
+          commit_hash=$(git show-ref --tags ${previous_tag} | awk '{print $1}')
+          git log --oneline ${commit_hash}..HEAD --grep="^feat" | cut -d ' ' -f 2- > release_note_draft.txt
+          echo -e "\n<details close>\n" >> release_note_draft.txt
+          cat verification.txt.asc >> release_note_draft.txt
+          cat release_note_draft.txt

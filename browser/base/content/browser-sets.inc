@@ -90,6 +90,7 @@
     <command id="Tools:Search" />
     <command id="Tools:Downloads" />
     <command id="Tools:Addons" />
+    <command id="Tools:SelfSovereignIndividual" />
     <command id="Tools:Sanitize" />
     <command id="Tools:PrivateBrowsing" />
     <command id="Browser:Screenshot" />
@@ -97,7 +98,6 @@
     <command id="History:UndoCloseWindow" />
     <command id="History:RestoreLastClosedTabOrWindowOrSession" />
     <command id="History:SearchHistory" />
-
     <command id="wrCaptureCmd" disabled="true"/>
     <command id="wrToggleCaptureSequenceCmd" disabled="true"/>
 #ifdef NIGHTLY_BUILD
@@ -160,6 +160,7 @@
 #endif
          command="Tools:Downloads"/>
     <key id="key_openAddons" data-l10n-id="addons-shortcut" command="Tools:Addons" modifiers="accel,shift"/>
+    <key id="key_openSelfSovereignIndividual" data-l10n-id="selfsovereignindividual-shortcut" command="Tools:SelfSovereignIndividuals" modifiers="accel,shift,alt"/>
     <key id="openFileKb" data-l10n-id="file-open-shortcut" command="Browser:OpenFile"  modifiers="accel"/>
     <key id="key_savePage" data-l10n-id="save-page-shortcut" command="Browser:SavePage" modifiers="accel"/>
     <key id="printKb" data-l10n-id="print-shortcut" command="cmd_print"  modifiers="accel"/>

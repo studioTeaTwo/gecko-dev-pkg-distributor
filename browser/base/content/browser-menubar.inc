@@ -365,6 +365,9 @@
 
             <menu id="tools-menu" data-l10n-id="menu-tools">
               <menupopup id="menu_ToolsPopup">
+              <menuitem id="menu_openSelfSovereignIndividual"
+                        key="key_openSelfSovereignIndividual"
+                        command="Tools:SelfSovereignIndividual" data-l10n-id="menu-tools-selfsovereignindividual"/>
               <menuitem id="menu_openDownloads"
                         key="key_openDownloads"
                         command="Tools:Downloads" data-l10n-id="menu-tools-downloads"/>

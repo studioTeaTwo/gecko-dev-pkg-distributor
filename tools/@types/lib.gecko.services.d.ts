@@ -44,6 +44,7 @@ interface JSServices {
   scriptloader: mozIJSSubScriptLoader;
   search: nsISearchService;
   sessionStorage: nsISessionStorageService;
+  ssi: nsISsi;
   startup: nsIAppStartup;
   storage: mozIStorageService;
   strings: nsIStringBundleService;

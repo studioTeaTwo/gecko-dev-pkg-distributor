@@ -1,0 +1,193 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi", "ssi.bitcoin"]
+          }
+        ]
+      },
+      {
+        "$extend": "OptionalPermission",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["ssi.nostr"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "ssi.bitcoin",
+    "description": "The browser.ssi subset for Bitcoin protocol. Requires `ssi.bitcoin` along with `ssi` to set permissions.",
+    "permissions": ["ssi", "ssi.bitcoin"],
+    "types": [
+      {
+        "id": "Preference",
+        "type": "object",
+        "description": "The preference values set by the user in `about:selfsovereignindividual`.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the user has `ssi.bitcoin` enabled."
+          }
+        }
+      },
+      {
+        "id": "SharedSecret",
+        "type": "object",
+        "description": "Secrets encrypted and shared by Nostr NIP-44.",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "The secret encrypted by Nostr NIP-44."
+          },
+          "sender": {
+            "type": "string",
+            "description": "The Nostr public key of the person who encrypted the secret. It's in hex format."
+          },
+          "receiver": {
+            "type": "string",
+            "description": "The Nostr public key of the person with whom the secret is shared. It's in hex format."
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "onPrimaryChanged",
+        "type": "function",
+        "description": "Fires when the primary key is changed.",
+        "parameters": []
+      },
+      {
+        "name": "onPrefEnabledChanged",
+        "type": "function",
+        "description": "Fires when the preference value of `selfsovereignindividual.bitcoin.enabled` is changed.",
+        "parameters": []
+      }
+    ],
+    "functions": [
+      {
+        "name": "getPrefs",
+        "type": "function",
+        "description": "Get the user's preference values. Since this is obtained passively and is not something that the user explicitly takes action on, `ssi.askConsent` is not called. The user controls whether or not to disclose it in the settings. Here, only values that are based on such assumptions would be returned.",
+        "async": true,
+        "parameters": [],
+        "returns": {
+          "$ref": "Preference",
+          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.Preference` object. Returns `Promise<null>` if error.",
+          "optional": true
+        }
+      },
+      {
+        "name": "generate",
+        "type": "function",
+        "description": "Generates Bitcoin key in the specified order. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also [MDN Reference](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id)."
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Direction about the key you want the user to generate.",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type that specifies the secret you want the user to generate: e.g. `\"mnemonic\"`, `\"derivation\"`."
+              },
+              "strength": {
+                "type": "integer",
+                "maxmum": 256,
+                "minimum": 128,
+                "description": "The strength when generating a mnemonic (and a master key). This is required when `type` is `\"mnemonic\"`.",
+                "optional": true
+              },
+              "passphrase": {
+                "type": "string",
+                "description": "The passphrase when generating a mnemonic (and a master key). This is optional when `type` is `\"mnemonic\"`.",
+                "optional": true
+              },
+              "path": {
+                "type": "string",
+                "description": "The Hierarchical Deterministic (HD) path: e.g. `\"m/0'/1/2'\"`. If null (or `\"m\"`) a master key will be generated. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog."
+          }
+        ],
+        "async": true,
+        "returns": {
+          "type": "string",
+          "description": "A Promise that will be fulfilled with a `string` of xpub. Returns `Promise<undefined>` if error."
+        }
+      },
+      {
+        "name": "shareWith",
+        "permissions": ["ssi.nostr"],
+        "type": "function",
+        "description": "Request the secret you want the user to share, and get back the encrypted secret by Nostr NIP-44. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also [MDN Reference](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id)."
+          },
+          {
+            "name": "pubkey",
+            "type": "string",
+            "description": "Your Nostr public key for encrypting the shared secret. Either npub or hex format."
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Direction about the secret you want the user to share. `\"mnemonic\"` and `\"derivation\"` use the seed specified by the user as the primary.",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type that specifies the secret you want the user to share: e.g. `\"mnemonic\"`, `\"derivation\"`, `\"xpriv\"`."
+              },
+              "xpub": {
+                "type": "string",
+                "description": "The Bitcoin public key that specifies the secret you want the user to share: e.g. `\"xpub123...\"`. The return value is encrypted xpriv key. This is required when `type` is `\"xpriv\"`.",
+                "optional": true
+              },
+              "path": {
+                "type": "string",
+                "description": "The Hierarchical Deterministic (HD) path that specifies the secret you want the user to share: e.g. `\"m/0'/1/2'\"`. The return value is encrypted xpriv key. The seed specified by the user as the primary will be used. This is required when `type` is `\"derivation\"`.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog."
+          }
+        ],
+        "returns": {
+          "$ref": "SharedSecret",
+          "description": "A Promise that will be fulfilled with a `ssi.bitcoin.SharedSecret` object. Returns `Promise<null>` if error."
+        }
+      }
+    ]
+  }
+]

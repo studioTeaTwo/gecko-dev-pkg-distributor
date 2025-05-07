@@ -78,6 +78,7 @@ pref_groups = [
     "privacy",
     "prompts",
     "security",
+    "selfsovereignindividual",
     "signon",
     "slider",
     "storage",

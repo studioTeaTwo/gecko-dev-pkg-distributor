@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "Built-in NIP",
+  "version": "0.0.1",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "builtin-nip@teatwo.dev"
+    }
+  },
+
+  "permissions": ["tabs", "webNavigation", "<all_urls>", "ssi", "ssi.nostr"],
+
+  "experiment_apis": {
+    "builtinNip": {
+      "schema": "experiment-apis/builtinNip.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiment-apis/builtinNip.js",
+        "paths": [["builtinNip"]]
+      }
+    }
+  },
+
+  "background": {
+    "scripts": ["backgrounds.bundle.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "run_at": "document_start",
+      "js": ["contents.bundle.js"]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+name: "tor build"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - mvp-tor
+
+jobs:
+  dev-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Disk & Swap Space 💿
+        run: |
+          chmod +x .github/workflows/src/disk_swap_for_github_runner.sh
+          .github/workflows/src/disk_swap_for_github_runner.sh
+      - name: Setup
+        run: |
+          ./mach --no-interactive bootstrap --application-choice 'Firefox for Desktop'
+          ln -s mozconfig-linux-x86_64-dev mozconfig
+      - name: Dev build
+        run: |
+          cd tools/torbrowser
+          make config
+          make build
+          make fetch
+          make deploy

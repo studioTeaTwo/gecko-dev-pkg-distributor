@@ -441,6 +441,34 @@ let JSWINDOWACTORS = {
     remoteTypes: ["privilegedabout"],
   },
 
+  AboutSelfSovereignIndividual: {
+    parent: {
+      esModuleURI:
+        "resource:///actors/AboutSelfSovereignIndividualParent.sys.mjs",
+    },
+    child: {
+      esModuleURI:
+        "resource:///actors/AboutSelfSovereignIndividualChild.sys.mjs",
+      events: {
+        AboutSelfSovereignIndividualCreateCredential: {},
+        AboutSelfSovereignIndividualDeleteCredential: {},
+        AboutSelfSovereignIndividualGetAllCredentials: {},
+        AboutSelfSovereignIndividualInit: {},
+        AboutSelfSovereignIndividualRecordTelemetryEvent: {},
+        AboutSelfSovereignIndividualRemoveAllCredentials: {},
+        AboutSelfSovereignIndividualUpdateCredential: {},
+        AboutSelfSovereignIndividualPrimaryChanged: {},
+        AboutSelfSovereignIndividualPrefChanged: {},
+      },
+    },
+    matches: [
+      "about:selfsovereignindividual",
+      "about:selfsovereignindividual?*",
+    ],
+    allFrames: true,
+    remoteTypes: ["privilegedabout"],
+  },
+
   AboutMessagePreview: {
     parent: {
       esModuleURI: "resource:///actors/AboutMessagePreviewParent.sys.mjs",
@@ -2460,6 +2488,25 @@ BrowserGlue.prototype = {
     } catch (e) {}
   },
 
+  async _setupSelfSovereignIndividual() {
+    // There is no pref for this add-on because it shouldn't be disabled.
+    const ID = "experimentapi-ssi@teatwo.dev";
+
+    let addon = await lazy.AddonManager.getAddonByID(ID);
+
+    // first time install of addon and install on firefox update
+    addon =
+      (await lazy.AddonManager.maybeInstallBuiltinAddon(
+        ID,
+        "0.0.1",
+        "resource://builtin-addons/ssi/"
+      )) || addon;
+
+    if (!addon.isActive) {
+      await addon.enable({ allowSystemAddons: true });
+    }
+  },
+
   _monitorHTTPSOnlyPref() {
     const PREF_ENABLED = "dom.security.https_only_mode";
     const PREF_WAS_ENABLED = "dom.security.https_only_mode_ever_enabled";
@@ -2689,6 +2736,7 @@ BrowserGlue.prototype = {
     this._monitorWebcompatReporterPref();
     this._monitorHTTPSOnlyPref();
     this._setupSearchDetection();
+    this._setupSelfSovereignIndividual();
 
     this._monitorGPCPref();
 

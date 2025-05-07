@@ -1,0 +1,303 @@
+import { useEffect, useState } from "react";
+import {
+  Credential,
+  CredentialForPayload,
+  ProtocolName,
+  SelfSovereignIndividualPrefs,
+} from "../custom.type";
+import { DefaultExcludedKinds } from "../components/nostr/constants";
+import {
+  DefaultDialogDisplayOptions,
+  DefaultNallowedMethods,
+} from "../components/shared/constants";
+
+/**
+ * Send to child actor
+ *
+ */
+
+function initStore() {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualInit", {
+      bubbles: true,
+    })
+  );
+}
+
+function getAllCredentialsToStore() {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualGetAllCredentials", {
+      bubbles: true,
+    })
+  );
+}
+
+function addCredentialToStore(credential: Credential) {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualCreateCredential", {
+      bubbles: true,
+      detail: transformToPayload(credential),
+    })
+  );
+}
+
+function modifyCredentialToStore(
+  credential: Partial<Credential>,
+  options?: { newExtensionForTrustedSite: string[] }
+) {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualUpdateCredential", {
+      bubbles: true,
+      detail: { credential: transformToPayload(credential), options },
+    })
+  );
+}
+
+function deleteCredentialToStore(deletedCredential: Credential) {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualDeleteCredential", {
+      bubbles: true,
+      detail: transformToPayload(deletedCredential),
+    })
+  );
+}
+
+function removeAllCredentialsToStore() {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualRemoveAllCredentials", {
+      bubbles: true,
+    })
+  );
+}
+
+function onPrimaryChanged(changeSet: {
+  protocolName: ProtocolName;
+  guid: string;
+}) {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualPrimaryChanged", {
+      bubbles: true,
+      detail: changeSet,
+    })
+  );
+}
+
+function onPrefChanged(
+  changeSet: {
+    protocolName: ProtocolName | "base";
+  } & Partial<SelfSovereignIndividualPrefs[keyof SelfSovereignIndividualPrefs]>
+) {
+  dispatchEvent(
+    new CustomEvent("AboutSelfSovereignIndividualPrefChanged", {
+      bubbles: true,
+      detail: changeSet,
+    })
+  );
+}
+
+export const dispatchEvents = {
+  initStore,
+  getAllCredentialsToStore,
+  addCredentialToStore,
+  modifyCredentialToStore,
+  deleteCredentialToStore,
+  removeAllCredentialsToStore,
+  onPrimaryChanged,
+  onPrefChanged,
+};
+
+/**
+ * Utils
+ *
+ */
+
+function transformToPayload(credential: Partial<Credential>) {
+  const newVal = { ...credential } as unknown as CredentialForPayload;
+  if (credential.trustedSites) {
+    newVal.trustedSites = JSON.stringify(credential.trustedSites);
+  }
+  if (credential.dialogicAuthorizedSites) {
+    newVal.dialogicAuthorizedSites = JSON.stringify(
+      credential.dialogicAuthorizedSites
+    );
+  }
+  if (credential.properties) {
+    newVal.properties = JSON.stringify(credential.properties);
+  }
+  return newVal;
+}
+
+function transformCredentialsFromStore(
+  credentialForPayloads: CredentialForPayload[]
+) {
+  return credentialForPayloads.map(credential => {
+    const trustedSites = JSON.parse(
+      credential.trustedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
+    );
+    const dialogicAuthorizedSites = JSON.parse(
+      credential.dialogicAuthorizedSites.replace(/^''$/g, '"') // TODO(ssb): investigate
+    );
+    const properties = JSON.parse(credential.properties.replace(/^''$/g, '"'));
+    return {
+      ...credential,
+      trustedSites,
+      dialogicAuthorizedSites,
+      properties,
+    };
+  });
+}
+
+type Op = "get" | "add" | "update" | "remove" | "removeAll" | null;
+
+export default function useChildActorEvent() {
+  const [prefs, setPrefs] = useState<SelfSovereignIndividualPrefs>({
+    base: {
+      menuPin: "",
+      addons: [],
+      primaryPasswordEnabled: false,
+      passwordRevealVisible: false,
+      platform: "",
+    },
+    bitcoin: {
+      enabled: true,
+      tabPin: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 300000,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 86400000,
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      usedAccountChanged: true,
+    },
+    nostr: {
+      enabled: true,
+      tabPin: "",
+      tabPinInNip07: "",
+      usedTrustedSites: false,
+      nallowedMethodPreset: DefaultNallowedMethods.filter(Boolean).join(","),
+      usedPrimarypasswordToSettings: true,
+      expirationTimeForPrimarypasswordToSettings: 300000,
+      usedPrimarypasswordToApps: true,
+      expirationTimeForPrimarypasswordToApps: 86400000,
+      dialogDisplayOptionPreset:
+        DefaultDialogDisplayOptions.filter(Boolean).join(","),
+      excludedKindsPreset: DefaultExcludedKinds.filter(Boolean).join(","),
+      usedBuiltinNip07: true,
+      usedAccountChanged: true,
+    },
+  });
+  const [credentials, setCredentials] = useState<Credential[]>([]);
+  const [credentialsFromStore, setCredentialsFromStore] = useState<
+    [Op, Credential[]]
+  >([null, []]);
+
+  // Only do once
+  useEffect(() => {
+    addEventListener(
+      "AboutSelfSovereignIndividualChromeToContent",
+      receiveFromChildActor
+    );
+    return () => {
+      removeEventListener(
+        "AboutSelfSovereignIndividualChromeToContent",
+        receiveFromChildActor
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const [op, state] = credentialsFromStore;
+    if (op === "add") {
+      if (state[0].primary) {
+        // emit becase of the fisrt register
+        onPrimaryChanged({
+          protocolName: state[0].protocolName,
+          guid: state[0].guid,
+        });
+      }
+      setCredentials(prev => [...prev, ...state]);
+    } else if (op === "update") {
+      setCredentials(prev =>
+        prev.map(credential =>
+          credential.guid === state[0].guid ? state[0] : credential
+        )
+      );
+    } else if (op === "remove") {
+      setCredentials(prev =>
+        prev.filter(credential => credential.guid !== state[0].guid)
+      );
+    } else if (op === "removeAll") {
+      setCredentials([]);
+    } else {
+      setCredentials(prev => [...prev, ...state]);
+    }
+  }, [credentialsFromStore]);
+
+  // one-way listner to receive the event
+  const receiveFromChildActor = event => {
+    switch (event.detail.messageType) {
+      case "Setup":
+      case "AllCredentials": {
+        const newState = transformCredentialsFromStore(
+          event.detail.value.credentials
+        );
+        setCredentialsFromStore(["get", newState]);
+        setPrefs(prev => ({
+          ...prev,
+          base: { ...prev.base, ...event.detail.value.base },
+        }));
+        break;
+      }
+      case "CredentialAdded": {
+        const newState = transformCredentialsFromStore([event.detail.value]);
+        setCredentialsFromStore(["add", newState]);
+        break;
+      }
+      case "CredentialModified": {
+        const newState = transformCredentialsFromStore([event.detail.value]);
+        setCredentialsFromStore(["update", newState]);
+        break;
+      }
+      case "CredentialRemoved": {
+        setCredentialsFromStore(["remove", [event.detail.value]]);
+        break;
+      }
+      case "RemoveAllCredentials": {
+        setCredentialsFromStore(["removeAll", []]);
+        break;
+      }
+      case "Prefs": {
+        setPrefs(prev => {
+          const newState = {
+            ...prev,
+          };
+          const keys = Object.keys(event.detail.value);
+          for (const protocolName of keys) {
+            newState[protocolName] = {
+              ...prev[protocolName],
+              ...event.detail.value[protocolName],
+            };
+          }
+          return newState;
+        });
+        break;
+      }
+      case "ShowCredentialItemError": {
+        console.error("ShowCredentialItemError", event);
+        alert(`Oops...got error: ${event.detail.value.errorMessage}`);
+        break;
+      }
+      default: {
+        // TODO(ssb): "RemaskPassword"
+        console.log(event);
+      }
+    }
+  };
+
+  return {
+    prefs,
+    credentials,
+  };
+}

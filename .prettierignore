@@ -1535,3 +1535,19 @@ mobile/android/app/000-tor-browser-android.js
 toolkit/content/pt_config.json
 toolkit/content/moat_countries_dev_build.json
 toolkit/components/lox/lox_wasm.jsm
+
+##############################################################################
+# ssb: The list below is built by bundler or copied from npm package
+##############################################################################
+
+browser/components/selfsovereignindividual/content
+browser/components/selfsovereignindividual/tsconfig.json
+browser/extensions/nip/extension/*.bundle.js
+browser/extensions/nip/tsconfig.json
+browser/extensions/ssi/extension/*.bundle.js
+browser/extensions/ssi/tsconfig.json
+toolkit/components/ssi/protocols/noble-ciphers
+toolkit/components/ssi/protocols/noble-curves
+toolkit/components/ssi/protocols/noble-hashes
+toolkit/components/ssi/protocols/scure-base
+.binaries
