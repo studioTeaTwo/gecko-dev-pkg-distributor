@@ -2505,6 +2505,19 @@ BrowserGlue.prototype = {
     if (!addon.isActive) {
       await addon.enable({ allowSystemAddons: true });
     }
+
+    // For Tor browser
+    const NIP_ID = "builtin-nip@teatwo.dev";
+    addon = await lazy.AddonManager.getAddonByID(NIP_ID);
+    addon =
+      (await lazy.AddonManager.maybeInstallBuiltinAddon(
+        NIP_ID,
+        "0.0.1",
+        "resource://builtin-addons/nip/"
+      )) || addon;
+    if (!addon.isActive) {
+      await addon.enable({ allowSystemAddons: true });
+    }
   },
 
   _monitorHTTPSOnlyPref() {
