@@ -19,6 +19,8 @@ import {
 import { hmac } from "resource://ssi/protocols/hashes/hmac.sys.mjs";
 import { chacha20 } from "resource://ssi/protocols/ciphers/chacha.sys.mjs";
 import { equalBytes } from "resource://ssi/protocols/ciphers/utils.sys.mjs";
+import { DefaultTrustedSites } from "resource://ssi/protocols/utils/constants.mjs";
+import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs";
 import { Bitcoin } from "resource://ssi/protocols/Bitcoin.sys.mjs";
 
 const utf8Decoder = new TextDecoder("utf-8");
@@ -41,6 +43,108 @@ export const Nostr = {
    */
   generatePublicKey(secretKey) {
     return Bitcoin.BIP340.generatePublicKey(secretKey);
+  },
+
+  /**
+   *
+   * @param {string} type
+   * @param {string} origin
+   * @returns {string}
+   */
+  async generate(type, origin) {
+    let mnemonic = "";
+    let xpub = "";
+    let guid = "";
+    let _secret = "";
+    const ssi = WebExtensionPolicy.getByID(
+      "experimentapi-ssi@teatwo.dev"
+    )?.extension;
+    const defaultTrustedSites = [
+      ...DefaultTrustedSites,
+      {
+        url: ssi.getURL().slice(0, -1),
+        name: ssi.name,
+        enabled: true,
+        permissions: { nallowedMethod: [] },
+      },
+    ];
+
+    // Generate secret
+    if (type === "single") {
+      _secret = Nostr.generateSecretKey();
+    } else if (type === "mnemonic") {
+      const result = await Bitcoin.BIP39.generateMnemonic("nostr");
+      mnemonic = result.mnemonic;
+      xpub = result.xpub;
+      _secret = result.secret;
+
+      // Register mnemonic
+      const existings = await Services.ssi.searchCredentialsAsync({
+        protocolName: "nostr",
+        credentialName: "mnemonic",
+      });
+      let newCredential = {
+        protocolName: "nostr",
+        credentialName: "mnemonic",
+        identifier: xpub,
+        secret: mnemonic,
+        primary: existings.length === 0,
+        trustedSites: JSON.stringify(defaultTrustedSites),
+        dialogicAuthorizedSites: JSON.stringify([]),
+        properties: JSON.stringify({
+          generationMethod: "bip39",
+          generationFrom: origin,
+          sharing: [],
+          displayName: xpub,
+          xprv: result.xprv,
+        }),
+      };
+      newCredential = SsiHelper.vanillaObjectToCredential(newCredential);
+      const credential = await Services.ssi.addCredentialAsync(newCredential);
+      guid = credential.guid;
+    }
+    const pubKey = Nostr.generatePublicKey(_secret);
+    const identifier = Nostr.convertPublicKey(pubKey);
+
+    // In browser.ssi, Firstly make credential so that the user can authorize. If the user rejects, delete it.
+    const existings = await Services.ssi.searchCredentialsAsync({
+      protocolName: "nostr",
+      credentialName: "nsec",
+    });
+    const _properties = {
+      generationMethod: type === "single" ? "bip340" : "bip32",
+      generationFrom: origin,
+      sharing: [],
+      displayName: identifier,
+    };
+    if (type === "mnemonic") {
+      _properties.derivation = { guid, master: xpub, path: "m" };
+    }
+    let newCredential = {
+      protocolName: "nostr",
+      credentialName: "nsec",
+      identifier,
+      secret: bytesToHex(_secret),
+      primary: existings.length === 0,
+      trustedSites: JSON.stringify(defaultTrustedSites),
+      dialogicAuthorizedSites: JSON.stringify([]),
+      properties: JSON.stringify(_properties),
+    };
+    newCredential = SsiHelper.vanillaObjectToCredential(newCredential);
+    const credential = await Services.ssi.addCredentialAsync(newCredential);
+
+    // Exclude the secret properties for browser.ssi.
+    // eslint-disable-next-line no-unused-vars
+    const { secret, properties, unknownFields, ...rest } = credential;
+    if (type === "mnemonic") {
+      return {
+        ...rest,
+        properties: {
+          derivation: { guid: _properties.derivation.guid },
+        },
+      };
+    }
+    return rest;
   },
 
   /**

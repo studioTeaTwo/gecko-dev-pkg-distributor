@@ -89,6 +89,7 @@
         "name": "generate",
         "type": "function",
         "description": "Generates Bitcoin key in the specified order. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "async": true,
         "parameters": [
           {
             "name": "tabId",
@@ -131,7 +132,6 @@
             "description": "Parameters to build Auth dialog."
           }
         ],
-        "async": true,
         "returns": {
           "type": "string",
           "description": "A Promise that will be fulfilled with a `string` of xpub. Returns `Promise<undefined>` if error."

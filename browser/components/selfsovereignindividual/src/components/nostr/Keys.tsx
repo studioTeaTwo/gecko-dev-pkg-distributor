@@ -68,7 +68,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
   // const [error, setError] = useState("");
 
   const nostrKeys = useMemo(
-    () => credentials.map(addInterpretedKeys) as NostrDisplayedCredential[],
+    () =>
+      credentials
+        .filter(credential => credential.credentialName === "nsec")
+        .map(addInterpretedKeys) as NostrDisplayedCredential[],
     [credentials]
   );
   const defaultTrustedSites = useMemo(
@@ -106,6 +109,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         displayName: npubkey,
         generationMethod: "bip340",
         generationFrom: location.href,
+        sharing: [],
       },
     });
 
@@ -161,6 +165,7 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
         displayName: npubkey,
         generationMethod: "import",
         generationFrom: location.href,
+        sharing: [],
       },
     });
 
@@ -339,7 +344,10 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                         </Heading>
                         <HStack>
                           {item.trustedSites.some(site => site.url === "*") && (
-                            <Tooltip label="All URL trusted">🚨</Tooltip>
+                            <Tooltip label="All URL Trusted">🚨</Tooltip>
+                          )}
+                          {item.properties.generationMethod === "bip32" && (
+                            <Tooltip label="Mnemonic Derived">🗒️</Tooltip>
                           )}
                         </HStack>
                       </CardHeader>

@@ -72,6 +72,13 @@ declare namespace browser.ssi {
   } & commonApis;
 
   const nostr: {
+    generate: (
+      tabId: number,
+      options: {
+        type: "single" | "mnemonic";
+      },
+      dialogOption?: dialogOption
+    ) => Promise<string | undefined>; // HEX format pubkey
     sign: (
       tabId: number,
       message: string,

@@ -15,6 +15,7 @@ import {
 // Object shared with inpage scripts.
 const _nostr = new window.Object() as WindowSSI["nostr"];
 _nostr.generate = exportFunction(NostrApi.generate, window);
+_nostr.generateSync = exportFunction(NostrApi.generateSync, window);
 _nostr.getPublicKey = exportFunction(NostrApi.getPublicKey, window);
 _nostr.getPublicKeySync = exportFunction(NostrApi.getPublicKeySync, window);
 _nostr.sign = exportFunction(NostrApi.sign, window);

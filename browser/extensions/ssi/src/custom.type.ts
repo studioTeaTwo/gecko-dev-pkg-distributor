@@ -7,6 +7,7 @@ export const availableCallsBitcoin = [
   "bitcoin/shareWith",
 ] as const;
 export const availableCallsNostr = [
+  "nostr/generate",
   "nostr/getPublicKey",
   "nostr/signEvent",
   "nostr/nip04/encrypt",

@@ -353,7 +353,7 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                         </Heading>
                         <HStack>
                           {item.trustedSites.some(site => site.url === "*") && (
-                            <Tooltip label="All URL trusted">🚨</Tooltip>
+                            <Tooltip label="All URL Trusted">🚨</Tooltip>
                           )}
                           {item.properties.sharing.length > 0 && (
                             <Tooltip label="Sharing">🛜</Tooltip>

@@ -70,8 +70,19 @@ export const BitcoinApi = {
  */
 
 export const NostrApi = {
-  generate() {
-    return window.Promise.resolve("Not implemented");
+  generate(option) {
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    return _callRuntime<string>(`nostr/generate`, cleanedObj);
+  },
+  generateSync(option, callback) {
+    const cleanedObj = sanitizeObject(option) as FixMe;
+    _callRuntime<string>("nostr/generate", cleanedObj)
+      .then(publicKey => {
+        callback(null, publicKey);
+      })
+      .catch(error => {
+        callback(error, undefined);
+      });
   },
 
   getPublicKey(option) {
