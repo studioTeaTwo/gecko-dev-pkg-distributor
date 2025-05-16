@@ -123,11 +123,13 @@ this.ssi = class extends ExtensionAPI {
             const credentials =
               await lazy.SsiHelper.searchCredentialsWithoutSecret(params);
             const filteredCredentials = credentials
-              .filter(async credential => {
+              .filter(credential => {
                 // Check permission
                 if (!enabled[credential.protocolName]) {
                   return false;
                 }
+
+                // Check authorization
                 if (
                   tabId > -1 &&
                   !authorizationMap[credential.protocolName][
