@@ -2062,7 +2062,11 @@ function Bitcoin$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),
@@ -3166,7 +3170,11 @@ function Nostr$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),
@@ -3181,7 +3189,11 @@ function Nostr$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),

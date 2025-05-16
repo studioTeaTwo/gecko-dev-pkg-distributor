@@ -383,7 +383,11 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             value={item.nseckey}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
-                            textProps={{ fontSize: "md", isTruncated: true }}
+                            count={1}
+                            textProps={{
+                              fontSize: "md",
+                              overflowWrap: "anywhere",
+                            }}
                           />
                         </Box>
                         <Box mt={2}>
@@ -398,7 +402,11 @@ export default function Nostr(props: SelfSovereignIndividualDefaultProps) {
                             value={item.secret}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
-                            textProps={{ fontSize: "md", isTruncated: true }}
+                            count={1}
+                            textProps={{
+                              fontSize: "md",
+                              overflowWrap: "anywhere",
+                            }}
                           />
                         </Box>
                         <Box>

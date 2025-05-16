@@ -392,7 +392,11 @@ export default function Bitcoin(props: SelfSovereignIndividualDefaultProps) {
                             value={item.properties.xprv}
                             onChangeVisibility={() => {}}
                             prefs={prefs}
-                            textProps={{ fontSize: "md", isTruncated: true }}
+                            count={1}
+                            textProps={{
+                              fontSize: "md",
+                              overflowWrap: "anywhere",
+                            }}
                           />
                         </Box>
                         <Box mt={2}>
