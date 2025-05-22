@@ -78,7 +78,18 @@ if [ "$os" = "unsupported" ] || [ "$arch" = "unsupported" ]; then
 	exit 2
 fi
 
-app_services="$(ls -1t "$TOR_BROWSER_BUILD/out/application-services/"application-services*.tar.zst | head -1)"
+echo "Fetching application-services..."
+
+if [[ $1 == "--tbb" ]]; then
+  app_services="$(ls -1t "$TOR_BROWSER_BUILD/out/application-services/"application-services*.tar.zst | head -1)"
+  tar -C /tmp -xf "$app_services"
+else
+  app_services_fname="$(curl -s $TBB_BUILD_06/application-services/ | sed -nE 's/.*href=\"(application-services-[0-9a-z\.\-]*).*/\1/p')"
+  app_services=/tmp/$app_services_fname
+  curl -o $app_services $TBB_BUILD_06/application-services/$app_services_fname
+  tar -C /tmp -xf "$app_services"
+	rm "$app_services"
+fi
 mkdir -p "$GRADLE_MAVEN_REPOSITORIES/org/mozilla"
 if [ -f "$app_services" ]; then
 	tar -C /tmp -xf "$app_services"
