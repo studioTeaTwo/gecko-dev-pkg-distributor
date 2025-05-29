@@ -17,6 +17,7 @@ toolkit.jar:
 #endif
   ssi/protocols/Bitcoin.sys.mjs (./protocols/Bitcoin.sys.mjs)
   ssi/protocols/Nostr.sys.mjs (./protocols/Nostr.sys.mjs)
+  ssi/protocols/utils/constants.mjs (./protocols/utils/constants.mjs)
   ssi/protocols/utils/wordlists.mjs (./protocols/utils/wordlists.mjs)
   ssi/protocols/ciphers/_arx.sys.mjs (./protocols/noble-ciphers/_arx.sys.mjs)
   ssi/protocols/ciphers/_assert.sys.mjs (./protocols/noble-ciphers/_assert.sys.mjs)

@@ -1021,6 +1021,7 @@ const MapBetweenPrefAndState = {
     enabled: "enabled",
 };
 const DialogMessage = {
+    "nostr/generate": "App is requesting you.",
     "nostr/getPublicKey": "App is requesting you.",
     "nostr/signEvent": "App is requesting you.",
     "nostr/nip04/encrypt": "App is requesting you.",
@@ -1037,6 +1038,19 @@ const doNostrAction = async (tabId, origin, action, args) => {
         throw new Error(constants_1.ERR_MSG_NOT_SUPPORTED);
     }
     switch (action) {
+        case "nostr/generate": {
+            if (args.type == null || !["single", "mnemonic"].includes(args.type)) {
+                throw new Error(`Invalid type: ${args.type}`);
+            }
+            // Generate
+            const pubkey = await browser.ssi.nostr.generate(tabId, { type: args.type }, {
+                caption: DialogMessage[action],
+            });
+            if (!pubkey) {
+                throw new Error("Failed to generate");
+            }
+            return pubkey;
+        }
         case "nostr/getPublicKey": {
             const credentials = await browser.ssi.searchCredentials(tabId, {
                 protocolName: "nostr",

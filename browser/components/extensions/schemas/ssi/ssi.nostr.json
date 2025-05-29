@@ -57,6 +57,41 @@
         }
       },
       {
+        "name": "generate",
+        "type": "function",
+        "description": "Generates Nostr key in the specified order. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": -1,
+            "description": "This is `tabs.Tab.id`. See also [MDN Reference](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab#id)."
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Direction about the key you want the user to generate.",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type that specifies the secret you want the user to generate: e.g. `\"single\"`, `\"mnemonic\"`."
+              }
+            }
+          },
+          {
+            "name": "dialogOption",
+            "$ref": "ssi.DialogInfo",
+            "optional": true,
+            "description": "Parameters to build Auth dialog."
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A Promise that will be fulfilled with a `string` of hex-format public key. Returns `Promise<undefined>` if error."
+        }
+      },
+      {
         "name": "sign",
         "type": "function",
         "description": "Pass in the message and get back the signature by Nostr secret key. You should always read the public key without using cache just before signing/encrypting/decrypting, as the user may change their primary key without notifying you. During the execution process, an internal authorization check is performed similar to `browser.ssi.askConsent`.",

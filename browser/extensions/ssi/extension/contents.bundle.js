@@ -52,8 +52,19 @@ exports.BitcoinApi = {
  * Nostr
  */
 exports.NostrApi = {
-    generate() {
-        return window.Promise.resolve("Not implemented");
+    generate(option) {
+        const cleanedObj = sanitizeObject(option);
+        return _callRuntime(`nostr/generate`, cleanedObj);
+    },
+    generateSync(option, callback) {
+        const cleanedObj = sanitizeObject(option);
+        _callRuntime("nostr/generate", cleanedObj)
+            .then(publicKey => {
+            callback(null, publicKey);
+        })
+            .catch(error => {
+            callback(error, undefined);
+        });
     },
     getPublicKey(option) {
         const cleanedObj = sanitizeObject(option);
@@ -313,6 +324,7 @@ const api_1 = __webpack_require__(71);
 // Object shared with inpage scripts.
 const _nostr = new window.Object();
 _nostr.generate = exportFunction(api_1.NostrApi.generate, window);
+_nostr.generateSync = exportFunction(api_1.NostrApi.generateSync, window);
 _nostr.getPublicKey = exportFunction(api_1.NostrApi.getPublicKey, window);
 _nostr.getPublicKeySync = exportFunction(api_1.NostrApi.getPublicKeySync, window);
 _nostr.sign = exportFunction(api_1.NostrApi.sign, window);
@@ -360,6 +372,7 @@ exports.availableCallsBitcoin = [
     "bitcoin/shareWith",
 ];
 exports.availableCallsNostr = [
+    "nostr/generate",
     "nostr/getPublicKey",
     "nostr/signEvent",
     "nostr/nip04/encrypt",
