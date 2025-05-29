@@ -1,65 +1,22 @@
-Started over from v0.2.0mvp. Be careful about using older tags.
+# Tor Browser implementation version
 
-## merge manual
-- Cherry-pick the merge commits on ssi repository.
+For reference, we are merging the SSI components into the Tor Browser. These patches record updates to the Tor Browser that mounts the SSI components, and tracks merge requests for the main branch of the SSI components and Firefox version upgrades.
+
+Tor Browser rebases separate branch managements for each version, and since it is difficult to integrate versions without discrepancies in the git history, we periodically re-create them from the Tor Browser repository tag and force-push them to our remote repository. **Be careful about using older tags.**
+
+Below is the ongoing merge management. Again, this is periodically reset, e.g. when Tor Browser has a major version update, the merge restarts zero-based from the new Tor Browser tag.
+
+## Merge manual
+- Cherry-pick the merge commits on the main branch of SSI components.
 - Create a diff patch compared to previous release.
 - IMPORTANT: Firefox upgrades should be done via the tor tag (e.g. `tor-browser-128.7.0esr-14.0-1-build3`).
   - Not use the firefox-upgrade merge request of ssi repository.
   - Make it a separate independent patch, not mixed with others.
 
-## merge history
-git checkout -b mvp-tor tor-browser-128.6.0esr-14.0-1-build1
+## Merge history
+git checkout -b mvp-tor tor-browser-128.10.0esr-14.5-1-build2
 ssb-merge-1.patch
 ssb-munual-1.patch
-ssb-merge-2.patch
-ssb-merge-3.patch
-ssb-merge-4.patch
-ssb-merge-5.patch
-ssb-merge-6.patch
-ssb-merge-7.patch
-ssb-merge-8.patch
-ssb-merge-9.patch
-ssb-merge-10.patch
-ssb-merge-11.patch
-ssb-merge-12.patch
-ssb-merge-13.patch
-ssb-merge-14.patch
-ssb-merge-15.patch
 
 ### ssb-merge-1.patch
-- git merge v0.2.0mvp-128.6.0esr
-### ssb-merge-2.patch
-- git merge tor-browser-128.7.0esr-14.0-1-build3
-### ssb-merge-3.patch
-- 3ec9b0a9
-- 99ffae95
-- 4967878d
-- 0d6f7346
-### ssb-merge-4.patch
-- 9ebf3f0c
-### ssb-merge-5.patch
-- 1879afc2
-### ssb-merge-6.patch
-- 61dc1ac7
-- 876dcb5f
-### ssb-merge-7.patch
-- 4c93e27d
-- fee4aaa8
-### ssb-merge-8.patch
-- b4498634
-### ssb-merge-9.patch
-- git merge tor-browser-128.8.0esr-14.0-1-build3
-### ssb-merge-10.patch
-- 039a235c
-- 7516ca44
-- f712776b
-### ssb-merge-11.patch
-- git merge tor-browser-128.9.0esr-14.0-2-build2
-### ssb-merge-12.patch
-- d38ecce6
-### ssb-merge-13.patch
-- c54a5724
-### ssb-merge-14.patch
-- b65ec401
-### ssb-merge-15.patch
-- 6c0d4de1
+- git merge v0.7.0mvp-128.10.0esr

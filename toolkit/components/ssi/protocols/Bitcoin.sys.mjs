@@ -14,17 +14,8 @@ import { pbkdf2 } from "resource://ssi/protocols/hashes/pbkdf2.sys.mjs";
 import { utils as baseUtils } from "resource://ssi/protocols/scure-base.sys.mjs";
 import { HDKey } from "resource://ssi/protocols/scure-bip32.sys.mjs";
 import { wordlists } from "resource://ssi/protocols/utils/wordlists.mjs";
+import { DefaultTrustedSites } from "resource://ssi/protocols/utils/constants.mjs";
 import { SsiHelper } from "resource://gre/modules/SsiHelper.sys.mjs";
-
-// see: browser/components/selfsovereignindividual/src/components/bitcoin/constants.ts
-const DefaultTrustedSites = [
-  {
-    url: "http://localhost",
-    name: "",
-    enabled: true,
-    permissions: { nallowedMethod: [] },
-  },
-];
 
 export const Bitcoin = {
   // ref: https://github.com/paulmillr/scure-bip32
@@ -64,6 +55,9 @@ export const Bitcoin = {
       if (origin.startsWith("about:")) {
         // Call `Services.ssi.searchCredentialsAsync` from settings
         return { mnemonic, xpub, xprv };
+      }
+      if (origin.startsWith("nostr")) {
+        return { mnemonic, xpub, xprv, secret: hdkey.privateKey };
       }
 
       // In browser.ssi, Firstly make credential so that the user can authorize. If the user rejects, delete it.

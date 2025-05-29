@@ -2029,7 +2029,7 @@ function Bitcoin$1(props) {
                     }
                   ) }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
-                    item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }),
+                    item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL Trusted", children: "🚨" }),
                     item.properties.sharing.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Sharing", children: "🛜" })
                   ] })
                 ] }),
@@ -2062,7 +2062,11 @@ function Bitcoin$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),
@@ -2914,7 +2918,7 @@ function Nostr$1(props) {
   const [newKey, setNewKey] = reactExports.useState("");
   const [isOpenDialog, setIsOpenDialog] = reactExports.useState(false);
   const nostrKeys = reactExports.useMemo(
-    () => credentials.map(addInterpretedKeys),
+    () => credentials.filter((credential) => credential.credentialName === "nsec").map(addInterpretedKeys),
     [credentials]
   );
   const defaultTrustedSites = reactExports.useMemo(
@@ -2946,7 +2950,8 @@ function Nostr$1(props) {
         ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "bip340",
-        generationFrom: location.href
+        generationFrom: location.href,
+        sharing: []
       }
     });
     setNewKey(npubkey);
@@ -2988,7 +2993,8 @@ function Nostr$1(props) {
         ...NostrTemplate.properties,
         displayName: npubkey,
         generationMethod: "import",
-        generationFrom: location.href
+        generationFrom: location.href,
+        sharing: []
       }
     });
     setImportedKey("");
@@ -3130,7 +3136,10 @@ function Nostr$1(props) {
                       children: item.properties.displayName
                     }
                   ) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(HStack, { children: item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL trusted", children: "🚨" }) })
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(HStack, { children: [
+                    item.trustedSites.some((site) => site.url === "*") && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "All URL Trusted", children: "🚨" }),
+                    item.properties.generationMethod === "bip32" && /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip, { label: "Mnemonic Derived", children: "🗒️" })
+                  ] })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(CardBody, { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Box, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { fontSize: "md", isTruncated: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -3161,7 +3170,11 @@ function Nostr$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),
@@ -3176,7 +3189,11 @@ function Nostr$1(props) {
                         onChangeVisibility: () => {
                         },
                         prefs,
-                        textProps: { fontSize: "md", isTruncated: true }
+                        count: 1,
+                        textProps: {
+                          fontSize: "md",
+                          overflowWrap: "anywhere"
+                        }
                       }
                     )
                   ] }),

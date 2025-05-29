@@ -35,6 +35,87 @@ this["ssi.nostr"] = class extends ExtensionAPI {
           getPrefs() {
             return Promise.resolve(lazy.browserSsiHelper.getPrefs("nostr"));
           },
+          async generate(
+            tabId,
+            { type },
+            { caption = "", submission = "", enforce = false }
+          ) {
+            const errorValue = undefined;
+
+            try {
+              // Validate params
+              switch (type) {
+                case "single":
+                case "mnemonic":
+                  break;
+                default:
+                  return errorValue;
+              }
+              if (caption) {
+                if (!lazy.browserSsiHelper.validateDialogText(caption)) {
+                  return errorValue;
+                }
+              }
+              if (submission) {
+                if (!lazy.browserSsiHelper.validateDialogText(submission)) {
+                  return errorValue;
+                }
+              }
+
+              // Check permission
+              const enabled = Services.prefs.getBoolPref(
+                "selfsovereignindividual.nostr.enabled"
+              );
+              if (!enabled) {
+                return errorValue;
+              }
+
+              // Firstly make credential so that the user can authorize. If the user rejects, delete it.
+              let credential = null;
+              const { site } = lazy.browserSsiHelper.getOrigin(context, tabId);
+              if (["single", "mnemonic"].includes(type)) {
+                credential = await lazy.Nostr.generate(type, site.origin);
+              }
+
+              // Authorize
+              const pointing = {
+                protocolName: "nostr",
+                credentialName: credential.credentialName,
+                identifier: credential.identifier,
+              };
+              const isAuthorized = await lazy.browserSsiHelper.authorize(
+                context,
+                tabId,
+                pointing,
+                {
+                  type: "generate",
+                  evidence: { type },
+                  caption,
+                  submission,
+                  enforce,
+                },
+                false
+              );
+              if (!isAuthorized) {
+                // Delete the credential
+                await lazy.SsiHelper.removeCredentialWithoutSecret({
+                  guid: credential.guid,
+                });
+                if (type === "mnemonic") {
+                  await lazy.SsiHelper.removeCredentialWithoutSecret({
+                    guid: credential.properties.derivation.guid,
+                  });
+                }
+                return errorValue;
+              }
+
+              // Return with HEX type.
+              return lazy.Nostr.convertPublicKey(credential.identifier);
+            } catch (e) {
+              console.error(e);
+              return errorValue;
+            }
+          },
           async sign(
             tabId,
             message,

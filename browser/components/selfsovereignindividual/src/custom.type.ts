@@ -146,7 +146,7 @@ export interface DialogicAuthorizedSitesForNostr
 export interface NostrCredential extends BaseCredential {
   dialogicAuthorizedSites: DialogicAuthorizedSitesForNostr[];
   properties: {
-    generationMethod: "bip340" | "import";
+    generationMethod: "import" | "bip340" | "bip39" | "bip32";
   } & BaseCredential["properties"];
 }
 
